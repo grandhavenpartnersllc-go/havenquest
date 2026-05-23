@@ -1,0 +1,123 @@
+@import "tailwindcss";
+
+@theme {
+  --color-accent: #1A5FA8;
+  --color-gold: #C9A84C;
+  --color-surface: #F4F5F7;
+  --color-success-bg: #EAF3DE;
+  --color-success-text: #3B6D11;
+  --color-warning-bg: #FCEBEB;
+  --color-warning-text: #A32D2D;
+  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+}
+
+body {
+  background: #FFFFFF;
+  color: #1A1A1A;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Hero ── */
+
+.hero-dark {
+  background-color: #08101C;
+  background-image:
+    radial-gradient(ellipse 80% 55% at 50% -5%, rgba(26, 95, 168, 0.28) 0%, transparent 65%);
+}
+
+.hero-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 64px 64px;
+}
+
+/* ── Gradient text ── */
+
+.gradient-text-accent {
+  background: linear-gradient(135deg, #1A5FA8 0%, #3B9EEA 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-light {
+  background: linear-gradient(130deg, #60B8FF 0%, #A8D8FF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Animated cards — shadow transitions with lift ── */
+
+.card-door {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 4px 20px rgba(0, 0, 0, 0.07);
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+.card-door:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.07), 0 24px 56px rgba(0, 0, 0, 0.13);
+}
+
+.card-door-blue {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 4px 20px rgba(26, 95, 168, 0.13);
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+.card-door-blue:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06), 0 24px 56px rgba(26, 95, 168, 0.22);
+}
+
+.card-match {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 6px 24px rgba(0, 0, 0, 0.07);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+.card-match:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.07), 0 20px 48px rgba(0, 0, 0, 0.12);
+}
+
+.card-city {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.06);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+.card-city:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.07), 0 16px 40px rgba(0, 0, 0, 0.11);
+}
+
+/* ── Legacy aliases (used by other components) ── */
+
+.card-shadow {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+.card-shadow-hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.07), 0 20px 48px rgba(0, 0, 0, 0.12);
+}
+
+/* ── Utilities ── */
+
+.blur-results {
+  filter: blur(6px);
+  pointer-events: none;
+  user-select: none;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.drop-zone-active {
+  border-color: #1A5FA8 !important;
+  background: #EBF3FB !important;
+}
+
+.drag-over {
+  transform: scale(1.02);
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
