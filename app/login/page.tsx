@@ -11,7 +11,7 @@ function LoginPageContent() {
   const searchParams = useSearchParams()
   const errorParam = searchParams.get('error')
 
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState(searchParams.get('email') ?? '')
   const [password, setPassword] = useState('')
   const [error, setError] = useState(
     errorParam === 'expired' ? 'That link has expired. Enter your email to get a new one.' : ''
