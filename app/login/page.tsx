@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useState } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '../../lib/supabase/client'
@@ -9,19 +9,30 @@ import { LOCAL_SESSION_KEY } from '../../utils/constants'
 function LoginPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const errorParam = searchParams.get('error')
-  const messageParam = searchParams.get('message')
 
-  const [email, setEmail] = useState(searchParams.get('email') ?? '')
+  // All state initialised to static defaults so SSR and client first-render
+  // are identical — no hydration mismatch, no React remount that resets
+  // typed values and silently swallows the first click.
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState(
-    errorParam === 'expired' ? 'That link has expired. Enter your email to get a new one.' : ''
-  )
+  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [mode, setMode] = useState<'login' | 'forgot'>(
-    errorParam === 'expired' ? 'forgot' : 'login'
-  )
+  const [mode, setMode] = useState<'login' | 'forgot'>('login')
   const [forgotSent, setForgotSent] = useState(false)
+  const [showPasswordUpdated, setShowPasswordUpdated] = useState(false)
+
+  // Apply URL params after hydration — runs only on the client.
+  useEffect(() => {
+    const emailParam = searchParams.get('email')
+    if (emailParam) setEmail(emailParam)
+
+    if (searchParams.get('message') === 'password-updated') setShowPasswordUpdated(true)
+
+    if (searchParams.get('error') === 'expired') {
+      setMode('forgot')
+      setError('That link has expired. Enter your email to get a new one.')
+    }
+  }, [searchParams])
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -106,7 +117,7 @@ function LoginPageContent() {
         </Link>
 
         <div className="bg-white rounded-2xl p-8 mb-6" style={{ boxShadow: '0 4px 32px rgba(0,0,0,0.4)' }}>
-          {messageParam === 'password-updated' && (
+          {showPasswordUpdated && (
             <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 mb-5">
               <p className="text-sm text-green-700 font-medium">Password updated. Please sign in.</p>
             </div>
