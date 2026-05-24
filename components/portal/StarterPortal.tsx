@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { Download, Mail } from 'lucide-react'
 import { CityMatch, UserProfile, UserSession } from '../../types'
 import {
   SESSION_PROFILE_KEY,
@@ -68,6 +69,10 @@ export default function StarterPortal() {
   const [matches, setMatches] = useState<CityMatch[]>([])
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [ready, setReady] = useState(false)
+
+  type BtnState = 'idle' | 'loading' | 'done' | 'error'
+  const [dlState, setDlState] = useState<BtnState>('idle')
+  const [emailState, setEmailState] = useState<BtnState>('idle')
 
   useEffect(() => {
     const rawSession = localStorage.getItem(LOCAL_SESSION_KEY)
@@ -145,6 +150,58 @@ export default function StarterPortal() {
       } catch {}
     })()
   }, [router])
+
+  async function handleDownload() {
+    setDlState('loading')
+    try {
+      const supabase = createClient()
+      const { data: { session: s } } = await supabase.auth.getSession()
+      if (!s?.access_token) throw new Error('Not authenticated')
+
+      const res = await fetch('/api/auth/download-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ access_token: s.access_token }),
+      })
+      if (!res.ok) throw new Error('Failed')
+
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'HavenQuest-Report.pdf'
+      a.click()
+      URL.revokeObjectURL(url)
+
+      setDlState('done')
+    } catch {
+      setDlState('error')
+    } finally {
+      setTimeout(() => setDlState('idle'), 3000)
+    }
+  }
+
+  async function handleEmailReport() {
+    setEmailState('loading')
+    try {
+      const supabase = createClient()
+      const { data: { session: s } } = await supabase.auth.getSession()
+      if (!s?.access_token) throw new Error('Not authenticated')
+
+      const res = await fetch('/api/auth/send-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ access_token: s.access_token, force: true }),
+      })
+      if (!res.ok) throw new Error('Failed')
+
+      setEmailState('done')
+    } catch {
+      setEmailState('error')
+    } finally {
+      setTimeout(() => setEmailState('idle'), 3000)
+    }
+  }
 
   if (!ready) {
     return (
@@ -224,7 +281,39 @@ export default function StarterPortal() {
         {/* Match summary cards — or prompt to start a new search */}
         {matches.length > 0 ? (
           <section>
-            <SectionLabel>Your Matched Cities</SectionLabel>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[10px] font-bold uppercase" style={{ color: GOLD, letterSpacing: '0.18em' }}>
+                Your Matched Cities
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleDownload}
+                  disabled={dlState === 'loading'}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all disabled:opacity-50"
+                  style={{
+                    borderColor: dlState === 'error' ? '#E05252' : dlState === 'done' ? '#4CAF50' : GOLD,
+                    color: dlState === 'error' ? '#E05252' : dlState === 'done' ? '#4CAF50' : GOLD,
+                    backgroundColor: 'transparent',
+                  }}
+                >
+                  <Download size={13} />
+                  {dlState === 'loading' ? 'Generating…' : dlState === 'done' ? 'Downloaded!' : dlState === 'error' ? 'Failed' : 'Download Report'}
+                </button>
+                <button
+                  onClick={handleEmailReport}
+                  disabled={emailState === 'loading'}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all disabled:opacity-50"
+                  style={{
+                    borderColor: emailState === 'error' ? '#E05252' : emailState === 'done' ? '#4CAF50' : GOLD,
+                    color: emailState === 'error' ? '#E05252' : emailState === 'done' ? '#4CAF50' : GOLD,
+                    backgroundColor: 'transparent',
+                  }}
+                >
+                  <Mail size={13} />
+                  {emailState === 'loading' ? 'Sending…' : emailState === 'done' ? 'Sent!' : emailState === 'error' ? 'Failed' : 'Email Report'}
+                </button>
+              </div>
+            </div>
             <SavedMatches matches={matches} />
           </section>
         ) : (
