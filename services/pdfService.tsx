@@ -15,10 +15,10 @@ const WHITE = '#FFFFFF'
 const DIVIDER = '#DDD8D0'
 
 const s = StyleSheet.create({
-  page: { backgroundColor: WHITE, fontFamily: 'Helvetica', paddingBottom: 56 },
+  page: { backgroundColor: WHITE, fontFamily: 'Helvetica', paddingBottom: 56, paddingTop: 20 },
 
   // Header
-  header: { backgroundColor: DARK, paddingHorizontal: 40, paddingTop: 30, paddingBottom: 26 },
+  header: { backgroundColor: DARK, paddingHorizontal: 40, paddingTop: 10, paddingBottom: 26 },
   logoLine: { flexDirection: 'row', alignItems: 'baseline', marginBottom: 6 },
   logoBlack: { fontSize: 20, fontFamily: 'Helvetica-Bold', color: WHITE },
   logoGold: { fontSize: 20, fontFamily: 'Helvetica-Bold', color: GOLD },
@@ -254,8 +254,9 @@ function ReportDocument({ firstName, matches, profile, generatedDate }: Props) {
                 </View>
 
                 {/* ── 1. Affordability ─────────────────────────── */}
+                <View wrap={false}>
                 <Text style={s.sectionLabel}>AFFORDABILITY</Text>
-                <View style={s.table} wrap={false}>
+                <View style={s.table}>
                   <View style={s.tr}>
                     <Text style={s.tdLabel}>Est. Monthly Housing</Text>
                     <Text style={s.tdVal}>{money(match.estimatedMonthlyHousing)}/mo</Text>
@@ -289,10 +290,12 @@ function ReportDocument({ firstName, matches, profile, generatedDate }: Props) {
                     <Text style={[s.tdVal, { color: remaining >= 0 ? '#2D6A50' : '#DC2626' }]}>{money(remaining)}/mo</Text>
                   </View>
                 </View>
+                </View>
 
                 {/* ── 2. Lifestyle scores ──────────────────────── */}
+                <View wrap={false}>
                 <Text style={s.sectionLabel}>LIFESTYLE SCORES</Text>
-                <View style={s.twoCol} wrap={false}>
+                <View style={s.twoCol}>
                   <View style={s.scoreColL}>
                     {leftScores.map(([key, label], idx) => (
                       <View key={key} style={idx === leftScores.length - 1 ? s.scoreRowLast : s.scoreRow}>
@@ -310,10 +313,12 @@ function ReportDocument({ firstName, matches, profile, generatedDate }: Props) {
                     ))}
                   </View>
                 </View>
+                </View>
 
                 {/* ── 3. Strengths & Weaknesses ────────────────── */}
+                <View wrap={false}>
                 <Text style={s.sectionLabel}>STRENGTHS & WEAKNESSES</Text>
-                <View style={s.twoCol} wrap={false}>
+                <View style={s.twoCol}>
                   <View style={s.swColL}>
                     <Text style={[s.swHeader, { color: '#2D7A4F' }]}>STRENGTHS</Text>
                     {city.strengths.map((str, idx) => (
@@ -333,10 +338,12 @@ function ReportDocument({ firstName, matches, profile, generatedDate }: Props) {
                     ))}
                   </View>
                 </View>
+                </View>
 
                 {/* ── 4. Price Intelligence ────────────────────── */}
+                <View wrap={false}>
                 <Text style={s.sectionLabel}>PRICE INTELLIGENCE</Text>
-                <View style={s.table} wrap={false}>
+                <View style={s.table}>
                   <View style={s.tr}>
                     <Text style={s.tdLabel}>Price per Sq Ft</Text>
                     <Text style={s.tdVal}>{money(city.housing.pricePerSqFt)}</Text>
@@ -358,10 +365,12 @@ function ReportDocument({ firstName, matches, profile, generatedDate }: Props) {
                     <Text style={s.tdVal}>{money(tax)}/mo</Text>
                   </View>
                 </View>
+                </View>
 
                 {/* ── 5. Market Snapshot ───────────────────────── */}
+                <View wrap={false}>
                 <Text style={s.sectionLabel}>MARKET SNAPSHOT</Text>
-                <View style={s.table} wrap={false}>
+                <View style={s.table}>
                   <View style={s.tr}>
                     <Text style={s.tdLabel}>Median Sale Price</Text>
                     <Text style={s.tdVal}>{money(city.market.redfinMedianPrice)}</Text>
@@ -392,10 +401,12 @@ function ReportDocument({ firstName, matches, profile, generatedDate }: Props) {
                     </Text>
                   </View>
                 </View>
+                </View>
 
                 {/* ── 6. School District ───────────────────────── */}
+                <View wrap={false}>
                 <Text style={s.sectionLabel}>SCHOOL DISTRICT</Text>
-                <View style={s.schoolBlock} wrap={false}>
+                <View style={s.schoolBlock}>
                   <View style={[s.schoolBadge, { backgroundColor: gradeColor(city.school.teaRating) }]}>
                     <Text style={s.schoolGrade}>{city.school.teaRating}</Text>
                   </View>
@@ -403,6 +414,7 @@ function ReportDocument({ firstName, matches, profile, generatedDate }: Props) {
                     <Text style={s.schoolName}>{city.school.primaryISD}  ·  TEA Rating: {city.school.teaRating}</Text>
                     <Text style={s.schoolDesc}>{schoolDescription(city.school.teaRating)}</Text>
                   </View>
+                </View>
                 </View>
 
               </View>
