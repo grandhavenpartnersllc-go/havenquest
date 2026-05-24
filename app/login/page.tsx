@@ -4,6 +4,7 @@ import { Suspense, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '../../lib/supabase/client'
+import { LOCAL_SESSION_KEY } from '../../utils/constants'
 
 function LoginPageContent() {
   const router = useRouter()
@@ -45,6 +46,18 @@ function LoginPageContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ access_token: data.session.access_token }),
       })
+
+      // Restore localStorage session so StarterPortal recognises the returning user.
+      // Without this, StarterPortal redirects to / because LOCAL_SESSION_KEY is absent.
+      const { data: userData } = await supabase.from('users').select('first_name').eq('email', email.toLowerCase()).single()
+      const firstName = userData?.first_name ?? email.split('@')[0]
+      localStorage.setItem(LOCAL_SESSION_KEY, JSON.stringify({
+        userId: data.user.id,
+        firstName,
+        email: email.toLowerCase(),
+        createdAt: new Date().toISOString(),
+      }))
+
       router.push('/portal')
     }
   }

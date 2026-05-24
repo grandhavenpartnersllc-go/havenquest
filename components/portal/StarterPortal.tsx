@@ -173,11 +173,33 @@ export default function StarterPortal() {
       {/* Content */}
       <div className="max-w-5xl mx-auto px-5 py-8 space-y-10">
 
-        {/* Match summary cards */}
-        {matches.length > 0 && (
+        {/* Match summary cards — or prompt to start a new search */}
+        {matches.length > 0 ? (
           <section>
             <SectionLabel>Your Matched Cities</SectionLabel>
             <SavedMatches matches={matches} />
+          </section>
+        ) : (
+          <section>
+            <Card className="text-center py-10">
+              <div className="text-4xl mb-4">🗺️</div>
+              <h2
+                className="font-bold text-lg tracking-tight mb-2"
+                style={{ color: WARM_DARK }}
+              >
+                Start a new search to find your Texas match
+              </h2>
+              <p className="text-sm mb-6 max-w-xs mx-auto leading-relaxed" style={{ color: '#9A8E82' }}>
+                Your previous results aren&apos;t saved in this session. Run a quick search to regenerate your personalised city matches.
+              </p>
+              <Link
+                href="/explore"
+                className="inline-block px-6 py-3 rounded-xl font-bold text-sm text-white transition-opacity hover:opacity-90"
+                style={{ backgroundColor: GOLD }}
+              >
+                Start My Search →
+              </Link>
+            </Card>
           </section>
         )}
 
