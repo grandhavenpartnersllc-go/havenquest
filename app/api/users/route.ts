@@ -70,6 +70,18 @@ export async function POST(request: NextRequest) {
     })
     if (authError) {
       console.error('Auth user creation error:', authError.message)
+      // User already exists in Auth — generateLink recovers their UUID and produces a setup link
+      const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+        type: 'recovery',
+        email: email.toLowerCase(),
+        options: { redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback` },
+      })
+      if (linkError) {
+        console.error('Generate link (recovery) error:', linkError.message)
+      } else {
+        authUserId = linkData.user.id
+        setupLink = linkData.properties.action_link
+      }
     } else {
       authUserId = authData.user?.id ?? null
       // Generate password-setup link
