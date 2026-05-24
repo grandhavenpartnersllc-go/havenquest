@@ -72,7 +72,7 @@ export default function StarterPortal() {
   useEffect(() => {
     const rawSession = localStorage.getItem(LOCAL_SESSION_KEY)
     if (!rawSession) {
-      router.push('/')
+      router.push('/login')
       return
     }
 
@@ -98,23 +98,49 @@ export default function StarterPortal() {
 
     setReady(true)
 
-    // Refresh real first_name from DB on every portal visit so the greeting
-    // is never stuck on the email-prefix fallback set during login.
-    // Matches by email (unique) — public.users has no auth_id column.
+    // Capture whether profile came from sessionStorage so the IIFE below
+    // knows whether it needs to restore matches from the DB.
+    const profileWasLoaded = !!rawProfile
+
+    // Fire-and-forget: refresh first_name and, when sessionStorage was empty
+    // (browser restart / new device), restore profile + matches from DB.
+    // Matches by email — public.users has no auth_id column.
     ;(async () => {
       try {
         const supabase = createClient()
         const { data: { session: supaSession } } = await supabase.auth.getSession()
         if (!supaSession?.user?.email) return
+
         const { data: ud } = await supabase
           .from('users')
-          .select('first_name')
+          .select('first_name, top_city_matches, annual_income, household_size, housing_preference, moving_timeline, must_haves, nice_to_haves, not_priorities')
           .eq('email', supaSession.user.email.toLowerCase())
           .single()
-        if (ud?.first_name && ud.first_name !== sess.firstName) {
+        if (!ud) return
+
+        // Refresh greeting name
+        if (ud.first_name && ud.first_name !== sess.firstName) {
           const updated: UserSession = { ...sess, firstName: ud.first_name }
           localStorage.setItem(LOCAL_SESSION_KEY, JSON.stringify(updated))
           setSession(updated)
+        }
+
+        // Restore saved matches when sessionStorage was cleared (browser restart)
+        if (!profileWasLoaded && ud.annual_income && ud.top_city_matches?.length) {
+          const reconstructedProfile: UserProfile = {
+            annualIncome: ud.annual_income,
+            householdSize: ud.household_size ?? '1',
+            housingPreference: ud.housing_preference ?? 'rent2br',
+            movingTimeline: ud.moving_timeline ?? 'exploring',
+            mustHaves: ud.must_haves ?? [],
+            niceToHaves: ud.nice_to_haves ?? [],
+            notPriorities: ud.not_priorities ?? [],
+          }
+          const restoredMatches = getTopMatches(reconstructedProfile, getAllCities(), 3)
+          if (restoredMatches.length > 0) {
+            setProfile(reconstructedProfile)
+            setMatches(restoredMatches)
+          }
         }
       } catch {}
     })()
