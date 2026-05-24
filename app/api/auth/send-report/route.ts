@@ -96,10 +96,10 @@ export async function POST(request: NextRequest) {
         // 4. Resend
         const resend = new Resend(resendKey)
         const cityNames = matches.map(m => m.location.name)
-        console.log('[send-report] sending email to:', email, '| from: HavenQuest <admin@havenquest.co>')
+        console.log('[send-report] sending email to:', email, '| from: HavenQuest <admin@send.havenquest.co>')
 
         const { data: sendData, error: sendErr } = await resend.emails.send({
-          from: 'HavenQuest <admin@havenquest.co>',
+          from: 'HavenQuest <admin@send.havenquest.co>',
           to: email,
           subject: `Your HavenQuest Report is Ready, ${firstName}`,
           html: buildReportReadyEmailHtml(firstName, cityNames),

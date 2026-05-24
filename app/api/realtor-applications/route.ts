@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     if (resendKey && adminEmail) {
       const resend = new Resend(resendKey)
       await resend.emails.send({
-        from: 'HavenQuest <admin@havenquest.co>',
+        from: 'HavenQuest <admin@send.havenquest.co>',
         to: adminEmail,
         subject: `New realtor application — ${name} — ${markets || 'markets TBD'}`,
         html: buildRealtorApplicationHtml({ name, email, phone, markets, yearsExperience, brokerage, profileUrl, trecLicenseNumber, licenseType, whyJoin, preferredTier }),
