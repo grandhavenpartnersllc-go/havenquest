@@ -40,6 +40,23 @@ const CATEGORY_ICONS: Record<string, React.ComponentType<{ size?: number; stroke
   traffic:       Car,
 }
 
+const GOLD = '#B8912A'
+
+const CATEGORY_ICON_COLORS: Record<string, string> = {
+  affordability:   GOLD,
+  schools:         '#3B82F6',
+  safety:          '#22C55E',
+  walkability:     '#14B8A6',
+  transit:         '#8B5CF6',
+  nightlife:       '#EC4899',
+  outdoors:        '#16A34A',
+  familyFriendly:  '#EF4444',
+  remoteWork:      '#3B82F6',
+  lowTaxes:        GOLD,
+  weather:         '#EAB308',
+  traffic:         '#F97316',
+}
+
 const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   affordability:  'Measures housing cost burden based on the ratio of median rent or home prices to median household income, sourced from Redfin and Zillow. A score of 10 means typical housing costs well under 30% of median income; a score of 1 means housing is severely unaffordable for most earners. This is the single most important filter for relocators on a budget.',
   schools:        'Based on the Texas Education Agency (TEA) district letter grade assigned annually to each school district, reflecting student achievement, campus growth, and graduation rates. A high score indicates an A or B-rated district where the majority of campuses meet or exceed state standards. Families with school-age children should treat this score as a primary filter.',
@@ -88,13 +105,14 @@ export default function MethodologyPage() {
                 {LIFESTYLE_CATEGORIES.map(cat => {
                   const Icon = CATEGORY_ICONS[cat.key]
                   const description = CATEGORY_DESCRIPTIONS[cat.key]
+                  const iconColor = CATEGORY_ICON_COLORS[cat.key]
                   return (
                     <div key={cat.key} className="flex gap-3 p-4 bg-gray-50 rounded-xl">
-                      <div className="shrink-0 mt-0.5">
-                        {Icon && <Icon size={17} strokeWidth={1.75} className="text-gray-400" />}
-                      </div>
+                      <span className="shrink-0 mt-0.5" style={{ color: iconColor }}>
+                        {Icon && <Icon size={17} strokeWidth={1.75} />}
+                      </span>
                       <div>
-                        <p className="font-bold text-sm text-gray-900 mb-1">{cat.label}</p>
+                        <p className="font-bold text-sm mb-1" style={{ color: GOLD }}>{cat.label}</p>
                         <p className="text-xs text-gray-500 leading-relaxed">{description}</p>
                       </div>
                     </div>
