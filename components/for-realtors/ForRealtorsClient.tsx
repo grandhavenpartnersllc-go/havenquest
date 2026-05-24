@@ -39,12 +39,13 @@ export default function ForRealtorsClient() {
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '', markets: '',
     yearsExperience: '', brokerage: '', profileUrl: '',
+    whyJoin: '', preferredTier: '',
   })
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData(p => ({ ...p, [e.target.name]: e.target.value }))
   }
 
@@ -184,7 +185,7 @@ export default function ForRealtorsClient() {
         <section id="apply" className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06)' }}>
           <h2 className="text-2xl font-bold text-gray-900 tracking-tight mb-1">Apply to join HavenQuest</h2>
           <p className="text-gray-400 text-sm mb-7">
-            Applications are reviewed within 48 hours. We&apos;ll reach out to discuss territory availability.
+            We maintain strict quality standards to protect both our users and our realtor partners.
           </p>
 
           {success ? (
@@ -234,6 +235,38 @@ export default function ForRealtorsClient() {
                 />
               </div>
 
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  Preferred subscription tier
+                </label>
+                <select
+                  name="preferredTier"
+                  value={formData.preferredTier}
+                  onChange={handleChange}
+                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all bg-white"
+                >
+                  <option value="">Select a tier…</option>
+                  <option value="Standard">Standard — $99/month</option>
+                  <option value="Professional">Professional — $199/month</option>
+                  <option value="Elite">Elite — $349/month</option>
+                  <option value="Unsure">Not sure yet</option>
+                </select>
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  Why do you want to join HavenQuest?
+                </label>
+                <textarea
+                  name="whyJoin"
+                  value={formData.whyJoin}
+                  onChange={handleChange}
+                  placeholder="Tell us a bit about your practice and why HavenQuest is a good fit…"
+                  rows={4}
+                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all resize-none"
+                />
+              </div>
+
               {error && (
                 <div className="sm:col-span-2 bg-red-50 border border-red-100 rounded-xl px-3.5 py-2.5">
                   <p className="text-sm text-red-600">{error}</p>
@@ -247,11 +280,48 @@ export default function ForRealtorsClient() {
                   className="w-full bg-accent text-white py-3.5 rounded-xl font-bold text-sm hover:bg-[#154d8a] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                   style={{ boxShadow: '0 2px 10px rgba(26,95,168,0.25)' }}
                 >
-                  {loading ? 'Submitting…' : 'Submit Application →'}
+                  {loading ? 'Submitting…' : 'Submit My Application'}
                 </button>
+                <p className="text-center text-xs text-gray-400 mt-3">
+                  Applications are reviewed personally. We will follow up within 48 hours.
+                </p>
               </div>
             </form>
           )}
+        </section>
+
+        {/* Trust section */}
+        <section>
+          <h2 className="text-2xl font-bold text-gray-900 tracking-tight text-center mb-6">How we verify every partner</h2>
+          <div className="grid sm:grid-cols-3 gap-4">
+            {[
+              {
+                icon: '🏛️',
+                title: 'TREC License Verification',
+                desc: 'Every applicant\'s Texas Real Estate Commission license is confirmed active and in good standing before approval.',
+              },
+              {
+                icon: '📋',
+                title: 'Transaction History Confirmed',
+                desc: 'We review closed transaction records to ensure partners meet our minimum production standards.',
+              },
+              {
+                icon: '⭐',
+                title: 'Client Reviews Validated',
+                desc: 'Third-party reviews on Zillow, Google, and Realtor.com are checked to confirm a strong client satisfaction record.',
+              },
+            ].map(item => (
+              <div
+                key={item.title}
+                className="bg-white rounded-2xl border border-gray-100 p-6 text-center"
+                style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06)' }}
+              >
+                <div className="text-3xl mb-3">{item.icon}</div>
+                <h3 className="font-bold text-gray-900 tracking-tight mb-2">{item.title}</h3>
+                <p className="text-sm text-gray-500 leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
         </section>
 
       </div>
