@@ -100,8 +100,8 @@ export default function MethodologyPage() {
           <div className="space-y-5">
 
             <p className="text-sm text-gray-500 leading-relaxed px-1">
-              HavenQuest scores every Texas city across 12 lifestyle categories using real,
-              third-party data sources — not editorial opinions or sponsored rankings. Each
+              HavenQuest scores 20 carefully selected Texas cities across 12 lifestyle categories
+              using real, third-party data sources — not editorial opinions or sponsored rankings. Each
               category score is then weighted based on what you told us matters most: Must Haves
               count three times as much as Would Be Nices, and anything you left unassigned doesn&apos;t
               affect your results at all. The match percentage you see reflects your actual
