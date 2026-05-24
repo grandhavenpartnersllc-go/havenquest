@@ -27,30 +27,39 @@ function LoginPageContent() {
     setLoading(true)
     setError('')
 
-    const supabase = createClient()
-    const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+    try {
+      console.log('[login] Signing in:', email)
+      const supabase = createClient()
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+      console.log('[login] signInWithPassword done — session:', !!data?.session, 'error:', signInError?.message)
 
-    if (signInError) {
-      setError(
-        signInError.message === 'Invalid login credentials'
-          ? 'Incorrect email or password.'
-          : signInError.message
-      )
-      setLoading(false)
-      return
-    }
+      if (signInError) {
+        setError(
+          signInError.message === 'Invalid login credentials'
+            ? 'Incorrect email or password.'
+            : signInError.message
+        )
+        return
+      }
 
-    if (data.session) {
-      await fetch('/api/auth/session', {
+      if (!data.session) {
+        console.warn('[login] No session returned — email confirmation may be required')
+        setError('Unable to sign in. Check your inbox for a confirmation link.')
+        return
+      }
+
+      console.log('[login] Setting hq_auth cookie...')
+      const cookieRes = await fetch('/api/auth/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ access_token: data.session.access_token }),
       })
+      console.log('[login] Cookie response status:', cookieRes.status)
 
-      // Restore localStorage session so StarterPortal recognises the returning user.
-      // Without this, StarterPortal redirects to / because LOCAL_SESSION_KEY is absent.
-      const { data: userData } = await supabase.from('users').select('first_name').eq('email', email.toLowerCase()).single()
-      const firstName = userData?.first_name ?? email.split('@')[0]
+      // Write localStorage immediately using email prefix — do NOT block on a
+      // DB round-trip here, that was causing the login to hang when the users
+      // table query was slow or blocked by RLS.
+      const firstName = email.split('@')[0]
       localStorage.setItem(LOCAL_SESSION_KEY, JSON.stringify({
         userId: data.user.id,
         firstName,
@@ -58,7 +67,30 @@ function LoginPageContent() {
         createdAt: new Date().toISOString(),
       }))
 
+      // Enrich firstName from DB after navigation — fire and forget.
+      ;(async () => {
+        try {
+          const { data: ud } = await supabase
+            .from('users')
+            .select('first_name')
+            .eq('email', email.toLowerCase())
+            .single()
+          if (ud?.first_name) {
+            const raw = localStorage.getItem(LOCAL_SESSION_KEY)
+            if (raw) {
+              localStorage.setItem(LOCAL_SESSION_KEY, JSON.stringify({ ...JSON.parse(raw), firstName: ud.first_name }))
+            }
+          }
+        } catch {}
+      })()
+
+      console.log('[login] Redirecting to /portal')
       router.push('/portal')
+    } catch (err) {
+      console.error('[login] Unexpected error:', err)
+      setError('An unexpected error occurred. Please try again.')
+    } finally {
+      setLoading(false)
     }
   }
 
