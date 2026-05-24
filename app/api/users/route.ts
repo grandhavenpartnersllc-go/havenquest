@@ -19,17 +19,21 @@ async function sendWelcomeAndRespond(
 ) {
   const resendKey = process.env.RESEND_API_KEY
   if (resendKey && topCityMatches?.length) {
-    const resend = new Resend(resendKey)
-    const fakeMatches = topCityMatches.map(m => ({
-      location: { name: m.cityName },
-      matchScore: m.matchScore,
-    }))
-    await resend.emails.send({
-      from: 'HavenQuest <admin@havenquest.co>',
-      to: email,
-      subject: `Your HavenQuest report is ready, ${firstName}`,
-      html: buildWelcomeEmailHtml({ firstName, email, matches: fakeMatches as never, setupLink }),
-    }).catch(err => console.error('Resend error:', err))
+    try {
+      const resend = new Resend(resendKey)
+      const fakeMatches = topCityMatches.map(m => ({
+        location: { name: m.cityName },
+        matchScore: m.matchScore,
+      }))
+      await resend.emails.send({
+        from: 'HavenQuest <admin@havenquest.co>',
+        to: email,
+        subject: `Your HavenQuest report is ready, ${firstName}`,
+        html: buildWelcomeEmailHtml({ firstName, email, matches: fakeMatches as never, setupLink }),
+      })
+    } catch (err) {
+      console.error('Resend error:', err)
+    }
   }
   return NextResponse.json({ success: true, userId })
 }
@@ -128,14 +132,14 @@ export async function POST(request: NextRequest) {
           console.error('Retry insert error:', retryError.code, retryError.message)
           return NextResponse.json({ error: 'Failed to save your information. Please try again.' }, { status: 500 })
         }
-        return sendWelcomeAndRespond(authUserId ?? retryData.id, firstName, email, topCityMatches, setupLink)
+        return await sendWelcomeAndRespond(authUserId ?? retryData.id, firstName, email, topCityMatches, setupLink)
       }
       return NextResponse.json({ error: 'Failed to save your information. Please try again.' }, { status: 500 })
     }
 
     // Return authUserId (Supabase auth UUID) not data.id (Postgres row UUID) —
     // the client needs authUserId to call auth.admin.updateUserById for password creation.
-    return sendWelcomeAndRespond(authUserId ?? data.id, firstName, email, topCityMatches, setupLink)
+    return await sendWelcomeAndRespond(authUserId ?? data.id, firstName, email, topCityMatches, setupLink)
   } catch (err) {
     console.error('Users route error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
