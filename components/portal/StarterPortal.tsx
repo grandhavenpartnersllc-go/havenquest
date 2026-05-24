@@ -11,6 +11,7 @@ import {
 } from '../../utils/constants'
 import { getAllCities } from '../../services/locationService'
 import { getTopMatches } from '../../services/matchingService'
+import { createClient } from '../../lib/supabase/client'
 import SavedMatches from './SavedMatches'
 import RelocationChecklist from './RelocationChecklist'
 import NotesArea from './NotesArea'
@@ -96,6 +97,27 @@ export default function StarterPortal() {
     }
 
     setReady(true)
+
+    // Refresh real first_name from DB on every portal visit so the greeting
+    // is never stuck on the email-prefix fallback set during login.
+    // Matches by email (unique) — public.users has no auth_id column.
+    ;(async () => {
+      try {
+        const supabase = createClient()
+        const { data: { session: supaSession } } = await supabase.auth.getSession()
+        if (!supaSession?.user?.email) return
+        const { data: ud } = await supabase
+          .from('users')
+          .select('first_name')
+          .eq('email', supaSession.user.email.toLowerCase())
+          .single()
+        if (ud?.first_name && ud.first_name !== sess.firstName) {
+          const updated: UserSession = { ...sess, firstName: ud.first_name }
+          localStorage.setItem(LOCAL_SESSION_KEY, JSON.stringify(updated))
+          setSession(updated)
+        }
+      } catch {}
+    })()
   }, [router])
 
   if (!ready) {
