@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
         const cityNames = matches.map(m => m.location.name)
 
         const { error: sendErr } = await resend.emails.send({
-          from: 'HavenQuest <noreply@havenquest.co>',
+          from: 'HavenQuest <admin@havenquest.co>',
           to: email,
           subject: `Your HavenQuest Report is Ready, ${firstName}`,
           html: buildReportReadyEmailHtml(firstName, cityNames),

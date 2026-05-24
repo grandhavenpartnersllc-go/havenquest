@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
         const resend = new Resend(resendKey)
 
         await resend.emails.send({
-          from: 'HavenQuest <noreply@havenquest.co>',
+          from: 'HavenQuest <admin@havenquest.co>',
           to: email,
           subject: `Your matched realtors in ${city}, ${firstName}`,
           html: buildRealtorIntroHtml({
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
         const adminEmail = process.env.RESEND_ADMIN_EMAIL
         if (adminEmail) {
           await resend.emails.send({
-            from: 'HavenQuest <noreply@havenquest.co>',
+            from: 'HavenQuest <admin@havenquest.co>',
             to: adminEmail,
             subject: `New HavenQuest lead — ${city} — ${movingTimeline || 'unknown'}`,
             html: buildLeadNotificationHtml({

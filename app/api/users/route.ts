@@ -25,7 +25,7 @@ async function sendWelcomeAndRespond(
       matchScore: m.matchScore,
     }))
     await resend.emails.send({
-      from: 'HavenQuest <noreply@havenquest.co>',
+      from: 'HavenQuest <admin@havenquest.co>',
       to: email,
       subject: `Your HavenQuest report is ready, ${firstName}`,
       html: buildWelcomeEmailHtml({ firstName, email, matches: fakeMatches as never, setupLink }),
