@@ -32,6 +32,10 @@ export interface RealtorApplicationEmailData {
   yearsExperience: string
   brokerage: string
   profileUrl: string
+  trecLicenseNumber: string
+  licenseType: string
+  whyJoin?: string
+  preferredTier?: string
 }
 
 export function buildWelcomeEmailHtml(data: WelcomeEmailData): string {
@@ -120,6 +124,10 @@ export function buildRealtorApplicationHtml(data: RealtorApplicationEmailData): 
         <tr><td style="padding: 8px; border: 1px solid #E5E7EB; font-weight: 500;">Experience</td><td style="padding: 8px; border: 1px solid #E5E7EB;">${data.yearsExperience} years</td></tr>
         <tr><td style="padding: 8px; border: 1px solid #E5E7EB; font-weight: 500;">Brokerage</td><td style="padding: 8px; border: 1px solid #E5E7EB;">${data.brokerage}</td></tr>
         <tr><td style="padding: 8px; border: 1px solid #E5E7EB; font-weight: 500;">Profile URL</td><td style="padding: 8px; border: 1px solid #E5E7EB;">${data.profileUrl}</td></tr>
+        <tr><td style="padding: 8px; border: 1px solid #E5E7EB; font-weight: 500;">TREC License #</td><td style="padding: 8px; border: 1px solid #E5E7EB;">${data.trecLicenseNumber}</td></tr>
+        <tr><td style="padding: 8px; border: 1px solid #E5E7EB; font-weight: 500;">License Type</td><td style="padding: 8px; border: 1px solid #E5E7EB;">${data.licenseType}</td></tr>
+        ${data.preferredTier ? `<tr><td style="padding: 8px; border: 1px solid #E5E7EB; font-weight: 500;">Preferred Tier</td><td style="padding: 8px; border: 1px solid #E5E7EB;">${data.preferredTier}</td></tr>` : ''}
+        ${data.whyJoin ? `<tr><td style="padding: 8px; border: 1px solid #E5E7EB; font-weight: 500;">Why Join</td><td style="padding: 8px; border: 1px solid #E5E7EB;">${data.whyJoin}</td></tr>` : ''}
       </table>
     </div>
   `

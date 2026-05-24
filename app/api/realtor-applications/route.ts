@@ -13,10 +13,16 @@ function getSupabase() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, email, phone, markets, yearsExperience, brokerage, profileUrl } = body
+    const { name, email, phone, markets, yearsExperience, brokerage, profileUrl, trecLicenseNumber, licenseType, whyJoin, preferredTier } = body
 
     if (!name || !email) {
       return NextResponse.json({ error: 'Name and email are required' }, { status: 400 })
+    }
+    if (!trecLicenseNumber) {
+      return NextResponse.json({ error: 'TREC license number is required' }, { status: 400 })
+    }
+    if (!licenseType) {
+      return NextResponse.json({ error: 'License type is required' }, { status: 400 })
     }
 
     const supabase = getSupabase()
@@ -29,6 +35,10 @@ export async function POST(request: NextRequest) {
       years_experience: parseInt(yearsExperience, 10) || null,
       brokerage: brokerage || null,
       profile_url: profileUrl || null,
+      trec_license_number: trecLicenseNumber,
+      license_type: licenseType,
+      why_join: whyJoin || null,
+      preferred_tier: preferredTier || null,
       status: 'pending',
     })
 
@@ -40,7 +50,7 @@ export async function POST(request: NextRequest) {
         from: 'HavenQuest <noreply@havenquest.co>',
         to: adminEmail,
         subject: `New realtor application — ${name} — ${markets || 'markets TBD'}`,
-        html: buildRealtorApplicationHtml({ name, email, phone, markets, yearsExperience, brokerage, profileUrl }),
+        html: buildRealtorApplicationHtml({ name, email, phone, markets, yearsExperience, brokerage, profileUrl, trecLicenseNumber, licenseType, whyJoin, preferredTier }),
       }).catch(err => console.error('Resend error:', err))
     }
 

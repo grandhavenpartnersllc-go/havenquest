@@ -40,6 +40,7 @@ export default function ForRealtorsClient() {
     name: '', email: '', phone: '', markets: '',
     yearsExperience: '', brokerage: '', profileUrl: '',
     whyJoin: '', preferredTier: '',
+    trecLicenseNumber: '', licenseType: '',
   })
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -53,6 +54,14 @@ export default function ForRealtorsClient() {
     e.preventDefault()
     if (!formData.name || !formData.email) {
       setError('Name and email are required')
+      return
+    }
+    if (!formData.trecLicenseNumber) {
+      setError('TREC license number is required')
+      return
+    }
+    if (!formData.licenseType) {
+      setError('Please select a license type')
       return
     }
     setLoading(true)
@@ -221,6 +230,38 @@ export default function ForRealtorsClient() {
                 </div>
               ))}
 
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  Texas Real Estate License Number (TREC) <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="trecLicenseNumber"
+                  value={formData.trecLicenseNumber}
+                  onChange={handleChange}
+                  placeholder="e.g. 123456"
+                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all"
+                />
+                <p className="text-xs text-gray-400 mt-1.5">Your license will be verified at trec.texas.gov</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  License Type <span className="text-red-400">*</span>
+                </label>
+                <select
+                  name="licenseType"
+                  value={formData.licenseType}
+                  onChange={handleChange}
+                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all bg-white"
+                >
+                  <option value="">Select type…</option>
+                  <option value="Sales Agent">Sales Agent</option>
+                  <option value="Broker">Broker</option>
+                  <option value="Broker Associate">Broker Associate</option>
+                </select>
+              </div>
+
               <div className="sm:col-span-2">
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                   City/markets served <span className="text-red-400">*</span>
@@ -298,7 +339,7 @@ export default function ForRealtorsClient() {
               {
                 icon: '🏛️',
                 title: 'TREC License Verification',
-                desc: 'Every applicant\'s Texas Real Estate Commission license is confirmed active and in good standing before approval.',
+                desc: 'We verify every license directly through the Texas Real Estate Commission (TREC) database before approval — no self-reporting accepted.',
               },
               {
                 icon: '📋',
