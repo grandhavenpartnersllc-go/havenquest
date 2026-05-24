@@ -19,14 +19,14 @@ function formattedDate(): string {
 
 export async function POST(request: NextRequest) {
   try {
-    const { access_token } = await request.json()
-    if (!access_token) {
-      return new Response(JSON.stringify({ error: 'Missing token' }), { status: 400 })
+    const token = request.cookies.get('hq_auth')?.value
+    if (!token) {
+      return new Response(JSON.stringify({ error: 'Not authenticated' }), { status: 401 })
     }
 
     const supabase = getSupabase()
 
-    const { data: { user }, error: authErr } = await supabase.auth.getUser(access_token)
+    const { data: { user }, error: authErr } = await supabase.auth.getUser(token)
     if (authErr || !user?.email) {
       return new Response(JSON.stringify({ error: 'Invalid token' }), { status: 401 })
     }

@@ -154,14 +154,10 @@ export default function StarterPortal() {
   async function handleDownload() {
     setDlState('loading')
     try {
-      const supabase = createClient()
-      const { data: { session: s } } = await supabase.auth.getSession()
-      if (!s?.access_token) throw new Error('Not authenticated')
-
       const res = await fetch('/api/auth/download-report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ access_token: s.access_token }),
+        body: '{}',
       })
       if (!res.ok) throw new Error('Failed')
 
@@ -184,14 +180,10 @@ export default function StarterPortal() {
   async function handleEmailReport() {
     setEmailState('loading')
     try {
-      const supabase = createClient()
-      const { data: { session: s } } = await supabase.auth.getSession()
-      if (!s?.access_token) throw new Error('Not authenticated')
-
       const res = await fetch('/api/auth/send-report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ access_token: s.access_token, force: true }),
+        body: JSON.stringify({ force: true }),
       })
       if (!res.ok) throw new Error('Failed')
 

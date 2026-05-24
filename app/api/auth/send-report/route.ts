@@ -22,14 +22,17 @@ function formattedDate(): string {
 export async function POST(request: NextRequest) {
   let email = ''
   try {
-    const { access_token } = await request.json()
-    if (!access_token) {
-      return NextResponse.json({ error: 'Missing token' }, { status: 400 })
+    const body = await request.json().catch(() => ({}))
+    const force: boolean = body.force ?? false
+
+    const token = request.cookies.get('hq_auth')?.value
+    if (!token) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
 
     const supabase = getSupabase()
 
-    const { data: { user }, error: authErr } = await supabase.auth.getUser(access_token)
+    const { data: { user }, error: authErr } = await supabase.auth.getUser(token)
     if (authErr || !user?.email) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
@@ -46,7 +49,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    if (ud.report_emailed) {
+    if (ud.report_emailed && !force) {
       return NextResponse.json({ skipped: 'already_sent' })
     }
 
