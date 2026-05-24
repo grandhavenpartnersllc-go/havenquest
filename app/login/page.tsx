@@ -10,6 +10,7 @@ function LoginPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const errorParam = searchParams.get('error')
+  const messageParam = searchParams.get('message')
 
   const [email, setEmail] = useState(searchParams.get('email') ?? '')
   const [password, setPassword] = useState('')
@@ -101,7 +102,7 @@ function LoginPageContent() {
 
     const supabase = createClient()
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/callback`,
+      redirectTo: `${window.location.origin}/auth/reset-password`,
     })
 
     if (resetError) {
@@ -123,6 +124,12 @@ function LoginPageContent() {
         </Link>
 
         <div className="bg-white rounded-2xl p-8 mb-6" style={{ boxShadow: '0 4px 32px rgba(0,0,0,0.4)' }}>
+          {messageParam === 'password-updated' && (
+            <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 mb-5">
+              <p className="text-sm text-green-700 font-medium">Password updated. Please sign in.</p>
+            </div>
+          )}
+
           {mode === 'login' ? (
             <>
               <h1 className="text-xl font-bold text-gray-900 tracking-tight mb-1">
