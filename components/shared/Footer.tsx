@@ -28,9 +28,9 @@ export default function Footer() {
             <p className="text-white/70 text-xs font-bold uppercase tracking-widest mb-4">Cities</p>
             <ul className="space-y-2.5 text-sm">
               <li><Link href="/texas/austin-tx" className="hover:text-white/80 transition-colors">Austin</Link></li>
-              <li><Link href="/texas/frisco-tx" className="hover:text-white/80 transition-colors">Frisco</Link></li>
+              <li><Link href="/texas/dallas-tx" className="hover:text-white/80 transition-colors">Dallas</Link></li>
+              <li><Link href="/texas/houston-tx" className="hover:text-white/80 transition-colors">Houston</Link></li>
               <li><Link href="/texas/san-antonio-tx" className="hover:text-white/80 transition-colors">San Antonio</Link></li>
-              <li><Link href="/texas/new-braunfels-tx" className="hover:text-white/80 transition-colors">New Braunfels</Link></li>
             </ul>
           </div>
 
