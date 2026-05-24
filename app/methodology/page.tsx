@@ -99,6 +99,15 @@ export default function MethodologyPage() {
         <div className="max-w-3xl mx-auto px-4 py-10">
           <div className="space-y-5">
 
+            <p className="text-sm text-gray-500 leading-relaxed px-1">
+              HavenQuest scores every Texas city across 12 lifestyle categories using real,
+              third-party data sources — not editorial opinions or sponsored rankings. Each
+              category score is then weighted based on what you told us matters most: Must Haves
+              count three times as much as Would Be Nices, and anything you left unassigned doesn&apos;t
+              affect your results at all. The match percentage you see reflects your actual
+              priorities — not a generic livability index built for someone else.
+            </p>
+
             <section className="bg-white rounded-2xl border border-gray-100 p-6" style={cardStyle}>
               <h2 className="text-lg font-bold text-gray-900 tracking-tight mb-4">The 12 lifestyle categories</h2>
               <div className="grid sm:grid-cols-2 gap-3">
