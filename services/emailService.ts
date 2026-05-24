@@ -112,6 +112,28 @@ export function buildLeadNotificationHtml(data: LeadNotificationData): string {
   `
 }
 
+export function buildReportReadyEmailHtml(firstName: string, cityNames: string[]): string {
+  const cityList = cityNames.map(n => `<li style="margin-bottom:4px;">${n}, TX</li>`).join('')
+  return `
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;max-width:600px;margin:0 auto;color:#1A1A1A;">
+      <div style="background:#16120D;padding:32px;border-radius:12px 12px 0 0;">
+        <h1 style="color:#F0EDE6;margin:0;font-size:22px;font-weight:700;">Haven<span style="color:#B8912A;">Quest</span></h1>
+      </div>
+      <div style="padding:32px;background:#FFFFFF;border:1px solid #E5E7EB;">
+        <h2 style="font-size:20px;font-weight:600;margin:0 0 12px;">Welcome to HavenQuest, ${firstName}.</h2>
+        <p style="color:#4A4A4A;line-height:1.6;margin:0 0 16px;">Your Texas relocation report is ready and attached to this email as a PDF. It covers your top three matched cities based on your income, household, and priorities.</p>
+        <p style="color:#4A4A4A;line-height:1.6;margin:0 0 8px;">Your matches:</p>
+        <ul style="background:#F7F5F2;border-radius:8px;padding:14px 14px 14px 32px;margin:0 0 20px;">${cityList}</ul>
+        <p style="color:#4A4A4A;line-height:1.6;margin:0 0 20px;">Your private portal has the full breakdown — affordability, schools, market conditions, and local realtor connections — all in one place.</p>
+        <a href="${process.env.NEXT_PUBLIC_SITE_URL}/portal" style="display:inline-block;background:#1A5FA8;color:#FFFFFF;padding:13px 26px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">Go to My Portal →</a>
+      </div>
+      <div style="padding:16px 32px;background:#F7F5F2;border-radius:0 0 12px 12px;text-align:center;">
+        <p style="color:#9A8E82;font-size:12px;margin:0;">The HavenQuest Team · <a href="${process.env.NEXT_PUBLIC_SITE_URL}" style="color:#9A8E82;">havenquest.co</a></p>
+      </div>
+    </div>
+  `
+}
+
 export function buildRealtorApplicationHtml(data: RealtorApplicationEmailData): string {
   return `
     <div style="font-family: monospace; max-width: 600px; margin: 0 auto; color: #1A1A1A;">

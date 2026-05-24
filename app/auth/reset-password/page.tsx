@@ -66,6 +66,18 @@ export default function ResetPasswordPage() {
         setError(updateError.message)
         return
       }
+
+      // Fire-and-forget — send PDF report email without blocking navigation
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session?.access_token) {
+          fetch('/api/auth/send-report', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ access_token: session.access_token }),
+          }).catch(() => {})
+        }
+      })
+
       router.push('/login?message=password-updated')
     } catch {
       setError('Something went wrong. Please try again.')
