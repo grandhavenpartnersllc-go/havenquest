@@ -57,33 +57,15 @@ function LoginPageContent() {
       })
       console.log('[login] Cookie response status:', cookieRes.status)
 
-      // Write localStorage immediately using email prefix — do NOT block on a
-      // DB round-trip here, that was causing the login to hang when the users
-      // table query was slow or blocked by RLS.
-      const firstName = email.split('@')[0]
+      // Write localStorage with email-prefix as firstName.
+      // StarterPortal refreshes the real first_name from public.users on every
+      // portal load — no DB query needed here so nothing can block navigation.
       localStorage.setItem(LOCAL_SESSION_KEY, JSON.stringify({
         userId: data.user.id,
-        firstName,
+        firstName: email.split('@')[0],
         email: email.toLowerCase(),
         createdAt: new Date().toISOString(),
       }))
-
-      // Enrich firstName from DB after navigation — fire and forget.
-      ;(async () => {
-        try {
-          const { data: ud } = await supabase
-            .from('users')
-            .select('first_name')
-            .eq('email', email.toLowerCase())
-            .single()
-          if (ud?.first_name) {
-            const raw = localStorage.getItem(LOCAL_SESSION_KEY)
-            if (raw) {
-              localStorage.setItem(LOCAL_SESSION_KEY, JSON.stringify({ ...JSON.parse(raw), firstName: ud.first_name }))
-            }
-          }
-        } catch {}
-      })()
 
       console.log('[login] Redirecting to /portal')
       router.push('/portal')
