@@ -79,7 +79,7 @@ function LoginPageContent() {
       }))
 
       console.log('[login] Redirecting to /portal')
-      router.push('/portal')
+      window.location.assign('/portal')
     } catch (err) {
       console.error('[login] Unexpected error:', err)
       setError('An unexpected error occurred. Please try again.')
