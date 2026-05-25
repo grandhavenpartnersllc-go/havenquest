@@ -52,18 +52,16 @@ export default function HeroSection() {
             So, You&apos;re
           </span>
           <span
-            className="block"
-            style={{ fontSize: 'clamp(48px, 8.5vw, 96px)', color: '#B8912A' }}
+            className="block gradient-text-light"
+            style={{ fontSize: 'clamp(48px, 8.5vw, 96px)' }}
           >
             Choosin&apos; Texas.
           </span>
         </h1>
 
         {/* Subheading */}
-        <p className="text-lg md:text-xl text-white/45 max-w-[580px] mx-auto leading-relaxed mb-11">
-          Let&apos;s find your perfect Texas homestead. Tell us about your life and we&apos;ll
-          match you to the right community — with a full report, the right relationships,
-          and a guided path to make it a great experience.
+        <p className="text-lg md:text-xl text-white/45 max-w-[560px] mx-auto leading-relaxed mb-11">
+          Let&apos;s find your perfect Texas homestead — matched to your life, your budget, and your priorities.
         </p>
 
         {/* CTAs */}
@@ -85,11 +83,11 @@ export default function HeroSection() {
 
         {/* Stats row */}
         <div className="flex items-center justify-center gap-5 text-xs text-white/30 font-medium tracking-wide">
-          <span>Free analysis</span>
+          <span>Free Personalized Report</span>
           <span className="w-1 h-1 bg-white/20 rounded-full" />
-          <span>No account required</span>
+          <span>Private Portal Included</span>
           <span className="w-1 h-1 bg-white/20 rounded-full" />
-          <span>20 cities analyzed</span>
+          <span>Texas&apos; Most Sought-After Destinations</span>
         </div>
       </div>
     </section>
