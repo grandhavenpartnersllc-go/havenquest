@@ -38,18 +38,13 @@ export default function HeroSection() {
           20 Texas cities analyzed · Updated May 2026
         </div>
 
-        {/* Eyebrow */}
-        <p className="text-xs text-white/30 font-medium tracking-widest uppercase mb-4">
-          Inspired by the hit song
-        </p>
-
         {/* Headline */}
         <h1 className="font-bold leading-[1.05] tracking-tight mb-6">
           <span
-            className="block text-white"
-            style={{ fontSize: 'clamp(36px, 6vw, 68px)' }}
+            className="block text-white italic"
+            style={{ fontSize: 'clamp(36px, 6vw, 68px)', fontFamily: '"Times New Roman", Georgia, serif', fontWeight: 300 }}
           >
-            So, You&apos;re
+            So, you&apos;re
           </span>
           <span
             className="block gradient-text-light"
