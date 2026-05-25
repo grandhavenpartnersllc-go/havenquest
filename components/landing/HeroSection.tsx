@@ -38,21 +38,32 @@ export default function HeroSection() {
           20 Texas cities analyzed · Updated May 2026
         </div>
 
+        {/* Eyebrow */}
+        <p className="text-xs text-white/30 font-medium tracking-widest uppercase mb-4">
+          Inspired by the hit song
+        </p>
+
         {/* Headline */}
-        <h1
-          className="font-bold text-white leading-[1.03] tracking-tight mb-6"
-          style={{ fontSize: 'clamp(42px, 7vw, 80px)' }}
-        >
-          Find where your
-          <br />
-          life fits in{' '}
-          <span className="gradient-text-light">Texas</span>
+        <h1 className="font-bold leading-[1.05] tracking-tight mb-6">
+          <span
+            className="block text-white"
+            style={{ fontSize: 'clamp(36px, 6vw, 68px)' }}
+          >
+            So, You&apos;re
+          </span>
+          <span
+            className="block"
+            style={{ fontSize: 'clamp(48px, 8.5vw, 96px)', color: '#B8912A' }}
+          >
+            Choosin&apos; Texas.
+          </span>
         </h1>
 
         {/* Subheading */}
-        <p className="text-lg md:text-xl text-white/45 max-w-[520px] mx-auto leading-relaxed mb-11">
-          Match your income and lifestyle to the right Texas city —
-          then connect with the best realtors in your market.
+        <p className="text-lg md:text-xl text-white/45 max-w-[580px] mx-auto leading-relaxed mb-11">
+          Let&apos;s find your perfect Texas homestead. Tell us about your life and we&apos;ll
+          match you to the right community — with a full report, the right relationships,
+          and a guided path to make it a great experience.
         </p>
 
         {/* CTAs */}
