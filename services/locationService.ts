@@ -32,7 +32,7 @@ export function getRealtorsByCity(city: string): Realtor[] {
 }
 
 export function getFeaturedCities(count = 4): Location[] {
-  const featured = ['austin-tx', 'frisco-tx', 'san-antonio-tx', 'new-braunfels-tx']
+  const featured = ['frisco-tx', 'cedar-park-tx', 'the-woodlands-tx', 'new-braunfels-tx']
   return featured
     .map(id => texasCities.find(c => c.id === id))
     .filter((c): c is Location => c !== undefined)

@@ -2,7 +2,13 @@ import Link from 'next/link'
 import { getFeaturedCities } from '../../services/locationService'
 import MarketBadge from '../shared/MarketBadge'
 import TEARatingBadge from '../shared/TEARatingBadge'
-import { TIER_LABELS } from '../../utils/constants'
+
+const HIGHLIGHTS: Record<string, string> = {
+  'frisco-tx':       'Frisco ISD rated A — one of the top school districts in Texas',
+  'cedar-park-tx':   'Austin metro living with top-rated Leander ISD schools and a strong sense of community',
+  'the-woodlands-tx':'Premier master-planned community with exceptional trails, schools, and amenities',
+  'new-braunfels-tx':'Guadalupe River lifestyle meets Hill Country scenery — one of Texas\' fastest-growing cities',
+}
 
 export default function FeaturedCities() {
   const cities = getFeaturedCities(4)
@@ -30,20 +36,10 @@ export default function FeaturedCities() {
                 <TEARatingBadge rating={city.school.teaRating} size="sm" />
               </div>
 
-              <div className="mb-3">
-                <div className="flex items-baseline gap-1 mb-0.5">
-                  <span className="text-2xl font-bold text-accent tabular-nums">
-                    {city.scores.affordability * 10}
-                  </span>
-                  <span className="text-xs text-gray-400">/100</span>
-                </div>
-                <p className="text-xs text-gray-400">{TIER_LABELS[city.tier]}</p>
-              </div>
-
               <MarketBadge condition={city.market.marketCondition} />
 
-              <p className="text-xs text-gray-400 mt-3 leading-relaxed line-clamp-2">
-                {city.strengths[0]}
+              <p className="text-xs text-gray-500 mt-3 leading-relaxed line-clamp-2">
+                {HIGHLIGHTS[city.id] ?? city.strengths[0]}
               </p>
             </Link>
           ))}
