@@ -273,7 +273,7 @@ export default function StarterPortal() {
         {/* Match summary cards — or prompt to start a new search */}
         {matches.length > 0 ? (
           <section>
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-1.5">
               <p className="text-[10px] font-bold uppercase" style={{ color: GOLD, letterSpacing: '0.18em' }}>
                 Your Matched Cities
               </p>
@@ -306,7 +306,10 @@ export default function StarterPortal() {
                 </button>
               </div>
             </div>
-            <SavedMatches matches={matches} />
+            <p className="text-xs mb-3" style={{ color: '#9A8E82' }}>
+              Select + Compare on any two cities to compare them side by side
+            </p>
+            {profile && <SavedMatches matches={matches} profile={profile} />}
           </section>
         ) : (
           <section>

@@ -2,6 +2,7 @@ import React from 'react'
 import * as ReactPDF from '@react-pdf/renderer'
 import { CityMatch, LifestyleScores, UserProfile } from '../types'
 import { getMonthlyPropertyTax, getTotalMonthlyEstimate, getMonthlyIncomeRemaining } from './affordabilityService'
+import { LIFESTYLE_CATEGORIES } from '../utils/constants'
 
 const { Document, Page, View, Text, StyleSheet } = ReactPDF
 
@@ -138,6 +139,23 @@ const s = StyleSheet.create({
     paddingTop: 8,
   },
   footerText: { fontSize: 7.5, color: MUTED },
+
+  // Compare document
+  cmpIntroRow: { flexDirection: 'row', marginBottom: 20 },
+  cmpCityBlockA: { flex: 1, paddingRight: 14, borderRightWidth: 1, borderRightColor: DIVIDER },
+  cmpCityBlockB: { flex: 1, paddingLeft: 14 },
+  cmpCityName: { fontSize: 13, fontFamily: 'Helvetica-Bold', color: WARM },
+  cmpCityCounty: { fontSize: 7.5, color: MUTED, marginTop: 1 },
+  cmpMatchBadge: { backgroundColor: CARD, borderRadius: 3, paddingHorizontal: 6, paddingVertical: 2, marginTop: 5, alignSelf: 'flex-start' },
+  cmpMatchText: { fontSize: 8, fontFamily: 'Helvetica-Bold', color: WARM },
+  cmpTr: { flexDirection: 'row', paddingHorizontal: 12, paddingVertical: 5, borderBottomWidth: 1, borderBottomColor: DIVIDER },
+  cmpTrLast: { flexDirection: 'row', paddingHorizontal: 12, paddingVertical: 5 },
+  cmpTdLabel: { flex: 1, fontSize: 8, color: MUTED },
+  cmpTdVal: { width: 88, fontSize: 8, fontFamily: 'Helvetica-Bold', color: WARM, textAlign: 'right' },
+  cmpTdDim: { width: 88, fontSize: 8, fontFamily: 'Helvetica', color: MUTED, textAlign: 'right' },
+  cmpSummaryBox: { backgroundColor: DARK, borderRadius: 5, padding: 12, marginTop: 14 },
+  cmpSummaryLabel: { fontSize: 7, fontFamily: 'Helvetica-Bold', color: GOLD, letterSpacing: 1, marginBottom: 4 },
+  cmpSummaryText: { fontSize: 8.5, color: CREAM, lineHeight: 1.65 },
 })
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -435,4 +453,177 @@ function ReportDocument({ firstName, matches, profile, generatedDate }: Props) {
 
 export function createReportDocument(props: Props): React.ReactElement<ReactPDF.DocumentProps> {
   return <ReportDocument {...props} />
+}
+
+// ─── Compare Document ────────────────────────────────────────────────────────
+
+interface CompareProps {
+  cityA: CityMatch
+  cityB: CityMatch
+  profile: UserProfile
+  summary: string
+  generatedDate: string
+}
+
+function CompareDocument({ cityA, cityB, profile, summary, generatedDate }: CompareProps) {
+  const priorityCats = [
+    ...profile.mustHaves.map(k => ({ key: k, tag: 'Must Have' })),
+    ...profile.niceToHaves.map(k => ({ key: k, tag: 'Important' })),
+  ]
+
+  const domA = cityA.location.market.daysOnMarket
+  const domB = cityB.location.market.daysOnMarket
+  const domAWins = domA < domB
+  const domBWins = domB < domA
+
+  return (
+    <Document
+      title={`HavenQuest — ${cityA.location.name} vs ${cityB.location.name}`}
+      author="HavenQuest"
+    >
+      <Page size="A4" style={s.page}>
+
+        <View style={s.header}>
+          <View style={s.logoLine}>
+            <Text style={s.logoBlack}>Haven</Text>
+            <Text style={s.logoGold}>Quest</Text>
+          </View>
+          <Text style={s.headerSub}>City Comparison</Text>
+          <Text style={s.headerMeta}>
+            {cityA.location.name} vs {cityB.location.name}  ·  {generatedDate}
+          </Text>
+        </View>
+
+        <View style={s.body}>
+
+          {/* City intro */}
+          <View style={s.cmpIntroRow}>
+            <View style={s.cmpCityBlockA}>
+              <Text style={s.cmpCityName}>{cityA.location.name}</Text>
+              <Text style={s.cmpCityCounty}>{cityA.location.county} County, TX</Text>
+              <View style={s.cmpMatchBadge}>
+                <Text style={s.cmpMatchText}>{cityA.matchScore}% match</Text>
+              </View>
+            </View>
+            <View style={s.cmpCityBlockB}>
+              <Text style={s.cmpCityName}>{cityB.location.name}</Text>
+              <Text style={s.cmpCityCounty}>{cityB.location.county} County, TX</Text>
+              <View style={s.cmpMatchBadge}>
+                <Text style={s.cmpMatchText}>{cityB.matchScore}% match</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Affordability */}
+          <Text style={s.sectionLabel}>AFFORDABILITY</Text>
+          <View style={s.table}>
+            {([
+              { label: 'Est. monthly housing', a: cityA.estimatedMonthlyHousing, b: cityB.estimatedMonthlyHousing },
+              { label: 'Est. monthly total', a: cityA.estimatedMonthlyTotal, b: cityB.estimatedMonthlyTotal },
+            ] as const).map((row, idx, arr) => {
+              const aWins = row.a < row.b
+              const bWins = row.b < row.a
+              const isLast = idx === arr.length - 1
+              return (
+                <View key={row.label} style={isLast ? s.cmpTrLast : s.cmpTr}>
+                  <Text style={s.cmpTdLabel}>{row.label}</Text>
+                  <Text style={aWins ? s.cmpTdVal : s.cmpTdDim}>{money(row.a)}</Text>
+                  <Text style={bWins ? s.cmpTdVal : s.cmpTdDim}>{money(row.b)}</Text>
+                </View>
+              )
+            })}
+            <View style={s.cmpTrLast}>
+              <Text style={s.cmpTdLabel}>Housing burden</Text>
+              <Text style={[s.cmpTdVal, { color: cityA.affordabilityFlag ? '#EA580C' : '#2D7A4F' }]}>
+                {cityA.affordabilityFlag ? '>40%' : 'OK'}
+              </Text>
+              <Text style={[s.cmpTdVal, { color: cityB.affordabilityFlag ? '#EA580C' : '#2D7A4F' }]}>
+                {cityB.affordabilityFlag ? '>40%' : 'OK'}
+              </Text>
+            </View>
+          </View>
+
+          {/* Your priorities */}
+          {priorityCats.length > 0 && (
+            <View>
+              <Text style={s.sectionLabel}>YOUR PRIORITIES</Text>
+              <View style={s.table}>
+                {priorityCats.map(({ key, tag }, idx) => {
+                  const cat = LIFESTYLE_CATEGORIES.find(c => c.key === key)
+                  const scoreA = cityA.location.scores[key as keyof LifestyleScores]
+                  const scoreB = cityB.location.scores[key as keyof LifestyleScores]
+                  const aWins = scoreA > scoreB
+                  const bWins = scoreB > scoreA
+                  const isLast = idx === priorityCats.length - 1
+                  return (
+                    <View key={key} style={isLast ? s.cmpTrLast : s.cmpTr}>
+                      <Text style={s.cmpTdLabel}>{cat?.label ?? key} ({tag})</Text>
+                      <Text style={aWins ? [s.cmpTdVal, { color: scoreColor(scoreA) }] : s.cmpTdDim}>
+                        {scoreA}/10
+                      </Text>
+                      <Text style={bWins ? [s.cmpTdVal, { color: scoreColor(scoreB) }] : s.cmpTdDim}>
+                        {scoreB}/10
+                      </Text>
+                    </View>
+                  )
+                })}
+              </View>
+            </View>
+          )}
+
+          {/* Market & Schools */}
+          <Text style={s.sectionLabel}>MARKET & SCHOOLS</Text>
+          <View style={s.table}>
+            <View style={s.cmpTr}>
+              <Text style={s.cmpTdLabel}>Market</Text>
+              <Text style={[s.cmpTdVal, { color: marketColor(cityA.location.market.marketCondition) }]}>
+                {cityA.location.market.marketCondition.replace(' Market', '')}
+              </Text>
+              <Text style={[s.cmpTdVal, { color: marketColor(cityB.location.market.marketCondition) }]}>
+                {cityB.location.market.marketCondition.replace(' Market', '')}
+              </Text>
+            </View>
+            <View style={s.cmpTr}>
+              <Text style={s.cmpTdLabel}>Days on market</Text>
+              <Text style={domAWins ? s.cmpTdVal : s.cmpTdDim}>{domA}d</Text>
+              <Text style={domBWins ? s.cmpTdVal : s.cmpTdDim}>{domB}d</Text>
+            </View>
+            <View style={s.cmpTr}>
+              <Text style={s.cmpTdLabel}>School (TEA)</Text>
+              <Text style={[s.cmpTdVal, { color: gradeColor(cityA.location.school.teaRating) }]}>
+                {cityA.location.school.teaRating}
+              </Text>
+              <Text style={[s.cmpTdVal, { color: gradeColor(cityB.location.school.teaRating) }]}>
+                {cityB.location.school.teaRating}
+              </Text>
+            </View>
+            <View style={s.cmpTrLast}>
+              <Text style={s.cmpTdLabel}>District</Text>
+              <Text style={s.cmpTdDim}>{cityA.location.school.primaryISD}</Text>
+              <Text style={s.cmpTdDim}>{cityB.location.school.primaryISD}</Text>
+            </View>
+          </View>
+
+          {/* Bottom line */}
+          {summary ? (
+            <View style={s.cmpSummaryBox}>
+              <Text style={s.cmpSummaryLabel}>BOTTOM LINE</Text>
+              <Text style={s.cmpSummaryText}>{summary}</Text>
+            </View>
+          ) : null}
+
+        </View>
+
+        <View style={s.footer} fixed>
+          <Text style={s.footerText}>Generated by HavenQuest · havenquest.co</Text>
+          <Text style={s.footerText}>{generatedDate}</Text>
+        </View>
+
+      </Page>
+    </Document>
+  )
+}
+
+export function createCompareDocument(props: CompareProps): React.ReactElement<ReactPDF.DocumentProps> {
+  return <CompareDocument {...props} />
 }
