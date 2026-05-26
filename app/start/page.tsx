@@ -62,6 +62,11 @@ export default function StartPage() {
         <div className="bg-surface px-4 py-12">
           <div className="max-w-2xl mx-auto">
 
+            {/* Intro */}
+            <p className="text-base text-gray-600 leading-relaxed mb-10">
+              You&apos;ve made a big decision — Texas is calling. But Texas is vast, diverse, and full of communities that fit completely different lifestyles, budgets, and priorities. Knowing which one is actually right for your family isn&apos;t obvious. That&apos;s exactly what we&apos;re here for. Tell us a little about yourself and we&apos;ll do the matching for you.
+            </p>
+
             {/* Steps */}
             <p
               className="text-[10px] font-bold uppercase mb-5"
