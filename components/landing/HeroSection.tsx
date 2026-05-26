@@ -62,17 +62,17 @@ export default function HeroSection() {
         {/* CTAs */}
         <div className="flex flex-col sm:flex-row gap-3 justify-center mb-14">
           <Link
-            href="/explore"
-            className="inline-flex items-center justify-center gap-2 bg-white text-gray-950 px-8 py-4 rounded-xl font-bold text-sm tracking-tight hover:bg-gray-100 transition-colors"
-            style={{ boxShadow: '0 0 0 1px rgba(255,255,255,0.15), 0 8px 24px rgba(0,0,0,0.40)' }}
-          >
-            Find My City →
-          </Link>
-          <Link
-            href="/metro"
-            className="inline-flex items-center justify-center gap-2 bg-white/5 text-white/70 border border-white/10 px-8 py-4 rounded-xl font-semibold text-sm tracking-tight transition-all hover:bg-white/10 hover:text-white hover:border-white/20"
+            href="/metro-start"
+            className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-sm tracking-tight transition-opacity hover:opacity-85"
+            style={{ backgroundColor: '#60B8FF', color: '#08101C', boxShadow: '0 0 0 1px rgba(96,184,255,0.3), 0 8px 24px rgba(96,184,255,0.25)' }}
           >
             I know my metro
+          </Link>
+          <Link
+            href="/start"
+            className="inline-flex items-center justify-center gap-2 bg-white/5 text-white/70 border border-white/10 px-8 py-4 rounded-xl font-semibold text-sm tracking-tight transition-all hover:bg-white/10 hover:text-white hover:border-white/20"
+          >
+            Find My City →
           </Link>
         </div>
 
