@@ -1,33 +1,24 @@
 'use client'
 
 import { useState } from 'react'
-import { Check } from 'lucide-react'
+import { Check, DollarSign, LayoutList, Clock, MapPin, CheckCircle, ShieldCheck, FileText, Star } from 'lucide-react'
 
-const tiers = [
+const partnerTiers = [
   {
-    name: 'Standard',
-    price: '$99/month',
-    features: ['City-level territory', 'Standard placement', 'Lead notifications'],
-    cta: 'Apply for Standard',
-    featured: false,
+    name: 'Market Partner',
+    description: 'For realtors in primary Texas metros.',
   },
   {
-    name: 'Professional',
-    price: '$199/month',
-    features: ['Zip code level territory', 'Priority placement', 'Lead notifications', 'Performance stats dashboard'],
-    cta: 'Apply for Professional',
-    featured: true,
+    name: 'Growth Partner',
+    description: 'For realtors in secondary and suburban markets.',
   },
   {
-    name: 'Elite',
-    price: '$349/month',
-    features: ['Exclusive zip (1–2 agents)', 'Featured with photo/bio', 'Lead notifications', 'Full analytics', 'Monthly co-branded market report'],
-    cta: 'Apply for Elite',
-    featured: false,
+    name: 'Community Partner',
+    description: 'For realtors in smaller and emerging markets.',
   },
 ]
 
-const vettingStandards = [
+const minQualifications = [
   'Top 5% of Texas realtors only',
   'Verified transaction history',
   'Active Texas real estate license',
@@ -39,7 +30,7 @@ export default function ForRealtorsClient() {
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '', markets: '',
     yearsExperience: '', brokerage: '', profileUrl: '',
-    whyJoin: '', preferredTier: '',
+    whyJoin: '',
     trecLicenseNumber: '', licenseType: '',
   })
   const [loading, setLoading] = useState(false)
@@ -111,14 +102,16 @@ export default function ForRealtorsClient() {
           <h2 className="text-2xl font-bold text-gray-900 tracking-tight text-center mb-7">Why these leads are different</h2>
           <div className="grid sm:grid-cols-2 gap-4">
             {[
-              { icon: '💰', title: 'Income verified by user', desc: 'Annual household income entered by the user — not estimated or scraped.' },
-              { icon: '⚖️', title: 'Lifestyle priorities documented', desc: '12 categories ranked — know what matters most before your first call.' },
-              { icon: '📅', title: 'Timeline stated', desc: 'Within 3 months to just exploring — so you can prioritize the right leads.' },
-              { icon: '📍', title: 'City match confirmed', desc: 'They selected your market. Not a general inquiry — a deliberate choice.' },
-              { icon: '✅', title: 'Serious intent', desc: 'Completed a multi-step qualification process. Higher conversion by design.' },
+              { icon: DollarSign, title: 'Income verified by user', desc: 'Annual household income entered by the user — not estimated or scraped.' },
+              { icon: LayoutList, title: 'Lifestyle priorities documented', desc: '12 categories ranked — know what matters most before your first call.' },
+              { icon: Clock, title: 'Timeline stated', desc: 'Within 3 months to just exploring — so you can prioritize the right leads.' },
+              { icon: MapPin, title: 'City match confirmed', desc: 'They selected your market. Not a general inquiry — a deliberate choice.' },
+              { icon: CheckCircle, title: 'Serious intent', desc: 'Completed a multi-step qualification process. Higher conversion by design.' },
             ].map(item => (
               <div key={item.title} className="card-city bg-white rounded-2xl border border-gray-100 p-5">
-                <div className="text-2xl mb-2">{item.icon}</div>
+                <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center mb-3">
+                  <item.icon size={17} className="text-accent" />
+                </div>
                 <h3 className="font-bold text-gray-900 tracking-tight mb-1">{item.title}</h3>
                 <p className="text-sm text-gray-500 leading-relaxed">{item.desc}</p>
               </div>
@@ -126,61 +119,41 @@ export default function ForRealtorsClient() {
           </div>
         </section>
 
-        {/* Subscription tiers */}
+        {/* Partnership tiers */}
         <section>
-          <h2 className="text-2xl font-bold text-gray-900 tracking-tight text-center mb-8">Subscription tiers</h2>
+          <h2 className="text-2xl font-bold text-gray-900 tracking-tight text-center mb-2">Partnership Tiers</h2>
+          <p className="text-gray-500 text-sm text-center max-w-lg mx-auto mb-8">
+            HavenQuest partners with realtors across three tiers based on market size and experience level. Partnership details and pricing are finalized during the personal interview process.
+          </p>
           <div className="grid md:grid-cols-3 gap-4">
-            {tiers.map(tier => (
+            {partnerTiers.map(tier => (
               <div
                 key={tier.name}
-                className={`bg-white rounded-2xl border p-6 flex flex-col transition-all ${
-                  tier.featured ? 'border-accent' : 'border-gray-100'
-                }`}
-                style={{
-                  boxShadow: tier.featured
-                    ? '0 2px 4px rgba(0,0,0,0.04), 0 8px 24px rgba(26,95,168,0.14)'
-                    : '0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06)',
-                }}
+                className="bg-white rounded-2xl border border-gray-100 p-6 flex flex-col"
+                style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06)' }}
               >
-                {tier.featured && (
-                  <div className="bg-accent text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full self-start mb-3">
-                    Most popular
-                  </div>
-                )}
-                <h3 className="font-bold text-gray-900 tracking-tight text-lg mb-1">{tier.name}</h3>
-                <p className="text-2xl font-bold text-accent tabular-nums mb-4">{tier.price}</p>
-                <ul className="space-y-2 flex-1 mb-6">
-                  {tier.features.map(f => (
-                    <li key={f} className="flex items-center gap-2 text-sm text-gray-500">
-                      <Check size={13} className="text-green-500 shrink-0" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <a
-                  href="#apply"
-                  className={`block text-center py-3 rounded-xl font-bold text-sm transition-colors ${
-                    tier.featured
-                      ? 'bg-accent text-white hover:bg-[#154d8a]'
-                      : 'border border-gray-200 text-gray-700 hover:border-accent hover:text-accent hover:bg-blue-50/50'
-                  }`}
-                >
-                  {tier.cta}
-                </a>
+                <div className="inline-flex self-start items-center bg-gray-100 text-gray-400 text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full mb-4">
+                  Details discussed in interview
+                </div>
+                <h3 className="font-bold text-gray-900 tracking-tight text-lg mb-2">{tier.name}</h3>
+                <p className="text-sm text-gray-500 leading-relaxed">{tier.description}</p>
               </div>
             ))}
           </div>
+          <p className="text-sm text-gray-400 text-center mt-6 max-w-xl mx-auto leading-relaxed">
+            We are currently onboarding our founding partner class. Partnership structure details are provided during the personal interview. Apply below to start the conversation.
+          </p>
         </section>
 
-        {/* Vetting standards */}
+        {/* Minimum qualifications */}
         <section>
-          <h2 className="text-2xl font-bold text-gray-900 tracking-tight text-center mb-6">Vetting standards</h2>
+          <h2 className="text-2xl font-bold text-gray-900 tracking-tight text-center mb-6">Minimum Qualifications</h2>
           <div className="bg-white rounded-2xl border border-gray-100 p-6" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06)' }}>
             <p className="text-gray-400 text-sm mb-5">
               HavenQuest only partners with agents who meet our quality bar. Every realtor in our network passes:
             </p>
             <ul className="space-y-3">
-              {vettingStandards.map(s => (
+              {minQualifications.map(s => (
                 <li key={s} className="flex items-center gap-3">
                   <Check size={15} className="text-green-500 shrink-0" />
                   <span className="text-sm text-gray-700">{s}</span>
@@ -278,24 +251,6 @@ export default function ForRealtorsClient() {
 
               <div className="sm:col-span-2">
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                  Preferred subscription tier
-                </label>
-                <select
-                  name="preferredTier"
-                  value={formData.preferredTier}
-                  onChange={handleChange}
-                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all bg-white"
-                >
-                  <option value="">Select a tier…</option>
-                  <option value="Standard">Standard — $99/month</option>
-                  <option value="Professional">Professional — $199/month</option>
-                  <option value="Elite">Elite — $349/month</option>
-                  <option value="Unsure">Not sure yet</option>
-                </select>
-              </div>
-
-              <div className="sm:col-span-2">
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                   Why do you want to join HavenQuest?
                 </label>
                 <textarea
@@ -337,17 +292,17 @@ export default function ForRealtorsClient() {
           <div className="grid sm:grid-cols-3 gap-4">
             {[
               {
-                icon: '🏛️',
+                icon: ShieldCheck,
                 title: 'TREC License Verification',
                 desc: 'We verify every license directly through the Texas Real Estate Commission (TREC) database before approval — no self-reporting accepted.',
               },
               {
-                icon: '📋',
+                icon: FileText,
                 title: 'Transaction History Confirmed',
                 desc: 'We review closed transaction records to ensure partners meet our minimum production standards.',
               },
               {
-                icon: '⭐',
+                icon: Star,
                 title: 'Client Reviews Validated',
                 desc: 'Third-party reviews on Zillow, Google, and Realtor.com are checked to confirm a strong client satisfaction record.',
               },
@@ -357,7 +312,11 @@ export default function ForRealtorsClient() {
                 className="bg-white rounded-2xl border border-gray-100 p-6 text-center"
                 style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06)' }}
               >
-                <div className="text-3xl mb-3">{item.icon}</div>
+                <div className="flex justify-center mb-4">
+                  <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center">
+                    <item.icon size={22} className="text-accent" />
+                  </div>
+                </div>
                 <h3 className="font-bold text-gray-900 tracking-tight mb-2">{item.title}</h3>
                 <p className="text-sm text-gray-500 leading-relaxed">{item.desc}</p>
               </div>
