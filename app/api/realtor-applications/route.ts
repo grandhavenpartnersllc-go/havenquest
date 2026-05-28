@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
       name,
       email: email.toLowerCase(),
       phone: phone || null,
-      markets: markets || null,
+      market_specialty: markets || null,
       years_experience: parseInt(yearsExperience, 10) || null,
       brokerage: brokerage || null,
       profile_url: profileUrl || null,
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
         from: 'HavenQuest <admin@send.havenquest.co>',
         to: 'grandhavenpartners.llc@gmail.com',
         subject: 'New Realtor Application — HavenQuest',
-        html: buildRealtorApplicationHtml({ name, email, phone, markets, brokerage, trecLicenseNumber }),
+        html: buildRealtorApplicationHtml({ name, email, phone, marketSpecialty: markets, brokerage, trecLicenseNumber }),
       }).catch(err => console.error('Resend admin notification error:', err))
     }
 

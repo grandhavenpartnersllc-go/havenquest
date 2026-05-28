@@ -28,7 +28,7 @@ export interface RealtorApplicationEmailData {
   name: string
   email: string
   phone: string
-  markets: string
+  marketSpecialty: string
   brokerage: string
   trecLicenseNumber: string
 }
@@ -140,7 +140,7 @@ export function buildRealtorApplicationHtml(data: RealtorApplicationEmailData): 
         <tr><td style="padding: 8px; border: 1px solid #E5E7EB; font-weight: 500;">Email</td><td style="padding: 8px; border: 1px solid #E5E7EB;">${data.email}</td></tr>
         <tr><td style="padding: 8px; border: 1px solid #E5E7EB; font-weight: 500;">Phone</td><td style="padding: 8px; border: 1px solid #E5E7EB;">${data.phone || '—'}</td></tr>
         <tr><td style="padding: 8px; border: 1px solid #E5E7EB; font-weight: 500;">Brokerage</td><td style="padding: 8px; border: 1px solid #E5E7EB;">${data.brokerage || '—'}</td></tr>
-        <tr><td style="padding: 8px; border: 1px solid #E5E7EB; font-weight: 500;">Markets Served</td><td style="padding: 8px; border: 1px solid #E5E7EB;">${data.markets || '—'}</td></tr>
+        <tr><td style="padding: 8px; border: 1px solid #E5E7EB; font-weight: 500;">Market Specialty</td><td style="padding: 8px; border: 1px solid #E5E7EB;">${data.marketSpecialty || '—'}</td></tr>
         <tr><td style="padding: 8px; border: 1px solid #E5E7EB; font-weight: 500;">TREC License #</td><td style="padding: 8px; border: 1px solid #E5E7EB;">${data.trecLicenseNumber}</td></tr>
       </table>
     </div>
