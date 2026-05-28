@@ -24,15 +24,15 @@ const commitments = [
   },
   {
     icon: Heart,
-    title: 'Family First Standard',
-    desc: 'Every interaction with a HavenQuest family reflects the standard they were promised. Their experience is always the priority.',
+    title: 'People First Standard',
+    desc: 'Every interaction with a Future Texan reflects the standard they were promised. Their experience is always the priority.',
   },
 ]
 
 const introSteps = [
   {
     number: '01',
-    desc: 'The family confirms their city match and selects their realtor from a curated anonymous profile. They choose based on experience and fit — not a photo or a sales pitch.',
+    desc: 'The Future Texan confirms their city match and selects their realtor from a curated anonymous profile. They choose based on experience and fit — not a photo or a sales pitch.',
   },
   {
     number: '02',
@@ -40,7 +40,7 @@ const introSteps = [
   },
   {
     number: '03',
-    desc: 'You take it from there. The family is prepared, qualified, and ready. Your job is to be the professional they were promised.',
+    desc: 'You take it from there. They are prepared, qualified, and ready. Your job is to be the professional they were promised.',
   },
 ]
 
@@ -126,23 +126,23 @@ export default function ForRealtorsClient() {
             HavenQuest for Realtors
           </div>
           <h1 className="text-[42px] sm:text-5xl font-bold text-white leading-[1.06] tracking-tight mb-8">
-            The most qualified relocation leads in Texas
+            The best realtors don&apos;t chase leads. They earn introductions.
           </h1>
           <div className="space-y-5 text-white/55 text-[15px] leading-relaxed max-w-2xl">
             <p>
-              At HavenQuest, the families we serve come first. Always.
+              At HavenQuest, the people we serve come first. Always.
             </p>
             <p>
-              Future Texans — the people who trust us to guide one of the biggest decisions of their lives — have done serious work to get to this moment. They have studied the cities. They have done the math on their budget. They have told us what matters most to their family. They have confirmed where they want to build their next chapter.
+              Future Texans — the people who trust us to guide one of the biggest decisions of their lives — have done serious work to get to this moment. They have studied the cities. They have done the math on their budget. They have told us what matters most to them. They have confirmed where they want to build their next chapter.
             </p>
             <p>
               When they are ready for a realtor, we do not send them a list. We make one introduction. One trusted professional, personally selected for their market, their price point, and their situation. No competition. No pressure. Just the right person at the right time.
             </p>
             <p>
-              That is the standard we hold our partners to — because that is the standard our families deserve.
+              That is the standard we hold our partners to — because that is the standard every Future Texan deserves.
             </p>
             <p>
-              We are building that partner network across Texas now. The bar is high because the trust placed in us is high. If you are among the best in your market and you believe every relocating family deserves a world class experience — we would like to hear from you.
+              We are building that partner network across Texas now. The bar is high because the trust placed in us is high. If you are among the best in your market and you believe every person relocating to Texas deserves a world class experience — we would like to hear from you.
             </p>
           </div>
         </div>
@@ -221,7 +221,7 @@ export default function ForRealtorsClient() {
         {/* Trust statement + Minimum qualifications */}
         <section>
           <p className="text-gray-600 text-[15px] leading-relaxed text-center max-w-2xl mx-auto mb-10">
-            Every realtor in the HavenQuest network has been personally interviewed by our team — not just verified on paper. The families we serve deserve to know that the person guiding them home has been held to a standard, not just checked against a database.
+            Every realtor in the HavenQuest network has been personally interviewed by our team — not just verified on paper. Every Future Texan deserves to know that the person guiding them home has been held to a standard, not just checked against a database.
           </p>
           <h2 className="text-2xl font-bold text-gray-900 tracking-tight text-center mb-6">Minimum Qualifications</h2>
           <div className="bg-white rounded-2xl border border-gray-100 p-6" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06)' }}>

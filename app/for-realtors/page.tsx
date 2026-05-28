@@ -4,11 +4,11 @@ import Footer from '../../components/shared/Footer'
 import ForRealtorsClient from '../../components/for-realtors/ForRealtorsClient'
 
 export const metadata: Metadata = {
-  title: 'For Texas Realtors — Join HavenQuest | Pre-Qualified Relocation Leads',
-  description: 'Join the HavenQuest realtor network. Receive pre-qualified Texas relocation leads with income, budget, lifestyle priorities, and timeline already documented.',
+  title: 'For Texas Realtors — Join HavenQuest | Earn Introductions',
+  description: 'HavenQuest partners with the best realtors in Texas to serve Future Texans — people making one of the biggest decisions of their lives. No lead chasing. One introduction. One trusted partner per market.',
   openGraph: {
     title: 'HavenQuest for Texas Realtors',
-    description: 'The most qualified relocation leads in Texas — income verified, priorities documented, city confirmed.',
+    description: 'The best realtors don\'t chase leads. They earn introductions. Join the HavenQuest partner network in Texas.',
     url: 'https://havenquest.co/for-realtors',
     siteName: 'HavenQuest',
     type: 'website',
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'HavenQuest for Texas Realtors',
-    description: 'Pre-qualified relocation leads for top Texas realtors.',
+    description: 'The best realtors don\'t chase leads. They earn introductions. Join the HavenQuest partner network in Texas.',
   },
 }
 
