@@ -35,7 +35,7 @@ export default function HeroSection() {
         {/* Badge */}
         <div className="inline-flex items-center gap-2.5 border border-white/10 bg-white/5 text-blue-300/80 text-xs font-semibold px-4 py-1.5 rounded-full mb-9 tracking-wide">
           <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full" />
-          20 Texas cities analyzed · Updated May 2026
+          5 metros · 48 submarkets · Updated May 2026
         </div>
 
         {/* Headline */}

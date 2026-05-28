@@ -67,7 +67,7 @@ export default function ExplorePage() {
               Step {step + 1} of {STEPS.length} · {STEPS[step]}
             </p>
             <h1 className="text-2xl font-bold text-white tracking-tight">Find your Texas city</h1>
-            <p className="text-white/40 text-sm mt-1.5">Across all 20 cities in our database</p>
+            <p className="text-white/40 text-sm mt-1.5">Across 5 Texas metros and 48 submarkets</p>
           </div>
         </div>
 
