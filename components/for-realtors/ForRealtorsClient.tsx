@@ -1,7 +1,48 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, DollarSign, LayoutList, Clock, MapPin, CheckCircle, ShieldCheck, FileText, Star } from 'lucide-react'
+import { Check, Clock, UserCheck, Shield, Heart, ShieldCheck, FileText, Star } from 'lucide-react'
+
+const GOLD = '#B8912A'
+const DARK = '#08101C'
+
+const commitments = [
+  {
+    icon: Clock,
+    title: '24-Hour Response',
+    desc: 'Every HavenQuest introduction is acknowledged within 24 hours. No exceptions.',
+  },
+  {
+    icon: UserCheck,
+    title: 'Personal Introduction',
+    desc: 'Every buyer is introduced personally — not delivered as a cold lead. You will know who they are and why they chose your market before the first conversation.',
+  },
+  {
+    icon: Shield,
+    title: 'One Partner Per Market',
+    desc: 'You are not competing with other agents for the same buyer. HavenQuest maintains exclusive placement per buyer pool per market.',
+  },
+  {
+    icon: Heart,
+    title: 'Family First Standard',
+    desc: 'Every interaction with a HavenQuest family reflects the standard they were promised. Their experience is always the priority.',
+  },
+]
+
+const introSteps = [
+  {
+    number: '01',
+    desc: 'The family confirms their city match and selects their realtor from a curated anonymous profile. They choose based on experience and fit — not a photo or a sales pitch.',
+  },
+  {
+    number: '02',
+    desc: 'HavenQuest makes a warm personal introduction. Both parties receive context before the first conversation.',
+  },
+  {
+    number: '03',
+    desc: 'You take it from there. The family is prepared, qualified, and ready. Your job is to be the professional they were promised.',
+  },
+]
 
 const partnerTiers = [
   {
@@ -80,35 +121,42 @@ export default function ForRealtorsClient() {
     <div>
       {/* Dark banner */}
       <div className="bg-[#08101C] border-b border-white/8 px-4 py-14">
-        <div className="max-w-4xl mx-auto text-center">
+        <div className="max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2 border border-white/10 bg-white/5 text-blue-300/70 text-[11px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-7">
             HavenQuest for Realtors
           </div>
-          <h1 className="text-[42px] sm:text-5xl font-bold text-white leading-[1.06] tracking-tight mb-4">
+          <h1 className="text-[42px] sm:text-5xl font-bold text-white leading-[1.06] tracking-tight mb-8">
             The most qualified relocation leads in Texas
           </h1>
-          <p className="text-white/45 text-lg max-w-xl mx-auto leading-relaxed">
-            HavenQuest users tell us their income, budget, household size, lifestyle priorities,
-            and timeline before they ever speak to a realtor. That&apos;s the lead you receive.
-          </p>
+          <div className="space-y-5 text-white/55 text-[15px] leading-relaxed max-w-2xl">
+            <p>
+              At HavenQuest, the families we serve come first. Always.
+            </p>
+            <p>
+              Future Texans — the people who trust us to guide one of the biggest decisions of their lives — have done serious work to get to this moment. They have studied the cities. They have done the math on their budget. They have told us what matters most to their family. They have confirmed where they want to build their next chapter.
+            </p>
+            <p>
+              When they are ready for a realtor, we do not send them a list. We make one introduction. One trusted professional, personally selected for their market, their price point, and their situation. No competition. No pressure. Just the right person at the right time.
+            </p>
+            <p>
+              That is the standard we hold our partners to — because that is the standard our families deserve.
+            </p>
+            <p>
+              We are building that partner network across Texas now. The bar is high because the trust placed in us is high. If you are among the best in your market and you believe every relocating family deserves a world class experience — we would like to hear from you.
+            </p>
+          </div>
         </div>
       </div>
 
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 py-12 space-y-12">
 
-        {/* Why leads are different */}
+        {/* What Our Partners Commit To */}
         <section>
-          <h2 className="text-2xl font-bold text-gray-900 tracking-tight text-center mb-7">Why these leads are different</h2>
+          <h2 className="text-2xl font-bold text-gray-900 tracking-tight text-center mb-7">What Our Partners Commit To</h2>
           <div className="grid sm:grid-cols-2 gap-4">
-            {[
-              { icon: DollarSign, title: 'Income verified by user', desc: 'Annual household income entered by the user — not estimated or scraped.' },
-              { icon: LayoutList, title: 'Lifestyle priorities documented', desc: '12 categories ranked — know what matters most before your first call.' },
-              { icon: Clock, title: 'Timeline stated', desc: 'Within 3 months to just exploring — so you can prioritize the right leads.' },
-              { icon: MapPin, title: 'City match confirmed', desc: 'They selected your market. Not a general inquiry — a deliberate choice.' },
-              { icon: CheckCircle, title: 'Serious intent', desc: 'Completed a multi-step qualification process. Higher conversion by design.' },
-            ].map(item => (
-              <div key={item.title} className="card-city bg-white rounded-2xl border border-gray-100 p-5">
+            {commitments.map(item => (
+              <div key={item.title} className="bg-white rounded-2xl border border-gray-100 p-5" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06)' }}>
                 <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center mb-3">
                   <item.icon size={17} className="text-accent" />
                 </div>
@@ -145,8 +193,36 @@ export default function ForRealtorsClient() {
           </p>
         </section>
 
-        {/* Minimum qualifications */}
+        {/* How the Introduction Works */}
         <section>
+          <h2 className="text-2xl font-bold text-gray-900 tracking-tight text-center mb-8">How the Introduction Works</h2>
+          <div className="space-y-4">
+            {introSteps.map(step => (
+              <div
+                key={step.number}
+                className="bg-white rounded-2xl p-6 flex gap-5"
+                style={{
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.05), 0 4px 20px rgba(0,0,0,0.07)',
+                  borderLeft: `3px solid ${GOLD}`,
+                }}
+              >
+                <div
+                  className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5"
+                  style={{ backgroundColor: DARK, color: GOLD }}
+                >
+                  {step.number}
+                </div>
+                <p className="text-sm text-gray-600 leading-relaxed self-center">{step.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Trust statement + Minimum qualifications */}
+        <section>
+          <p className="text-gray-600 text-[15px] leading-relaxed text-center max-w-2xl mx-auto mb-10">
+            Every realtor in the HavenQuest network has been personally interviewed by our team — not just verified on paper. The families we serve deserve to know that the person guiding them home has been held to a standard, not just checked against a database.
+          </p>
           <h2 className="text-2xl font-bold text-gray-900 tracking-tight text-center mb-6">Minimum Qualifications</h2>
           <div className="bg-white rounded-2xl border border-gray-100 p-6" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06)' }}>
             <p className="text-gray-400 text-sm mb-5">
@@ -286,7 +362,7 @@ export default function ForRealtorsClient() {
           )}
         </section>
 
-        {/* Trust section */}
+        {/* How we verify every partner */}
         <section>
           <h2 className="text-2xl font-bold text-gray-900 tracking-tight text-center mb-6">How we verify every partner</h2>
           <div className="grid sm:grid-cols-3 gap-4">
