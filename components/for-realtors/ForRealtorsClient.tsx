@@ -69,7 +69,7 @@ const minQualifications = [
 
 export default function ForRealtorsClient() {
   const [formData, setFormData] = useState({
-    name: '', email: '', phone: '', markets: '',
+    name: '', email: '', phone: '', marketSpecialty: '',
     yearsExperience: '', brokerage: '', profileUrl: '',
     whyJoin: '',
     trecLicenseNumber: '', licenseType: '',
@@ -313,16 +313,73 @@ export default function ForRealtorsClient() {
 
               <div className="sm:col-span-2">
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                  City/markets served <span className="text-red-400">*</span>
+                  Market Specialty <span className="text-red-400">*</span>
                 </label>
-                <input
-                  type="text"
-                  name="markets"
-                  value={formData.markets}
+                <select
+                  name="marketSpecialty"
+                  value={formData.marketSpecialty}
                   onChange={handleChange}
-                  placeholder="Austin, Cedar Park, Round Rock"
-                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all"
-                />
+                  required
+                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all bg-white"
+                >
+                  <option value="">Select a market…</option>
+                  <optgroup label="AUSTIN METRO">
+                    <option value="Urban Core Austin">Urban Core Austin</option>
+                    <option value="Westlake / West Austin">Westlake / West Austin</option>
+                    <option value="Northwest Austin / Cedar Park / Leander">Northwest Austin / Cedar Park / Leander</option>
+                    <option value="Round Rock / Pflugerville / Hutto Corridor">Round Rock / Pflugerville / Hutto Corridor</option>
+                    <option value="South Austin">South Austin</option>
+                    <option value="Southwest Austin / Dripping Springs">Southwest Austin / Dripping Springs</option>
+                    <option value="Lake Travis / Hill Country Galleria">Lake Travis / Hill Country Galleria</option>
+                    <option value="Georgetown / North Growth Corridor">Georgetown / North Growth Corridor</option>
+                    <option value="East Austin">East Austin</option>
+                    <option value="Kyle / Buda / South Growth Corridor">Kyle / Buda / South Growth Corridor</option>
+                  </optgroup>
+                  <optgroup label="DALLAS-FORT WORTH METRO">
+                    <option value="Urban Core Dallas">Urban Core Dallas</option>
+                    <option value="North Dallas / Platinum Corridor">North Dallas / Platinum Corridor</option>
+                    <option value="Collin County Growth Corridor">Collin County Growth Corridor</option>
+                    <option value="Luxury North Suburbs">Luxury North Suburbs</option>
+                    <option value="Mid-Cities / Airport Corridor">Mid-Cities / Airport Corridor</option>
+                    <option value="Fort Worth Urban Core">Fort Worth Urban Core</option>
+                    <option value="Alliance / North Fort Worth">Alliance / North Fort Worth</option>
+                    <option value="West Fort Worth & Parker County">West Fort Worth &amp; Parker County</option>
+                    <option value="South Fort Worth / Mansfield Corridor">South Fort Worth / Mansfield Corridor</option>
+                    <option value="Denton County Growth Belt">Denton County Growth Belt</option>
+                    <option value="East Dallas & Lake Communities">East Dallas &amp; Lake Communities</option>
+                    <option value="Southern Sector / Best Southwest">Southern Sector / Best Southwest</option>
+                  </optgroup>
+                  <optgroup label="HOUSTON METRO">
+                    <option value="Inner Loop / Urban Core Houston">Inner Loop / Urban Core Houston</option>
+                    <option value="The Heights / Inner Northwest">The Heights / Inner Northwest</option>
+                    <option value="West University / Bellaire / Memorial">West University / Bellaire / Memorial</option>
+                    <option value="The Woodlands / North Houston">The Woodlands / North Houston</option>
+                    <option value="Spring / Klein / Champions Corridor">Spring / Klein / Champions Corridor</option>
+                    <option value="Katy / Fulshear / West Houston Energy Corridor">Katy / Fulshear / West Houston Energy Corridor</option>
+                    <option value="Sugar Land / Fort Bend County">Sugar Land / Fort Bend County</option>
+                    <option value="Pearland / South Houston">Pearland / South Houston</option>
+                    <option value="Clear Lake / NASA / Southeast Houston">Clear Lake / NASA / Southeast Houston</option>
+                    <option value="Cypress / Northwest Houston">Cypress / Northwest Houston</option>
+                    <option value="Kingwood / Lake Houston Corridor">Kingwood / Lake Houston Corridor</option>
+                    <option value="Baytown / East Houston Industrial Corridor">Baytown / East Houston Industrial Corridor</option>
+                    <option value="Richmond / Rosenberg / Southwest Growth Corridor">Richmond / Rosenberg / Southwest Growth Corridor</option>
+                    <option value="Conroe / Montgomery County North Growth Belt">Conroe / Montgomery County North Growth Belt</option>
+                  </optgroup>
+                  <optgroup label="SAN ANTONIO METRO">
+                    <option value="Urban Core / Central San Antonio">Urban Core / Central San Antonio</option>
+                    <option value="Alamo Heights / Terrell Hills / Olmos Park">Alamo Heights / Terrell Hills / Olmos Park</option>
+                    <option value="North Central San Antonio">North Central San Antonio</option>
+                    <option value="Stone Oak / Far North San Antonio">Stone Oak / Far North San Antonio</option>
+                    <option value="The Dominion / I-10 Luxury Corridor">The Dominion / I-10 Luxury Corridor</option>
+                    <option value="Northwest San Antonio / Helotes">Northwest San Antonio / Helotes</option>
+                    <option value="Boerne / Fair Oaks Ranch / Hill Country Corridor">Boerne / Fair Oaks Ranch / Hill Country Corridor</option>
+                    <option value="New Braunfels / I-35 Northeast Growth Corridor">New Braunfels / I-35 Northeast Growth Corridor</option>
+                    <option value="Schertz / Cibolo / Universal City">Schertz / Cibolo / Universal City</option>
+                    <option value="South San Antonio / Mission Corridor">South San Antonio / Mission Corridor</option>
+                    <option value="West San Antonio / Alamo Ranch">West San Antonio / Alamo Ranch</option>
+                    <option value="East San Antonio / Converse Corridor">East San Antonio / Converse Corridor</option>
+                  </optgroup>
+                </select>
               </div>
 
               <div className="sm:col-span-2">

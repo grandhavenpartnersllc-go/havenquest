@@ -13,7 +13,7 @@ function getSupabase() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, email, phone, markets, yearsExperience, brokerage, profileUrl, trecLicenseNumber, licenseType, whyJoin } = body
+    const { name, email, phone, marketSpecialty, yearsExperience, brokerage, profileUrl, trecLicenseNumber, licenseType, whyJoin } = body
 
     if (!name || !email) {
       return NextResponse.json({ error: 'Name and email are required' }, { status: 400 })
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
       name,
       email: email.toLowerCase(),
       phone: phone || null,
-      market_specialty: markets || null,
+      market_specialty: marketSpecialty || null,
       years_experience: parseInt(yearsExperience, 10) || null,
       brokerage: brokerage || null,
       profile_url: profileUrl || null,
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
         from: 'HavenQuest <admin@send.havenquest.co>',
         to: 'grandhavenpartners.llc@gmail.com',
         subject: 'New Realtor Application — HavenQuest',
-        html: buildRealtorApplicationHtml({ name, email, phone, marketSpecialty: markets, brokerage, trecLicenseNumber }),
+        html: buildRealtorApplicationHtml({ name, email, phone, marketSpecialty, brokerage, trecLicenseNumber }),
       }).catch(err => console.error('Resend admin notification error:', err))
     }
 
