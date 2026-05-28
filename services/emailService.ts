@@ -29,13 +29,8 @@ export interface RealtorApplicationEmailData {
   email: string
   phone: string
   markets: string
-  yearsExperience: string
   brokerage: string
-  profileUrl: string
   trecLicenseNumber: string
-  licenseType: string
-  whyJoin?: string
-  preferredTier?: string
 }
 
 export function buildWelcomeEmailHtml(data: WelcomeEmailData): string {
@@ -143,16 +138,29 @@ export function buildRealtorApplicationHtml(data: RealtorApplicationEmailData): 
       <table style="border-collapse: collapse; width: 100%;">
         <tr><td style="padding: 8px; border: 1px solid #E5E7EB; font-weight: 500;">Name</td><td style="padding: 8px; border: 1px solid #E5E7EB;">${data.name}</td></tr>
         <tr><td style="padding: 8px; border: 1px solid #E5E7EB; font-weight: 500;">Email</td><td style="padding: 8px; border: 1px solid #E5E7EB;">${data.email}</td></tr>
-        <tr><td style="padding: 8px; border: 1px solid #E5E7EB; font-weight: 500;">Phone</td><td style="padding: 8px; border: 1px solid #E5E7EB;">${data.phone}</td></tr>
-        <tr><td style="padding: 8px; border: 1px solid #E5E7EB; font-weight: 500;">Markets</td><td style="padding: 8px; border: 1px solid #E5E7EB;">${data.markets}</td></tr>
-        <tr><td style="padding: 8px; border: 1px solid #E5E7EB; font-weight: 500;">Experience</td><td style="padding: 8px; border: 1px solid #E5E7EB;">${data.yearsExperience} years</td></tr>
-        <tr><td style="padding: 8px; border: 1px solid #E5E7EB; font-weight: 500;">Brokerage</td><td style="padding: 8px; border: 1px solid #E5E7EB;">${data.brokerage}</td></tr>
-        <tr><td style="padding: 8px; border: 1px solid #E5E7EB; font-weight: 500;">Profile URL</td><td style="padding: 8px; border: 1px solid #E5E7EB;">${data.profileUrl}</td></tr>
+        <tr><td style="padding: 8px; border: 1px solid #E5E7EB; font-weight: 500;">Phone</td><td style="padding: 8px; border: 1px solid #E5E7EB;">${data.phone || '—'}</td></tr>
+        <tr><td style="padding: 8px; border: 1px solid #E5E7EB; font-weight: 500;">Brokerage</td><td style="padding: 8px; border: 1px solid #E5E7EB;">${data.brokerage || '—'}</td></tr>
+        <tr><td style="padding: 8px; border: 1px solid #E5E7EB; font-weight: 500;">Markets Served</td><td style="padding: 8px; border: 1px solid #E5E7EB;">${data.markets || '—'}</td></tr>
         <tr><td style="padding: 8px; border: 1px solid #E5E7EB; font-weight: 500;">TREC License #</td><td style="padding: 8px; border: 1px solid #E5E7EB;">${data.trecLicenseNumber}</td></tr>
-        <tr><td style="padding: 8px; border: 1px solid #E5E7EB; font-weight: 500;">License Type</td><td style="padding: 8px; border: 1px solid #E5E7EB;">${data.licenseType}</td></tr>
-        ${data.preferredTier ? `<tr><td style="padding: 8px; border: 1px solid #E5E7EB; font-weight: 500;">Preferred Tier</td><td style="padding: 8px; border: 1px solid #E5E7EB;">${data.preferredTier}</td></tr>` : ''}
-        ${data.whyJoin ? `<tr><td style="padding: 8px; border: 1px solid #E5E7EB; font-weight: 500;">Why Join</td><td style="padding: 8px; border: 1px solid #E5E7EB;">${data.whyJoin}</td></tr>` : ''}
       </table>
+    </div>
+  `
+}
+
+export function buildRealtorConfirmationHtml(): string {
+  return `
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;max-width:600px;margin:0 auto;color:#1A1A1A;">
+      <div style="background:#08101C;padding:32px;border-radius:12px 12px 0 0;">
+        <h1 style="color:#F0EDE6;margin:0;font-size:22px;font-weight:700;letter-spacing:-0.02em;">Haven<span style="color:#60B8FF;">Quest</span></h1>
+      </div>
+      <div style="padding:32px;background:#FFFFFF;border:1px solid #E5E7EB;border-top:none;">
+        <h2 style="font-size:20px;font-weight:700;margin:0 0 16px;color:#08101C;letter-spacing:-0.01em;">Application Received</h2>
+        <p style="color:#4A4A4A;line-height:1.7;margin:0 0 16px;">Thank you for applying to join the HavenQuest partner network. Your application has been received and will be reviewed personally.</p>
+        <p style="color:#4A4A4A;line-height:1.7;margin:0;">We will follow up within 48 hours.</p>
+      </div>
+      <div style="padding:16px 32px;background:#F7F5F2;border-radius:0 0 12px 12px;text-align:center;">
+        <p style="color:#9A8E82;font-size:12px;margin:0;">— The HavenQuest Team</p>
+      </div>
     </div>
   `
 }

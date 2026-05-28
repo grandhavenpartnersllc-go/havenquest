@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
-import { buildRealtorApplicationHtml } from '../../../services/emailService'
+import { buildRealtorApplicationHtml, buildRealtorConfirmationHtml } from '../../../services/emailService'
 
 function getSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -13,7 +13,7 @@ function getSupabase() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, email, phone, markets, yearsExperience, brokerage, profileUrl, trecLicenseNumber, licenseType, whyJoin, preferredTier } = body
+    const { name, email, phone, markets, yearsExperience, brokerage, profileUrl, trecLicenseNumber, licenseType, whyJoin } = body
 
     if (!name || !email) {
       return NextResponse.json({ error: 'Name and email are required' }, { status: 400 })
@@ -38,20 +38,26 @@ export async function POST(request: NextRequest) {
       trec_license_number: trecLicenseNumber,
       license_type: licenseType,
       why_join: whyJoin || null,
-      preferred_tier: preferredTier || null,
       status: 'pending',
     })
 
     const resendKey = process.env.RESEND_API_KEY
-    const adminEmail = process.env.RESEND_ADMIN_EMAIL
-    if (resendKey && adminEmail) {
+    if (resendKey) {
       const resend = new Resend(resendKey)
-      await resend.emails.send({
+
+      resend.emails.send({
         from: 'HavenQuest <admin@send.havenquest.co>',
-        to: adminEmail,
-        subject: `New realtor application — ${name} — ${markets || 'markets TBD'}`,
-        html: buildRealtorApplicationHtml({ name, email, phone, markets, yearsExperience, brokerage, profileUrl, trecLicenseNumber, licenseType, whyJoin, preferredTier }),
-      }).catch(err => console.error('Resend error:', err))
+        to: email.toLowerCase(),
+        subject: 'Your HavenQuest Partner Application Was Received',
+        html: buildRealtorConfirmationHtml(),
+      }).catch(err => console.error('Resend confirmation error:', err))
+
+      resend.emails.send({
+        from: 'HavenQuest <admin@send.havenquest.co>',
+        to: 'grandhavenpartners.llc@gmail.com',
+        subject: 'New Realtor Application — HavenQuest',
+        html: buildRealtorApplicationHtml({ name, email, phone, markets, brokerage, trecLicenseNumber }),
+      }).catch(err => console.error('Resend admin notification error:', err))
     }
 
     return NextResponse.json({ success: true })
