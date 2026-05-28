@@ -139,6 +139,12 @@ export default function MetroStartPage() {
             >
               Start Metro Match →
             </Link>
+            <p className="text-sm text-gray-400 text-center mt-5">
+              Not sure where you want to live?{' '}
+              <Link href="/journey" className="text-gray-400 underline-offset-2 hover:text-gray-600 transition-colors" style={{ textDecoration: 'none' }}>
+                Explore both options
+              </Link>
+            </p>
 
           </div>
         </div>

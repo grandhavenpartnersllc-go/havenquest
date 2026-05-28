@@ -11,19 +11,19 @@ const STEPS = [
     number: '01',
     title: 'Tell us about your household',
     description:
-      'Your annual income, household size, and housing preference — whether you\'re buying a starter home, a median home, or something in the luxury range. This sets the foundation for your affordability match.',
+      'Your income, household size, and housing preference — whether you\'re buying a starter home, a median home, or something in the luxury range.',
   },
   {
     number: '02',
     title: 'Share your moving timeline',
     description:
-      'Are you moving in 3 months or still exploring? This helps us connect you with the right people at the right time.',
+      'Moving in 3 months or still exploring? This helps us connect you with the right people at the right time.',
   },
   {
     number: '03',
     title: 'Rank what matters to you',
     description:
-      'Choose your Must Haves, Important to Me, and Would Be Nice across 12 lifestyle categories — schools, safety, affordability, walkability, remote work, and more. Anything you leave unranked carries zero weight in your results.',
+      'Choose your Must Haves, Important to Me, and Would Be Nice across 12 lifestyle categories. Anything you leave unranked carries zero weight in your results.',
   },
 ]
 
@@ -34,7 +34,7 @@ const WHAT_YOU_GET = [
   'A private portal with your complete report saved and waiting',
 ]
 
-export default function StartPage() {
+export default function ExploreTexasPage() {
   return (
     <>
       <Header />
@@ -53,7 +53,7 @@ export default function StartPage() {
               Your Texas city match starts here.
             </h1>
             <p className="text-base leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
-              Tell us about your life and we&apos;ll match you to the right Texas community — using real data, not guesswork.
+              Texas is vast and full of communities that fit different lifestyles and budgets. We help you find the right one.
             </p>
           </div>
         </div>
@@ -61,11 +61,6 @@ export default function StartPage() {
         {/* Light body */}
         <div className="bg-surface px-4 py-12">
           <div className="max-w-2xl mx-auto">
-
-            {/* Intro */}
-            <p className="text-base text-gray-600 leading-relaxed mb-10">
-              You&apos;ve made a big decision — Texas is calling. But Texas is vast, diverse, and full of communities that fit completely different lifestyles, budgets, and priorities. Knowing which one is actually right for your family isn&apos;t obvious. That&apos;s exactly what we&apos;re here for. Tell us a little about yourself and we&apos;ll do the matching for you.
-            </p>
 
             {/* Steps */}
             <p
@@ -139,7 +134,7 @@ export default function StartPage() {
             </Link>
             <p className="text-sm text-gray-400 text-center mt-5">
               Not sure where you want to live?{' '}
-              <Link href="/journey" className="text-gray-400 underline-offset-2 hover:text-gray-600 transition-colors" style={{ textDecoration: 'none' }}>
+              <Link href="/journey" className="text-gray-400 hover:text-gray-600 transition-colors" style={{ textDecoration: 'none' }}>
                 Explore both options
               </Link>
             </p>

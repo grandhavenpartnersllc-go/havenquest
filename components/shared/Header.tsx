@@ -21,11 +21,11 @@ export default function Header() {
           <Link href="/for-realtors" className="hover:text-white transition-colors">For Realtors</Link>
           <Link href="/portal" className="hover:text-white transition-colors">My Portal</Link>
           <Link
-            href="/explore"
+            href="/journey"
             className="bg-white text-gray-950 px-4 py-2 rounded-lg text-sm font-bold hover:bg-gray-100 transition-colors"
             style={{ boxShadow: '0 0 0 1px rgba(255,255,255,0.12)' }}
           >
-            Find My City
+            Begin My Journey
           </Link>
         </nav>
 
@@ -46,11 +46,11 @@ export default function Header() {
           <Link href="/for-realtors" className="text-white/60 hover:text-white transition-colors" onClick={() => setOpen(false)}>For Realtors</Link>
           <Link href="/portal" className="text-white/60 hover:text-white transition-colors" onClick={() => setOpen(false)}>My Portal</Link>
           <Link
-            href="/explore"
+            href="/journey"
             className="bg-white text-gray-950 px-4 py-3 rounded-xl font-bold text-center"
             onClick={() => setOpen(false)}
           >
-            Find My City →
+            Begin My Journey →
           </Link>
         </div>
       )}
