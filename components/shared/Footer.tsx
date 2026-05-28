@@ -11,7 +11,7 @@ export default function Footer() {
               Haven<span className="text-blue-400">Quest</span>
             </p>
             <p className="text-sm leading-relaxed text-white/40">
-              Texas relocation intelligence. Find where your income and lifestyle actually fit.
+              Relocation intelligence with a human touch.
             </p>
           </div>
 

@@ -60,11 +60,11 @@ const partnerTiers = [
 ]
 
 const minQualifications = [
-  'Top 5% of Texas realtors only',
+  'Personally interviewed and approved by HavenQuest',
   'Verified transaction history',
   'Active Texas real estate license',
   'Clean TREC disciplinary record',
-  '24-hour lead response commitment',
+  '24-hour introduction response commitment',
 ]
 
 export default function ForRealtorsClient() {
@@ -384,13 +384,13 @@ export default function ForRealtorsClient() {
 
               <div className="sm:col-span-2">
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                  Why do you want to join HavenQuest?
+                  Tell us about your approach to serving clients and why HavenQuest feels like the right fit.
                 </label>
                 <textarea
                   name="whyJoin"
                   value={formData.whyJoin}
                   onChange={handleChange}
-                  placeholder="Tell us a bit about your practice and why HavenQuest is a good fit…"
+                  placeholder="Share how you work with clients and what draws you to this kind of relocation work."
                   rows={4}
                   className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all resize-none"
                 />
