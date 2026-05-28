@@ -35,7 +35,7 @@ export default function JourneyPage() {
               {/* Card 1: Explore Texas */}
               <Link
                 href="/explore-texas"
-                className="group block bg-white rounded-2xl p-8 transition-shadow hover:shadow-lg"
+                className="group flex flex-col bg-white rounded-2xl p-8 transition-shadow hover:shadow-lg"
                 style={{
                   boxShadow: '0 1px 3px rgba(0,0,0,0.05), 0 4px 20px rgba(0,0,0,0.07)',
                   borderTop: `3px solid ${GOLD}`,
@@ -50,11 +50,11 @@ export default function JourneyPage() {
                 <h2 className="text-xl font-bold text-gray-900 tracking-tight mb-3">
                   Explore Texas
                 </h2>
-                <p className="text-sm text-gray-500 leading-relaxed mb-6">
+                <p className="text-sm text-gray-500 leading-relaxed mb-6 flex-1">
                   You&apos;re open to anywhere in the state. Tell us your lifestyle and budget and we&apos;ll match you to the right Texas community from our full list of 20 cities.
                 </p>
                 <span
-                  className="inline-flex items-center gap-1.5 text-sm font-bold transition-colors group-hover:opacity-80"
+                  className="inline-flex items-center gap-1.5 text-sm font-bold mt-auto transition-colors group-hover:opacity-80"
                   style={{ color: GOLD }}
                 >
                   Start here →
@@ -64,7 +64,7 @@ export default function JourneyPage() {
               {/* Card 2: I Know My City */}
               <Link
                 href="/metro-start"
-                className="group block bg-white rounded-2xl p-8 transition-shadow hover:shadow-lg"
+                className="group flex flex-col bg-white rounded-2xl p-8 transition-shadow hover:shadow-lg"
                 style={{
                   boxShadow: '0 1px 3px rgba(0,0,0,0.05), 0 4px 20px rgba(0,0,0,0.07)',
                   borderTop: `3px solid ${DARK}`,
@@ -79,11 +79,11 @@ export default function JourneyPage() {
                 <h2 className="text-xl font-bold text-gray-900 tracking-tight mb-3">
                   I Know My City
                 </h2>
-                <p className="text-sm text-gray-500 leading-relaxed mb-6">
+                <p className="text-sm text-gray-500 leading-relaxed mb-6 flex-1">
                   Already set on Austin, Dallas, Houston, or San Antonio? We&apos;ll zoom in and find the exact suburb or corridor within that metro that fits your life.
                 </p>
                 <span
-                  className="inline-flex items-center gap-1.5 text-sm font-bold text-gray-700 transition-colors group-hover:text-gray-900"
+                  className="inline-flex items-center gap-1.5 text-sm font-bold text-gray-700 mt-auto transition-colors group-hover:text-gray-900"
                 >
                   Start here →
                 </span>
