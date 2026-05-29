@@ -79,6 +79,7 @@ export async function POST(request: NextRequest) {
         email: email.toLowerCase(),
         options: { redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback` },
       })
+      console.log('generateLink result:', { linkData, linkError })
       if (linkError) {
         console.error('Generate link (recovery) error:', linkError.message)
       } else {
