@@ -42,10 +42,9 @@ export const HOUSEHOLD_OPTIONS: { value: UserProfile['householdSize']; label: st
 
 export const LUXURY_HOME_PRICE = 1_000_000
 export const LUXURY_ESTATE_PRICE = 2_000_000
-export const LUXURY_RENTAL_MIN = 5_000
 
 export function isLuxuryPreference(pref: UserProfile['housingPreference']): boolean {
-  return pref === 'luxuryHome' || pref === 'luxuryEstate' || pref === 'luxuryRental'
+  return pref === 'luxuryHome' || pref === 'luxuryEstate'
 }
 
 export const HOUSING_OPTIONS: {
@@ -54,14 +53,10 @@ export const HOUSING_OPTIONS: {
   description: string
   group?: 'Luxury'
 }[] = [
-  { value: 'rent1br', label: 'Rent 1BR', description: '1-bedroom apartment' },
-  { value: 'rent2br', label: 'Rent 2BR', description: '2-bedroom apartment' },
-  { value: 'rent3br', label: 'Rent 3BR', description: '3-bedroom apartment' },
   { value: 'buyStarter', label: 'Buy starter home', description: 'Entry-level purchase' },
   { value: 'buyMedian', label: 'Buy median home', description: 'Mid-market purchase' },
   { value: 'luxuryHome', label: 'Luxury Home ($1M+)', description: 'Premium purchase', group: 'Luxury' },
   { value: 'luxuryEstate', label: 'Luxury Estate ($2M+)', description: 'High-end estate', group: 'Luxury' },
-  { value: 'luxuryRental', label: 'Luxury Rental ($5,000+/mo)', description: 'Premium rental', group: 'Luxury' },
 ]
 
 export const TIMELINE_OPTIONS: { value: UserProfile['movingTimeline']; label: string; description: string }[] = [

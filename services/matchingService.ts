@@ -31,15 +31,11 @@ export function getMonthlyHousingCost(
 ): number {
   const h = city.housing
   switch (preference) {
-    case 'rent1br': return h.avgRent1BR
-    case 'rent2br': return h.avgRent2BR
-    case 'rent3br': return h.avgRent3BR
     case 'buyStarter': return Math.round(h.starterHomePrice * 0.007)
     case 'buyMedian': return Math.round(h.medianHomePrice * 0.007)
     case 'luxuryHome': return Math.round(1_000_000 * 0.007)
     case 'luxuryEstate': return Math.round(2_000_000 * 0.007)
-    case 'luxuryRental': return 5_000
-    default: return h.avgRent2BR
+    default: return Math.round(h.medianHomePrice * 0.007)
   }
 }
 

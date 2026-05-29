@@ -135,7 +135,7 @@ export default function StarterPortal() {
           const reconstructedProfile: UserProfile = {
             annualIncome: ud.annual_income,
             householdSize: ud.household_size ?? '1',
-            housingPreference: ud.housing_preference ?? 'rent2br',
+            housingPreference: ud.housing_preference ?? 'buyMedian',
             movingTimeline: ud.moving_timeline ?? 'exploring',
             mustHaves: ud.must_haves ?? [],
             niceToHaves: ud.nice_to_haves ?? [],

@@ -31,8 +31,7 @@ export default function AffordabilityBreakdown({ city, profile, showFlag }: Affo
   const housingLabel =
     pref === 'luxuryHome' ? 'Est. luxury mortgage ($1M+ home)' :
     pref === 'luxuryEstate' ? 'Est. luxury mortgage ($2M+ estate)' :
-    pref === 'luxuryRental' ? 'Luxury monthly rent ($5K+/mo)' :
-    isBuying ? 'Est. monthly mortgage' : 'Monthly rent'
+    'Est. monthly mortgage'
 
   const rows = [
     { label: housingLabel, value: monthlyHousing },

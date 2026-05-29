@@ -53,6 +53,7 @@ export async function POST(request: NextRequest) {
       niceToHaves,
       notPriorities,
       topCityMatches,
+      buyerProfile,
     } = body
 
     if (!firstName || !email) {
@@ -111,6 +112,7 @@ export async function POST(request: NextRequest) {
         nice_to_haves: niceToHaves,
         not_priorities: notPriorities,
         top_city_matches: topCityMatches,
+        buyer_profile: buyerProfile ?? null,
         ...(authUserId ? { auth_id: authUserId } : {}),
       })
       .select('id')
@@ -137,6 +139,7 @@ export async function POST(request: NextRequest) {
             nice_to_haves: niceToHaves,
             not_priorities: notPriorities,
             top_city_matches: topCityMatches,
+            buyer_profile: buyerProfile ?? null,
           })
           .select('id')
           .single()

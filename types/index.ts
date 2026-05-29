@@ -60,14 +60,22 @@ export interface Location {
   metroUsed: string
 }
 
+export interface BuyerProfile {
+  bedrooms: 2 | 3 | 4 | 5 | null
+  bathrooms: 1 | 2 | 3 | null
+  homeType: 'singleFamily' | 'townhome' | 'condo' | null
+  constructionPreference: 'new' | 'resale' | null
+}
+
 export interface UserProfile {
   annualIncome: number
   householdSize: '1' | '2' | '3-4' | '5+'
-  housingPreference: 'rent1br' | 'rent2br' | 'rent3br' | 'buyStarter' | 'buyMedian' | 'luxuryHome' | 'luxuryEstate' | 'luxuryRental'
+  housingPreference: 'buyStarter' | 'buyMedian' | 'luxuryHome' | 'luxuryEstate'
   movingTimeline: '0-3months' | '3-6months' | '6-12months' | 'exploring'
   mustHaves: (keyof LifestyleScores)[]
   niceToHaves: (keyof LifestyleScores)[]
   notPriorities: (keyof LifestyleScores)[]
+  buyerProfile?: BuyerProfile
 }
 
 export interface CityMatch {
