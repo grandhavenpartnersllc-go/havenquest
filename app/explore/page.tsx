@@ -15,6 +15,14 @@ import { SESSION_PROFILE_KEY, SESSION_ID_KEY } from '../../utils/constants'
 
 const STEPS = ['Income', 'Household', 'Timeline', 'Priorities', 'Buyer Profile']
 
+const STEP_HEADLINES = [
+  "Let's find your Texas city",
+  'Tell us about your household',
+  'What matters most to you?',
+  'Set your priorities',
+  "Now let's talk about your home",
+]
+
 type PartialProfile = Partial<UserProfile>
 
 export default function ExplorePage() {
@@ -70,8 +78,8 @@ export default function ExplorePage() {
             <p className="text-blue-400/60 text-[11px] font-bold uppercase tracking-widest mb-3">
               Step {step + 1} of {STEPS.length} · {STEPS[step]}
             </p>
-            <h1 className="text-2xl font-bold text-white tracking-tight">Find your Texas city</h1>
-            <p className="text-white/40 text-sm mt-1.5">Across 5 Texas metros and 48 submarkets</p>
+            <h1 className="text-2xl font-bold text-white tracking-tight">{STEP_HEADLINES[step]}</h1>
+            <p className="text-white/40 text-sm mt-1.5">Matching you to the right Texas city</p>
           </div>
         </div>
 
