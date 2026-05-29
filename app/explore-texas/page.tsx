@@ -28,6 +28,7 @@ const STEPS = [
 ]
 
 const WHAT_YOU_GET = [
+  'Personalized city match scores based on your income and lifestyle priorities',
   'Full affordability breakdown tied to your actual income',
   'Lifestyle scores across all 12 categories',
   'Honest strengths and tradeoffs — not marketing copy',

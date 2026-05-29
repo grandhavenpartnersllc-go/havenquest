@@ -25,7 +25,7 @@ export default function TimelineForm({ defaultValue, onComplete }: TimelineFormP
           When are you thinking about making a move?
         </label>
         <p className="text-sm text-gray-500 mb-5">
-          This helps us connect you with realtors at the right time.
+          This helps us personalize your city match and report.
         </p>
         <div className="flex flex-col gap-2">
           {TIMELINE_OPTIONS.map(opt => (

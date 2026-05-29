@@ -78,6 +78,12 @@ export default function AffordabilityBreakdown({ city, profile, showFlag }: Affo
         </span>
       </div>
 
+      {isBuying && !isLuxury && (
+        <p className="text-xs text-gray-400 mt-3 leading-relaxed">
+          Assumes 20% down payment, 6.5% 30-year fixed rate, median home price. Rates as of 05/2026.
+        </p>
+      )}
+
       {isLuxury && (
         <p className="text-xs text-gray-400 mt-3 italic">
           Luxury preference — affordability threshold not applied.

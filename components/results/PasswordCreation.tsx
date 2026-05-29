@@ -4,16 +4,14 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Eye, EyeOff } from 'lucide-react'
 import { createClient } from '../../lib/supabase/client'
-import { LOCAL_PENDING_EMAIL_KEY } from '../../utils/constants'
 
 interface PasswordCreationProps {
   userId: string
   firstName: string
   email: string
-  onSkip: () => void
 }
 
-export default function PasswordCreation({ userId, firstName, email, onSkip }: PasswordCreationProps) {
+export default function PasswordCreation({ userId, firstName, email }: PasswordCreationProps) {
   const router = useRouter()
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
@@ -148,16 +146,6 @@ export default function PasswordCreation({ userId, firstName, email, onSkip }: P
           </button>
         </form>
 
-        <button
-          type="button"
-          onClick={() => {
-            localStorage.setItem(LOCAL_PENDING_EMAIL_KEY, email)
-            onSkip()
-          }}
-          className="w-full text-center text-sm text-gray-400 hover:text-gray-600 transition-colors mt-5 py-1"
-        >
-          I'll set my password later
-        </button>
       </div>
     </div>
   )

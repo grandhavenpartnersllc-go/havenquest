@@ -11,9 +11,10 @@ interface ScoreBarProps {
   icon: keyof LifestyleScores
   score: number
   highlighted?: boolean
+  tooltip?: string
 }
 
-export default function ScoreBar({ label, icon, score, highlighted = false }: ScoreBarProps) {
+export default function ScoreBar({ label, icon, score, highlighted = false, tooltip }: ScoreBarProps) {
   const [width, setWidth] = useState(0)
   const color = getScoreColor(score)
   const Icon: LucideIcon = CATEGORY_ICONS[icon]
@@ -33,7 +34,12 @@ export default function ScoreBar({ label, icon, score, highlighted = false }: Sc
       <Icon size={18} strokeWidth={1.5} className="text-blue-600 shrink-0" />
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-center mb-1">
-          <span className="text-sm font-medium text-gray-900 truncate">{label}</span>
+          <div className="flex items-center gap-1 min-w-0">
+            <span className="text-sm font-medium text-gray-900 truncate">{label}</span>
+            {tooltip && (
+              <span title={tooltip} className="text-gray-400 cursor-help shrink-0 text-xs leading-none">ⓘ</span>
+            )}
+          </div>
           <span className="text-sm font-medium tabular-nums ml-2 shrink-0" style={{ color }}>
             {score}/10
           </span>

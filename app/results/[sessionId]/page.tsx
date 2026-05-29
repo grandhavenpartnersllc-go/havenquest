@@ -95,7 +95,7 @@ export default function SessionResultsPage({ params }: { params: Promise<{ sessi
           <div className="max-w-3xl mx-auto">
             <p className="text-blue-400/60 text-[11px] font-bold uppercase tracking-widest mb-3">Your Results</p>
             <h1 className="text-3xl font-bold text-white tracking-tight">Your Texas matches</h1>
-            <p className="text-white/40 text-sm mt-2">Ranked by match score based on your income and priorities</p>
+            <p className="text-white/40 text-sm mt-2">Your full report includes affordability breakdowns, school data, market conditions, and everything you need to make a confident decision.</p>
           </div>
         </div>
 
@@ -122,7 +122,6 @@ export default function SessionResultsPage({ params }: { params: Promise<{ sessi
               userId={gateSession.userId}
               firstName={gateSession.firstName}
               email={gateSession.email}
-              onSkip={() => { setPendingNotice(true); setFlowStep('teaser') }}
             />
           )}
         </div>

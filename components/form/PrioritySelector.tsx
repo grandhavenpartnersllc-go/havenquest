@@ -120,6 +120,8 @@ export default function PrioritySelector({ onComplete }: PrioritySelectorProps) 
     if (dragRef.current && canDrop(bucket)) {
       moveTo(dragRef.current, bucket)
     }
+    setDragging(null)
+    dragRef.current = null
     setDragOverBucket(null)
   }
 
@@ -152,9 +154,6 @@ export default function PrioritySelector({ onComplete }: PrioritySelectorProps) 
         </p>
         <p style={{ fontSize: '14px', color: '#6B7280', lineHeight: 1.6, marginBottom: '8px' }}>
           Assign only what matters to you. Must Haves carry 3× weight, Important to Me carries 2×, Would Be Nice carries 1×. Anything you leave unassigned counts for nothing.
-        </p>
-        <p style={{ fontSize: '13px', color: '#9CA3AF', fontStyle: 'italic', lineHeight: 1.5, marginBottom: '16px' }}>
-          Assign only what matters to you across three levels. Anything you leave unassigned carries zero weight — so your results reflect exactly your priorities, nothing more.
         </p>
 
         <p className="text-sm text-gray-500">

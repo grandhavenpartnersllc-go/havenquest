@@ -36,10 +36,10 @@ export default function TeaserResults({ matches, onUnlock }: TeaserResultsProps)
         style={{ boxShadow: '0 2px 4px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.07)' }}
       >
         <h3 className="text-xl font-bold text-gray-900 tracking-tight mb-2">
-          Your full HavenQuest report is ready
+          Your Texas match is waiting
         </h3>
         <p className="text-gray-500 text-sm mb-6 max-w-sm mx-auto leading-relaxed">
-          Complete scores, cost breakdowns, school data, and matched realtors — free
+          Complete scores, cost breakdowns, school data, and your full personalized report — free
         </p>
         <button
           onClick={onUnlock}

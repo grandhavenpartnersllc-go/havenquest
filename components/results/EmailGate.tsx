@@ -98,7 +98,7 @@ export default function EmailGate({ matches, profile, onSuccess, onClose, stored
         <div className="mb-5">
           <h2 className="text-xl font-medium text-gray-900 mb-1">Get your free full report</h2>
           <p className="text-sm text-gray-500">
-            See complete scores, affordability breakdowns, and your matched realtors.
+            See complete scores, affordability breakdowns, and your full personalized report.
           </p>
         </div>
 
@@ -133,7 +133,7 @@ export default function EmailGate({ matches, profile, onSuccess, onClose, stored
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Phone number{' '}
-              <span className="text-gray-400 font-normal">Optional — for realtor contact</span>
+              <span className="text-gray-400 font-normal">Optional</span>
             </label>
             <input
               type="tel"

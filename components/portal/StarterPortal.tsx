@@ -307,7 +307,7 @@ export default function StarterPortal() {
               </div>
             </div>
             <p className="text-xs mb-3" style={{ color: '#9A8E82' }}>
-              Select + Compare on any two cities to compare them side by side
+              Select any two cities to compare them side by side
             </p>
             {profile && <SavedMatches matches={matches} profile={profile} />}
           </section>

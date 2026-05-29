@@ -25,14 +25,15 @@ export default function MarketSnapshot({ city }: MarketSnapshotProps) {
       <h3 className="font-bold text-gray-900 tracking-tight mb-4">Market snapshot</h3>
 
       <div className="grid grid-cols-2 gap-3 mb-4">
-        {[
-          { label: 'Median sale price', value: formatCurrency(market.redfinMedianPrice) },
+        {(([
+          { label: 'Median sale price', value: formatCurrency(market.redfinMedianPrice), subtext: 'Recent closed sales' },
           { label: 'Days on market', value: `${market.daysOnMarket} days` },
           { label: 'Sale to list ratio', value: `${market.saleToListRatio}%` },
-        ].map(item => (
+        ]) as { label: string; value: string; subtext?: string }[]).map(item => (
           <div key={item.label} className="bg-gray-50 rounded-xl p-3">
             <p className="text-xs text-gray-400 mb-1">{item.label}</p>
             <p className="font-bold text-gray-900 tabular-nums text-sm">{item.value}</p>
+            {item.subtext && <p className="text-xs text-gray-400 mt-0.5">{item.subtext}</p>}
           </div>
         ))}
         <div className="bg-gray-50 rounded-xl p-3">

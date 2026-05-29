@@ -1,5 +1,12 @@
-import { CityMatch, UserProfile } from '../../types'
+import { CityMatch, UserProfile, LifestyleScores } from '../../types'
 import { LIFESTYLE_CATEGORIES, TIER_LABELS } from '../../utils/constants'
+
+const SCORE_TOOLTIPS: Partial<Record<keyof LifestyleScores, string>> = {
+  affordability: 'Reflects market price level — not your personal budget fit',
+  transit: 'Reflects public transit availability — bus, rail, light rail. Does not reflect road conditions or commute time.',
+  traffic: 'Reflects road congestion and commute conditions — separate from public transit availability.',
+  weather: 'Texas summers are hot and humid. Most cities average 90°F+ from June–September. Winters are mild with rare freezes.',
+}
 import { formatCurrency, formatPercentPlain } from '../../utils/formatting'
 import ScoreGauge from '../shared/ScoreGauge'
 import ScoreBar from '../shared/ScoreBar'
@@ -49,7 +56,8 @@ export default function FullReport({ match, profile }: FullReportProps) {
         <hr className="border-gray-100" />
 
         <div>
-          <h3 className="font-bold text-gray-900 tracking-tight mb-4">Lifestyle scores</h3>
+          <h3 className="font-bold text-gray-900 tracking-tight mb-3">Lifestyle scores</h3>
+          <p className="text-xs text-gray-400 mb-3">Scores highlighted in blue are your Must Haves.</p>
           <div className="grid sm:grid-cols-2 gap-2">
             {LIFESTYLE_CATEGORIES.map(cat => (
               <ScoreBar
@@ -58,10 +66,10 @@ export default function FullReport({ match, profile }: FullReportProps) {
                 icon={cat.key}
                 score={location.scores[cat.key]}
                 highlighted={profile.mustHaves.includes(cat.key)}
+                tooltip={SCORE_TOOLTIPS[cat.key]}
               />
             ))}
           </div>
-          <p className="text-xs text-gray-400 mt-3">Scores highlighted in blue are your Must Haves.</p>
         </div>
 
         <hr className="border-gray-100" />
@@ -73,16 +81,17 @@ export default function FullReport({ match, profile }: FullReportProps) {
         <div>
           <h3 className="font-bold text-gray-900 tracking-tight mb-4">Price intelligence</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {[
+            {(([
               { label: 'Price per sq ft', value: formatCurrency(housing.pricePerSqFt) },
-              { label: 'Starter home', value: formatCurrency(housing.starterHomePrice) },
-              { label: 'Median home', value: formatCurrency(housing.medianHomePrice) },
+              { label: 'Starter home', value: formatCurrency(housing.starterHomePrice), subtext: 'Entry-level inventory' },
+              { label: 'Median home', value: formatCurrency(housing.medianHomePrice), subtext: 'All home types' },
               { label: 'Property tax rate', value: formatPercentPlain(housing.propertyTaxRate * 100, 2) },
               { label: 'Est. monthly tax', value: formatCurrency(Math.round((housing.medianHomePrice * housing.propertyTaxRate) / 12)) },
-            ].map(item => (
+            ]) as { label: string; value: string; subtext?: string }[]).map(item => (
               <div key={item.label} className="bg-gray-50 rounded-xl p-3">
                 <p className="text-xs text-gray-400 mb-1">{item.label}</p>
                 <p className="font-bold text-gray-900 tabular-nums text-sm">{item.value}</p>
+                {item.subtext && <p className="text-xs text-gray-400 mt-0.5">{item.subtext}</p>}
               </div>
             ))}
           </div>
