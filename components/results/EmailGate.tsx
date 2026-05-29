@@ -116,7 +116,7 @@ export default function EmailGate({ matches, profile, onSuccess, onClose, stored
             </p>
             <div className="space-y-3">
               <button
-                onClick={() => { if (returningSetupLink) window.location.href = returningSetupLink }}
+                onClick={() => { window.location.href = '/login' }}
                 className="w-full bg-accent text-white py-3.5 rounded-lg font-medium hover:bg-[#154d8a] transition-colors"
               >
                 Sign in to my portal →
