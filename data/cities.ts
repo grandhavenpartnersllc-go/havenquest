@@ -355,7 +355,7 @@ export const texasCities: Location[] = [
       teaRating: 'A',
       primaryISD: 'Frisco ISD',
     },
-    description: 'Frisco is the gold standard for Texas suburban living — immaculate master-planned communities, top-rated schools, and the lowest crime rate of any major Texas city, all within reach of Dallas\'s job market. It skews expensive and car-dependent, but families consistently rank it among the best places to raise children in America.',
+    description: 'Frisco is the gold standard for Texas suburban living — immaculate master-planned communities, top-rated schools, and the lowest crime rate among DFW suburbs, all within reach of Dallas\'s job market. It skews expensive and car-dependent, but families consistently rank it among the best places to raise children in America.',
     strengths: [
       'Frisco ISD is one of the most celebrated districts in Texas — 56 of 75 schools rated A, none below C, with a near-99% graduation rate.',
       'Lowest crime rate among DFW suburbs — 789 per 100K (FBI UCR est.)',
