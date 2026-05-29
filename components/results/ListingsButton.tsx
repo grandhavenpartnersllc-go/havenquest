@@ -12,6 +12,12 @@ interface ListingsButtonProps {
 
 export default function ListingsButton({ match, housingPreference }: ListingsButtonProps) {
   const isLuxury = housingPreference ? isLuxuryPreference(housingPreference) : false
+  const isRental = housingPreference?.startsWith('rent') ?? false
+  const subtext = isLuxury
+    ? 'Filtered to luxury listings matching your preference'
+    : isRental
+    ? 'Filtered to your budget and bedroom preference'
+    : `Filtered to your budget range in ${match.location.name}`
 
   const handleClick = () => {
     const raw = typeof window !== 'undefined' ? localStorage.getItem(LOCAL_SESSION_KEY) : null
@@ -24,9 +30,7 @@ export default function ListingsButton({ match, housingPreference }: ListingsBut
       <p className="font-medium text-gray-900 mb-1">
         {isLuxury ? `See luxury homes in ${match.location.name}` : `See available homes in ${match.location.name}`}
       </p>
-      <p className="text-sm text-gray-500 mb-4">
-        {isLuxury ? 'Filtered to luxury listings matching your preference' : 'Filtered to your budget and bedroom preference'}
-      </p>
+      <p className="text-sm text-gray-500 mb-4">{subtext}</p>
       <a
         href={match.zillowSearchUrl}
         target="_blank"
