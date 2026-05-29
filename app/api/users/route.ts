@@ -15,7 +15,8 @@ async function sendWelcomeAndRespond(
   firstName: string,
   email: string,
   topCityMatches: { cityName: string; matchScore: number }[] | undefined,
-  setupLink: string | undefined
+  setupLink: string | undefined,
+  isReturningUser: boolean
 ) {
   const resendKey = process.env.RESEND_API_KEY
   if (resendKey && topCityMatches?.length) {
@@ -35,7 +36,7 @@ async function sendWelcomeAndRespond(
       console.error('Resend error:', err)
     }
   }
-  return NextResponse.json({ success: true, userId })
+  return NextResponse.json({ success: true, userId, setupLink, isReturningUser })
 }
 
 export async function POST(request: NextRequest) {
@@ -65,6 +66,7 @@ export async function POST(request: NextRequest) {
     // Create Supabase auth account
     let authUserId: string | null = null
     let setupLink: string | undefined
+    let isExistingAuthUser = false
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email: email.toLowerCase(),
       email_confirm: true,
@@ -82,6 +84,7 @@ export async function POST(request: NextRequest) {
       } else {
         authUserId = linkData.user.id
         setupLink = linkData.properties.action_link
+        isExistingAuthUser = true
       }
     } else {
       authUserId = authData.user?.id ?? null
@@ -150,14 +153,14 @@ export async function POST(request: NextRequest) {
           console.error('Retry insert error:', retryError.code, retryError.message)
           return NextResponse.json({ error: 'Failed to save your information. Please try again.' }, { status: 500 })
         }
-        return await sendWelcomeAndRespond(authUserId ?? retryData.id, firstName, email, topCityMatches, setupLink)
+        return await sendWelcomeAndRespond(authUserId ?? retryData.id, firstName, email, topCityMatches, setupLink, isExistingAuthUser)
       }
       return NextResponse.json({ error: 'Failed to save your information. Please try again.' }, { status: 500 })
     }
 
     // Return authUserId (Supabase auth UUID) not data.id (Postgres row UUID) —
     // the client needs authUserId to call auth.admin.updateUserById for password creation.
-    return await sendWelcomeAndRespond(authUserId ?? data.id, firstName, email, topCityMatches, setupLink)
+    return await sendWelcomeAndRespond(authUserId ?? data.id, firstName, email, topCityMatches, setupLink, isExistingAuthUser)
   } catch (err) {
     console.error('Users route error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

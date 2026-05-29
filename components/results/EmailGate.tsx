@@ -78,7 +78,13 @@ export default function EmailGate({ matches, profile, onSuccess, onClose, stored
         return
       }
 
-      onSuccess({ userId: data.userId, firstName: firstName.trim(), email: email.trim().toLowerCase() })
+      if (data.isReturningUser && data.setupLink) {
+        // Returning user — redirect through recovery link so Supabase establishes
+        // their session, then they land in the portal authenticated.
+        window.location.href = data.setupLink
+      } else {
+        onSuccess({ userId: data.userId, firstName: firstName.trim(), email: email.trim().toLowerCase() })
+      }
     } catch {
       setError('Network error. Please check your connection and try again.')
     } finally {
