@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { X } from 'lucide-react'
+import { X, CheckCircle2 } from 'lucide-react'
 import { CityMatch, UserProfile, UserSession } from '../../types'
 import { TIMELINE_OPTIONS } from '../../utils/constants'
 
@@ -22,6 +22,8 @@ export default function EmailGate({ matches, profile, onSuccess, onClose, stored
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [returningUser, setReturningUser] = useState(false)
+  const [isReturningUser, setIsReturningUser] = useState(false)
+  const [returningSetupLink, setReturningSetupLink] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -79,9 +81,8 @@ export default function EmailGate({ matches, profile, onSuccess, onClose, stored
       }
 
       if (data.isReturningUser && data.setupLink) {
-        // Returning user — redirect through recovery link so Supabase establishes
-        // their session, then they land in the portal authenticated.
-        window.location.href = data.setupLink
+        setIsReturningUser(true)
+        setReturningSetupLink(data.setupLink)
       } else {
         onSuccess({ userId: data.userId, firstName: firstName.trim(), email: email.trim().toLowerCase() })
       }
@@ -102,6 +103,37 @@ export default function EmailGate({ matches, profile, onSuccess, onClose, stored
           <X size={20} />
         </button>
 
+        {isReturningUser ? (
+          <div className="text-center py-2">
+            <div className="flex justify-center mb-4">
+              <CheckCircle2 size={40} className="text-green-500" />
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              Welcome back, {firstName}.
+            </h2>
+            <p className="text-sm text-gray-500 mb-6 leading-relaxed">
+              We found your existing account and updated your city matches with your latest search.
+            </p>
+            <div className="space-y-3">
+              <button
+                onClick={() => { if (returningSetupLink) window.location.href = returningSetupLink }}
+                className="w-full bg-accent text-white py-3.5 rounded-lg font-medium hover:bg-[#154d8a] transition-colors"
+              >
+                Sign in to my portal →
+              </button>
+              <button
+                onClick={() => { window.location.href = '/auth/forgot-password' }}
+                className="w-full border border-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors text-sm"
+              >
+                Forgot my password?
+              </button>
+            </div>
+            <p className="text-xs text-gray-400 mt-4">
+              Your matches are saved and ready whenever you sign in.
+            </p>
+          </div>
+        ) : (
+          <>
         <div className="mb-5">
           <h2 className="text-xl font-medium text-gray-900 mb-1">Get your free full report</h2>
           <p className="text-sm text-gray-500">
@@ -206,6 +238,8 @@ export default function EmailGate({ matches, profile, onSuccess, onClose, stored
             Free. No spam. Unsubscribe anytime.
           </p>
         </form>
+          </>
+        )}
       </div>
     </div>
   )
