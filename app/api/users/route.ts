@@ -100,47 +100,50 @@ export async function POST(request: NextRequest) {
 
     const { data, error } = await supabase
       .from('users')
-      .insert({
-        first_name: firstName,
-        email: email.toLowerCase(),
-        phone: phone || null,
-        annual_income: annualIncome,
-        household_size: householdSize,
-        housing_preference: housingPreference,
-        moving_timeline: movingTimeline,
-        must_haves: mustHaves,
-        nice_to_haves: niceToHaves,
-        not_priorities: notPriorities,
-        top_city_matches: topCityMatches,
-        buyer_profile: buyerProfile ?? null,
-        ...(authUserId ? { auth_id: authUserId } : {}),
-      })
+      .upsert(
+        {
+          first_name: firstName,
+          email: email.toLowerCase(),
+          phone: phone || null,
+          annual_income: annualIncome,
+          household_size: householdSize,
+          housing_preference: housingPreference,
+          moving_timeline: movingTimeline,
+          must_haves: mustHaves,
+          nice_to_haves: niceToHaves,
+          not_priorities: notPriorities,
+          top_city_matches: topCityMatches,
+          buyer_profile: buyerProfile ?? null,
+          ...(authUserId ? { auth_id: authUserId } : {}),
+        },
+        { onConflict: 'email', ignoreDuplicates: false }
+      )
       .select('id')
       .single()
 
     if (error) {
-      console.error('Insert error:', error.code, error.message)
-      if (error.code === '23505') {
-        return NextResponse.json({ error: 'This email is already registered.' }, { status: 409 })
-      }
+      console.error('Upsert error:', error.code, error.message)
       // PostgREST PGRST204: auth_id column not in schema cache — retry without it
       if (error.code === 'PGRST204' && authUserId) {
         const { data: retryData, error: retryError } = await supabase
           .from('users')
-          .insert({
-            first_name: firstName,
-            email: email.toLowerCase(),
-            phone: phone || null,
-            annual_income: annualIncome,
-            household_size: householdSize,
-            housing_preference: housingPreference,
-            moving_timeline: movingTimeline,
-            must_haves: mustHaves,
-            nice_to_haves: niceToHaves,
-            not_priorities: notPriorities,
-            top_city_matches: topCityMatches,
-            buyer_profile: buyerProfile ?? null,
-          })
+          .upsert(
+            {
+              first_name: firstName,
+              email: email.toLowerCase(),
+              phone: phone || null,
+              annual_income: annualIncome,
+              household_size: householdSize,
+              housing_preference: housingPreference,
+              moving_timeline: movingTimeline,
+              must_haves: mustHaves,
+              nice_to_haves: niceToHaves,
+              not_priorities: notPriorities,
+              top_city_matches: topCityMatches,
+              buyer_profile: buyerProfile ?? null,
+            },
+            { onConflict: 'email', ignoreDuplicates: false }
+          )
           .select('id')
           .single()
         if (retryError) {
