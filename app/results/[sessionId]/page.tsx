@@ -21,7 +21,7 @@ import { getTopMatches } from '../../../services/matchingService'
 type FlowStep = 'teaser' | 'password'
 
 export default function SessionResultsPage({ params }: { params: Promise<{ sessionId: string }> }) {
-  use(params)
+  const { sessionId } = use(params)
   const router = useRouter()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [matches, setMatches] = useState<CityMatch[]>([])
@@ -131,6 +131,7 @@ export default function SessionResultsPage({ params }: { params: Promise<{ sessi
         <EmailGate
           matches={matches}
           profile={profile}
+          sessionId={sessionId}
           onSuccess={handleGateSuccess}
           onClose={() => setShowGate(false)}
           storedSession={storedSession}

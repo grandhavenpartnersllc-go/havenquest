@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Eye, EyeOff } from 'lucide-react'
 import { createClient } from '../../lib/supabase/client'
+import { clearSession } from '../../services/quizSessionService'
 
 interface PasswordCreationProps {
   userId: string
@@ -67,6 +68,7 @@ export default function PasswordCreation({ userId, firstName, email }: PasswordC
       body: JSON.stringify({ access_token: signInData.session.access_token }),
     })
 
+    clearSession()
     window.location.assign('/portal')
   }
 

@@ -114,3 +114,18 @@ export interface UserSession {
   phone?: string
   createdAt: string
 }
+
+export interface QuizSessionData {
+  sessionId: string
+  currentStep: number
+  annualIncome?: number
+  householdSize?: number
+  housingPreference?: string
+  movingTimeline?: string
+  mustHaves?: string[]
+  niceToHaves?: string[]
+  notPriorities?: string[]
+  buyerProfile?: BuyerProfile
+  email?: string
+  completed?: boolean
+}

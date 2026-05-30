@@ -5,16 +5,18 @@ import Link from 'next/link'
 import { X, CheckCircle2 } from 'lucide-react'
 import { CityMatch, UserProfile, UserSession } from '../../types'
 import { TIMELINE_OPTIONS } from '../../utils/constants'
+import { completeSession } from '../../services/quizSessionService'
 
 interface EmailGateProps {
   matches: CityMatch[]
   profile: UserProfile
+  sessionId: string
   onSuccess: (session: { userId: string; firstName: string; email: string }) => void
   onClose: () => void
   storedSession?: UserSession | null
 }
 
-export default function EmailGate({ matches, profile, onSuccess, onClose, storedSession }: EmailGateProps) {
+export default function EmailGate({ matches, profile, sessionId, onSuccess, onClose, storedSession }: EmailGateProps) {
   const [firstName, setFirstName] = useState(storedSession?.firstName ?? '')
   const [email, setEmail] = useState(storedSession?.email ?? '')
   const [phone, setPhone] = useState('')
@@ -69,6 +71,7 @@ export default function EmailGate({ matches, profile, onSuccess, onClose, stored
 
       if (!res.ok) {
         if (res.status === 409 && storedSession && storedSession.email === email.trim().toLowerCase()) {
+          completeSession(sessionId, email.trim().toLowerCase())
           onSuccess({ userId: storedSession.userId, firstName: firstName.trim(), email: email.trim().toLowerCase() })
           return
         }
@@ -84,6 +87,7 @@ export default function EmailGate({ matches, profile, onSuccess, onClose, stored
         setIsReturningUser(true)
         setReturningSetupLink(data.setupLink)
       } else {
+        completeSession(sessionId, email.trim().toLowerCase())
         onSuccess({ userId: data.userId, firstName: firstName.trim(), email: email.trim().toLowerCase() })
       }
     } catch {

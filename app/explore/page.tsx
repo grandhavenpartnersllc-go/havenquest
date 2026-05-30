@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Header from '../../components/shared/Header'
 import Footer from '../../components/shared/Footer'
@@ -11,7 +11,8 @@ import TimelineForm from '../../components/form/TimelineForm'
 import PrioritySelector from '../../components/form/PrioritySelector'
 import BuyerProfileStep from '../../components/form/BuyerProfileStep'
 import { UserProfile, BuyerProfile, LifestyleScores } from '../../types'
-import { SESSION_PROFILE_KEY, SESSION_ID_KEY } from '../../utils/constants'
+import { SESSION_PROFILE_KEY } from '../../utils/constants'
+import { initSession, updateSessionStep } from '../../services/quizSessionService'
 
 const STEPS = ['Income', 'Household', 'Timeline', 'Priorities', 'Buyer Profile']
 
@@ -29,9 +30,15 @@ export default function ExplorePage() {
   const router = useRouter()
   const [step, setStep] = useState(0)
   const [profile, setProfile] = useState<PartialProfile>({})
+  const [sessionId, setSessionId] = useState<string>('')
+
+  useEffect(() => {
+    initSession().then(id => setSessionId(id))
+  }, [])
 
   const handleIncome = (annualIncome: number) => {
     setProfile(p => ({ ...p, annualIncome }))
+    updateSessionStep(sessionId, 1, { annualIncome })
     setStep(1)
   }
 
@@ -40,11 +47,13 @@ export default function ExplorePage() {
     housingPreference: UserProfile['housingPreference']
   }) => {
     setProfile(p => ({ ...p, ...data }))
+    updateSessionStep(sessionId, 2, { housingPreference: data.housingPreference })
     setStep(2)
   }
 
   const handleTimeline = (movingTimeline: UserProfile['movingTimeline']) => {
     setProfile(p => ({ ...p, movingTimeline }))
+    updateSessionStep(sessionId, 3, { movingTimeline })
     setStep(3)
   }
 
@@ -54,6 +63,7 @@ export default function ExplorePage() {
     notPriorities: (keyof LifestyleScores)[]
   ) => {
     setProfile(p => ({ ...p, mustHaves, niceToHaves, notPriorities }))
+    updateSessionStep(sessionId, 4, { mustHaves, niceToHaves, notPriorities })
     setStep(4)
   }
 
@@ -64,8 +74,7 @@ export default function ExplorePage() {
     }
     sessionStorage.setItem(SESSION_PROFILE_KEY, JSON.stringify(finalProfile))
     sessionStorage.removeItem('hq_metro')
-    const sessionId = crypto.randomUUID()
-    sessionStorage.setItem(SESSION_ID_KEY, sessionId)
+    updateSessionStep(sessionId, 5, { buyerProfile })
     router.push(`/results/${sessionId}`)
   }
 
