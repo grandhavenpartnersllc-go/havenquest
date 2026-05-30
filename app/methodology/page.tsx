@@ -227,7 +227,7 @@ export default function MethodologyPage() {
           </div>
 
           <div className="text-center mt-6">
-            <Link href="/data-disclosure" className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
+            <Link href="/data-disclosure" className="text-sm text-gray-400 hover:text-gray-300 transition-colors">
               View full data &amp; methodology disclosure →
             </Link>
           </div>
