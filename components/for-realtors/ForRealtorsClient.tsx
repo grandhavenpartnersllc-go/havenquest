@@ -67,12 +67,44 @@ const minQualifications = [
   '24-hour introduction response commitment',
 ]
 
+const HOUSTON_ZONES = new Set([
+  'Inner Loop / Urban Core Houston',
+  'The Heights / Inner Northwest',
+  'West University / Bellaire / Memorial',
+  'The Woodlands / North Houston',
+  'Spring / Klein / Champions Corridor',
+  'Katy / Fulshear / West Houston Energy Corridor',
+  'Sugar Land / Fort Bend County',
+  'Pearland / South Houston',
+  'Clear Lake / NASA / Southeast Houston',
+  'Cypress / Northwest Houston',
+  'Kingwood / Lake Houston Corridor',
+  'Baytown / East Houston Industrial Corridor',
+  'Richmond / Rosenberg / Southwest Growth Corridor',
+  'Conroe / Montgomery County North Growth Belt',
+  'Galveston Island / Gulf Coast',
+  'Brazosport / Gulf Coast South',
+])
+
+const MARKET_SEGMENTS = [
+  { value: 'Starter', label: 'Starter — Under $325K' },
+  { value: 'Mid-Market', label: 'Mid-Market — $325K to $650K' },
+  { value: 'High', label: 'High — $650K to $1.3M' },
+  { value: 'Luxury', label: 'Luxury — $1.3M to $2M' },
+  { value: 'Estate', label: 'Estate — $2M+' },
+]
+
+const EMPTY_TRANSACTION = { city: '', salePrice: '', closeDate: '' }
+
 export default function ForRealtorsClient() {
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '', marketSpecialty: '',
     yearsExperience: '', brokerage: '', profileUrl: '',
     whyJoin: '',
     trecLicenseNumber: '', licenseType: '',
+    market_segments: [] as string[],
+    transactions: Array.from({ length: 5 }, () => ({ ...EMPTY_TRANSACTION })),
+    har_profile_url: '',
   })
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -80,6 +112,30 @@ export default function ForRealtorsClient() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData(p => ({ ...p, [e.target.name]: e.target.value }))
+  }
+
+  const handleSegmentChange = (value: string) => {
+    setFormData(p => {
+      if (p.market_segments.includes(value)) {
+        return { ...p, market_segments: p.market_segments.filter(s => s !== value) }
+      }
+      if (p.market_segments.length >= 2) return p
+      return { ...p, market_segments: [...p.market_segments, value] }
+    })
+  }
+
+  const handleTransactionChange = (index: number, field: 'city' | 'salePrice' | 'closeDate', value: string) => {
+    setFormData(p => {
+      const transactions = p.transactions.map((t, i) => i === index ? { ...t, [field]: value } : t)
+      return { ...p, transactions }
+    })
+  }
+
+  const addTransaction = () => {
+    setFormData(p => {
+      if (p.transactions.length >= 10) return p
+      return { ...p, transactions: [...p.transactions, { ...EMPTY_TRANSACTION }] }
+    })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -94,6 +150,19 @@ export default function ForRealtorsClient() {
     }
     if (!formData.licenseType) {
       setError('Please select a license type')
+      return
+    }
+    if (formData.market_segments.length === 0) {
+      setError('Please select at least one market segment')
+      return
+    }
+    const completeTransactions = formData.transactions.filter(t => t.city && t.salePrice && t.closeDate)
+    if (completeTransactions.length < 5) {
+      setError('Please enter at least 5 complete transactions (city, sale price, and close date required for each)')
+      return
+    }
+    if (HOUSTON_ZONES.has(formData.marketSpecialty) && !formData.har_profile_url.trim()) {
+      setError('HAR Profile URL is required for Houston metro applicants')
       return
     }
     setLoading(true)
@@ -271,7 +340,7 @@ export default function ForRealtorsClient() {
                   <input
                     type="text"
                     name={field.name}
-                    value={formData[field.name as keyof typeof formData]}
+                    value={formData[field.name as keyof typeof formData] as string}
                     onChange={handleChange}
                     placeholder={field.placeholder}
                     className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all"
@@ -400,6 +469,108 @@ export default function ForRealtorsClient() {
                     <option value="Brazosport / Gulf Coast South">Brazosport / Gulf Coast South</option>
                   </optgroup>
                 </select>
+              </div>
+
+              {/* Field 1 — Market Segment Specialty */}
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Market Segment Specialty <span className="text-red-400">*</span>
+                </label>
+                <p className="text-xs text-gray-400 mb-3">Select up to 2 segments that best represent your primary market within your selected zone. Adjacent segments only (e.g. Starter + Mid-Market, or High + Luxury).</p>
+                <div className="flex flex-wrap gap-3">
+                  {MARKET_SEGMENTS.map(seg => {
+                    const checked = formData.market_segments.includes(seg.value)
+                    const disabled = !checked && formData.market_segments.length >= 2
+                    return (
+                      <label
+                        key={seg.value}
+                        className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl border text-sm cursor-pointer transition-all select-none ${
+                          checked
+                            ? 'border-accent bg-blue-50 text-accent font-semibold'
+                            : disabled
+                            ? 'border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed'
+                            : 'border-gray-200 text-gray-700 hover:border-gray-300'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          className="sr-only"
+                          checked={checked}
+                          disabled={disabled}
+                          onChange={() => handleSegmentChange(seg.value)}
+                        />
+                        {seg.label}
+                      </label>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Field 2 — Transaction History */}
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Recent Transaction History <span className="text-red-400">*</span>
+                </label>
+                <p className="text-xs text-gray-400 mb-3">List at least 5 of your closed transactions from the past 24 months. This is used to verify your zone and segment expertise. You may add up to 10.</p>
+                <div className="space-y-3">
+                  {formData.transactions.map((tx, i) => (
+                    <div key={i}>
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Transaction {i + 1}</p>
+                      <div className="grid grid-cols-3 gap-2">
+                        <input
+                          type="text"
+                          value={tx.city}
+                          onChange={e => handleTransactionChange(i, 'city', e.target.value)}
+                          placeholder="e.g. Frisco"
+                          className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all"
+                        />
+                        <input
+                          type="text"
+                          value={tx.salePrice}
+                          onChange={e => handleTransactionChange(i, 'salePrice', e.target.value)}
+                          placeholder="e.g. $485,000"
+                          className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all"
+                        />
+                        <input
+                          type="text"
+                          value={tx.closeDate}
+                          onChange={e => handleTransactionChange(i, 'closeDate', e.target.value)}
+                          placeholder="MM/YYYY"
+                          className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {formData.transactions.length < 10 && (
+                  <button
+                    type="button"
+                    onClick={addTransaction}
+                    className="mt-3 text-sm text-accent hover:underline font-medium"
+                  >
+                    + Add Transaction
+                  </button>
+                )}
+              </div>
+
+              {/* Field 3 — HAR Profile URL */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  HAR Profile URL{HOUSTON_ZONES.has(formData.marketSpecialty) && <span className="text-red-400"> *</span>}
+                </label>
+                <input
+                  type="text"
+                  name="har_profile_url"
+                  value={formData.har_profile_url}
+                  onChange={handleChange}
+                  placeholder="https://www.har.com/your-profile"
+                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all"
+                />
+                <p className="text-xs text-gray-400 mt-1.5">
+                  {HOUSTON_ZONES.has(formData.marketSpecialty)
+                    ? 'Required for Houston metro applicants.'
+                    : 'Required for Houston metro applicants. Recommended for all others — HAR.com is the most comprehensive agent profile source in Texas.'}
+                </p>
               </div>
 
               <div className="sm:col-span-2">
