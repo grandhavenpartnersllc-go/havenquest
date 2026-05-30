@@ -312,9 +312,19 @@ export default function ForRealtorsClient() {
               </div>
 
               <div className="sm:col-span-2">
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                  Market Specialty <span className="text-red-400">*</span>
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    Market Specialty <span className="text-red-400">*</span>
+                  </label>
+                  <a
+                    href="/zones"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-accent hover:underline"
+                  >
+                    Not sure which zone? View all market zones →
+                  </a>
+                </div>
                 <select
                   name="marketSpecialty"
                   value={formData.marketSpecialty}
