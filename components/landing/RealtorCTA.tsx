@@ -8,8 +8,7 @@ export default function RealtorCTA() {
           Are you a Texas realtor?
         </p>
         <p className="text-gray-500 mb-6">
-          Join the HavenQuest network and receive pre-qualified relocation leads
-          with income, budget, and lifestyle data attached.
+          When someone arrives in your city with a clear vision, a set budget, and a plan for their future — they deserve the finest realtor available. That&apos;s who we&apos;re looking for.
         </p>
         <Link
           href="/for-realtors"
