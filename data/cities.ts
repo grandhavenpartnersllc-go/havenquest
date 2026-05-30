@@ -5468,7 +5468,7 @@ export const texasCities: Location[] = [
     hasNeighborhoodData: false,
     lastUpdated: '05/2026',
     metroUsed: 'Austin, TX metro area',
-    zone: 'Texas Hill Country',
+    zone: 'Austin Hill Country',
     scores: {
       affordability: 2,
       schools: 7,
@@ -5530,7 +5530,7 @@ export const texasCities: Location[] = [
     hasNeighborhoodData: false,
     lastUpdated: '05/2026',
     metroUsed: 'San Antonio, TX metro area',
-    zone: 'Texas Hill Country',
+    zone: 'San Antonio Hill Country',
     scores: {
       affordability: 6,
       schools: 4,
@@ -5592,7 +5592,7 @@ export const texasCities: Location[] = [
     hasNeighborhoodData: false,
     lastUpdated: '05/2026',
     metroUsed: 'San Antonio, TX metro area',
-    zone: 'Texas Hill Country',
+    zone: 'San Antonio Hill Country',
     scores: {
       affordability: 4,
       schools: 7,
@@ -6088,7 +6088,7 @@ export const texasCities: Location[] = [
     hasNeighborhoodData: false,
     lastUpdated: '05/2026',
     metroUsed: 'Austin, TX metro area',
-    zone: 'Texas Hill Country',
+    zone: 'Austin Hill Country',
     scores: {
       affordability: 5,
       schools: 4,
@@ -6150,7 +6150,7 @@ export const texasCities: Location[] = [
     hasNeighborhoodData: false,
     lastUpdated: '05/2026',
     metroUsed: 'San Antonio, TX metro area',
-    zone: 'Texas Hill Country',
+    zone: 'San Antonio Hill Country',
     scores: {
       affordability: 3,
       schools: 7,

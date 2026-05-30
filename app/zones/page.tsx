@@ -20,6 +20,7 @@ const cardStyle = { boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,
 interface Zone {
   name: string
   cities: string[] | null
+  note?: string
 }
 
 interface Metro {
@@ -41,7 +42,7 @@ const METROS: Metro[] = [
       { name: 'Lake Travis / Hill Country Galleria', cities: ['Lakeway', 'Bee Cave'] },
       { name: 'Kyle / Buda / South Growth Corridor', cities: ['Kyle', 'Buda', 'San Marcos', 'Bastrop', 'Lockhart'] },
       { name: 'Westlake / West Austin', cities: null },
-      { name: 'Texas Hill Country', cities: ['Wimberley', 'Marble Falls', 'Kerrville', 'Fredericksburg', 'Canyon Lake'] },
+      { name: 'Austin Hill Country', cities: ['Wimberley', 'Marble Falls'] },
     ],
   },
   {
@@ -97,7 +98,7 @@ const METROS: Metro[] = [
       { name: 'South San Antonio / Mission Corridor', cities: ['Pleasanton'] },
       { name: 'West San Antonio / Alamo Ranch', cities: ['Leon Valley'] },
       { name: 'East San Antonio / Converse Corridor', cities: ['Converse'] },
-      { name: 'Texas Hill Country', cities: ['Kerrville', 'Fredericksburg', 'Canyon Lake', 'Wimberley', 'Marble Falls'] },
+      { name: 'San Antonio Hill Country', cities: ['Kerrville', 'Fredericksburg', 'Canyon Lake'], note: 'Includes Hill Country cities with a San Antonio metro orientation' },
     ],
   },
   {
@@ -133,7 +134,10 @@ export default function ZonesPage() {
                 <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-100" style={cardStyle}>
                   {metro.zones.map(zone => (
                     <div key={zone.name} className="px-5 py-4 flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-4">
-                      <p className="text-sm font-semibold text-gray-900 shrink-0 sm:w-72">{zone.name}</p>
+                      <div className="shrink-0 sm:w-72">
+                        <p className="text-sm font-semibold text-gray-900">{zone.name}</p>
+                        {zone.note && <p className="text-xs text-gray-400 mt-0.5">{zone.note}</p>}
+                      </div>
                       {zone.cities ? (
                         <p className="text-sm text-gray-500">{zone.cities.join(', ')}</p>
                       ) : (

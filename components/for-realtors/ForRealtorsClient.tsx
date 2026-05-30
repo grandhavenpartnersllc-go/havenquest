@@ -344,6 +344,7 @@ export default function ForRealtorsClient() {
                     <option value="Georgetown / North Growth Corridor">Georgetown / North Growth Corridor</option>
                     <option value="East Austin">East Austin</option>
                     <option value="Kyle / Buda / South Growth Corridor">Kyle / Buda / South Growth Corridor</option>
+                    <option value="Austin Hill Country">Austin Hill Country</option>
                   </optgroup>
                   <optgroup label="DALLAS-FORT WORTH METRO">
                     <option value="Urban Core Dallas">Urban Core Dallas</option>
@@ -384,12 +385,16 @@ export default function ForRealtorsClient() {
                     <option value="The Dominion / I-10 Luxury Corridor">The Dominion / I-10 Luxury Corridor</option>
                     <option value="Northwest San Antonio / Helotes">Northwest San Antonio / Helotes</option>
                     <option value="Boerne / Fair Oaks Ranch / Hill Country Corridor">Boerne / Fair Oaks Ranch / Hill Country Corridor</option>
-                    <option value="Texas Hill Country">Texas Hill Country</option>
+                    <option value="San Antonio Hill Country">San Antonio Hill Country</option>
                     <option value="New Braunfels / I-35 Northeast Growth Corridor">New Braunfels / I-35 Northeast Growth Corridor</option>
                     <option value="Schertz / Cibolo / Universal City">Schertz / Cibolo / Universal City</option>
                     <option value="South San Antonio / Mission Corridor">South San Antonio / Mission Corridor</option>
                     <option value="West San Antonio / Alamo Ranch">West San Antonio / Alamo Ranch</option>
                     <option value="East San Antonio / Converse Corridor">East San Antonio / Converse Corridor</option>
+                  </optgroup>
+                  <optgroup label="STANDALONE MARKETS">
+                    <option value="Waco">Waco</option>
+                    <option value="Corpus Christi">Corpus Christi</option>
                   </optgroup>
                   <optgroup label="GULF COAST / BRAZOSPORT">
                     <option value="Brazosport / Gulf Coast South">Brazosport / Gulf Coast South</option>
