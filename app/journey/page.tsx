@@ -51,7 +51,7 @@ export default function JourneyPage() {
                   Explore Texas
                 </h2>
                 <p className="text-sm text-gray-500 leading-relaxed mb-6 flex-1">
-                  You&apos;re open to anywhere in the state. Tell us your lifestyle and budget and we&apos;ll match you to the right Texas community across 4 Texas metros and 91 cities.
+                  You&apos;re open to anywhere in the state. Tell us your lifestyle and budget and we&apos;ll match you to the right Texas community across 4 Texas metros and 101 cities.
                 </p>
                 <span
                   className="inline-flex items-center gap-1.5 text-sm font-bold mt-auto transition-colors group-hover:opacity-80"
