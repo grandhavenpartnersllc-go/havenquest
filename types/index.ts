@@ -58,6 +58,7 @@ export interface Location {
   hasNeighborhoodData: boolean
   lastUpdated: string
   metroUsed: string
+  zone: string
 }
 
 export interface BuyerProfile {

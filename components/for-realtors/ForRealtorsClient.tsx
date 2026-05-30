@@ -362,6 +362,7 @@ export default function ForRealtorsClient() {
                     <option value="Cypress / Northwest Houston">Cypress / Northwest Houston</option>
                     <option value="Kingwood / Lake Houston Corridor">Kingwood / Lake Houston Corridor</option>
                     <option value="Baytown / East Houston Industrial Corridor">Baytown / East Houston Industrial Corridor</option>
+                    <option value="Galveston Island / Gulf Coast">Galveston Island / Gulf Coast</option>
                     <option value="Richmond / Rosenberg / Southwest Growth Corridor">Richmond / Rosenberg / Southwest Growth Corridor</option>
                     <option value="Conroe / Montgomery County North Growth Belt">Conroe / Montgomery County North Growth Belt</option>
                   </optgroup>
@@ -373,11 +374,15 @@ export default function ForRealtorsClient() {
                     <option value="The Dominion / I-10 Luxury Corridor">The Dominion / I-10 Luxury Corridor</option>
                     <option value="Northwest San Antonio / Helotes">Northwest San Antonio / Helotes</option>
                     <option value="Boerne / Fair Oaks Ranch / Hill Country Corridor">Boerne / Fair Oaks Ranch / Hill Country Corridor</option>
+                    <option value="Texas Hill Country">Texas Hill Country</option>
                     <option value="New Braunfels / I-35 Northeast Growth Corridor">New Braunfels / I-35 Northeast Growth Corridor</option>
                     <option value="Schertz / Cibolo / Universal City">Schertz / Cibolo / Universal City</option>
                     <option value="South San Antonio / Mission Corridor">South San Antonio / Mission Corridor</option>
                     <option value="West San Antonio / Alamo Ranch">West San Antonio / Alamo Ranch</option>
                     <option value="East San Antonio / Converse Corridor">East San Antonio / Converse Corridor</option>
+                  </optgroup>
+                  <optgroup label="GULF COAST / BRAZOSPORT">
+                    <option value="Brazosport / Gulf Coast South">Brazosport / Gulf Coast South</option>
                   </optgroup>
                 </select>
               </div>
