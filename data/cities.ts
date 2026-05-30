@@ -240,7 +240,7 @@ export const texasCities: Location[] = [
       'Growing cybersecurity and healthcare tech cluster — USAA, Rackspace',
     ],
     weaknesses: [
-      'Highest property tax rate among 80 cities — 2.27%',
+      'Highest property tax rate among 91 cities — 2.27%',
       'Crime rate elevated — 5,318 per 100K, up 14.8% since 2021',
       'School quality varies widely across districts',
     ],
