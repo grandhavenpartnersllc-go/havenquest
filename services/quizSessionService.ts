@@ -3,13 +3,11 @@
 // This cleanup job prevents orphaned session rows from accumulating over time.
 // Build trigger: when Supabase dashboard access is configured for Craig.
 
-// Step label map (6-step quiz as of 2026-05-30)
+// Step label map (4-step quiz as of 2026-05-30)
 // 1 → household_income
-// 2 → financial_picture  (inserted between household and timeline)
-// 3 → lifestyle_priorities
-// 4 → must_haves
-// 5 → priority_ranking
-// 6 → buyer_profile
+// 2 → household_dream_home
+// 3 → financial_picture
+// 4 → priorities
 
 import { createClient } from '../lib/supabase/client'
 import { QuizSessionData } from '../types'
@@ -45,7 +43,6 @@ export async function updateSessionStep(
       current_step: step,
       ...(data.annualIncome !== undefined && { annual_income: data.annualIncome }),
       ...(data.householdSize !== undefined && { household_size: data.householdSize }),
-      ...(data.housingPreference !== undefined && { housing_preference: data.housingPreference }),
       ...(data.movingTimeline !== undefined && { moving_timeline: data.movingTimeline }),
       ...(data.mustHaves !== undefined && { must_haves: data.mustHaves }),
       ...(data.niceToHaves !== undefined && { nice_to_haves: data.niceToHaves }),

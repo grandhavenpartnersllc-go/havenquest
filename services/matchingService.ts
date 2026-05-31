@@ -1,7 +1,5 @@
 import { Location, UserProfile, CityMatch, FinancialPicture } from '../types'
-import { getAllCities } from './locationService'
 import { generateZillowUrl } from '../utils/zillowUrl'
-import { isLuxuryPreference } from '../utils/constants'
 
 export function calculateMatchScore(city: Location, profile: UserProfile): number {
   const mustHaveTotal = profile.mustHaves.reduce(
@@ -25,19 +23,8 @@ export function calculateMatchScore(city: Location, profile: UserProfile): numbe
   return Math.round((rawScore / maxScore) * 100)
 }
 
-// Kept for display use in AffordabilityBreakdown and affordabilityService
-export function getMonthlyHousingCost(
-  city: Location,
-  preference: UserProfile['housingPreference']
-): number {
-  const h = city.housing
-  switch (preference) {
-    case 'buyStarter': return Math.round(h.starterHomePrice * 0.007)
-    case 'buyMedian': return Math.round(h.medianHomePrice * 0.007)
-    case 'luxuryHome': return Math.round(1_000_000 * 0.007)
-    case 'luxuryEstate': return Math.round(2_000_000 * 0.007)
-    default: return Math.round(h.medianHomePrice * 0.007)
-  }
+export function getMonthlyHousingCost(city: Location): number {
+  return Math.round(city.housing.medianHomePrice * 0.007)
 }
 
 // Standard 30-year amortization at 7.0% fixed rate
@@ -101,7 +88,6 @@ function computeAffordability(
   const grossMonthlyIncome = annualIncome / 12
   const threshold = grossMonthlyIncome * 0.40
 
-  // No financial picture — fall back to income-only check
   if (!fp) {
     const roughPayment = cityMedianPrice * 0.007
     const flag = roughPayment > threshold
@@ -113,7 +99,6 @@ function computeAffordability(
     ? getProceedsMidpoint(fp.home_sale_proceeds)
     : 0
 
-  // Special case: $500K+ down payment — buyer is not price-constrained
   if (fp.down_payment_available === '$500,000+') {
     const segment = annualIncome >= 300_000 ? 'Estate' : 'Luxury'
     return { affordabilityFlag: false, segment }
@@ -122,7 +107,6 @@ function computeAffordability(
   const totalFunds = downPaymentMidpoint + proceedsMidpoint
   const mortgageBalance = Math.max(0, cityMedianPrice - totalFunds)
 
-  // Cash buyer
   if (mortgageBalance === 0) {
     return { affordabilityFlag: false, segment: 'Estate' }
   }
@@ -134,19 +118,20 @@ function computeAffordability(
   return { affordabilityFlag, segment }
 }
 
-// Legacy flag check kept for direct callers outside getTopMatches
 export function checkAffordabilityFlag(city: Location, profile: UserProfile): boolean {
-  if (isLuxuryPreference(profile.housingPreference)) return false
-  return computeAffordability(
+  const { segment, affordabilityFlag } = computeAffordability(
     city.housing.medianHomePrice,
     profile.annualIncome,
     profile.financial_picture
-  ).affordabilityFlag
+  )
+  const isLuxury = segment === 'Luxury' || segment === 'Estate'
+  if (isLuxury) return false
+  return affordabilityFlag
 }
 
 export function getAffordabilityRatio(city: Location, profile: UserProfile): number {
   const monthlyIncome = profile.annualIncome / 12
-  const monthlyHousing = getMonthlyHousingCost(city, profile.housingPreference)
+  const monthlyHousing = getMonthlyHousingCost(city)
   return monthlyHousing / monthlyIncome
 }
 
@@ -162,7 +147,6 @@ export function getTopMatches(
   const topCities = sorted.slice(0, limit)
   if (topCities.length === 0) return []
 
-  // Segment is derived once against the top matched city's median
   const topCityMedian = topCities[0].city.housing.medianHomePrice
   const { segment } = computeAffordability(
     topCityMedian,
@@ -170,8 +154,9 @@ export function getTopMatches(
     profile.financial_picture
   )
 
+  const isLuxury = segment === 'Luxury' || segment === 'Estate'
+
   return topCities.map(({ city, matchScore }) => {
-    const isLuxury = isLuxuryPreference(profile.housingPreference)
     const affordabilityFlag = isLuxury
       ? false
       : computeAffordability(
@@ -185,9 +170,9 @@ export function getTopMatches(
       matchScore,
       affordabilityScore: Math.round(city.scores.affordability * 10),
       affordabilityFlag,
-      estimatedMonthlyHousing: getMonthlyHousingCost(city, profile.housingPreference),
+      estimatedMonthlyHousing: getMonthlyHousingCost(city),
       estimatedMonthlyTotal:
-        getMonthlyHousingCost(city, profile.housingPreference) +
+        getMonthlyHousingCost(city) +
         city.housing.monthlyUtilities +
         city.housing.monthlyGroceries +
         city.housing.monthlyTransportation,

@@ -107,7 +107,7 @@ export default function FullReport({ match, profile }: FullReportProps) {
 
         <hr className="border-gray-100" />
 
-        <ListingsButton match={match} housingPreference={profile.housingPreference} />
+        <ListingsButton match={match} />
       </div>
     </article>
   )

@@ -1,0 +1,13 @@
+Update components/for-realtors/ForRealtorsClient.tsx
+
+Replace the City/markets served text input with a Market Specialty dropdown. Label: Market Specialty. Required field. One selection only. Four non-selectable optgroup headers.
+
+AUSTIN METRO: Urban Core Austin, Westlake / West Austin, Northwest Austin / Cedar Park / Leander, Round Rock / Pflugerville / Hutto Corridor, South Austin, Southwest Austin / Dripping Springs, Lake Travis / Hill Country Galleria, Georgetown / North Growth Corridor, East Austin, Kyle / Buda / South Growth Corridor
+
+DALLAS-FORT WORTH METRO: Urban Core Dallas, North Dallas / Platinum Corridor, Collin County Growth Corridor, Luxury North Suburbs, Mid-Cities / Airport Corridor, Fort Worth Urban Core, Alliance / North Fort Worth, West Fort Worth & Parker County, South Fort Worth / Mansfield Corridor, Denton County Growth Belt, East Dallas & Lake Communities, Southern Sector / Best Southwest
+
+HOUSTON METRO: Inner Loop / Urban Core Houston, The Heights / Inner Northwest, West University / Bellaire / Memorial, The Woodlands / North Houston, Spring / Klein / Champions Corridor, Katy / Fulshear / West Houston Energy Corridor, Sugar Land / Fort Bend County, Pearland / South Houston, Clear Lake / NASA / Southeast Houston, Cypress / Northwest Houston, Kingwood / Lake Houston Corridor, Baytown / East Houston Industrial Corridor, Richmond / Rosenberg / Southwest Growth Corridor, Conroe / Montgomery County North Growth Belt
+
+SAN ANTONIO METRO: Urban Core / Central San Antonio, Alamo Heights / Terrell Hills / Olmos Park, North Central San Antonio, Stone Oak / Far North San Antonio, The Dominion / I-10 Luxury Corridor, Northwest San Antonio / Helotes, Boerne / Fair Oaks Ranch / Hill Country Corridor, New Braunfels / I-35 Northeast Growth Corridor, Schertz / Cibolo / Universal City, South San Antonio / Mission Corridor, West San Antonio / Alamo Ranch, East San Antonio / Converse Corridor
+
+Commit and deploy when done.

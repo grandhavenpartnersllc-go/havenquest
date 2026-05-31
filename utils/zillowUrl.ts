@@ -2,15 +2,6 @@ import { Location, UserProfile } from '../types'
 
 export function generateZillowUrl(city: Location, profile: UserProfile): string {
   const citySlug = city.name.replace(/\s+/g, '-')
-  const pref = profile.housingPreference
-
-  if (pref === 'luxuryHome') {
-    return `https://www.zillow.com/homes/for_sale/${citySlug}-TX_rb/?price=1000000-`
-  }
-  if (pref === 'luxuryEstate') {
-    return `https://www.zillow.com/homes/for_sale/${citySlug}-TX_rb/?price=2000000-`
-  }
-
   const maxBudget = Math.round(profile.annualIncome * 4.5)
   const bp = profile.buyerProfile
 
@@ -33,6 +24,12 @@ export function generateZillowUrl(city: Location, profile: UserProfile): string 
     url += `&built_since_year=2015`
   } else if (bp?.constructionPreference === 'resale') {
     url += `&built_before_year=2015`
+  }
+  if (bp?.features?.includes('garage')) {
+    url += `&hasGarage=true`
+  }
+  if (bp?.features?.includes('pool')) {
+    url += `&hasPool=true`
   }
 
   return url

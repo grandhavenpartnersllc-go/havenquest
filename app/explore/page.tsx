@@ -8,22 +8,18 @@ import FormProgress from '../../components/form/FormProgress'
 import IncomeForm from '../../components/form/IncomeForm'
 import HouseholdForm from '../../components/form/HouseholdForm'
 import FinancialPictureStep from '../../components/quiz/FinancialPictureStep'
-import TimelineForm from '../../components/form/TimelineForm'
 import PrioritySelector from '../../components/form/PrioritySelector'
-import BuyerProfileStep from '../../components/form/BuyerProfileStep'
 import { UserProfile, BuyerProfile, LifestyleScores, FinancialPicture } from '../../types'
 import { SESSION_PROFILE_KEY } from '../../utils/constants'
 import { initSession, updateSessionStep } from '../../services/quizSessionService'
 
-const STEPS = ['Income', 'Household', 'Financial Picture', 'Timeline', 'Priorities', 'Buyer Profile']
+const STEPS = ['Income', 'Household & Dream Home', 'Financial Picture', 'Priorities']
 
 const STEP_HEADLINES = [
   "Let's find your Texas city",
-  'Tell us about your household',
+  'Tell us about your household and dream home',
   "Now let's talk about your purchasing power.",
   'What matters most to you?',
-  'Set your priorities',
-  "Now let's talk about your home",
 ]
 
 type PartialProfile = Partial<UserProfile>
@@ -46,23 +42,24 @@ export default function ExplorePage() {
 
   const handleHousehold = (data: {
     householdSize: UserProfile['householdSize']
-    housingPreference: UserProfile['housingPreference']
+    buyerProfile: BuyerProfile
   }) => {
-    setProfile(p => ({ ...p, ...data }))
-    updateSessionStep(sessionId, 2, { housingPreference: data.housingPreference })
+    setProfile(p => ({ ...p, householdSize: data.householdSize, buyerProfile: data.buyerProfile }))
+    updateSessionStep(sessionId, 2, {})
     setStep(2)
   }
 
   const handleFinancialPicture = (financial_picture: FinancialPicture) => {
-    setProfile(p => ({ ...p, financial_picture }))
+    const timelineMap: Record<FinancialPicture['purchase_timeline'], UserProfile['movingTimeline']> = {
+      '0-3months':  '0-3months',
+      '3-6months':  '3-6months',
+      '6-12months': '6-12months',
+      'exploring':  'exploring',
+    }
+    const movingTimeline = timelineMap[financial_picture.purchase_timeline]
+    setProfile(p => ({ ...p, financial_picture, movingTimeline }))
     updateSessionStep(sessionId, 3, {})
     setStep(3)
-  }
-
-  const handleTimeline = (movingTimeline: UserProfile['movingTimeline']) => {
-    setProfile(p => ({ ...p, movingTimeline }))
-    updateSessionStep(sessionId, 4, { movingTimeline })
-    setStep(4)
   }
 
   const handlePriorities = (
@@ -70,19 +67,15 @@ export default function ExplorePage() {
     niceToHaves: (keyof LifestyleScores)[],
     notPriorities: (keyof LifestyleScores)[]
   ) => {
-    setProfile(p => ({ ...p, mustHaves, niceToHaves, notPriorities }))
-    updateSessionStep(sessionId, 5, { mustHaves, niceToHaves, notPriorities })
-    setStep(5)
-  }
-
-  const handleBuyerProfile = (buyerProfile: BuyerProfile) => {
     const finalProfile: UserProfile = {
       ...(profile as UserProfile),
-      buyerProfile,
+      mustHaves,
+      niceToHaves,
+      notPriorities,
     }
     sessionStorage.setItem(SESSION_PROFILE_KEY, JSON.stringify(finalProfile))
     sessionStorage.removeItem('hq_metro')
-    updateSessionStep(sessionId, 6, { buyerProfile })
+    updateSessionStep(sessionId, 4, { mustHaves, niceToHaves, notPriorities })
     router.push(`/results/${sessionId}`)
   }
 
@@ -116,11 +109,9 @@ export default function ExplorePage() {
                 initialData={profile.financial_picture}
               />
             )}
-            {step === 3 && <TimelineForm onComplete={handleTimeline} />}
-            {step === 4 && <PrioritySelector onComplete={handlePriorities} />}
-            {step === 5 && <BuyerProfileStep onComplete={handleBuyerProfile} />}
+            {step === 3 && <PrioritySelector onComplete={handlePriorities} />}
 
-            {step > 0 && step < STEPS.length - 1 && step !== 2 && (
+            {step === 1 && (
               <button
                 onClick={() => setStep(s => s - 1)}
                 className="mt-4 w-full text-sm text-gray-400 hover:text-gray-600 transition-colors font-medium"

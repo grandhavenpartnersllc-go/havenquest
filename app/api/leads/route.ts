@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
             html: buildLeadNotificationHtml({
               firstName: firstName || 'Unknown',
               city,
-              profile: { movingTimeline, annualIncome: 0, householdSize: '1', housingPreference: 'buyMedian', mustHaves: [], niceToHaves: [], notPriorities: [] },
+              profile: { movingTimeline, annualIncome: 0, householdSize: '1', mustHaves: [], niceToHaves: [], notPriorities: [] },
               matchScore: 0,
               timeline: movingTimeline || 'unknown',
             }),

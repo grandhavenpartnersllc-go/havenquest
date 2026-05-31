@@ -4,7 +4,6 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { X, CheckCircle2 } from 'lucide-react'
 import { CityMatch, UserProfile, UserSession } from '../../types'
-import { TIMELINE_OPTIONS } from '../../utils/constants'
 import { completeSession } from '../../services/quizSessionService'
 
 interface EmailGateProps {
@@ -20,7 +19,6 @@ export default function EmailGate({ matches, profile, sessionId, onSuccess, onCl
   const [firstName, setFirstName] = useState(storedSession?.firstName ?? '')
   const [email, setEmail] = useState(storedSession?.email ?? '')
   const [phone, setPhone] = useState('')
-  const [timeline, setTimeline] = useState(profile.movingTimeline)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [returningUser, setReturningUser] = useState(false)
@@ -51,10 +49,9 @@ export default function EmailGate({ matches, profile, sessionId, onSuccess, onCl
           firstName: firstName.trim(),
           email: email.trim().toLowerCase(),
           phone: phone.trim() || null,
-          movingTimeline: timeline,
+          movingTimeline: profile.movingTimeline,
           annualIncome: profile.annualIncome,
           householdSize: profile.householdSize,
-          housingPreference: profile.housingPreference,
           mustHaves: profile.mustHaves,
           niceToHaves: profile.niceToHaves,
           notPriorities: profile.notPriorities,
@@ -186,21 +183,6 @@ export default function EmailGate({ matches, profile, sessionId, onSuccess, onCl
               placeholder="(555) 000-0000"
               className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all"
             />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Moving timeline
-            </label>
-            <select
-              value={timeline}
-              onChange={e => setTimeline(e.target.value as typeof timeline)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all bg-white"
-            >
-              {TIMELINE_OPTIONS.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
           </div>
 
           {returningUser && (

@@ -32,7 +32,6 @@ export default function RealtorMatchSection({ city, profile }: RealtorMatchSecti
             profile={{
               movingTimeline: profile.movingTimeline,
               annualIncome: profile.annualIncome,
-              housingPreference: profile.housingPreference,
             }}
           />
         ))}

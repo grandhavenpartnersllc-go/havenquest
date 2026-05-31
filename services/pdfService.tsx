@@ -249,7 +249,7 @@ function ReportDocument({ firstName, matches, profile, generatedDate }: Props) {
         <View style={s.body}>
           {matches.map((match, i) => {
             const city = match.location
-            const tax        = getMonthlyPropertyTax(city, profile.housingPreference)
+            const tax        = getMonthlyPropertyTax(city)
             const total      = getTotalMonthlyEstimate(city, profile)
             const remaining  = getMonthlyIncomeRemaining(city, profile)
             const monthlyInc = Math.round(profile.annualIncome / 12)

@@ -40,32 +40,6 @@ export const HOUSEHOLD_OPTIONS: { value: UserProfile['householdSize']; label: st
   { value: '5+', label: 'Family of 5+', description: 'Larger family' },
 ]
 
-export const LUXURY_HOME_PRICE = 1_000_000
-export const LUXURY_ESTATE_PRICE = 2_000_000
-
-export function isLuxuryPreference(pref: UserProfile['housingPreference']): boolean {
-  return pref === 'luxuryHome' || pref === 'luxuryEstate'
-}
-
-export const HOUSING_OPTIONS: {
-  value: UserProfile['housingPreference']
-  label: string
-  description: string
-  group?: 'Luxury'
-}[] = [
-  { value: 'buyStarter', label: 'Buy starter home', description: 'Entry-level purchase' },
-  { value: 'buyMedian', label: 'Buy median home', description: 'Mid-market purchase' },
-  { value: 'luxuryHome', label: 'Luxury Home ($1M+)', description: 'Premium purchase', group: 'Luxury' },
-  { value: 'luxuryEstate', label: 'Luxury Estate ($2M+)', description: 'High-end estate', group: 'Luxury' },
-]
-
-export const TIMELINE_OPTIONS: { value: UserProfile['movingTimeline']; label: string; description: string }[] = [
-  { value: '0-3months', label: 'Within 3 months', description: 'Moving very soon' },
-  { value: '3-6months', label: '3–6 months', description: 'Planning ahead' },
-  { value: '6-12months', label: '6–12 months', description: 'Taking my time' },
-  { value: 'exploring', label: 'Just exploring', description: 'No timeline yet' },
-]
-
 export const MUST_HAVE_MAX = 3
 export const NICE_TO_HAVE_MAX = 5
 

@@ -61,17 +61,30 @@ export interface Location {
   zone: string
 }
 
+export type HomeFeature =
+  | 'garage'
+  | 'pool'
+  | 'singleStory'
+  | 'largeYard'
+  | 'homeOffice'
+  | 'openFloorPlan'
+  | 'primaryBedroomDownstairs'
+  | 'guestSuite'
+  | 'smartHome'
+  | 'largeKitchen'
+
 export interface BuyerProfile {
   bedrooms: 2 | 3 | 4 | 5 | null
   bathrooms: 1 | 2 | 3 | null
   homeType: 'singleFamily' | 'townhome' | 'condo' | null
   constructionPreference: 'new' | 'resale' | null
+  features: HomeFeature[]
+  dreamHomeNotes: string | null
 }
 
 export interface UserProfile {
   annualIncome: number
   householdSize: '1' | '2' | '3-4' | '5+'
-  housingPreference: 'buyStarter' | 'buyMedian' | 'luxuryHome' | 'luxuryEstate'
   movingTimeline: '0-3months' | '3-6months' | '6-12months' | 'exploring'
   mustHaves: (keyof LifestyleScores)[]
   niceToHaves: (keyof LifestyleScores)[]
@@ -84,7 +97,7 @@ export interface FinancialPicture {
   is_homeowner: boolean;
   home_sale_proceeds: string | null;
   down_payment_available: string;
-  purchase_timeline: '0-3months' | '3-6months' | '6-12months' | '12plus_months';
+  purchase_timeline: '0-3months' | '3-6months' | '6-12months' | 'exploring';
 }
 
 export interface CityMatch {
@@ -130,7 +143,6 @@ export interface QuizSessionData {
   currentStep: number
   annualIncome?: number
   householdSize?: number
-  housingPreference?: string
   movingTimeline?: string
   mustHaves?: string[]
   niceToHaves?: string[]

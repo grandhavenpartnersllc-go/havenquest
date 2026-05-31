@@ -35,7 +35,7 @@ const TIMELINE_OPTIONS: { value: FinancialPicture['purchase_timeline']; label: s
   { value: '0-3months',     label: 'Within 3 months', Icon: Zap },
   { value: '3-6months',     label: '3 – 6 months',    Icon: Clock },
   { value: '6-12months',    label: '6 – 12 months',   Icon: Calendar },
-  { value: '12plus_months', label: '12+ months',      Icon: Compass },
+  { value: 'exploring',     label: '12+ months · Just exploring', Icon: Compass },
 ]
 
 const SELECT_CLASS =

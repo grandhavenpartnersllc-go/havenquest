@@ -7,7 +7,6 @@ import {
   getHousingIncomePercent,
 } from '../../services/affordabilityService'
 import { formatCurrency } from '../../utils/formatting'
-import { isLuxuryPreference } from '../../utils/constants'
 import AffordabilityWarning from './AffordabilityWarning'
 
 interface AffordabilityBreakdownProps {
@@ -17,25 +16,16 @@ interface AffordabilityBreakdownProps {
 }
 
 export default function AffordabilityBreakdown({ city, profile, showFlag }: AffordabilityBreakdownProps) {
-  const monthlyHousing = getMonthlyHousingCost(city, profile.housingPreference)
-  const pref = profile.housingPreference
-  const isLuxury = isLuxuryPreference(pref)
-  const propertyTax = getMonthlyPropertyTax(city, pref)
+  const monthlyHousing = getMonthlyHousingCost(city)
+  const propertyTax = getMonthlyPropertyTax(city)
   const total = getTotalMonthlyEstimate(city, profile)
   const remaining = getMonthlyIncomeRemaining(city, profile)
   const percent = getHousingIncomePercent(city, profile)
   const monthlyIncome = Math.round(profile.annualIncome / 12)
 
-  const isBuying = pref.startsWith('buy') || pref === 'luxuryHome' || pref === 'luxuryEstate'
-
-  const housingLabel =
-    pref === 'luxuryHome' ? 'Est. luxury mortgage ($1M+ home)' :
-    pref === 'luxuryEstate' ? 'Est. luxury mortgage ($2M+ estate)' :
-    'Est. monthly mortgage'
-
   const rows = [
-    { label: housingLabel, value: monthlyHousing },
-    ...(isBuying ? [{ label: 'Est. monthly property tax', value: propertyTax }] : []),
+    { label: 'Est. monthly mortgage', value: monthlyHousing },
+    { label: 'Est. monthly property tax', value: propertyTax },
     { label: 'Monthly utilities', value: city.housing.monthlyUtilities },
     { label: 'Monthly groceries', value: city.housing.monthlyGroceries },
     { label: 'Monthly transportation', value: city.housing.monthlyTransportation },
@@ -77,17 +67,9 @@ export default function AffordabilityBreakdown({ city, profile, showFlag }: Affo
         </span>
       </div>
 
-      {isBuying && !isLuxury && (
-        <p className="text-xs text-gray-400 mt-3 leading-relaxed italic">
-          Affordability estimates assume a 30-year conventional loan at 7.0% fixed rate. FHA, VA, and USDA loan options may expand your range. Your Ambassador will walk through your actual numbers with you.
-        </p>
-      )}
-
-      {isLuxury && (
-        <p className="text-xs text-gray-400 mt-3 italic">
-          Luxury preference — affordability threshold not applied.
-        </p>
-      )}
+      <p className="text-xs text-gray-400 mt-3 leading-relaxed italic">
+        Affordability estimates assume a 30-year conventional loan at 7.0% fixed rate. FHA, VA, and USDA loan options may expand your range. Your Ambassador will walk through your actual numbers with you.
+      </p>
     </div>
   )
 }

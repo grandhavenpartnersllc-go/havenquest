@@ -8,12 +8,12 @@ import FormProgress from '../../components/form/FormProgress'
 import ModeSelector from '../../components/form/ModeSelector'
 import IncomeForm from '../../components/form/IncomeForm'
 import HouseholdForm from '../../components/form/HouseholdForm'
-import TimelineForm from '../../components/form/TimelineForm'
+import FinancialPictureStep from '../../components/quiz/FinancialPictureStep'
 import PrioritySelector from '../../components/form/PrioritySelector'
-import { UserProfile, LifestyleScores } from '../../types'
+import { UserProfile, BuyerProfile, LifestyleScores, FinancialPicture } from '../../types'
 import { SESSION_PROFILE_KEY, SESSION_METRO_KEY, SESSION_ID_KEY } from '../../utils/constants'
 
-const STEPS = ['Metro', 'Income', 'Household', 'Timeline', 'Priorities']
+const STEPS = ['Metro', 'Income', 'Household & Dream Home', 'Financial Picture', 'Priorities']
 
 const METRO_LABELS: Record<string, string> = {
   austin: 'Austin Metro',
@@ -42,14 +42,21 @@ export default function MetroPage() {
 
   const handleHousehold = (data: {
     householdSize: UserProfile['householdSize']
-    housingPreference: UserProfile['housingPreference']
+    buyerProfile: BuyerProfile
   }) => {
-    setProfile(p => ({ ...p, ...data }))
+    setProfile(p => ({ ...p, householdSize: data.householdSize, buyerProfile: data.buyerProfile }))
     setStep(3)
   }
 
-  const handleTimeline = (movingTimeline: UserProfile['movingTimeline']) => {
-    setProfile(p => ({ ...p, movingTimeline }))
+  const handleFinancialPicture = (financial_picture: FinancialPicture) => {
+    const timelineMap: Record<FinancialPicture['purchase_timeline'], UserProfile['movingTimeline']> = {
+      '0-3months':  '0-3months',
+      '3-6months':  '3-6months',
+      '6-12months': '6-12months',
+      'exploring':  'exploring',
+    }
+    const movingTimeline = timelineMap[financial_picture.purchase_timeline]
+    setProfile(p => ({ ...p, financial_picture, movingTimeline }))
     setStep(4)
   }
 
@@ -99,10 +106,16 @@ export default function MetroPage() {
             {step === 0 && <ModeSelector onComplete={handleMetro} />}
             {step === 1 && <IncomeForm onComplete={handleIncome} defaultValue={profile.annualIncome} />}
             {step === 2 && <HouseholdForm onComplete={handleHousehold} />}
-            {step === 3 && <TimelineForm onComplete={handleTimeline} />}
+            {step === 3 && (
+              <FinancialPictureStep
+                onNext={handleFinancialPicture}
+                onBack={() => setStep(2)}
+                initialData={profile.financial_picture}
+              />
+            )}
             {step === 4 && <PrioritySelector onComplete={handlePriorities} />}
 
-            {step > 0 && step < 4 && (
+            {(step === 1 || step === 2) && (
               <button
                 onClick={() => setStep(s => s - 1)}
                 className="mt-4 w-full text-sm text-gray-400 hover:text-gray-600 transition-colors font-medium"

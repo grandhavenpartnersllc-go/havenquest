@@ -45,7 +45,6 @@ export async function POST(request: NextRequest) {
     const profile: UserProfile = {
       annualIncome: ud.annual_income,
       householdSize: ud.household_size ?? '1',
-      housingPreference: ud.housing_preference ?? 'buyMedian',
       movingTimeline: ud.moving_timeline ?? 'exploring',
       mustHaves: ud.must_haves ?? [],
       niceToHaves: ud.nice_to_haves ?? [],
