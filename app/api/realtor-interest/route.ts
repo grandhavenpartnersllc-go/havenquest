@@ -63,20 +63,28 @@ export async function POST(request: NextRequest) {
     if (resendKey) {
       const resend = new Resend(resendKey)
 
-      resend.emails.send({
-        from: 'Craig Asbach, Founder — HavenQuest <craig.asbach@havenquest.co>',
-        replyTo: 'craig.asbach@havenquest.co',
-        to: email.toLowerCase(),
-        subject: 'Your invitation to apply — HavenQuest Partner Network',
-        html: buildStage1RealtorEmailHtml(firstName, token),
-      }).catch(err => console.error('Resend Stage 1 realtor email error:', err))
+      try {
+        await resend.emails.send({
+          from: 'Craig Asbach, Founder - HavenQuest <craig.asbach@havenquest.co>',
+          replyTo: 'craig.asbach@havenquest.co',
+          to: email.toLowerCase(),
+          subject: 'Your invitation to apply — HavenQuest Partner Network',
+          html: buildStage1RealtorEmailHtml(firstName, token),
+        })
+      } catch (err) {
+        console.error('Resend Stage 1 realtor email error:', err)
+      }
 
-      resend.emails.send({
-        from: 'HavenQuest <admin@send.havenquest.co>',
-        to: 'craig.asbach@havenquest.co',
-        subject: `New Realtor Interest — ${firstName} ${lastName}`,
-        html: buildStage1CraigNotificationHtml({ firstName, lastName, email, phone, marketSpecialty, referralSource }),
-      }).catch(err => console.error('Resend Stage 1 Craig notification error:', err))
+      try {
+        await resend.emails.send({
+          from: 'HavenQuest <admin@send.havenquest.co>',
+          to: 'craig.asbach@havenquest.co',
+          subject: `New Realtor Interest — ${firstName} ${lastName}`,
+          html: buildStage1CraigNotificationHtml({ firstName, lastName, email, phone, marketSpecialty, referralSource }),
+        })
+      } catch (err) {
+        console.error('Resend Stage 1 Craig notification error:', err)
+      }
     }
 
     return NextResponse.json({ success: true })
