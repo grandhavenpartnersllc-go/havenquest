@@ -38,7 +38,8 @@ export default function CityMatchCard({ match, rank, blurred = false }: CityMatc
                 {location.name}
               </h3>
             </div>
-            <p className="text-xs text-gray-400 mt-0.5">{location.county} County, TX</p>
+            <p className="text-xs text-accent font-medium mt-0.5">{location.metroUsed}</p>
+            <p className="text-xs text-gray-400 mt-0">{location.county} County, TX</p>
           </div>
 
           {/* Score pill */}
@@ -61,7 +62,7 @@ export default function CityMatchCard({ match, rank, blurred = false }: CityMatc
         </div>
 
         {/* Market badge */}
-        <div className="flex flex-wrap items-center gap-2 mb-3">
+        <div className="flex flex-wrap items-start gap-2 mb-3">
           <MarketBadge condition={location.market.marketCondition} />
         </div>
 
