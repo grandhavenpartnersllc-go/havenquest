@@ -71,6 +71,7 @@ function MatchCard({ match, rank, profile, compareSelected, onCompare }: MatchCa
         scorePillBg: 'rgba(184,145,42,0.15)',
         scorePillText: GOLD,
         cityName: '#EDE7DC',
+        metro: GOLD,
         county: 'rgba(237,231,220,0.4)',
         cost: 'rgba(237,231,220,0.5)',
         divider: 'rgba(255,255,255,0.08)',
@@ -93,6 +94,7 @@ function MatchCard({ match, rank, profile, compareSelected, onCompare }: MatchCa
         scorePillBg: 'rgba(0,0,0,0.05)',
         scorePillText: '#6B5F54',
         cityName: WARM_DARK,
+        metro: '#1A5FA8',
         county: '#9A8E82',
         cost: '#9A8E82',
         divider: '#F0EDE6',
@@ -144,6 +146,9 @@ function MatchCard({ match, rank, profile, compareSelected, onCompare }: MatchCa
       <h3 className="text-[17px] font-bold tracking-tight mb-0.5" style={{ color: t.cityName }}>
         {match.location.name}
       </h3>
+      <p className="text-xs mb-0.5 font-medium" style={{ color: t.metro }}>
+        {match.location.metroUsed}
+      </p>
       <p className="text-xs mb-4" style={{ color: t.county }}>
         {match.location.county} County, TX
       </p>

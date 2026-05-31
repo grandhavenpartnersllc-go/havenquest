@@ -37,8 +37,9 @@ export default function FullReport({ match, profile }: FullReportProps) {
             <h2 className="text-2xl font-bold text-gray-900 tracking-tight mb-1">
               {location.name}, {location.state}
             </h2>
+            <p className="text-xs text-accent font-medium mt-0.5">{location.metroUsed}</p>
             <p className="text-gray-400 text-sm mb-3">{location.county} County · {TIER_LABELS[location.tier]}</p>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-start gap-2">
               <MarketBadge condition={location.market.marketCondition} />
               <span className="inline-flex items-center gap-1.5 bg-white border border-gray-100 px-2.5 py-1 rounded-full text-xs text-gray-500">
                 <TEARatingBadge rating={location.school.teaRating} size="sm" />
