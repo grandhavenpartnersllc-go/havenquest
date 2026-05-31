@@ -55,7 +55,12 @@ export async function POST(request: NextRequest) {
       notPriorities,
       topCityMatches,
       buyerProfile,
+      financialPicture,
     } = body
+
+    const isActiveBuyer =
+      financialPicture?.purchase_timeline === '0-3months' ||
+      financialPicture?.purchase_timeline === '3-6months'
 
     if (!firstName || !email) {
       return NextResponse.json({ error: 'First name and email are required' }, { status: 400 })
@@ -117,6 +122,9 @@ export async function POST(request: NextRequest) {
           not_priorities: notPriorities,
           top_city_matches: topCityMatches,
           buyer_profile: buyerProfile ?? null,
+          financial_picture: financialPicture
+            ? { ...financialPicture, is_active_buyer: isActiveBuyer }
+            : null,
           ...(authUserId ? { auth_id: authUserId } : {}),
         },
         { onConflict: 'email', ignoreDuplicates: false }
@@ -144,6 +152,9 @@ export async function POST(request: NextRequest) {
               not_priorities: notPriorities,
               top_city_matches: topCityMatches,
               buyer_profile: buyerProfile ?? null,
+              financial_picture: financialPicture
+                ? { ...financialPicture, is_active_buyer: isActiveBuyer }
+                : null,
             },
             { onConflict: 'email', ignoreDuplicates: false }
           )

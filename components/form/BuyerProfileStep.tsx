@@ -85,7 +85,7 @@ export default function BuyerProfileStep({ onComplete }: BuyerProfileStepProps) 
     <form onSubmit={handleSubmit} className="w-full">
       <div className="mb-6">
         <p className="text-[11px] font-bold uppercase tracking-widest text-blue-400/60 mb-3">
-          STEP 5 OF 5 · BUYER PROFILE
+          STEP 6 OF 6 · BUYER PROFILE
         </p>
         <h2 className="text-xl font-bold text-gray-900 tracking-tight mb-3">
           Now let&apos;s talk about your home.

@@ -3,6 +3,14 @@
 // This cleanup job prevents orphaned session rows from accumulating over time.
 // Build trigger: when Supabase dashboard access is configured for Craig.
 
+// Step label map (6-step quiz as of 2026-05-30)
+// 1 → household_income
+// 2 → financial_picture  (inserted between household and timeline)
+// 3 → lifestyle_priorities
+// 4 → must_haves
+// 5 → priority_ranking
+// 6 → buyer_profile
+
 import { createClient } from '../lib/supabase/client'
 import { QuizSessionData } from '../types'
 

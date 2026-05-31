@@ -77,6 +77,14 @@ export interface UserProfile {
   niceToHaves: (keyof LifestyleScores)[]
   notPriorities: (keyof LifestyleScores)[]
   buyerProfile?: BuyerProfile
+  financial_picture?: FinancialPicture
+}
+
+export interface FinancialPicture {
+  is_homeowner: boolean;
+  home_sale_proceeds: string | null;
+  down_payment_available: string;
+  purchase_timeline: '0-3months' | '3-6months' | '6-12months' | '12plus_months';
 }
 
 export interface CityMatch {
@@ -87,6 +95,7 @@ export interface CityMatch {
   estimatedMonthlyHousing: number
   estimatedMonthlyTotal: number
   zillowSearchUrl: string
+  segment: 'Estate' | 'Luxury' | 'High' | 'Mid-Market' | 'Starter'
 }
 
 export interface Realtor {

@@ -7,18 +7,20 @@ import Footer from '../../components/shared/Footer'
 import FormProgress from '../../components/form/FormProgress'
 import IncomeForm from '../../components/form/IncomeForm'
 import HouseholdForm from '../../components/form/HouseholdForm'
+import FinancialPictureStep from '../../components/quiz/FinancialPictureStep'
 import TimelineForm from '../../components/form/TimelineForm'
 import PrioritySelector from '../../components/form/PrioritySelector'
 import BuyerProfileStep from '../../components/form/BuyerProfileStep'
-import { UserProfile, BuyerProfile, LifestyleScores } from '../../types'
+import { UserProfile, BuyerProfile, LifestyleScores, FinancialPicture } from '../../types'
 import { SESSION_PROFILE_KEY } from '../../utils/constants'
 import { initSession, updateSessionStep } from '../../services/quizSessionService'
 
-const STEPS = ['Income', 'Household', 'Timeline', 'Priorities', 'Buyer Profile']
+const STEPS = ['Income', 'Household', 'Financial Picture', 'Timeline', 'Priorities', 'Buyer Profile']
 
 const STEP_HEADLINES = [
   "Let's find your Texas city",
   'Tell us about your household',
+  "Now let's talk about your purchasing power.",
   'What matters most to you?',
   'Set your priorities',
   "Now let's talk about your home",
@@ -51,10 +53,16 @@ export default function ExplorePage() {
     setStep(2)
   }
 
+  const handleFinancialPicture = (financial_picture: FinancialPicture) => {
+    setProfile(p => ({ ...p, financial_picture }))
+    updateSessionStep(sessionId, 3, {})
+    setStep(3)
+  }
+
   const handleTimeline = (movingTimeline: UserProfile['movingTimeline']) => {
     setProfile(p => ({ ...p, movingTimeline }))
-    updateSessionStep(sessionId, 3, { movingTimeline })
-    setStep(3)
+    updateSessionStep(sessionId, 4, { movingTimeline })
+    setStep(4)
   }
 
   const handlePriorities = (
@@ -63,8 +71,8 @@ export default function ExplorePage() {
     notPriorities: (keyof LifestyleScores)[]
   ) => {
     setProfile(p => ({ ...p, mustHaves, niceToHaves, notPriorities }))
-    updateSessionStep(sessionId, 4, { mustHaves, niceToHaves, notPriorities })
-    setStep(4)
+    updateSessionStep(sessionId, 5, { mustHaves, niceToHaves, notPriorities })
+    setStep(5)
   }
 
   const handleBuyerProfile = (buyerProfile: BuyerProfile) => {
@@ -74,7 +82,7 @@ export default function ExplorePage() {
     }
     sessionStorage.setItem(SESSION_PROFILE_KEY, JSON.stringify(finalProfile))
     sessionStorage.removeItem('hq_metro')
-    updateSessionStep(sessionId, 5, { buyerProfile })
+    updateSessionStep(sessionId, 6, { buyerProfile })
     router.push(`/results/${sessionId}`)
   }
 
@@ -101,11 +109,18 @@ export default function ExplorePage() {
 
             {step === 0 && <IncomeForm onComplete={handleIncome} defaultValue={profile.annualIncome} />}
             {step === 1 && <HouseholdForm onComplete={handleHousehold} />}
-            {step === 2 && <TimelineForm onComplete={handleTimeline} />}
-            {step === 3 && <PrioritySelector onComplete={handlePriorities} />}
-            {step === 4 && <BuyerProfileStep onComplete={handleBuyerProfile} />}
+            {step === 2 && (
+              <FinancialPictureStep
+                onNext={handleFinancialPicture}
+                onBack={() => setStep(1)}
+                initialData={profile.financial_picture}
+              />
+            )}
+            {step === 3 && <TimelineForm onComplete={handleTimeline} />}
+            {step === 4 && <PrioritySelector onComplete={handlePriorities} />}
+            {step === 5 && <BuyerProfileStep onComplete={handleBuyerProfile} />}
 
-            {step > 0 && step < STEPS.length - 1 && (
+            {step > 0 && step < STEPS.length - 1 && step !== 2 && (
               <button
                 onClick={() => setStep(s => s - 1)}
                 className="mt-4 w-full text-sm text-gray-400 hover:text-gray-600 transition-colors font-medium"

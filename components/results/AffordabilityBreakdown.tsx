@@ -78,8 +78,8 @@ export default function AffordabilityBreakdown({ city, profile, showFlag }: Affo
       </div>
 
       {isBuying && !isLuxury && (
-        <p className="text-xs text-gray-400 mt-3 leading-relaxed">
-          Assumes 20% down payment, 6.5% 30-year fixed rate, median home price. Rates as of 05/2026.
+        <p className="text-xs text-gray-400 mt-3 leading-relaxed italic">
+          Affordability estimates assume a 30-year conventional loan at 7.0% fixed rate. FHA, VA, and USDA loan options may expand your range. Your Ambassador will walk through your actual numbers with you.
         </p>
       )}
 
