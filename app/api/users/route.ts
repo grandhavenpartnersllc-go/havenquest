@@ -106,6 +106,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Distinguish partial account (auth exists, public record missing) from genuine returning user
+    let isReturningUser = false
+    if (isExistingAuthUser) {
+      const { data: existingPublicUser } = await supabase
+        .from('users')
+        .select('email')
+        .eq('email', email.toLowerCase())
+        .single()
+      isReturningUser = !!existingPublicUser
+    }
+
     const { data, error } = await supabase
       .from('users')
       .upsert(
@@ -164,14 +175,14 @@ export async function POST(request: NextRequest) {
           console.error('Retry insert error:', retryError.code, retryError.message)
           return NextResponse.json({ error: 'Failed to save your information. Please try again.' }, { status: 500 })
         }
-        return await sendWelcomeAndRespond(authUserId ?? retryData.id, firstName, email, topCityMatches, setupLink, isExistingAuthUser)
+        return await sendWelcomeAndRespond(authUserId ?? retryData.id, firstName, email, topCityMatches, setupLink, isReturningUser)
       }
       return NextResponse.json({ error: 'Failed to save your information. Please try again.' }, { status: 500 })
     }
 
     // Return authUserId (Supabase auth UUID) not data.id (Postgres row UUID) —
     // the client needs authUserId to call auth.admin.updateUserById for password creation.
-    return await sendWelcomeAndRespond(authUserId ?? data.id, firstName, email, topCityMatches, setupLink, isExistingAuthUser)
+    return await sendWelcomeAndRespond(authUserId ?? data.id, firstName, email, topCityMatches, setupLink, isReturningUser)
   } catch (err) {
     console.error('Users route error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
