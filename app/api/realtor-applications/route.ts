@@ -81,27 +81,35 @@ export async function POST(request: NextRequest) {
     if (resendKey) {
       const resend = new Resend(resendKey)
 
-      resend.emails.send({
-        from: 'Craig Asbach, Founder — HavenQuest <craig.asbach@havenquest.co>',
-        replyTo: 'craig.asbach@havenquest.co',
-        to: email.toLowerCase(),
-        subject: 'Application received — HavenQuest Partner Network',
-        html: buildRealtorConfirmationHtml(firstName),
-      }).catch(err => console.error('Resend confirmation error:', err))
+      try {
+        await resend.emails.send({
+          from: 'Craig Asbach, Founder - HavenQuest <craig.asbach@havenquest.co>',
+          replyTo: 'craig.asbach@havenquest.co',
+          to: email.toLowerCase(),
+          subject: 'Application received — HavenQuest Partner Network',
+          html: buildRealtorConfirmationHtml(firstName),
+        })
+      } catch (err) {
+        console.error('Resend confirmation error:', err)
+      }
 
-      resend.emails.send({
-        from: 'HavenQuest <admin@send.havenquest.co>',
-        to: 'craig.asbach@havenquest.co',
-        subject: `New Realtor Application — ${firstName} ${lastName} — ${marketSpecialty || 'No market specified'}`,
-        html: buildRealtorApplicationHtml({
-          firstName, lastName, email, phone, marketSpecialty,
-          brokerage, trecLicenseNumber, licenseType,
-          yearsExperience, profileUrl, marketSegments,
-          buyerTransactionCount, buyerTransactionVolume,
-          sellerTransactionCount, sellerTransactionVolume,
-          whyJoin, standardsAcknowledged,
-        }),
-      }).catch(err => console.error('Resend admin notification error:', err))
+      try {
+        await resend.emails.send({
+          from: 'HavenQuest <admin@send.havenquest.co>',
+          to: 'craig.asbach@havenquest.co',
+          subject: `New Realtor Application — ${firstName} ${lastName} — ${marketSpecialty || 'No market specified'}`,
+          html: buildRealtorApplicationHtml({
+            firstName, lastName, email, phone, marketSpecialty,
+            brokerage, trecLicenseNumber, licenseType,
+            yearsExperience, profileUrl, marketSegments,
+            buyerTransactionCount, buyerTransactionVolume,
+            sellerTransactionCount, sellerTransactionVolume,
+            whyJoin, standardsAcknowledged,
+          }),
+        })
+      } catch (err) {
+        console.error('Resend admin notification error:', err)
+      }
     }
 
     return NextResponse.json({ success: true })
