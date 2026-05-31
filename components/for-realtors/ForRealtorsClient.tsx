@@ -6,6 +6,15 @@ import { Check, Clock, UserCheck, Shield, Heart, ShieldCheck, FileText, Star } f
 const GOLD = '#B8912A'
 const DARK = '#08101C'
 
+const REFERRAL_SOURCE_OPTIONS = [
+  'Google search',
+  'Social media',
+  'Referral from another agent',
+  'HavenQuest outreach',
+  'Real estate association or event',
+  'Other',
+]
+
 const commitments = [
   {
     icon: Clock,
@@ -67,108 +76,29 @@ const minQualifications = [
   '24-hour introduction response commitment',
 ]
 
-const HOUSTON_ZONES = new Set([
-  'Inner Loop / Urban Core Houston',
-  'The Heights / Inner Northwest',
-  'West University / Bellaire / Memorial',
-  'The Woodlands / North Houston',
-  'Spring / Klein / Champions Corridor',
-  'Katy / Fulshear / West Houston Energy Corridor',
-  'Sugar Land / Fort Bend County',
-  'Pearland / South Houston',
-  'Clear Lake / NASA / Southeast Houston',
-  'Cypress / Northwest Houston',
-  'Kingwood / Lake Houston Corridor',
-  'Baytown / East Houston Industrial Corridor',
-  'Richmond / Rosenberg / Southwest Growth Corridor',
-  'Conroe / Montgomery County North Growth Belt',
-  'Galveston Island / Gulf Coast',
-  'Brazosport / Gulf Coast South',
-])
-
-const MARKET_SEGMENTS = [
-  { value: 'Starter', label: 'Starter — Under $325K' },
-  { value: 'Mid-Market', label: 'Mid-Market — $325K to $650K' },
-  { value: 'High', label: 'High — $650K to $1.3M' },
-  { value: 'Luxury', label: 'Luxury — $1.3M to $2M' },
-  { value: 'Estate', label: 'Estate — $2M+' },
-]
-
-const EMPTY_TRANSACTION = { city: '', salePrice: '', closeDate: '' }
-
 export default function ForRealtorsClient() {
   const [formData, setFormData] = useState({
-    name: '', email: '', phone: '', marketSpecialty: '',
-    yearsExperience: '', brokerage: '', profileUrl: '',
-    whyJoin: '',
-    trecLicenseNumber: '', licenseType: '',
-    market_segments: [] as string[],
-    transactions: Array.from({ length: 5 }, () => ({ ...EMPTY_TRANSACTION })),
-    har_profile_url: '',
+    firstName: '', lastName: '', email: '', phone: '',
+    marketSpecialty: '', referralSource: '',
   })
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData(p => ({ ...p, [e.target.name]: e.target.value }))
-  }
-
-  const handleSegmentChange = (value: string) => {
-    setFormData(p => {
-      if (p.market_segments.includes(value)) {
-        return { ...p, market_segments: p.market_segments.filter(s => s !== value) }
-      }
-      if (p.market_segments.length >= 2) return p
-      return { ...p, market_segments: [...p.market_segments, value] }
-    })
-  }
-
-  const handleTransactionChange = (index: number, field: 'city' | 'salePrice' | 'closeDate', value: string) => {
-    setFormData(p => {
-      const transactions = p.transactions.map((t, i) => i === index ? { ...t, [field]: value } : t)
-      return { ...p, transactions }
-    })
-  }
-
-  const addTransaction = () => {
-    setFormData(p => {
-      if (p.transactions.length >= 10) return p
-      return { ...p, transactions: [...p.transactions, { ...EMPTY_TRANSACTION }] }
-    })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!formData.name || !formData.email) {
-      setError('Name and email are required')
-      return
-    }
-    if (!formData.trecLicenseNumber) {
-      setError('TREC license number is required')
-      return
-    }
-    if (!formData.licenseType) {
-      setError('Please select a license type')
-      return
-    }
-    if (formData.market_segments.length === 0) {
-      setError('Please select at least one market segment')
-      return
-    }
-    const completeTransactions = formData.transactions.filter(t => t.city && t.salePrice && t.closeDate)
-    if (completeTransactions.length < 5) {
-      setError('Please enter at least 5 complete transactions (city, sale price, and close date required for each)')
-      return
-    }
-    if (HOUSTON_ZONES.has(formData.marketSpecialty) && !formData.har_profile_url.trim()) {
-      setError('HAR Profile URL is required for Houston metro applicants')
+    if (!formData.firstName || !formData.lastName || !formData.email) {
+      setError('First name, last name, and email are required')
       return
     }
     setLoading(true)
     setError('')
     try {
-      const res = await fetch('/api/realtor-applications', {
+      const res = await fetch('/api/realtor-interest', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -308,97 +238,91 @@ export default function ForRealtorsClient() {
           </div>
         </section>
 
-        {/* Application form */}
+        {/* Interest form */}
         <section id="apply" className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06)' }}>
-          <h2 className="text-2xl font-bold text-gray-900 tracking-tight mb-1">Apply to join HavenQuest</h2>
+          <h2 className="text-2xl font-bold text-gray-900 tracking-tight mb-1">Request to apply</h2>
           <p className="text-gray-400 text-sm mb-7">
-            We maintain strict quality standards to protect both our users and our realtor partners.
+            Tell us a little about yourself. If it looks like a good fit, we&apos;ll send you a private link to complete the full application.
           </p>
 
           {success ? (
-            <div className="bg-success-bg rounded-2xl p-6 text-center">
-              <div className="text-4xl mb-3">✅</div>
-              <h3 className="font-bold text-success-text text-lg mb-1">Application received!</h3>
-              <p className="text-success-text text-sm">
-                We&apos;ll review your application and reach out within 48 hours.
+            <div className="bg-green-50 border border-green-100 rounded-2xl p-6 text-center">
+              <h3 className="font-bold text-green-800 text-lg mb-2">Request received.</h3>
+              <p className="text-green-700 text-sm leading-relaxed">
+                Check your inbox — we&apos;ve sent you a private link to complete your application.
               </p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="grid sm:grid-cols-2 gap-4">
-              {[
-                { name: 'name', label: 'Full name', required: true, placeholder: 'Jane Smith' },
-                { name: 'email', label: 'Email address', required: true, placeholder: 'jane@brokerage.com' },
-                { name: 'phone', label: 'Phone number', placeholder: '(555) 000-0000' },
-                { name: 'brokerage', label: 'Brokerage', placeholder: 'Compass, Keller Williams, etc.' },
-                { name: 'yearsExperience', label: 'Years of experience', placeholder: '10' },
-                { name: 'profileUrl', label: 'Zillow or Realtor.com profile URL', placeholder: 'zillow.com/profile/...' },
-              ].map(field => (
-                <div key={field.name}>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    {field.label} {field.required && <span className="text-red-400">*</span>}
-                  </label>
-                  <input
-                    type="text"
-                    name={field.name}
-                    value={formData[field.name as keyof typeof formData] as string}
-                    onChange={handleChange}
-                    placeholder={field.placeholder}
-                    className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all"
-                  />
-                </div>
-              ))}
-
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                  Texas Real Estate License Number (TREC) <span className="text-red-400">*</span>
+                  First name <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="text"
-                  name="trecLicenseNumber"
-                  value={formData.trecLicenseNumber}
+                  name="firstName"
+                  value={formData.firstName}
                   onChange={handleChange}
-                  placeholder="e.g. 123456"
+                  placeholder="Jane"
                   className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all"
                 />
-                <p className="text-xs text-gray-400 mt-1.5">Your license will be verified at trec.texas.gov</p>
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                  License Type <span className="text-red-400">*</span>
+                  Last name <span className="text-red-400">*</span>
                 </label>
-                <select
-                  name="licenseType"
-                  value={formData.licenseType}
+                <input
+                  type="text"
+                  name="lastName"
+                  value={formData.lastName}
                   onChange={handleChange}
-                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all bg-white"
-                >
-                  <option value="">Select type…</option>
-                  <option value="Sales Agent">Sales Agent</option>
-                  <option value="Broker">Broker</option>
-                  <option value="Broker Associate">Broker Associate</option>
-                </select>
+                  placeholder="Smith"
+                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  Email address <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="jane@brokerage.com"
+                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  Phone number <span className="text-gray-400 font-normal">(optional)</span>
+                </label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="(555) 000-0000"
+                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all"
+                />
               </div>
 
               <div className="sm:col-span-2">
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="block text-sm font-semibold text-gray-700">
-                    Market Specialty <span className="text-red-400">*</span>
+                    Primary market zone
                   </label>
-                  <a
-                    href="/zones"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-accent hover:underline"
-                  >
-                    Not sure which zone? View all market zones →
+                  <a href="/zones" target="_blank" rel="noopener noreferrer" className="text-xs text-accent hover:underline">
+                    View all market zones →
                   </a>
                 </div>
                 <select
                   name="marketSpecialty"
                   value={formData.marketSpecialty}
                   onChange={handleChange}
-                  required
                   className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all bg-white"
                 >
                   <option value="">Select a market…</option>
@@ -471,120 +395,21 @@ export default function ForRealtorsClient() {
                 </select>
               </div>
 
-              {/* Field 1 — Market Segment Specialty */}
               <div className="sm:col-span-2">
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  Market Segment Specialty <span className="text-red-400">*</span>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  How did you hear about HavenQuest?
                 </label>
-                <p className="text-xs text-gray-400 mb-3">Select up to 2 segments that best represent your primary market within your selected zone. Adjacent segments only (e.g. Starter + Mid-Market, or High + Luxury).</p>
-                <div className="flex flex-wrap gap-3">
-                  {MARKET_SEGMENTS.map(seg => {
-                    const checked = formData.market_segments.includes(seg.value)
-                    const disabled = !checked && formData.market_segments.length >= 2
-                    return (
-                      <label
-                        key={seg.value}
-                        className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl border text-sm cursor-pointer transition-all select-none ${
-                          checked
-                            ? 'border-accent bg-blue-50 text-accent font-semibold'
-                            : disabled
-                            ? 'border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed'
-                            : 'border-gray-200 text-gray-700 hover:border-gray-300'
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          className="sr-only"
-                          checked={checked}
-                          disabled={disabled}
-                          onChange={() => handleSegmentChange(seg.value)}
-                        />
-                        {seg.label}
-                      </label>
-                    )
-                  })}
-                </div>
-              </div>
-
-              {/* Field 2 — Transaction History */}
-              <div className="sm:col-span-2">
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  Recent Transaction History <span className="text-red-400">*</span>
-                </label>
-                <p className="text-xs text-gray-400 mb-3">List at least 5 of your closed transactions from the past 24 months. This is used to verify your zone and segment expertise. You may add up to 10.</p>
-                <div className="space-y-3">
-                  {formData.transactions.map((tx, i) => (
-                    <div key={i}>
-                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Transaction {i + 1}</p>
-                      <div className="grid grid-cols-3 gap-2">
-                        <input
-                          type="text"
-                          value={tx.city}
-                          onChange={e => handleTransactionChange(i, 'city', e.target.value)}
-                          placeholder="e.g. Frisco"
-                          className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all"
-                        />
-                        <input
-                          type="text"
-                          value={tx.salePrice}
-                          onChange={e => handleTransactionChange(i, 'salePrice', e.target.value)}
-                          placeholder="e.g. $485,000"
-                          className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all"
-                        />
-                        <input
-                          type="text"
-                          value={tx.closeDate}
-                          onChange={e => handleTransactionChange(i, 'closeDate', e.target.value)}
-                          placeholder="MM/YYYY"
-                          className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all"
-                        />
-                      </div>
-                    </div>
+                <select
+                  name="referralSource"
+                  value={formData.referralSource}
+                  onChange={handleChange}
+                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all bg-white"
+                >
+                  <option value="">Select…</option>
+                  {REFERRAL_SOURCE_OPTIONS.map(opt => (
+                    <option key={opt} value={opt}>{opt}</option>
                   ))}
-                </div>
-                {formData.transactions.length < 10 && (
-                  <button
-                    type="button"
-                    onClick={addTransaction}
-                    className="mt-3 text-sm text-accent hover:underline font-medium"
-                  >
-                    + Add Transaction
-                  </button>
-                )}
-              </div>
-
-              {/* Field 3 — HAR Profile URL */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                  HAR Profile URL{HOUSTON_ZONES.has(formData.marketSpecialty) && <span className="text-red-400"> *</span>}
-                </label>
-                <input
-                  type="text"
-                  name="har_profile_url"
-                  value={formData.har_profile_url}
-                  onChange={handleChange}
-                  placeholder="https://www.har.com/your-profile"
-                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all"
-                />
-                <p className="text-xs text-gray-400 mt-1.5">
-                  {HOUSTON_ZONES.has(formData.marketSpecialty)
-                    ? 'Required for Houston metro applicants.'
-                    : 'Required for Houston metro applicants. Recommended for all others — HAR.com is the most comprehensive agent profile source in Texas.'}
-                </p>
-              </div>
-
-              <div className="sm:col-span-2">
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                  Tell us about your approach to serving clients and why HavenQuest feels like the right fit.
-                </label>
-                <textarea
-                  name="whyJoin"
-                  value={formData.whyJoin}
-                  onChange={handleChange}
-                  placeholder="Share how you work with clients and what draws you to this kind of relocation work."
-                  rows={4}
-                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all resize-none"
-                />
+                </select>
               </div>
 
               {error && (
@@ -600,10 +425,10 @@ export default function ForRealtorsClient() {
                   className="w-full bg-accent text-white py-3.5 rounded-xl font-bold text-sm hover:bg-[#154d8a] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                   style={{ boxShadow: '0 2px 10px rgba(26,95,168,0.25)' }}
                 >
-                  {loading ? 'Submitting…' : 'Submit My Application'}
+                  {loading ? 'Submitting…' : 'Request to Apply →'}
                 </button>
-                <p className="text-center text-xs text-gray-400 mt-3">
-                  Applications are reviewed personally. We will follow up within 48 hours.
+                <p className="text-center text-xs text-gray-400 mt-3 italic">
+                  We review every application personally. Submitting this form does not guarantee acceptance.
                 </p>
               </div>
             </form>
