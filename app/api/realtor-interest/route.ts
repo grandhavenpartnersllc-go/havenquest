@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
           from: 'Craig Asbach, Founder - HavenQuest <craig.asbach@havenquest.co>',
           replyTo: 'craig.asbach@havenquest.co',
           to: email.toLowerCase(),
-          subject: 'Your invitation to apply — HavenQuest Partner Network',
+          subject: "You're one step closer — HavenQuest Partner Network",
           html: buildStage1RealtorEmailHtml(firstName, token),
         })
       } catch (err) {

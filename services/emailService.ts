@@ -161,13 +161,15 @@ export function buildStage1RealtorEmailHtml(firstName: string, token: string): s
       </div>
       <div style="padding:32px;background:#FFFFFF;border:1px solid #E5E7EB;border-top:none;">
         <p style="color:#4A4A4A;line-height:1.7;margin:0 0 16px;">Hi ${firstName},</p>
-        <p style="color:#4A4A4A;line-height:1.7;margin:0 0 16px;">Thank you for your interest in joining the HavenQuest Partner Network.</p>
-        <p style="color:#4A4A4A;line-height:1.7;margin:0 0 16px;">I started HavenQuest because I believe the best realtors in Texas deserve better than chasing cold leads. You deserve to be introduced to buyers who have already been matched to your market — people who are serious, prepared, and ready to move.</p>
-        <p style="color:#4A4A4A;line-height:1.7;margin:0 0 16px;">We are building something genuinely different here, and we are selective about who we invite in. Our partner network is limited by design. Every realtor we work with is vetted personally, and every introduction we make is one we stand behind.</p>
-        <p style="color:#4A4A4A;line-height:1.7;margin:0 0 24px;">I'd like to invite you to complete your application. The link below is private and was created specifically for you.</p>
+        <p style="color:#4A4A4A;line-height:1.7;margin:0 0 16px;">Something new is happening in Texas real estate, and I think you're exactly the kind of agent who will get it immediately.</p>
+        <p style="color:#4A4A4A;line-height:1.7;margin:0 0 16px;">HavenQuest is a relocation intelligence platform built for people moving to Texas. Not tourists. Not tire-kickers. People who have made a serious decision, matched themselves to a specific Texas city based on their income, lifestyle, and priorities — and are now ready to find a home.</p>
+        <p style="color:#4A4A4A;line-height:1.7;margin:0 0 16px;">By the time they reach you, they already know which city they want. They already understand the market. They've already run their numbers. All they need is the right agent to take them across the finish line.</p>
+        <p style="color:#4A4A4A;line-height:1.7;margin:0 0 16px;">We curate a small shortlist of three partners per market segment per zone. Buyers read your profile and choose who they want to work with. When they choose you, that introduction is warm, informed, and intentional — not a cold lead dropped in your lap.</p>
+        <p style="color:#4A4A4A;line-height:1.7;margin:0 0 24px;">This is not a lead service. This is a partnership.</p>
+        <p style="color:#4A4A4A;line-height:1.7;margin:0 0 24px;">You've taken the first step by expressing interest. The next step is your application. The link below is private and was created specifically for you — it takes about 10 minutes to complete.</p>
         <a href="${applicationLink}" style="display:inline-block;background:#B8912A;color:#16120D;padding:13px 26px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;">Complete My Application →</a>
-        <p style="color:#4A4A4A;line-height:1.7;margin:24px 0 16px;">Please note — submitting your application does not guarantee acceptance. We review every application personally and reach out within 5 business days with a decision or next steps.</p>
-        <p style="color:#4A4A4A;line-height:1.7;margin:0 0 24px;">I'm looking forward to learning more about you.</p>
+        <p style="color:#4A4A4A;line-height:1.7;margin:24px 0 16px;">I want to be straightforward with you — we don't accept everyone. Every application is reviewed personally, and we limit the number of partners in each market by design. But if you're the right fit, this is an opportunity worth your attention.</p>
+        <p style="color:#4A4A4A;line-height:1.7;margin:0 0 24px;">You'll hear from me within 5 business days.</p>
         <p style="color:#4A4A4A;line-height:1.7;margin:0 0 2px;font-weight:600;">Craig Asbach</p>
         <p style="color:#6B7280;font-size:14px;margin:0 0 2px;">Founder, HavenQuest</p>
         <p style="margin:0;font-size:14px;"><a href="mailto:craig.asbach@havenquest.co" style="color:#B8912A;">craig.asbach@havenquest.co</a></p>
