@@ -95,6 +95,10 @@ export default function ForRealtorsClient() {
       setError('First name, last name, and email are required')
       return
     }
+    if (!formData.marketSpecialty) {
+      setError('Please select your primary market zone')
+      return
+    }
     setLoading(true)
     setError('')
     try {
