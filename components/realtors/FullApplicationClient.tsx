@@ -69,6 +69,23 @@ const PARTNER_STANDARDS = [
   },
 ]
 
+function formatPhone(value: string): string {
+  const digits = value.replace(/\D/g, '').slice(0, 10)
+  if (digits.length <= 3) return digits
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`
+}
+
+function formatCurrencyInput(value: string): string {
+  const digits = value.replace(/\D/g, '')
+  if (!digits) return ''
+  return '$' + parseInt(digits, 10).toLocaleString()
+}
+
+function parseCurrencyInput(formatted: string): number {
+  return parseInt(formatted.replace(/\D/g, ''), 10) || 0
+}
+
 type TokenState = 'loading' | 'valid' | 'invalid'
 
 interface FormData {
@@ -111,6 +128,9 @@ export default function FullApplicationClient() {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
+  const [phoneDisplay, setPhoneDisplay] = useState('')
+  const [buyerVolumeDisplay, setBuyerVolumeDisplay] = useState('')
+  const [sellerVolumeDisplay, setSellerVolumeDisplay] = useState('')
 
   useEffect(() => {
     if (!token) {
@@ -124,14 +144,16 @@ export default function FullApplicationClient() {
           setTokenState('invalid')
           return
         }
+        const rawPhone = (data.phone ?? '').replace(/\D/g, '')
         setFormData(prev => ({
           ...prev,
           firstName: data.firstName ?? '',
           lastName: data.lastName ?? '',
           email: data.email ?? '',
-          phone: data.phone ?? '',
+          phone: rawPhone,
           marketSpecialty: data.marketSpecialty ?? '',
         }))
+        setPhoneDisplay(formatPhone(rawPhone))
         setTokenState('valid')
       })
       .catch(() => setTokenState('invalid'))
@@ -157,6 +179,24 @@ export default function FullApplicationClient() {
     })
   }
 
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 10)
+    setFormData(prev => ({ ...prev, phone: digits }))
+    setPhoneDisplay(formatPhone(digits))
+  }
+
+  const handleBuyerVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const display = formatCurrencyInput(e.target.value)
+    setBuyerVolumeDisplay(display)
+    setFormData(prev => ({ ...prev, buyerTransactionVolume: String(parseCurrencyInput(display)) }))
+  }
+
+  const handleSellerVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const display = formatCurrencyInput(e.target.value)
+    setSellerVolumeDisplay(display)
+    setFormData(prev => ({ ...prev, sellerTransactionVolume: String(parseCurrencyInput(display)) }))
+  }
+
   const totalCount =
     (parseInt(formData.buyerTransactionCount) || 0) +
     (parseInt(formData.sellerTransactionCount) || 0)
@@ -173,6 +213,10 @@ export default function FullApplicationClient() {
       setError('First name, last name, and email are required')
       return
     }
+    if (!formData.phone) {
+      setError('Phone number is required')
+      return
+    }
     if (!formData.brokerage) {
       setError('Brokerage name is required')
       return
@@ -181,8 +225,8 @@ export default function FullApplicationClient() {
       setError('Years licensed in Texas is required')
       return
     }
-    if (!formData.trecLicenseNumber) {
-      setError('TREC license number is required')
+    if (!/^\d{6}$/.test(formData.trecLicenseNumber)) {
+      setError('TREC license number must be exactly 6 digits')
       return
     }
     if (!formData.licenseType) {
@@ -309,8 +353,8 @@ export default function FullApplicationClient() {
               <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="jane@brokerage.com" className={INPUT_CLASS} />
             </div>
             <div>
-              <label className={LABEL_CLASS}>Phone number</label>
-              <input type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="(555) 000-0000" className={INPUT_CLASS} />
+              <label className={LABEL_CLASS}>Phone number <span className="text-red-400">*</span></label>
+              <input type="tel" name="phone" value={phoneDisplay} onChange={handlePhoneChange} placeholder="(555) 000-0000" className={INPUT_CLASS} />
             </div>
             <div className="sm:col-span-2">
               <div className="flex items-center justify-between mb-1.5">
@@ -404,7 +448,7 @@ export default function FullApplicationClient() {
             </div>
             <div>
               <label className={LABEL_CLASS}>TREC license number <span className="text-red-400">*</span></label>
-              <input type="text" name="trecLicenseNumber" value={formData.trecLicenseNumber} onChange={handleChange} placeholder="e.g. 123456" className={INPUT_CLASS} />
+              <input type="text" name="trecLicenseNumber" value={formData.trecLicenseNumber} onChange={handleChange} placeholder="e.g. 123456" maxLength={6} inputMode="numeric" pattern="[0-9]{6}" className={INPUT_CLASS} />
               <p className="text-xs text-gray-400 mt-1.5">Verified at trec.texas.gov</p>
             </div>
             <div>
@@ -491,12 +535,12 @@ export default function FullApplicationClient() {
                   </td>
                   <td className="py-2">
                     <input
-                      type="number"
+                      type="text"
                       name="buyerTransactionVolume"
-                      value={formData.buyerTransactionVolume}
-                      onChange={handleChange}
-                      placeholder="0"
-                      min="0"
+                      value={buyerVolumeDisplay}
+                      onChange={handleBuyerVolumeChange}
+                      placeholder="$0"
+                      inputMode="numeric"
                       className={INPUT_CLASS}
                     />
                   </td>
@@ -516,12 +560,12 @@ export default function FullApplicationClient() {
                   </td>
                   <td className="py-2">
                     <input
-                      type="number"
+                      type="text"
                       name="sellerTransactionVolume"
-                      value={formData.sellerTransactionVolume}
-                      onChange={handleChange}
-                      placeholder="0"
-                      min="0"
+                      value={sellerVolumeDisplay}
+                      onChange={handleSellerVolumeChange}
+                      placeholder="$0"
+                      inputMode="numeric"
                       className={INPUT_CLASS}
                     />
                   </td>

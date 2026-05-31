@@ -15,6 +15,66 @@ const REFERRAL_SOURCE_OPTIONS = [
   'Other',
 ]
 
+function formatPhone(value: string): string {
+  const digits = value.replace(/\D/g, '').slice(0, 10)
+  if (digits.length <= 3) return digits
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`
+}
+
+const MARKET_ZONES = [
+  {
+    group: 'AUSTIN METRO',
+    zones: [
+      'Urban Core Austin', 'Westlake / West Austin', 'Northwest Austin / Cedar Park / Leander',
+      'Round Rock / Pflugerville / Hutto Corridor', 'South Austin', 'Southwest Austin / Dripping Springs',
+      'Lake Travis / Hill Country Galleria', 'Georgetown / North Growth Corridor', 'East Austin',
+      'Kyle / Buda / South Growth Corridor', 'Austin Hill Country',
+    ],
+  },
+  {
+    group: 'DALLAS-FORT WORTH METRO',
+    zones: [
+      'Urban Core Dallas', 'North Dallas / Platinum Corridor', 'Collin County Growth Corridor',
+      'Luxury North Suburbs', 'Mid-Cities / Airport Corridor', 'Fort Worth Urban Core',
+      'Alliance / North Fort Worth', 'West Fort Worth & Parker County', 'South Fort Worth / Mansfield Corridor',
+      'Denton County Growth Belt', 'East Dallas & Lake Communities', 'Southern Sector / Best Southwest',
+    ],
+  },
+  {
+    group: 'HOUSTON METRO',
+    zones: [
+      'Inner Loop / Urban Core Houston', 'The Heights / Inner Northwest', 'West University / Bellaire / Memorial',
+      'The Woodlands / North Houston', 'Spring / Klein / Champions Corridor',
+      'Katy / Fulshear / West Houston Energy Corridor', 'Sugar Land / Fort Bend County',
+      'Pearland / South Houston', 'Clear Lake / NASA / Southeast Houston', 'Cypress / Northwest Houston',
+      'Kingwood / Lake Houston Corridor', 'Baytown / East Houston Industrial Corridor',
+      'Galveston Island / Gulf Coast', 'Richmond / Rosenberg / Southwest Growth Corridor',
+      'Conroe / Montgomery County North Growth Belt',
+    ],
+  },
+  {
+    group: 'SAN ANTONIO METRO',
+    zones: [
+      'Urban Core / Central San Antonio', 'Alamo Heights / Terrell Hills / Olmos Park',
+      'North Central San Antonio', 'Stone Oak / Far North San Antonio',
+      'The Dominion / I-10 Luxury Corridor', 'Northwest San Antonio / Helotes',
+      'Boerne / Fair Oaks Ranch / Hill Country Corridor', 'San Antonio Hill Country',
+      'New Braunfels / I-35 Northeast Growth Corridor', 'Schertz / Cibolo / Universal City',
+      'South San Antonio / Mission Corridor', 'West San Antonio / Alamo Ranch',
+      'East San Antonio / Converse Corridor',
+    ],
+  },
+  {
+    group: 'STANDALONE MARKETS',
+    zones: ['Waco', 'Corpus Christi'],
+  },
+  {
+    group: 'GULF COAST / BRAZOSPORT',
+    zones: ['Brazosport / Gulf Coast South'],
+  },
+]
+
 const commitments = [
   {
     icon: Clock,
@@ -84,9 +144,17 @@ export default function ForRealtorsClient() {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
+  const [zonesModalOpen, setZonesModalOpen] = useState(false)
+  const [phoneDisplay, setPhoneDisplay] = useState('')
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData(p => ({ ...p, [e.target.name]: e.target.value }))
+  }
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 10)
+    setFormData(p => ({ ...p, phone: digits }))
+    setPhoneDisplay(formatPhone(digits))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -97,6 +165,10 @@ export default function ForRealtorsClient() {
     }
     if (!formData.marketSpecialty) {
       setError('Please select your primary market zone')
+      return
+    }
+    if (!formData.phone) {
+      setError('Phone number is required')
       return
     }
     setLoading(true)
@@ -302,13 +374,13 @@ export default function ForRealtorsClient() {
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                  Phone number <span className="text-gray-400 font-normal">(optional)</span>
+                  Phone number <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="tel"
                   name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
+                  value={phoneDisplay}
+                  onChange={handlePhoneChange}
                   placeholder="(555) 000-0000"
                   className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all"
                 />
@@ -319,9 +391,13 @@ export default function ForRealtorsClient() {
                   <label className="block text-sm font-semibold text-gray-700">
                     Primary market zone
                   </label>
-                  <a href="/zones" target="_blank" rel="noopener noreferrer" className="text-xs text-accent hover:underline">
+                  <button
+                    type="button"
+                    onClick={() => setZonesModalOpen(true)}
+                    className="text-xs text-accent hover:underline"
+                  >
                     View all market zones →
-                  </a>
+                  </button>
                 </div>
                 <select
                   name="marketSpecialty"
@@ -478,6 +554,43 @@ export default function ForRealtorsClient() {
         </section>
 
       </div>
+
+      {zonesModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+          onClick={() => setZonesModalOpen(false)}
+        >
+          <div
+            className="bg-white rounded-2xl w-full max-w-lg max-h-[80vh] flex flex-col"
+            style={{ boxShadow: '0 8px 40px rgba(0,0,0,0.2)' }}
+            onClick={(e: React.MouseEvent) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <h3 className="font-bold text-gray-900 tracking-tight">Texas Market Zones</h3>
+              <button
+                type="button"
+                onClick={() => setZonesModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors text-2xl leading-none"
+              >
+                ×
+              </button>
+            </div>
+            <div className="overflow-y-auto px-6 py-5 space-y-5">
+              {MARKET_ZONES.map(metro => (
+                <div key={metro.group}>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">{metro.group}</p>
+                  <ul className="space-y-1.5">
+                    {metro.zones.map(zone => (
+                      <li key={zone} className="text-sm text-gray-700">{zone}</li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
