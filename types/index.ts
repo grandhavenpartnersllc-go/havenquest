@@ -77,6 +77,8 @@ export interface Location {
   metroUsed: string
   zone: string
   categoryInsights: CategoryInsights
+  cityNarrative?: string
+  cityImageUrl?: string
 }
 
 export type HomeFeature =

@@ -2,8 +2,6 @@
 
 import { CityMatch, UserProfile, UserSession } from '../../../types'
 import { LIFESTYLE_CATEGORIES } from '../../../utils/constants'
-import { getScoreColor } from '../../../utils/scoring'
-import { CATEGORY_ICONS } from '../../../utils/categoryIcons'
 import { formatCurrency } from '../../../utils/formatting'
 
 const WARM_DARK = '#16120D'
@@ -11,6 +9,9 @@ const GOLD = '#B8912A'
 const CARD_BG = '#FDFCFA'
 const CARD_SHADOW = '0 1px 3px rgba(0,0,0,0.05), 0 4px 20px rgba(0,0,0,0.07)'
 const RANK_LABELS = ['Top Pick', 'Runner-Up', 'Strong Alt']
+
+// TODO: Phase 2 — dynamic narrative generation via Anthropic API
+const FALLBACK_NARRATIVE = "This community matched your priorities and financial profile. Your full report in Discover includes detailed lifestyle scores, school data, affordability breakdown, and matched realtors to help you evaluate this city in depth."
 
 const NAVIGATOR_STEPS = [
   { number: 1,  name: 'Explore',   description: 'Review your personalized city matches and understand your Navigator journey.' },
@@ -53,90 +54,77 @@ function buildMatchNarrative(profile: UserProfile, matches: CityMatch[]): string
   return `Based on your priorities — ${mustHaveLabels} — and a household income of $${income}, we focused on Texas communities that deliver where it matters most to you. Your financial picture places you in the ${segment} buyer segment. As ${household}, ${topCity} emerged as your strongest match across all criteria. The three cities below consistently outperformed the rest of our 101-city database for your specific profile.`
 }
 
-interface HorizontalCityCardProps {
-  match: CityMatch
-  rank: number
-  profile: UserProfile
-  onViewReports: () => void
-}
-
-function HorizontalCityCard({ match, rank, profile, onViewReports }: HorizontalCityCardProps) {
-  const segment = getBuyerSegment(profile)
-  const isTopPick = rank === 0
+function StoryCityCard({ match, rank }: { match: CityMatch; rank: number }) {
+  const imageUrl = match.location.cityImageUrl ?? '/images/texas-flag.svg'
+  // TODO: Phase 2 — dynamic narrative generation via Anthropic API
+  const narrative = match.location.cityNarrative ?? FALLBACK_NARRATIVE
 
   return (
     <div
-      className="flex-1 rounded-xl p-4 flex flex-col relative overflow-hidden"
+      className="rounded-2xl overflow-hidden flex flex-col sm:flex-row"
       style={{ backgroundColor: CARD_BG, boxShadow: CARD_SHADOW }}
     >
-      {isTopPick && (
-        <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ backgroundColor: GOLD }} />
-      )}
-
-      {/* Header */}
-      <div className="flex items-start justify-between mb-2">
-        <span
-          className="text-[10px] font-bold uppercase"
-          style={{ color: isTopPick ? GOLD : '#9A8E82', letterSpacing: '0.16em' }}
+      {/* Image — left on desktop, top on mobile */}
+      <div
+        className="sm:w-2/5 h-48 sm:h-auto relative shrink-0"
+        style={{ minHeight: '200px' }}
+      >
+        <img
+          src={imageUrl}
+          alt={match.location.name}
+          className="w-full h-full object-cover"
+        />
+        {/* Rank badge over image */}
+        <div
+          className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase"
+          style={{
+            backgroundColor: rank === 0 ? GOLD : 'rgba(0,0,0,0.55)',
+            color: rank === 0 ? '#16120D' : '#FFFFFF',
+            letterSpacing: '0.12em',
+            backdropFilter: 'blur(4px)',
+          }}
         >
-          {RANK_LABELS[rank] ?? `#${rank + 1}`}
-        </span>
-        <span
-          className="text-[11px] font-bold tabular-nums px-2 py-0.5 rounded-full"
-          style={{ backgroundColor: 'rgba(0,0,0,0.05)', color: '#6B5F54' }}
+          {RANK_LABELS[rank]}
+        </div>
+        {/* Match score badge */}
+        <div
+          className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-[10px] font-bold"
+          style={{
+            backgroundColor: 'rgba(0,0,0,0.55)',
+            color: '#FFFFFF',
+            backdropFilter: 'blur(4px)',
+          }}
         >
           {match.matchScore}% match
-        </span>
+        </div>
       </div>
 
-      <h3 className="text-[16px] font-bold tracking-tight mb-0.5" style={{ color: WARM_DARK }}>
-        {match.location.name}
-      </h3>
-      <p className="text-xs font-medium mb-2" style={{ color: '#1A5FA8' }}>
-        {match.location.metroUsed}
-      </p>
+      {/* Story content — right on desktop, bottom on mobile */}
+      <div className="flex-1 p-6 flex flex-col justify-between">
+        <div>
+          <h3
+            className="text-[20px] font-bold tracking-tight mb-0.5"
+            style={{ color: WARM_DARK }}
+          >
+            {match.location.name}
+          </h3>
+          <p className="text-xs font-medium mb-4" style={{ color: '#1A5FA8' }}>
+            {match.location.metroUsed} · {match.location.county} County, TX
+          </p>
+          <p className="text-sm leading-relaxed" style={{ color: '#4B5563' }}>
+            {narrative}
+          </p>
+        </div>
 
-      {/* Segment badge */}
-      <span
-        className="self-start text-[10px] font-bold px-2 py-0.5 rounded-full mb-3"
-        style={{ backgroundColor: 'rgba(184,145,42,0.1)', color: GOLD }}
-      >
-        {segment}
-      </span>
-
-      {/* Top 2 Must Have scores */}
-      {profile.mustHaves.slice(0, 2).map(key => {
-        const cat = LIFESTYLE_CATEGORIES.find(c => c.key === key)
-        const Icon = CATEGORY_ICONS[key]
-        const score = match.location.scores[key]
-        const color = getScoreColor(score)
-        return (
-          <div key={key} className="flex items-center gap-2 mt-1.5">
-            <Icon size={11} strokeWidth={1.5} style={{ color: '#9A8E82' }} />
-            <span className="text-xs flex-1 truncate" style={{ color: '#4B5563' }}>{cat?.label}</span>
-            <div className="flex items-center gap-1.5 shrink-0">
-              <div className="w-10 h-1 rounded-full overflow-hidden" style={{ backgroundColor: '#E5E7EB' }}>
-                <div className="h-full rounded-full" style={{ width: `${score * 10}%`, backgroundColor: color }} />
-              </div>
-              <span className="text-xs font-bold tabular-nums w-6 text-right" style={{ color }}>{score}/10</span>
-            </div>
-          </div>
-        )
-      })}
-
-      {/* Monthly cost */}
-      <p className="text-xs mt-3" style={{ color: '#9A8E82' }}>
-        Est. {formatCurrency(match.estimatedMonthlyTotal)}/mo all-in
-      </p>
-
-      {/* View Full Reports button */}
-      <button
-        onClick={onViewReports}
-        className="w-full mt-3 pt-3 text-xs font-bold text-left transition-opacity hover:opacity-70"
-        style={{ color: GOLD, borderTop: '1px solid #F0EDE6' }}
-      >
-        View Full Reports →
-      </button>
+        <div className="mt-4 pt-4" style={{ borderTop: '1px solid #F0EDE6' }}>
+          <p className="text-xs" style={{ color: '#9A8E82' }}>
+            Est. {formatCurrency(match.estimatedMonthlyTotal)}/mo all-in ·{' '}
+            <span style={{ color: '#9A8E82' }}>
+              Full reports available in Discover
+            </span>
+          </p>
+        </div>
+      </div>
     </div>
   )
 }
@@ -179,15 +167,13 @@ export default function MM1Explore({
         </p>
       </div>
 
-      {/* Section 2 — Horizontal city cards */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-8">
+      {/* Section 2 — Story city cards */}
+      <div className="space-y-4 mb-8">
         {matches.map((match, i) => (
-          <HorizontalCityCard
+          <StoryCityCard
             key={match.location.id}
             match={match}
             rank={i}
-            profile={profile}
-            onViewReports={onAdvanceToDiscover}
           />
         ))}
       </div>
