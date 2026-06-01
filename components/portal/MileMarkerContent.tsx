@@ -10,6 +10,9 @@ interface MileMarkerContentProps {
   matches: CityMatch[]
   profile: UserProfile | null
   session: UserSession
+  onboardingAcknowledged: boolean
+  onAcknowledge: () => void
+  onAdvanceToDiscover: () => void
 }
 
 const MM_NAMES: Record<number, string> = {
@@ -24,14 +27,28 @@ const MM_NAMES: Record<number, string> = {
 
 export default function MileMarkerContent({
   selectedMileMarker,
-  currentMileMarker: _currentMileMarker,
+  currentMileMarker,
   matches,
   profile,
   session,
+  onboardingAcknowledged,
+  onAcknowledge,
+  onAdvanceToDiscover,
 }: MileMarkerContentProps) {
   switch (selectedMileMarker) {
     case 1:
-      return <MM1Explore session={session} />
+      if (!profile) return null
+      return (
+        <MM1Explore
+          matches={matches}
+          profile={profile}
+          session={session}
+          currentMileMarker={currentMileMarker}
+          onAdvanceToDiscover={onAdvanceToDiscover}
+          onboardingAcknowledged={onboardingAcknowledged}
+          onAcknowledge={onAcknowledge}
+        />
+      )
     case 2:
       return <MM2Discover matches={matches} profile={profile} />
     case 3:

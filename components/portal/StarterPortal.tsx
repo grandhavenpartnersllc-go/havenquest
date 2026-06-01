@@ -56,6 +56,7 @@ export default function StarterPortal() {
   const [ready, setReady] = useState(false)
   const [currentMileMarker, setCurrentMileMarker] = useState(2)
   const [activeMileMarker, setActiveMileMarker] = useState(2)
+  const [onboardingAcknowledged, setOnboardingAcknowledged] = useState(false)
 
   useEffect(() => {
     const rawSession = localStorage.getItem(LOCAL_SESSION_KEY)
@@ -96,7 +97,7 @@ export default function StarterPortal() {
 
         const { data: ud } = await supabase
           .from('users')
-          .select('first_name, top_city_matches, annual_income, household_size, housing_preference, moving_timeline, must_haves, nice_to_haves, not_priorities, current_milemarker')
+          .select('first_name, top_city_matches, annual_income, household_size, housing_preference, moving_timeline, must_haves, nice_to_haves, not_priorities, current_milemarker, onboarding_acknowledged')
           .eq('email', supaSession.user.email.toLowerCase())
           .single()
         if (!ud) return
@@ -110,6 +111,10 @@ export default function StarterPortal() {
         if (ud.current_milemarker) {
           setCurrentMileMarker(ud.current_milemarker)
           setActiveMileMarker(ud.current_milemarker)
+        }
+
+        if (ud.onboarding_acknowledged) {
+          setOnboardingAcknowledged(true)
         }
 
         if (!profileWasLoaded && ud.annual_income && ud.top_city_matches?.length) {
@@ -130,6 +135,19 @@ export default function StarterPortal() {
       } catch {}
     })()
   }, [router])
+
+  async function handleAcknowledge() {
+    setOnboardingAcknowledged(true)
+    try {
+      const supabase = createClient()
+      const { data: { session: supaSession } } = await supabase.auth.getSession()
+      if (!supaSession?.user?.email) return
+      await supabase
+        .from('users')
+        .update({ onboarding_acknowledged: true })
+        .eq('email', supaSession.user.email.toLowerCase())
+    } catch {}
+  }
 
   if (!ready) {
     return (
@@ -241,6 +259,9 @@ export default function StarterPortal() {
             matches={matches}
             profile={profile}
             session={session}
+            onboardingAcknowledged={onboardingAcknowledged}
+            onAcknowledge={handleAcknowledge}
+            onAdvanceToDiscover={() => setActiveMileMarker(2)}
           />
         </div>
       </div>
