@@ -11,6 +11,23 @@ export interface LifestyleScores {
   lowTaxes: number
   weather: number
   traffic: number
+  healthcare: number
+}
+
+export interface CategoryInsights {
+  affordability: string
+  schools: string
+  safety: string
+  walkability: string
+  transit: string
+  nightlife: string
+  outdoors: string
+  familyFriendly: string
+  remoteWork: string
+  lowTaxes: string
+  weather: string
+  traffic: string
+  healthcare: string
 }
 
 export interface HousingData {
@@ -59,6 +76,7 @@ export interface Location {
   lastUpdated: string
   metroUsed: string
   zone: string
+  categoryInsights: CategoryInsights
 }
 
 export type HomeFeature =

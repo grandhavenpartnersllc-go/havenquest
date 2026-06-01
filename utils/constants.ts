@@ -18,6 +18,7 @@ export const LIFESTYLE_CATEGORIES: {
   { key: 'lowTaxes', icon: '📋', label: 'Low Taxes', description: 'Property tax rates and tax burden' },
   { key: 'weather', icon: '☀️', label: 'Weather', description: 'Climate, sunshine, seasonal comfort' },
   { key: 'traffic', icon: '🚗', label: 'Traffic', description: 'Commute times and congestion levels' },
+  { key: 'healthcare', icon: '🏥', label: 'Healthcare', description: 'Hospitals, specialists, and medical access' },
 ]
 
 export const TIER_LABELS: Record<string, string> = {
@@ -40,7 +41,7 @@ export const HOUSEHOLD_OPTIONS: { value: UserProfile['householdSize']; label: st
   { value: '5+', label: 'Family of 5+', description: 'Larger family' },
 ]
 
-export const MUST_HAVE_MAX = 3
+export const MUST_HAVE_MAX = 4
 export const NICE_TO_HAVE_MAX = 5
 
 export const SESSION_PROFILE_KEY = 'hq_profile'

@@ -1,6 +1,6 @@
 import {
   DollarSign, GraduationCap, Shield, Footprints, Train, Music,
-  TreePine, Heart, Wifi, Receipt, Sun, Car, type LucideIcon,
+  TreePine, Heart, Wifi, Receipt, Sun, Car, Hospital, type LucideIcon,
 } from 'lucide-react'
 import type { LifestyleScores } from '../types'
 
@@ -17,4 +17,5 @@ export const CATEGORY_ICONS: Record<keyof LifestyleScores, LucideIcon> = {
   lowTaxes: Receipt,
   weather: Sun,
   traffic: Car,
+  healthcare: Hospital,
 }

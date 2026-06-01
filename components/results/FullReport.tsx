@@ -1,5 +1,6 @@
 import { CityMatch, UserProfile, LifestyleScores } from '../../types'
 import { LIFESTYLE_CATEGORIES, TIER_LABELS } from '../../utils/constants'
+import { getScoreColor } from '../../utils/scoring'
 
 const SCORE_TOOLTIPS: Partial<Record<keyof LifestyleScores, string>> = {
   affordability: 'Reflects market price level — not your personal budget fit',
@@ -72,6 +73,47 @@ export default function FullReport({ match, profile }: FullReportProps) {
             ))}
           </div>
         </div>
+
+        <hr className="border-gray-100" />
+
+        {(() => {
+          type InsightCard = { key: keyof LifestyleScores; label: string; text: string; score: number }
+          const insights: InsightCard[] = profile.mustHaves.reduce<InsightCard[]>((acc, key) => {
+            const cat = LIFESTYLE_CATEGORIES.find(c => c.key === key)
+            const text = location.categoryInsights[key]
+            if (cat && text && !text.startsWith('CONTENT PENDING')) {
+              acc.push({ key, label: cat.label, text, score: location.scores[key] })
+            }
+            return acc
+          }, [])
+          if (insights.length === 0) return null
+          return (
+            <div>
+              <h3 className="font-bold text-gray-900 tracking-tight mb-3">
+                Why {location.name} works for your must-haves
+              </h3>
+              <div className="space-y-3">
+                {insights.map(({ key, label, text, score }) => {
+                  const color = getScoreColor(score)
+                  return (
+                    <div key={key} className="bg-gray-50 rounded-xl p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-bold text-gray-900">{label}</span>
+                        <span
+                          className="text-xs font-bold tabular-nums px-2 py-0.5 rounded-full"
+                          style={{ backgroundColor: `${color}18`, color }}
+                        >
+                          {score}/10
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600 leading-relaxed">{text}</p>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        })()}
 
         <hr className="border-gray-100" />
 
