@@ -20,6 +20,19 @@ const WARM_MID = '#1C1814'
 const GOLD = '#B8912A'
 const CREAM = '#F0EDE6'
 
+const MILEMARKER_NAMES: Record<number, string> = {
+  1: 'Explore',
+  2: 'Discover',
+  3: 'Decide',
+  4: 'Connect',
+  5: 'Plan',
+  6: 'Prepare',
+  7: 'Match',
+  8: 'Engage',
+  9: 'Contract',
+  10: 'Home',
+}
+
 function getGreeting() {
   const h = new Date().getHours()
   if (h < 12) return 'Good morning'
@@ -186,25 +199,50 @@ export default function StarterPortal() {
           <p className="text-sm mt-1.5" style={{ color: 'rgba(237,231,220,0.38)' }}>
             {getFormattedDate()} · Texas Relocation Intelligence
           </p>
+
+          {/* Journey progress */}
+          <div className="mt-5">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-[11px] font-semibold" style={{ color: 'rgba(237,231,220,0.5)', letterSpacing: '0.12em' }}>
+                YOUR NAVIGATOR JOURNEY
+              </p>
+              <p className="text-[11px]" style={{ color: 'rgba(237,231,220,0.4)' }}>
+                MileMarker {currentMileMarker} of 10 — {MILEMARKER_NAMES[currentMileMarker]}
+              </p>
+            </div>
+            <div
+              className="w-full rounded-full"
+              style={{ backgroundColor: 'rgba(255,255,255,0.08)', height: '4px' }}
+            >
+              <div
+                className="rounded-full transition-all duration-700"
+                style={{
+                  backgroundColor: GOLD,
+                  height: '4px',
+                  width: `${((currentMileMarker - 1) / 9) * 100}%`,
+                }}
+              />
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Navigator tabs */}
-      <NavigatorTabs
-        currentMileMarker={currentMileMarker}
-        activeMileMarker={activeMileMarker}
-        onSelect={setActiveMileMarker}
-      />
-
-      {/* MileMarker content */}
-      <div className="max-w-5xl mx-auto px-5 py-8">
-        <MileMarkerContent
-          selectedMileMarker={activeMileMarker}
+      {/* Navigator + content — cream section */}
+      <div className="max-w-5xl mx-auto px-5 pt-6 pb-8">
+        <NavigatorTabs
           currentMileMarker={currentMileMarker}
-          matches={matches}
-          profile={profile}
-          session={session}
+          activeMileMarker={activeMileMarker}
+          onSelect={setActiveMileMarker}
         />
+        <div className="mt-6">
+          <MileMarkerContent
+            selectedMileMarker={activeMileMarker}
+            currentMileMarker={currentMileMarker}
+            matches={matches}
+            profile={profile}
+            session={session}
+          />
+        </div>
       </div>
 
       <footer className="pb-8 text-center">

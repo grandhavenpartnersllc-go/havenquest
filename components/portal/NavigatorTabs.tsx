@@ -2,7 +2,6 @@
 
 import { ChevronDown, ChevronUp, Check, Lock } from 'lucide-react'
 
-const WARM_DARK = '#16120D'
 const GOLD = '#B8912A'
 const GREEN = '#2D7D4E'
 
@@ -34,98 +33,101 @@ interface NavigatorTabsProps {
 export default function NavigatorTabs({ currentMileMarker, activeMileMarker, onSelect }: NavigatorTabsProps) {
   return (
     <>
-      {/* Desktop: horizontal tabs */}
-      <div className="hidden md:block" style={{ backgroundColor: WARM_DARK }}>
-        <div className="max-w-5xl mx-auto px-5">
-          <div
-            className="flex overflow-x-auto"
-            style={{ scrollbarWidth: 'none' } as React.CSSProperties}
-          >
-            {MILEMARKERS.map(mm => {
-              const status = getStatus(mm.number, currentMileMarker)
-              const isSelected = activeMileMarker === mm.number
-              return (
-                <button
-                  key={mm.number}
-                  onClick={() => onSelect(mm.number)}
-                  className="flex items-center gap-1.5 px-4 py-3.5 text-xs font-semibold whitespace-nowrap border-b-2 transition-colors shrink-0"
-                  style={{
-                    borderBottomColor: isSelected ? GOLD : 'transparent',
-                    color:
-                      status === 'complete'
-                        ? GREEN
-                        : isSelected
-                        ? GOLD
-                        : status === 'locked'
-                        ? 'rgba(232,226,217,0.3)'
-                        : 'rgba(232,226,217,0.7)',
-                  }}
-                >
-                  {status === 'complete' && <Check size={11} />}
-                  {status === 'locked' && <Lock size={10} />}
-                  {status === 'active' && (
-                    <span
-                      className="inline-block w-1.5 h-1.5 rounded-full"
-                      style={{ backgroundColor: GOLD }}
-                    />
-                  )}
-                  <span>{mm.number}. {mm.name}</span>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile: accordion */}
-      <div className="md:hidden" style={{ backgroundColor: WARM_DARK }}>
-        <div className="max-w-5xl mx-auto px-5">
-          {MILEMARKERS.map((mm, i) => {
+      {/* Desktop: pill tabs */}
+      <div className="hidden md:block">
+        <div
+          className="flex overflow-x-auto gap-1 pb-3 border-b"
+          style={{
+            scrollbarWidth: 'none',
+            borderBottomColor: 'rgba(0,0,0,0.08)',
+          } as React.CSSProperties}
+        >
+          {MILEMARKERS.map(mm => {
             const status = getStatus(mm.number, currentMileMarker)
             const isSelected = activeMileMarker === mm.number
+
+            const pillBg =
+              status === 'complete' ? '#E8F5EE' :
+              isSelected ? '#FBF3E3' :
+              'transparent'
+
+            const textColor =
+              status === 'complete' ? GREEN :
+              isSelected ? GOLD :
+              'rgba(0,0,0,0.25)'
+
             return (
               <button
                 key={mm.number}
                 onClick={() => onSelect(mm.number)}
-                className="w-full flex items-center justify-between py-3 text-left"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0"
                 style={{
-                  borderTop: i > 0 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                  backgroundColor: pillBg,
+                  color: textColor,
+                  border: isSelected ? `1.5px solid ${GOLD}` : '1.5px solid transparent',
                 }}
               >
-                <div className="flex items-center gap-2.5">
-                  {status === 'complete' && <Check size={13} style={{ color: GREEN }} />}
-                  {status === 'locked' && <Lock size={12} style={{ color: 'rgba(232,226,217,0.3)' }} />}
-                  {status === 'active' && (
-                    <span
-                      className="inline-block w-1.5 h-1.5 rounded-full"
-                      style={{ backgroundColor: GOLD }}
-                    />
-                  )}
+                {status === 'complete' && <Check size={11} />}
+                {status === 'locked' && <Lock size={10} />}
+                {status === 'active' && (
                   <span
-                    className="text-xs font-semibold"
-                    style={{
-                      color:
-                        status === 'complete'
-                          ? GREEN
-                          : isSelected
-                          ? GOLD
-                          : status === 'locked'
-                          ? 'rgba(232,226,217,0.3)'
-                          : 'rgba(232,226,217,0.7)',
-                    }}
-                  >
-                    {mm.number}. {mm.name}
-                  </span>
-                </div>
-                {isSelected ? (
-                  <ChevronUp size={14} style={{ color: 'rgba(232,226,217,0.4)' }} />
-                ) : (
-                  <ChevronDown size={14} style={{ color: 'rgba(232,226,217,0.3)' }} />
+                    className="inline-block w-1.5 h-1.5 rounded-full"
+                    style={{ backgroundColor: GOLD }}
+                  />
                 )}
+                <span>{mm.number}. {mm.name}</span>
               </button>
             )
           })}
         </div>
+      </div>
+
+      {/* Mobile: accordion */}
+      <div
+        className="md:hidden border rounded-xl overflow-hidden mb-2"
+        style={{ borderColor: 'rgba(0,0,0,0.08)' }}
+      >
+        {MILEMARKERS.map((mm, i) => {
+          const status = getStatus(mm.number, currentMileMarker)
+          const isSelected = activeMileMarker === mm.number
+
+          const textColor =
+            status === 'complete' ? GREEN :
+            isSelected ? GOLD :
+            'rgba(0,0,0,0.3)'
+
+          const rowBg = isSelected ? '#FBF3E3' : 'transparent'
+
+          return (
+            <button
+              key={mm.number}
+              onClick={() => onSelect(mm.number)}
+              className="w-full flex items-center justify-between px-4 py-3 text-left transition-colors"
+              style={{
+                backgroundColor: rowBg,
+                borderTop: i > 0 ? '1px solid rgba(0,0,0,0.06)' : 'none',
+              }}
+            >
+              <div className="flex items-center gap-2.5">
+                {status === 'complete' && <Check size={13} style={{ color: GREEN }} />}
+                {status === 'locked' && <Lock size={12} style={{ color: 'rgba(0,0,0,0.25)' }} />}
+                {status === 'active' && (
+                  <span
+                    className="inline-block w-1.5 h-1.5 rounded-full"
+                    style={{ backgroundColor: GOLD }}
+                  />
+                )}
+                <span className="text-xs font-semibold" style={{ color: textColor }}>
+                  {mm.number}. {mm.name}
+                </span>
+              </div>
+              {isSelected
+                ? <ChevronUp size={14} style={{ color: 'rgba(0,0,0,0.3)' }} />
+                : <ChevronDown size={14} style={{ color: 'rgba(0,0,0,0.2)' }} />
+              }
+            </button>
+          )
+        })}
       </div>
     </>
   )
