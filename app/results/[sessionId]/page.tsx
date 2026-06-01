@@ -1,7 +1,7 @@
 'use client'
 
 import { use, useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Header from '../../../components/shared/Header'
 import Footer from '../../../components/shared/Footer'
 import TeaserResults from '../../../components/results/TeaserResults'
@@ -23,6 +23,7 @@ type FlowStep = 'teaser' | 'password'
 export default function SessionResultsPage({ params }: { params: Promise<{ sessionId: string }> }) {
   const { sessionId } = use(params)
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [matches, setMatches] = useState<CityMatch[]>([])
   const [ready, setReady] = useState(false)
@@ -61,7 +62,8 @@ export default function SessionResultsPage({ params }: { params: Promise<{ sessi
     }
 
     setReady(true)
-  }, [router])
+    if (searchParams.get('gate') === 'open') setShowGate(true)
+  }, [router, searchParams])
 
   const handleGateSuccess = (sess: { userId: string; firstName: string; email: string }) => {
     const session: UserSession = { ...sess, createdAt: new Date().toISOString() }

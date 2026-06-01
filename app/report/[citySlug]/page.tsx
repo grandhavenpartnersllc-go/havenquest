@@ -12,6 +12,7 @@ import ScoreBar from '../../../components/shared/ScoreBar'
 import StrengthWeaknessGrid from '../../../components/results/StrengthWeaknessGrid'
 import MarketSnapshot from '../../../components/results/MarketSnapshot'
 import SchoolSnapshot from '../../../components/results/SchoolSnapshot'
+import CityReportCTA from '../../../components/results/CityReportCTA'
 
 export async function generateStaticParams() {
   return getAllCities().map(city => ({ citySlug: city.id }))
@@ -131,22 +132,8 @@ export default async function CityReportPage(
 
               <hr className="border-gray-100" />
 
-              {/* Dark CTA block */}
-              <div className="bg-[#08101C] rounded-2xl p-6 text-center">
-                <h3 className="font-bold text-white tracking-tight mb-1">
-                  See how {city.name} fits your income and lifestyle
-                </h3>
-                <p className="text-white/45 text-sm mb-5">
-                  Get a personalized affordability breakdown and matched realtors — free.
-                </p>
-                <Link
-                  href="/explore"
-                  className="inline-flex items-center gap-2 bg-white text-gray-950 px-6 py-3 rounded-xl font-bold text-sm hover:bg-gray-100 transition-colors"
-                  style={{ boxShadow: '0 0 0 1px rgba(255,255,255,0.15), 0 4px 14px rgba(0,0,0,0.35)' }}
-                >
-                  Get My Personalized Report →
-                </Link>
-              </div>
+              {/* CTA block */}
+              <CityReportCTA />
             </div>
           </article>
         </div>
