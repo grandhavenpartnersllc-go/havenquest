@@ -138,13 +138,14 @@ export default function StarterPortal() {
 
   async function handleAcknowledge() {
     setOnboardingAcknowledged(true)
+    setCurrentMileMarker(2)
     try {
       const supabase = createClient()
       const { data: { session: supaSession } } = await supabase.auth.getSession()
       if (!supaSession?.user?.email) return
       await supabase
         .from('users')
-        .update({ onboarding_acknowledged: true })
+        .update({ onboarding_acknowledged: true, current_milemarker: 2 })
         .eq('email', supaSession.user.email.toLowerCase())
     } catch {}
   }
