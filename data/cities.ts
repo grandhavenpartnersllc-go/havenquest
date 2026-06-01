@@ -26,7 +26,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 6,
       traffic: 1,
-      healthcare: 85,
+      healthcare: 8.5,
     },
     housing: {
       avgRent1BR: 1300,
@@ -104,7 +104,7 @@ export const texasCities: Location[] = [
       lowTaxes: 6,
       weather: 5,
       traffic: 3,
-      healthcare: 87,
+      healthcare: 8.7,
     },
     housing: {
       avgRent1BR: 1350,
@@ -182,7 +182,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 4,
       traffic: 2,
-      healthcare: 98,
+      healthcare: 9.8,
     },
     housing: {
       avgRent1BR: 1350,
@@ -260,7 +260,7 @@ export const texasCities: Location[] = [
       lowTaxes: 5,
       weather: 6,
       traffic: 5,
-      healthcare: 82,
+      healthcare: 8.2,
     },
     housing: {
       avgRent1BR: 1150,
@@ -338,7 +338,7 @@ export const texasCities: Location[] = [
       lowTaxes: 5,
       weather: 5,
       traffic: 4,
-      healthcare: 80,
+      healthcare: 8,
     },
     housing: {
       avgRent1BR: 1350,
@@ -416,7 +416,7 @@ export const texasCities: Location[] = [
       lowTaxes: 8,
       weather: 5,
       traffic: 6,
-      healthcare: 80,
+      healthcare: 8,
     },
     housing: {
       avgRent1BR: 1600,
@@ -494,7 +494,7 @@ export const texasCities: Location[] = [
       lowTaxes: 8,
       weather: 5,
       traffic: 6,
-      healthcare: 84,
+      healthcare: 8.4,
     },
     housing: {
       avgRent1BR: 1500,
@@ -572,7 +572,7 @@ export const texasCities: Location[] = [
       lowTaxes: 9,
       weather: 6,
       traffic: 5,
-      healthcare: 76,
+      healthcare: 7.6,
     },
     housing: {
       avgRent1BR: 1250,
@@ -650,7 +650,7 @@ export const texasCities: Location[] = [
       lowTaxes: 9,
       weather: 6,
       traffic: 7,
-      healthcare: 74,
+      healthcare: 7.4,
     },
     housing: {
       avgRent1BR: 1350,
@@ -728,7 +728,7 @@ export const texasCities: Location[] = [
       lowTaxes: 8,
       weather: 4,
       traffic: 8,
-      healthcare: 88,
+      healthcare: 8.8,
     },
     housing: {
       avgRent1BR: 1550,
@@ -806,7 +806,7 @@ export const texasCities: Location[] = [
       lowTaxes: 8,
       weather: 4,
       traffic: 7,
-      healthcare: 82,
+      healthcare: 8.2,
     },
     housing: {
       avgRent1BR: 1400,
@@ -884,7 +884,7 @@ export const texasCities: Location[] = [
       lowTaxes: 8,
       weather: 5,
       traffic: 8,
-      healthcare: 78,
+      healthcare: 7.8,
     },
     housing: {
       avgRent1BR: 1400,
@@ -962,7 +962,7 @@ export const texasCities: Location[] = [
       lowTaxes: 9,
       weather: 6,
       traffic: 6,
-      healthcare: 68,
+      healthcare: 6.8,
     },
     housing: {
       avgRent1BR: 1250,
@@ -1040,7 +1040,7 @@ export const texasCities: Location[] = [
       lowTaxes: 6,
       weather: 6,
       traffic: 6,
-      healthcare: 62,
+      healthcare: 6.2,
     },
     housing: {
       avgRent1BR: 1150,
@@ -1118,7 +1118,7 @@ export const texasCities: Location[] = [
       lowTaxes: 6,
       weather: 6,
       traffic: 8,
-      healthcare: 66,
+      healthcare: 6.6,
     },
     housing: {
       avgRent1BR: 1150,
@@ -1196,7 +1196,7 @@ export const texasCities: Location[] = [
       lowTaxes: 6,
       weather: 6,
       traffic: 8,
-      healthcare: 63,
+      healthcare: 6.3,
     },
     housing: {
       avgRent1BR: 1100,
@@ -1274,7 +1274,7 @@ export const texasCities: Location[] = [
       lowTaxes: 9,
       weather: 6,
       traffic: 7,
-      healthcare: 65,
+      healthcare: 6.5,
     },
     housing: {
       avgRent1BR: 1300,
@@ -1352,7 +1352,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 6,
       traffic: 6,
-      healthcare: 64,
+      healthcare: 6.4,
     },
     housing: {
       avgRent1BR: 1250,
@@ -1430,7 +1430,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 5,
       traffic: 10,
-      healthcare: 70,
+      healthcare: 7,
     },
     housing: {
       avgRent1BR: 1150,
@@ -1508,7 +1508,7 @@ export const texasCities: Location[] = [
       lowTaxes: 10,
       weather: 6,
       traffic: 10,
-      healthcare: 72,
+      healthcare: 7.2,
     },
     housing: {
       avgRent1BR: 1150,
@@ -1586,7 +1586,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 5,
       traffic: 6,
-      healthcare: 78,
+      healthcare: 7.8,
     },
     housing: {
       avgRent1BR: 1450,
@@ -1664,7 +1664,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 5,
       traffic: 5,
-      healthcare: 72,
+      healthcare: 7.2,
     },
     housing: {
       avgRent1BR: 1800,
@@ -1742,7 +1742,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 5,
       traffic: 6,
-      healthcare: 76,
+      healthcare: 7.6,
     },
     housing: {
       avgRent1BR: 1600,
@@ -1820,7 +1820,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 5,
       traffic: 6,
-      healthcare: 78,
+      healthcare: 7.8,
     },
     housing: {
       avgRent1BR: 2000,
@@ -1898,7 +1898,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 5,
       traffic: 7,
-      healthcare: 74,
+      healthcare: 7.4,
     },
     housing: {
       avgRent1BR: 1600,
@@ -1976,7 +1976,7 @@ export const texasCities: Location[] = [
       lowTaxes: 6,
       weather: 5,
       traffic: 7,
-      healthcare: 74,
+      healthcare: 7.4,
     },
     housing: {
       avgRent1BR: 1400,
@@ -2054,7 +2054,7 @@ export const texasCities: Location[] = [
       lowTaxes: 8,
       weather: 5,
       traffic: 7,
-      healthcare: 70,
+      healthcare: 7,
     },
     housing: {
       avgRent1BR: 1350,
@@ -2132,7 +2132,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 5,
       traffic: 7,
-      healthcare: 76,
+      healthcare: 7.6,
     },
     housing: {
       avgRent1BR: 1600,
@@ -2210,7 +2210,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 5,
       traffic: 7,
-      healthcare: 74,
+      healthcare: 7.4,
     },
     housing: {
       avgRent1BR: 1550,
@@ -2288,7 +2288,7 @@ export const texasCities: Location[] = [
       lowTaxes: 6,
       weather: 5,
       traffic: 6,
-      healthcare: 68,
+      healthcare: 6.8,
     },
     housing: {
       avgRent1BR: 1600,
@@ -2366,7 +2366,7 @@ export const texasCities: Location[] = [
       lowTaxes: 8,
       weather: 5,
       traffic: 7,
-      healthcare: 70,
+      healthcare: 7,
     },
     housing: {
       avgRent1BR: 1300,
@@ -2444,7 +2444,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 5,
       traffic: 6,
-      healthcare: 76,
+      healthcare: 7.6,
     },
     housing: {
       avgRent1BR: 1200,
@@ -2522,7 +2522,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 5,
       traffic: 6,
-      healthcare: 75,
+      healthcare: 7.5,
     },
     housing: {
       avgRent1BR: 1350,
@@ -2600,7 +2600,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 5,
       traffic: 6,
-      healthcare: 78,
+      healthcare: 7.8,
     },
     housing: {
       avgRent1BR: 1400,
@@ -2678,7 +2678,7 @@ export const texasCities: Location[] = [
       lowTaxes: 8,
       weather: 5,
       traffic: 7,
-      healthcare: 72,
+      healthcare: 7.2,
     },
     housing: {
       avgRent1BR: 1200,
@@ -2756,7 +2756,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 5,
       traffic: 6,
-      healthcare: 72,
+      healthcare: 7.2,
     },
     housing: {
       avgRent1BR: 1300,
@@ -2834,7 +2834,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 5,
       traffic: 6,
-      healthcare: 73,
+      healthcare: 7.3,
     },
     housing: {
       avgRent1BR: 1350,
@@ -2912,7 +2912,7 @@ export const texasCities: Location[] = [
       lowTaxes: 6,
       weather: 5,
       traffic: 5,
-      healthcare: 65,
+      healthcare: 6.5,
     },
     housing: {
       avgRent1BR: 1600,
@@ -2990,7 +2990,7 @@ export const texasCities: Location[] = [
       lowTaxes: 6,
       weather: 5,
       traffic: 6,
-      healthcare: 66,
+      healthcare: 6.6,
     },
     housing: {
       avgRent1BR: 1450,
@@ -3068,7 +3068,7 @@ export const texasCities: Location[] = [
       lowTaxes: 6,
       weather: 5,
       traffic: 7,
-      healthcare: 64,
+      healthcare: 6.4,
     },
     housing: {
       avgRent1BR: 1350,
@@ -3146,7 +3146,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 5,
       traffic: 7,
-      healthcare: 63,
+      healthcare: 6.3,
     },
     housing: {
       avgRent1BR: 1250,
@@ -3224,7 +3224,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 5,
       traffic: 7,
-      healthcare: 76,
+      healthcare: 7.6,
     },
     housing: {
       avgRent1BR: 2000,
@@ -3302,7 +3302,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 5,
       traffic: 7,
-      healthcare: 72,
+      healthcare: 7.2,
     },
     housing: {
       avgRent1BR: 1900,
@@ -3380,7 +3380,7 @@ export const texasCities: Location[] = [
       lowTaxes: 8,
       weather: 5,
       traffic: 6,
-      healthcare: 68,
+      healthcare: 6.8,
     },
     housing: {
       avgRent1BR: 2000,
@@ -3458,7 +3458,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 5,
       traffic: 7,
-      healthcare: 65,
+      healthcare: 6.5,
     },
     housing: {
       avgRent1BR: 1200,
@@ -3536,7 +3536,7 @@ export const texasCities: Location[] = [
       lowTaxes: 6,
       weather: 5,
       traffic: 6,
-      healthcare: 63,
+      healthcare: 6.3,
     },
     housing: {
       avgRent1BR: 1250,
@@ -3614,7 +3614,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 5,
       traffic: 6,
-      healthcare: 62,
+      healthcare: 6.2,
     },
     housing: {
       avgRent1BR: 1200,
@@ -3692,7 +3692,7 @@ export const texasCities: Location[] = [
       lowTaxes: 8,
       weather: 5,
       traffic: 8,
-      healthcare: 58,
+      healthcare: 5.8,
     },
     housing: {
       avgRent1BR: 1100,
@@ -3770,7 +3770,7 @@ export const texasCities: Location[] = [
       lowTaxes: 6,
       weather: 5,
       traffic: 7,
-      healthcare: 60,
+      healthcare: 6,
     },
     housing: {
       avgRent1BR: 1300,
@@ -3848,7 +3848,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 5,
       traffic: 5,
-      healthcare: 72,
+      healthcare: 7.2,
     },
     housing: {
       avgRent1BR: 1800,
@@ -3926,7 +3926,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 5,
       traffic: 5,
-      healthcare: 70,
+      healthcare: 7,
     },
     housing: {
       avgRent1BR: 2200,
@@ -4004,7 +4004,7 @@ export const texasCities: Location[] = [
       lowTaxes: 6,
       weather: 5,
       traffic: 6,
-      healthcare: 65,
+      healthcare: 6.5,
     },
     housing: {
       avgRent1BR: 1600,
@@ -4082,7 +4082,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 5,
       traffic: 7,
-      healthcare: 58,
+      healthcare: 5.8,
     },
     housing: {
       avgRent1BR: 1150,
@@ -4160,7 +4160,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 4,
       traffic: 5,
-      healthcare: 78,
+      healthcare: 7.8,
     },
     housing: {
       avgRent1BR: 1300,
@@ -4238,7 +4238,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 4,
       traffic: 6,
-      healthcare: 76,
+      healthcare: 7.6,
     },
     housing: {
       avgRent1BR: 1350,
@@ -4316,7 +4316,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 4,
       traffic: 6,
-      healthcare: 74,
+      healthcare: 7.4,
     },
     housing: {
       avgRent1BR: 1350,
@@ -4394,7 +4394,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 4,
       traffic: 7,
-      healthcare: 72,
+      healthcare: 7.2,
     },
     housing: {
       avgRent1BR: 1500,
@@ -4472,7 +4472,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 4,
       traffic: 7,
-      healthcare: 70,
+      healthcare: 7,
     },
     housing: {
       avgRent1BR: 1250,
@@ -4550,7 +4550,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 4,
       traffic: 5,
-      healthcare: 76,
+      healthcare: 7.6,
     },
     housing: {
       avgRent1BR: 1350,
@@ -4628,7 +4628,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 4,
       traffic: 6,
-      healthcare: 73,
+      healthcare: 7.3,
     },
     housing: {
       avgRent1BR: 1300,
@@ -4706,7 +4706,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 4,
       traffic: 6,
-      healthcare: 70,
+      healthcare: 7,
     },
     housing: {
       avgRent1BR: 1400,
@@ -4784,7 +4784,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 4,
       traffic: 6,
-      healthcare: 68,
+      healthcare: 6.8,
     },
     housing: {
       avgRent1BR: 1600,
@@ -4862,7 +4862,7 @@ export const texasCities: Location[] = [
       lowTaxes: 8,
       weather: 4,
       traffic: 6,
-      healthcare: 72,
+      healthcare: 7.2,
     },
     housing: {
       avgRent1BR: 1100,
@@ -4940,7 +4940,7 @@ export const texasCities: Location[] = [
       lowTaxes: 8,
       weather: 4,
       traffic: 7,
-      healthcare: 70,
+      healthcare: 7,
     },
     housing: {
       avgRent1BR: 1050,
@@ -5018,7 +5018,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 4,
       traffic: 6,
-      healthcare: 72,
+      healthcare: 7.2,
     },
     housing: {
       avgRent1BR: 1150,
@@ -5096,7 +5096,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 4,
       traffic: 6,
-      healthcare: 73,
+      healthcare: 7.3,
     },
     housing: {
       avgRent1BR: 1150,
@@ -5174,7 +5174,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 3,
       traffic: 6,
-      healthcare: 68,
+      healthcare: 6.8,
     },
     housing: {
       avgRent1BR: 1400,
@@ -5252,7 +5252,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 4,
       traffic: 7,
-      healthcare: 70,
+      healthcare: 7,
     },
     housing: {
       avgRent1BR: 1250,
@@ -5330,7 +5330,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 4,
       traffic: 7,
-      healthcare: 68,
+      healthcare: 6.8,
     },
     housing: {
       avgRent1BR: 1200,
@@ -5408,7 +5408,7 @@ export const texasCities: Location[] = [
       lowTaxes: 8,
       weather: 4,
       traffic: 7,
-      healthcare: 64,
+      healthcare: 6.4,
     },
     housing: {
       avgRent1BR: 1250,
@@ -5486,7 +5486,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 5,
       traffic: 7,
-      healthcare: 68,
+      healthcare: 6.8,
     },
     housing: {
       avgRent1BR: 1500,
@@ -5564,7 +5564,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 5,
       traffic: 7,
-      healthcare: 72,
+      healthcare: 7.2,
     },
     housing: {
       avgRent1BR: 1300,
@@ -5642,7 +5642,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 5,
       traffic: 7,
-      healthcare: 68,
+      healthcare: 6.8,
     },
     housing: {
       avgRent1BR: 1300,
@@ -5720,7 +5720,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 5,
       traffic: 6,
-      healthcare: 70,
+      healthcare: 7,
     },
     housing: {
       avgRent1BR: 1400,
@@ -5798,7 +5798,7 @@ export const texasCities: Location[] = [
       lowTaxes: 8,
       weather: 5,
       traffic: 7,
-      healthcare: 68,
+      healthcare: 6.8,
     },
     housing: {
       avgRent1BR: 1100,
@@ -5876,7 +5876,7 @@ export const texasCities: Location[] = [
       lowTaxes: 8,
       weather: 5,
       traffic: 7,
-      healthcare: 70,
+      healthcare: 7,
     },
     housing: {
       avgRent1BR: 1200,
@@ -5954,7 +5954,7 @@ export const texasCities: Location[] = [
       lowTaxes: 6,
       weather: 5,
       traffic: 6,
-      healthcare: 78,
+      healthcare: 7.8,
     },
     housing: {
       avgRent1BR: 1800,
@@ -6032,7 +6032,7 @@ export const texasCities: Location[] = [
       lowTaxes: 8,
       weather: 5,
       traffic: 8,
-      healthcare: 63,
+      healthcare: 6.3,
     },
     housing: {
       avgRent1BR: 1100,
@@ -6110,7 +6110,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 5,
       traffic: 7,
-      healthcare: 68,
+      healthcare: 6.8,
     },
     housing: {
       avgRent1BR: 1800,
@@ -6188,7 +6188,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 5,
       traffic: 6,
-      healthcare: 70,
+      healthcare: 7,
     },
     housing: {
       avgRent1BR: 1150,
@@ -6266,7 +6266,7 @@ export const texasCities: Location[] = [
       lowTaxes: 8,
       weather: 5,
       traffic: 6,
-      healthcare: 72,
+      healthcare: 7.2,
     },
     housing: {
       avgRent1BR: 1150,
@@ -6344,7 +6344,7 @@ export const texasCities: Location[] = [
       lowTaxes: 8,
       weather: 5,
       traffic: 6,
-      healthcare: 70,
+      healthcare: 7,
     },
     housing: {
       avgRent1BR: 1200,
@@ -6422,7 +6422,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 5,
       traffic: 7,
-      healthcare: 64,
+      healthcare: 6.4,
     },
     housing: {
       avgRent1BR: 1250,
@@ -6500,7 +6500,7 @@ export const texasCities: Location[] = [
       lowTaxes: 8,
       weather: 5,
       traffic: 6,
-      healthcare: 68,
+      healthcare: 6.8,
     },
     housing: {
       avgRent1BR: 1150,
@@ -6578,7 +6578,7 @@ export const texasCities: Location[] = [
       lowTaxes: 8,
       weather: 4,
       traffic: 7,
-      healthcare: 70,
+      healthcare: 7,
     },
     housing: {
       avgRent1BR: 1200,
@@ -6656,7 +6656,7 @@ export const texasCities: Location[] = [
       lowTaxes: 8,
       weather: 3,
       traffic: 7,
-      healthcare: 66,
+      healthcare: 6.6,
     },
     housing: {
       avgRent1BR: 1100,
@@ -6734,7 +6734,7 @@ export const texasCities: Location[] = [
       lowTaxes: 8,
       weather: 4,
       traffic: 7,
-      healthcare: 63,
+      healthcare: 6.3,
     },
     housing: {
       avgRent1BR: 1150,
@@ -6812,7 +6812,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 5,
       traffic: 8,
-      healthcare: 60,
+      healthcare: 6,
     },
     housing: {
       avgRent1BR: 1200,
@@ -6890,7 +6890,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 5,
       traffic: 7,
-      healthcare: 58,
+      healthcare: 5.8,
     },
     housing: {
       avgRent1BR: 1600,
@@ -6968,7 +6968,7 @@ export const texasCities: Location[] = [
       lowTaxes: 8,
       weather: 6,
       traffic: 8,
-      healthcare: 62,
+      healthcare: 6.2,
     },
     housing: {
       avgRent1BR: 1150,
@@ -7046,7 +7046,7 @@ export const texasCities: Location[] = [
       lowTaxes: 8,
       weather: 6,
       traffic: 8,
-      healthcare: 55,
+      healthcare: 5.5,
     },
     housing: {
       avgRent1BR: 1400,
@@ -7124,7 +7124,7 @@ export const texasCities: Location[] = [
       lowTaxes: 8,
       weather: 5,
       traffic: 7,
-      healthcare: 66,
+      healthcare: 6.6,
     },
     housing: {
       avgRent1BR: 1200,
@@ -7202,7 +7202,7 @@ export const texasCities: Location[] = [
       lowTaxes: 8,
       weather: 5,
       traffic: 6,
-      healthcare: 66,
+      healthcare: 6.6,
     },
     housing: {
       avgRent1BR: 1200,
@@ -7280,7 +7280,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 5,
       traffic: 6,
-      healthcare: 60,
+      healthcare: 6,
     },
     housing: {
       avgRent1BR: 1400,
@@ -7358,7 +7358,7 @@ export const texasCities: Location[] = [
       lowTaxes: 8,
       weather: 3,
       traffic: 7,
-      healthcare: 66,
+      healthcare: 6.6,
     },
     housing: {
       avgRent1BR: 1150,
@@ -7436,7 +7436,7 @@ export const texasCities: Location[] = [
       lowTaxes: 8,
       weather: 3,
       traffic: 8,
-      healthcare: 65,
+      healthcare: 6.5,
     },
     housing: {
       avgRent1BR: 1150,
@@ -7514,7 +7514,7 @@ export const texasCities: Location[] = [
       lowTaxes: 7,
       weather: 4,
       traffic: 6,
-      healthcare: 75,
+      healthcare: 7.5,
     },
     housing: {
       avgRent1BR: 1300,
@@ -7592,7 +7592,7 @@ export const texasCities: Location[] = [
       lowTaxes: 8,
       weather: 5,
       traffic: 8,
-      healthcare: 57,
+      healthcare: 5.7,
     },
     housing: {
       avgRent1BR: 1100,
@@ -7670,7 +7670,7 @@ export const texasCities: Location[] = [
       lowTaxes: 8,
       weather: 6,
       traffic: 8,
-      healthcare: 60,
+      healthcare: 6,
     },
     housing: {
       avgRent1BR: 1250,
@@ -7748,7 +7748,7 @@ export const texasCities: Location[] = [
       lowTaxes: 8,
       weather: 6,
       traffic: 9,
-      healthcare: 60,
+      healthcare: 6,
     },
     housing: {
       avgRent1BR: 1500,
@@ -7826,7 +7826,7 @@ export const texasCities: Location[] = [
       lowTaxes: 9,
       weather: 5,
       traffic: 9,
-      healthcare: 55,
+      healthcare: 5.5,
     },
     housing: {
       avgRent1BR: 1000,
