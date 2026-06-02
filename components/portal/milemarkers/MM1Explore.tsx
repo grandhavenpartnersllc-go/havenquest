@@ -371,7 +371,7 @@ export default function MM1Explore({
               <span className="text-white text-[10px]">✓</span>
             </div>
             <p className="text-sm font-medium" style={{ color: '#2D7D4E' }}>
-              You&apos;re all set. Your full reports are ready in Discover.
+              You&apos;re all set. Your full reports are ready in Explore.
             </p>
           </div>
         )}
@@ -382,7 +382,7 @@ export default function MM1Explore({
             className="w-full mt-4 py-3 rounded-xl font-bold text-sm transition-opacity hover:opacity-90"
             style={{ backgroundColor: GOLD, color: '#16120D' }}
           >
-            Explore My Full Reports → Discover
+            Start Exploring →
           </button>
         )}
       </div>
