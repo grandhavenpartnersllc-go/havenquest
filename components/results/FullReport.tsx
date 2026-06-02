@@ -29,9 +29,9 @@ export default function FullReport({ match, profile }: FullReportProps) {
   const { housing } = location
 
   return (
-    <article className="bg-white rounded-2xl border border-gray-200 overflow-hidden" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 6px 24px rgba(0,0,0,0.10)' }}>
+    <article className="bg-white rounded-2xl border border-gray-300 overflow-hidden" style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.08), 0 6px 24px rgba(0,0,0,0.12)' }}>
       {/* Header */}
-      <div className="bg-[#F0EDE6] border-b border-gray-200 p-6">
+      <div className="bg-[#E8E3DB] border-b border-gray-300 p-6">
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           <ScoreGauge score={matchScore} size={110} />
           <div className="flex-1">
@@ -96,7 +96,7 @@ export default function FullReport({ match, profile }: FullReportProps) {
                 {insights.map(({ key, label, text, score }) => {
                   const color = getScoreColor(score)
                   return (
-                    <div key={key} className="bg-gray-50 rounded-xl p-4">
+                    <div key={key} className="bg-[#F0F2F5] rounded-xl p-4">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-bold text-gray-900">{label}</span>
                         <span
@@ -131,7 +131,7 @@ export default function FullReport({ match, profile }: FullReportProps) {
               { label: 'Property tax rate', value: formatPercentPlain(housing.propertyTaxRate * 100, 2) },
               { label: 'Est. monthly tax', value: formatCurrency(Math.round((housing.medianHomePrice * housing.propertyTaxRate) / 12)) },
             ]) as { label: string; value: string; subtext?: string }[]).map(item => (
-              <div key={item.label} className="bg-gray-50 rounded-xl p-3">
+              <div key={item.label} className="bg-[#F0F2F5] rounded-xl p-3">
                 <p className="text-xs text-gray-400 mb-1">{item.label}</p>
                 <p className="font-bold text-gray-900 tabular-nums text-sm">{item.value}</p>
                 {item.subtext && <p className="text-xs text-gray-400 mt-0.5">{item.subtext}</p>}
