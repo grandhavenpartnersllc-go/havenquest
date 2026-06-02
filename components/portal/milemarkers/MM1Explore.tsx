@@ -14,7 +14,7 @@ const RANK_LABELS = ['Top Pick', 'Runner-Up', 'Strong Alt']
 const FALLBACK_NARRATIVE = "This community matched your priorities and financial profile. Your full report in Discover includes detailed lifestyle scores, school data, affordability breakdown, and matched realtors to help you evaluate this city in depth."
 
 const NAVIGATOR_STEPS = [
-  { number: 1,  name: 'Explore',   description: 'This is where it all began. You told us what matters. We got to work.' },
+  { number: 1,  name: 'Welcome',   description: 'This is where it all began. You told us what matters. We got to work.' },
   { number: 2,  name: 'Discover',  description: 'Your full reports are waiting. Real numbers, real schools, real market data — and the Select Agents who know your zone best. This is where you go from curious to confident.' },
   { number: 3,  name: 'Decide',    description: "Time to get behind the wheel. Jump into the sandbox, dial in your direction, and when it feels right — let's roll. Your Market Director is ready to ride shotgun." },
   { number: 4,  name: 'Connect',   description: "Your personal Market Director is about to step in — and they've already read everything. No \"tell me about yourself.\" Just real guidance from someone genuinely in your corner." },
