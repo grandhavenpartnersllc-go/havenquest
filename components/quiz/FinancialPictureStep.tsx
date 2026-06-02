@@ -134,7 +134,7 @@ export default function FinancialPictureStep({ onNext, onBack, initialData }: Fi
           <label className="block text-sm font-semibold text-gray-800 mb-0.5">
             Estimated proceeds from your home sale
           </label>
-          <p className="text-xs text-gray-400 mb-2">After paying off your mortgage and selling costs</p>
+          <p className="text-xs text-gray-400 mb-2">The equity you&apos;ll walk away with after paying off your mortgage and selling costs — this counts toward your down payment</p>
           <SelectWrapper>
             <select
               value={proceeds}
@@ -154,9 +154,9 @@ export default function FinancialPictureStep({ onNext, onBack, initialData }: Fi
       {/* Field 3 — Down payment */}
       <div className="mb-5">
         <label className="block text-sm font-semibold text-gray-800 mb-0.5">
-          Total down payment funds available
+          Any additional funds you&apos;re bringing to the table?
         </label>
-        <p className="text-xs text-gray-400 mb-2">Include savings, equity, gifts, or any other source</p>
+        <p className="text-xs text-gray-400 mb-2">Beyond your home sale proceeds — savings, gifts, investments, or other sources</p>
         <SelectWrapper>
           <select
             value={downPayment}
