@@ -226,31 +226,121 @@ export default function MM1Explore({
 
       {/* Section 4 — Your Navigator Journey */}
       <div className="mb-8">
-        <p className="text-[10px] font-bold uppercase mb-4" style={{ color: GOLD, letterSpacing: '0.18em' }}>
+        <p
+          className="text-[10px] font-bold uppercase mb-6"
+          style={{ color: GOLD, letterSpacing: '0.18em' }}
+        >
           Your Navigator Journey
         </p>
-        <div className="space-y-2">
-          {NAVIGATOR_STEPS.map(step => (
-            <div key={step.number} className="flex items-start gap-3">
+
+        <div className="space-y-3">
+          {NAVIGATOR_STEPS.map(step => {
+            const isComplete = step.number < currentMileMarker
+            const isActive = step.number === currentMileMarker
+            const isUpcoming = step.number > currentMileMarker
+
+            return (
               <div
-                className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold"
+                key={step.number}
+                className="rounded-xl p-4"
                 style={{
-                  backgroundColor: step.number <= currentMileMarker ? GOLD : '#F0EDE6',
-                  color: step.number <= currentMileMarker ? '#16120D' : '#9A8E82',
+                  backgroundColor: isComplete
+                    ? '#F0FAF4'
+                    : isActive
+                    ? '#FDFCFA'
+                    : '#FDFCFA',
+                  border: isActive
+                    ? `2px solid ${GOLD}`
+                    : isComplete
+                    ? '1.5px solid #C6E8D4'
+                    : '1.5px solid #E8E4DE',
+                  boxShadow: isActive
+                    ? '0 2px 12px rgba(184,145,42,0.12)'
+                    : '0 1px 3px rgba(0,0,0,0.04)',
                 }}
               >
-                {step.number <= currentMileMarker ? '✓' : step.number}
+                {/* Card header — number + name + status */}
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-3">
+                    {/* MileMarker number circle */}
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 font-bold text-sm"
+                      style={{
+                        backgroundColor: isComplete
+                          ? '#2D7D4E'
+                          : isActive
+                          ? GOLD
+                          : '#E8E4DE',
+                        color: isComplete || isActive ? '#FFFFFF' : '#9A8E82',
+                      }}
+                    >
+                      {isComplete ? '✓' : step.number}
+                    </div>
+
+                    {/* MileMarker name */}
+                    <span
+                      className="font-bold text-[15px] tracking-tight"
+                      style={{
+                        color: isComplete
+                          ? '#2D7D4E'
+                          : isActive
+                          ? '#16120D'
+                          : '#4B5563',
+                      }}
+                    >
+                      {step.name}
+                    </span>
+                  </div>
+
+                  {/* Status badge */}
+                  <span
+                    className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full"
+                    style={{
+                      backgroundColor: isComplete
+                        ? '#E8F5EE'
+                        : isActive
+                        ? 'rgba(184,145,42,0.12)'
+                        : '#F0EDE6',
+                      color: isComplete
+                        ? '#2D7D4E'
+                        : isActive
+                        ? GOLD
+                        : '#9A8E82',
+                    }}
+                  >
+                    {isComplete ? 'Complete' : isActive ? 'You Are Here' : 'Coming Up'}
+                  </span>
+                </div>
+
+                {/* Divider */}
+                <div
+                  className="mb-3"
+                  style={{
+                    height: '1px',
+                    backgroundColor: isComplete
+                      ? '#C6E8D4'
+                      : isActive
+                      ? 'rgba(184,145,42,0.2)'
+                      : '#E8E4DE',
+                  }}
+                />
+
+                {/* Description */}
+                <p
+                  className="text-sm leading-relaxed"
+                  style={{
+                    color: isComplete
+                      ? '#4B7A5E'
+                      : isActive
+                      ? '#374151'
+                      : '#6B7280',
+                  }}
+                >
+                  {step.description}
+                </p>
               </div>
-              <div className="flex-1 pt-0.5">
-                <span className="text-xs font-bold" style={{ color: '#1C1814' }}>
-                  {step.name}
-                </span>
-                <span className="text-xs ml-2" style={{ color: '#9A8E82' }}>
-                  — {step.description}
-                </span>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
 
