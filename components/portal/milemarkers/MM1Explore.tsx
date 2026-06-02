@@ -15,8 +15,8 @@ const FALLBACK_NARRATIVE = "This community matched your priorities and financial
 
 const NAVIGATOR_STEPS = [
   { number: 1,  name: 'Welcome',   description: 'This is where it all began. You told us what matters. We got to work.' },
-  { number: 2,  name: 'Discover',  description: 'Your full reports are waiting. Real numbers, real schools, real market data — and the Select Agents who know your zone best. This is where you go from curious to confident.' },
-  { number: 3,  name: 'Decide',    description: "Time to get behind the wheel. Jump into the sandbox, dial in your direction, and when it feels right — let's roll. Your Market Director is ready to ride shotgun." },
+  { number: 2,  name: 'Explore',   description: "Spread out the map. Flip through your matched city reports, explore affordability numbers, school ratings, and market conditions. Dream a little. This is your brochure phase — and there's no rush. Pay attention to what moves you, because in your next step you'll get to dial it all in." },
+  { number: 3,  name: 'Discover',  description: "Time to load up the car. You've explored the options — now you're narrowing in. Use the sandbox to move your priorities around, adjust your financial picture, and watch your city matches respond in real time. When the right picture emerges, your Market Director jumps in as your copilot and the journey shifts into gear." },
   { number: 4,  name: 'Connect',   description: "Your personal Market Director is about to step in — and they've already read everything. No \"tell me about yourself.\" Just real guidance from someone genuinely in your corner." },
   { number: 5,  name: 'Plan',      description: "This is where the map gets drawn. You and your Market Director talk it through — city, zone, timeline, budget. You'll hang up with a clear direction and someone who knows exactly how to get you there." },
   { number: 6,  name: 'Prepare',   description: "Before you meet your Select Agent, let's make sure everything's in place. Financing locked. Insurance sorted. Timeline confirmed. You'll walk into that introduction ready — and it'll show." },
@@ -154,7 +154,7 @@ export default function MM1Explore({
       {/* Section 1 — Welcome */}
       <div className="mb-8">
         <p className="text-[10px] font-bold uppercase mb-3" style={{ color: GOLD, letterSpacing: '0.18em' }}>
-          Welcome to Your Navigator
+          Welcome to Your Navigator Journey
         </p>
         <h2 className="text-[22px] font-bold tracking-tight mb-3" style={{ color: WARM_DARK }}>
           {session.firstName}, your Texas story starts right here.

@@ -7,8 +7,8 @@ const GREEN = '#2D7D4E'
 
 const MILEMARKERS = [
   { number: 1, name: 'Explore' },
-  { number: 2, name: 'Discover' },
-  { number: 3, name: 'Decide' },
+  { number: 2, name: 'Explore' },
+  { number: 3, name: 'Discover' },
   { number: 4, name: 'Connect' },
   { number: 5, name: 'Plan' },
   { number: 6, name: 'Prepare' },

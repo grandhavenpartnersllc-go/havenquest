@@ -22,8 +22,8 @@ const CREAM = '#F0EDE6'
 
 const MILEMARKER_NAMES: Record<number, string> = {
   1: 'Explore',
-  2: 'Discover',
-  3: 'Decide',
+  2: 'Explore',
+  3: 'Discover',
   4: 'Connect',
   5: 'Plan',
   6: 'Prepare',
@@ -176,6 +176,12 @@ export default function StarterPortal() {
         <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
           <Link href="/" className="font-bold text-[16px] tracking-tight" style={{ color: '#E8E2D9' }}>
             Haven<span style={{ color: GOLD }}>Quest</span>
+            <span
+              className="ml-2 text-[11px] font-bold tracking-[0.2em] uppercase"
+              style={{ color: 'rgba(232,226,217,0.45)' }}
+            >
+              Navigator
+            </span>
           </Link>
           <div className="flex items-center gap-4">
             <div
@@ -263,6 +269,7 @@ export default function StarterPortal() {
             onboardingAcknowledged={onboardingAcknowledged}
             onAcknowledge={handleAcknowledge}
             onAdvanceToDiscover={() => setActiveMileMarker(2)}
+            onAdvanceFromMM2={() => setActiveMileMarker(3)}
           />
         </div>
       </div>

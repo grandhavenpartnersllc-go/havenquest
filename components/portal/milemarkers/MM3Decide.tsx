@@ -28,10 +28,10 @@ export default function MM3Decide() {
             className="font-bold text-base tracking-tight mb-3"
             style={{ color: WARM_DARK }}
           >
-            Decide
+            Discover
           </h2>
           <p className="text-sm leading-relaxed w-full text-justify" style={{ color: '#6B6259' }}>
-            This is where you get behind the wheel and begin the journey with your destination in mind. Jump into our live sandbox — adjust your priorities, run the numbers, watch your city matches respond in real time. When something clicks and the direction feels right, you hit one button. Your plan becomes your foundation — not a contract, not a cage. Because the moment you&apos;re ready to move forward, your Market Director jumps in as your copilot and navigator. They ride shotgun with you through everything that comes next — and as you talk, new roads may open up that you hadn&apos;t even considered. The wheel stays in your hands. We just help you find the best route. Every great move starts somewhere. This is yours. And one day, it&apos;ll be the first chapter of your Journey Recap.
+            You&apos;ve explored the possibilities. Now it&apos;s time to make them yours. The Discover sandbox is where the real fun begins — move your priorities around, adjust your financial picture, watch your cities respond in real time. Try different configurations. See what opens up. Every adjustment reveals something new about what you actually want. When the right picture emerges and the direction feels right, your Market Director jumps in as your copilot and the road trip begins. The wheel stays in your hands. We just help you find the best route.
           </p>
         </div>
       </div>
