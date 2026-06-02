@@ -5,13 +5,13 @@ const CARD_BG = '#FDFCFA'
 const CARD_SHADOW = '0 1px 3px rgba(0,0,0,0.05), 0 4px 20px rgba(0,0,0,0.07)'
 
 const PREVIEW_COPY: Record<number, string> = {
-  4: "Your Ambassador has already reviewed your full profile before reaching out. No ‘tell me about yourself’ — just real guidance from someone who knows your market and your situation. Expect to hear from them within 24 hours of being assigned.",
-  5: "You and your Ambassador will have a real strategy conversation about your timeline, financing, and target city. You’ll leave with a clear, confirmed direction — and your Ambassador will have everything they need to prepare your realtor shortlist.",
-  6: "Before you meet your realtor, everything needs to be in place — financing, insurance, logistics, and decision readiness. Your Ambassador guides you through every item on the checklist. Nothing gets left to the last minute.",
-  7: "Based on everything your Ambassador knows about you, they’ll hand-select three of the best realtors in your target market. Equal presentation — no rankings, no paid placement. You choose who you want to work with.",
-  8: "Your Ambassador personally introduces you to your chosen realtor — not an automated email, a real human handoff. Your realtor already knows your story, your budget, and your priorities before you speak.",
-  9: "When you find the right home and go under contract, the finish line comes into view. Your entire team — Ambassador and realtor — is with you every step of the way through inspection, appraisal, and closing.",
-  10: "This is what it’s all been building toward. When you close on your new Texas home, HavenQuest celebrates with you — and your complete AI-generated Journey Recap will be waiting, telling the story of your entire relocation from first click to closing day.",
+  4: "You’ve done the hard work. Now someone who knows your market, has read your full report, and genuinely wants to help you get home is stepping into the picture. Your HavenQuest Market Director will reach out within 24 hours — and unlike most first conversations in real estate, this one won’t start with ‘so tell me about yourself.’ They already know. This is where the journey gets personal.",
+  5: "Your Market Director sits down with you — really sits down — and maps out your path forward. Timeline, financing, target city, target zone, must-haves in a home. By the end of this conversation you’ll have a clear direction, a realistic plan, and someone who knows exactly what it’s going to take to get you there. This is where scattered ideas become a real strategy.",
+  6: "This is where your move starts becoming real. Before you meet your Select Agent, your Market Director walks you through everything that needs to be in place — financing confirmed, insurance sorted, timeline locked. It sounds like a checklist. It feels like momentum. By the time you’re introduced to your agent, you’ll walk in knowing exactly what you can spend, when you want to close, and what your dream home actually looks like. No surprises. Just confidence.",
+  7: "Based on everything your Market Director now knows about you — your market, your budget, your non-negotiables — they hand-select three of the best agents in your target area. Not a directory. Not an algorithm. Three real professionals, chosen specifically for you, presented equally. You read the profiles. You choose who you want. Simple as that.",
+  8: "This is the introduction you’ve been building toward. Your Market Director makes a warm, personal handoff to your chosen Select Agent — someone who already knows your story, your budget, and exactly what you’re looking for before you ever speak. No re-explaining. No starting from scratch. Just a knowledgeable professional ready to find your home from day one.",
+  9: "You found it. The right home, in the right place, at the right price. Going under contract is one of the most exciting — and yes, occasionally nerve-wracking — moments in the entire journey. Your Select Agent handles the strategy and negotiation. Your Market Director is still right there if you need them. The finish line is in sight and your whole team is with you.",
+  10: "This is what all of it was for. The quiz, the sandbox, the strategy session, the showings, the offer, the counter, the inspection, the appraisal — all of it led here. You’re home. HavenQuest celebrates with you, and when you’re ready, your personal Journey Recap will be waiting — the full story of how you got here, from your very first click to the keys in your hand.",
 }
 
 interface MM4to10Props {
@@ -47,7 +47,7 @@ export default function MM4to10({ mmNumber, name }: MM4to10Props) {
           >
             {name}
           </h2>
-          <p className="text-sm leading-relaxed max-w-xl" style={{ color: '#6B6259' }}>
+          <p className="text-sm leading-relaxed w-full" style={{ color: '#6B6259' }}>
             {copy}
           </p>
         </div>

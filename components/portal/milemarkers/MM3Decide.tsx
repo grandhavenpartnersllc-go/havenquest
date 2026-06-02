@@ -30,8 +30,8 @@ export default function MM3Decide() {
           >
             Decide
           </h2>
-          <p className="text-sm leading-relaxed max-w-xl text-justify" style={{ color: '#6B6259' }}>
-            Once you&apos;ve explored your results and are ready to commit your direction, this is where it happens. You&apos;ll fine-tune your priorities and financial picture in our live sandbox, then lock in your plan. The moment you commit, your Ambassador will be assigned and your journey shifts from discovery to action.
+          <p className="text-sm leading-relaxed w-full text-justify" style={{ color: '#6B6259' }}>
+            This is where you get behind the wheel and begin the journey with your destination in mind. Jump into our live sandbox — adjust your priorities, run the numbers, watch your city matches respond in real time. When something clicks and the direction feels right, you hit one button. Your plan becomes your foundation — not a contract, not a cage. Because the moment you&apos;re ready to move forward, your Market Director jumps in as your copilot and navigator. They ride shotgun with you through everything that comes next — and as you talk, new roads may open up that you hadn&apos;t even considered. The wheel stays in your hands. We just help you find the best route. Every great move starts somewhere. This is yours. And one day, it&apos;ll be the first chapter of your Journey Recap.
           </p>
         </div>
       </div>

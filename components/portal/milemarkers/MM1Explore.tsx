@@ -159,7 +159,7 @@ export default function MM1Explore({
         <h2 className="text-[22px] font-bold tracking-tight mb-3" style={{ color: WARM_DARK }}>
           {session.firstName}, here&apos;s what we found for you.
         </h2>
-        <p className="text-sm leading-relaxed max-w-2xl text-justify" style={{ color: '#6B7280' }}>
+        <p className="text-sm leading-relaxed w-full text-justify" style={{ color: '#6B7280' }}>
           Based on your income, household, financial picture, and lifestyle priorities,
           HavenQuest has matched you to the Texas communities where your life fits best.
           Below is your personalized summary. When you&apos;re ready to go deeper,
