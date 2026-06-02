@@ -62,6 +62,7 @@ export default function MM2Discover({ matches, profile, onAdvanceToDiscover }: M
   const [checklist, setChecklist] = useState<Record<string, boolean>>({})
 
   const topCity = matches[0]?.location ?? null
+  const allChecked = CHECKLIST_ITEMS.every(item => !!checklist[item.key])
 
   useEffect(() => {
     ;(async () => {
@@ -286,9 +287,18 @@ export default function MM2Discover({ matches, profile, onAdvanceToDiscover }: M
           Explored enough to know you&apos;re ready to go deeper?
         </p>
         <button
-          onClick={onAdvanceToDiscover}
-          className="w-full py-3 rounded-xl font-bold text-sm transition-opacity hover:opacity-90"
-          style={{ backgroundColor: GOLD, color: '#16120D' }}
+          onClick={allChecked ? onAdvanceToDiscover : undefined}
+          disabled={!allChecked}
+          className="w-full py-3 rounded-xl font-bold text-sm"
+          style={{
+            backgroundColor: GOLD,
+            color: '#16120D',
+            opacity: allChecked ? 1 : 0.4,
+            cursor: allChecked ? 'pointer' : 'not-allowed',
+            transition: allChecked ? 'opacity 0.15s' : 'none',
+          }}
+          onMouseEnter={e => { if (allChecked) e.currentTarget.style.opacity = '0.9' }}
+          onMouseLeave={e => { if (allChecked) e.currentTarget.style.opacity = '1' }}
         >
           I&apos;m ready — take me to Discover →
         </button>
