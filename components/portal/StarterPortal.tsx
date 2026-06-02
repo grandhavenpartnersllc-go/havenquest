@@ -141,6 +141,10 @@ export default function StarterPortal() {
     })()
   }, [router])
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [activeMileMarker])
+
   async function handleAcknowledge() {
     setOnboardingAcknowledged(true)
     setCurrentMileMarker(2)
