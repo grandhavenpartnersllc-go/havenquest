@@ -29,9 +29,9 @@ export default function FullReport({ match, profile }: FullReportProps) {
   const { housing } = location
 
   return (
-    <article className="bg-white rounded-2xl border border-gray-100 overflow-hidden" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 6px 24px rgba(0,0,0,0.07)' }}>
+    <article className="bg-white rounded-2xl border border-gray-200 overflow-hidden" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 6px 24px rgba(0,0,0,0.10)' }}>
       {/* Header */}
-      <div className="bg-[#F8F9FB] border-b border-gray-100 p-6">
+      <div className="bg-[#F0EDE6] border-b border-gray-200 p-6">
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           <ScoreGauge score={matchScore} size={110} />
           <div className="flex-1">
