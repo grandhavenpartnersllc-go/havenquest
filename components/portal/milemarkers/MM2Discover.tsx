@@ -226,7 +226,7 @@ export default function MM2Discover({ matches, profile, initialChecklist, initia
           <SectionLabel>
             {i === 0 ? 'Top Pick' : i === 1 ? 'Runner-Up' : 'Strong Alt'} — {match.location.name}
           </SectionLabel>
-          <FullReport match={match} profile={profile} />
+          <FullReport match={match} profile={profile} rank={i} />
         </section>
       ))}
 

@@ -48,7 +48,9 @@ export default function ScoreGauge({ score, size = 120 }: ScoreGaugeProps) {
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="text-3xl font-medium tabular-nums" style={{ color }}>{score}</span>
-        <span className="text-xs text-gray-500">match</span>
+        <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-400" style={{ letterSpacing: '0.08em' }}>
+          match
+        </span>
       </div>
     </div>
   )

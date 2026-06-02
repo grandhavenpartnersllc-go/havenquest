@@ -22,18 +22,38 @@ import ListingsButton from './ListingsButton'
 interface FullReportProps {
   match: CityMatch
   profile: UserProfile
+  rank?: number
 }
 
-export default function FullReport({ match, profile }: FullReportProps) {
+export default function FullReport({ match, profile, rank }: FullReportProps) {
   const { location, matchScore, affordabilityFlag } = match
   const { housing } = location
 
   return (
-    <article className="bg-white rounded-2xl border border-gray-300 overflow-hidden" style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.08), 0 6px 24px rgba(0,0,0,0.12)' }}>
+    <article className="bg-white rounded-2xl border border-gray-300 overflow-hidden" style={{ boxShadow: '0 4px 6px rgba(0,0,0,0.07), 0 12px 40px rgba(0,0,0,0.18)' }}>
       {/* Header */}
       <div className="bg-[#E8E3DB] border-b border-gray-300 p-6">
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-          <ScoreGauge score={matchScore} size={110} />
+          <div className="flex flex-col items-center gap-1.5">
+            <ScoreGauge score={matchScore} size={110} />
+            <span
+              className="text-[11px] font-bold uppercase tracking-wider text-center"
+              style={{
+                color: matchScore >= 85 ? '#2D7D4E'
+                     : matchScore >= 75 ? '#1A6B3C'
+                     : matchScore >= 65 ? '#B8912A'
+                     : matchScore >= 55 ? '#7A6420'
+                     : '#6B7280',
+                letterSpacing: '0.1em',
+              }}
+            >
+              {matchScore >= 85 ? 'Exceptional Match'
+             : matchScore >= 75 ? 'Excellent Match'
+             : matchScore >= 65 ? 'Strong Match'
+             : matchScore >= 55 ? 'Good Match'
+             : 'Potential Match'}
+            </span>
+          </div>
           <div className="flex-1">
             <h2 className="text-2xl font-bold text-gray-900 tracking-tight mb-1">
               {location.name}, {location.state}
@@ -49,6 +69,11 @@ export default function FullReport({ match, profile }: FullReportProps) {
             </div>
           </div>
         </div>
+        {(rank === 0 || rank === undefined) && (
+          <p className="text-[11px] text-gray-400 italic mt-3 mb-1">
+            Based on your priorities, this is your strongest available match in Texas.
+          </p>
+        )}
         <p className="text-sm text-gray-500 leading-relaxed mt-4">{location.description}</p>
       </div>
 
