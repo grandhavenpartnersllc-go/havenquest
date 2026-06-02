@@ -113,6 +113,21 @@ export interface UserProfile {
   financial_picture?: FinancialPicture
 }
 
+export interface FamilyProfile {
+  family_members: string[]
+  family_names: string
+  children_ages: string[]
+  special_needs: string
+  work_situation: string
+  commute_destination: string
+  school_preference: string[]
+  faith_community: string
+  activities: string
+  move_motivation: string
+  biggest_concern: string
+  additional_notes: string
+}
+
 export interface FinancialPicture {
   is_homeowner: boolean;
   home_sale_proceeds: string | null;

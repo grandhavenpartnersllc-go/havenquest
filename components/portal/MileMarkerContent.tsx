@@ -2,7 +2,24 @@ import { CityMatch, UserProfile, UserSession } from '../../types'
 import MM1Explore from './milemarkers/MM1Explore'
 import MM2Discover from './milemarkers/MM2Discover'
 import MM3Decide from './milemarkers/MM3Decide'
+import MM4Connect from './milemarkers/MM4Connect'
 import MM4to10 from './milemarkers/MM4to10'
+
+function CompletedCard({ name, description }: { name: string; description: string }) {
+  return (
+    <div className="rounded-2xl p-6" style={{ backgroundColor: '#F0FAF4', border: '1.5px solid #C6E8D4' }}>
+      <p className="text-[10px] font-bold uppercase mb-1" style={{ color: '#2D7D4E', letterSpacing: '0.18em' }}>
+        Complete
+      </p>
+      <h2 className="font-bold text-base tracking-tight mb-2" style={{ color: '#16120D' }}>
+        {name}
+      </h2>
+      <p className="text-sm leading-relaxed" style={{ color: '#4B7A5E' }}>
+        {description}
+      </p>
+    </div>
+  )
+}
 
 interface MileMarkerContentProps {
   selectedMileMarker: number
@@ -67,6 +84,19 @@ export default function MileMarkerContent({
       )
     case 3:
       return <MM3Decide />
+    case 4:
+      if (selectedMileMarker < currentMileMarker) {
+        return (
+          <CompletedCard
+            name="Connect"
+            description="Your Market Director was assigned and your relationship began."
+          />
+        )
+      }
+      if (selectedMileMarker === currentMileMarker) {
+        return <MM4Connect session={session} />
+      }
+      return <MM4to10 mmNumber={4} name="Connect" />
     default:
       if (selectedMileMarker >= 4 && selectedMileMarker <= 10) {
         return (
