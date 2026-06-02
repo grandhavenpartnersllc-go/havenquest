@@ -190,7 +190,7 @@ export default function MM1Explore({
               ? `Based on what you told us about ${household}, a ${income} income, and what matters most to you,`
               : `Based on everything you told us about ${household} and what matters most to you,`,
             `we matched you to the Texas communities where your life fits best.${priorityText}`,
-            `Your top match is ${topCity} — and honestly? We're pretty excited about it.`,
+            `Your top match is ${topCity} — and honestly — we're pretty excited about it.`,
             `Below is your personalized summary. When you're ready to go even deeper, your full reports, real numbers, and matched Select Agents are all waiting in Discover.`,
             `Let's go find your home.`,
           ]
