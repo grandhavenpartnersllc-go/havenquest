@@ -36,7 +36,7 @@ export default function NavigatorTabs({ currentMileMarker, activeMileMarker, onS
       {/* Desktop: pill tabs */}
       <div className="hidden md:block">
         <div
-          className="flex overflow-x-auto gap-1 pb-3 border-b"
+          className="flex overflow-x-auto gap-0.5 pb-3 border-b"
           style={{
             scrollbarWidth: 'none',
             borderBottomColor: 'rgba(0,0,0,0.08)',
@@ -60,7 +60,7 @@ export default function NavigatorTabs({ currentMileMarker, activeMileMarker, onS
               <button
                 key={mm.number}
                 onClick={() => onSelect(mm.number)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0"
+                className="flex items-center gap-1.5 px-2 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0"
                 style={{
                   backgroundColor: pillBg,
                   color: textColor,

@@ -30,7 +30,7 @@ export default function MM3Decide() {
           >
             Decide
           </h2>
-          <p className="text-sm leading-relaxed max-w-xl" style={{ color: '#6B6259' }}>
+          <p className="text-sm leading-relaxed max-w-xl text-justify" style={{ color: '#6B6259' }}>
             Once you&apos;ve explored your results and are ready to commit your direction, this is where it happens. You&apos;ll fine-tune your priorities and financial picture in our live sandbox, then lock in your plan. The moment you commit, your Ambassador will be assigned and your journey shifts from discovery to action.
           </p>
         </div>

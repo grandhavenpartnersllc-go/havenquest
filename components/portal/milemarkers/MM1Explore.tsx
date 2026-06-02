@@ -159,7 +159,7 @@ export default function MM1Explore({
         <h2 className="text-[22px] font-bold tracking-tight mb-3" style={{ color: WARM_DARK }}>
           {session.firstName}, here&apos;s what we found for you.
         </h2>
-        <p className="text-sm leading-relaxed max-w-2xl" style={{ color: '#6B7280' }}>
+        <p className="text-sm leading-relaxed max-w-2xl text-justify" style={{ color: '#6B7280' }}>
           Based on your income, household, financial picture, and lifestyle priorities,
           HavenQuest has matched you to the Texas communities where your life fits best.
           Below is your personalized summary. When you&apos;re ready to go deeper,
@@ -183,7 +183,7 @@ export default function MM1Explore({
         <p className="text-[10px] font-bold uppercase mb-2" style={{ color: GOLD, letterSpacing: '0.16em' }}>
           What We Found For You
         </p>
-        <p className="text-sm leading-relaxed" style={{ color: '#4B5563' }}>
+        <p className="text-sm leading-relaxed text-justify" style={{ color: '#4B5563' }}>
           {buildMatchNarrative(profile, matches)}
         </p>
       </div>
