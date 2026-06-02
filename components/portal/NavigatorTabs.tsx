@@ -6,7 +6,7 @@ const GOLD = '#B8912A'
 const GREEN = '#2D7D4E'
 
 const MILEMARKERS = [
-  { number: 1, name: 'Explore' },
+  { number: 1, name: 'Welcome' },
   { number: 2, name: 'Explore' },
   { number: 3, name: 'Discover' },
   { number: 4, name: 'Connect' },
