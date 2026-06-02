@@ -6,10 +6,8 @@ import { Download, Mail } from 'lucide-react'
 import { CityMatch, UserProfile, UserSession } from '../../../types'
 import { createClient } from '../../../lib/supabase/client'
 import SavedMatches from '../SavedMatches'
-import RelocationChecklist from '../RelocationChecklist'
 import NotesArea from '../NotesArea'
 import FullReport from '../../results/FullReport'
-import RealtorMatchSection from '../../results/RealtorMatchSection'
 
 const WARM_DARK = '#16120D'
 const GOLD = '#B8912A'
@@ -233,36 +231,26 @@ export default function MM2Discover({ matches, profile, onAdvanceToDiscover }: M
             {i === 0 ? 'Top Pick' : i === 1 ? 'Runner-Up' : 'Strong Alt'} — {match.location.name}
           </SectionLabel>
           <FullReport match={match} profile={profile} />
-          <RealtorMatchSection city={match.location} profile={profile} />
         </section>
       ))}
 
-      {/* Relocation tools */}
+      {/* Notes */}
       {topCity && (
-        <>
-          <section>
-            <SectionLabel>Relocation Checklist — {topCity.name}</SectionLabel>
+        <section>
+          <div className="mt-6">
+            <p className="text-[10px] font-bold uppercase mb-2"
+               style={{ color: GOLD, letterSpacing: '0.18em' }}>
+              Your Notes
+            </p>
+            <p className="text-xs mb-3" style={{ color: '#9A8E82' }}>
+              Jot down questions, thoughts, or anything you want to remember.
+              Your Market Director will see these when they review your profile.
+            </p>
             <Card>
-              <RelocationChecklist cityName={topCity.name} />
+              <NotesArea />
             </Card>
-          </section>
-
-          <section>
-            <div className="mt-6">
-              <p className="text-[10px] font-bold uppercase mb-2"
-                 style={{ color: GOLD, letterSpacing: '0.18em' }}>
-                Your Notes
-              </p>
-              <p className="text-xs mb-3" style={{ color: '#9A8E82' }}>
-                Jot down questions, thoughts, or anything you want to remember.
-                Your Market Director will see these when they review your profile.
-              </p>
-              <Card>
-                <NotesArea />
-              </Card>
-            </div>
-          </section>
-        </>
+          </div>
+        </section>
       )}
 
       {/* Explore Checklist */}
