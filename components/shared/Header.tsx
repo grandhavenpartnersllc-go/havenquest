@@ -18,7 +18,6 @@ export default function Header() {
           <Link href="/explore-texas" className="hover:text-white transition-colors">Explore Texas</Link>
           <Link href="/metro-start" className="hover:text-white transition-colors">Metro Mode</Link>
           <Link href="/methodology" className="hover:text-white transition-colors">Methodology</Link>
-          <Link href="/for-realtors" className="hover:text-white transition-colors">For Realtors</Link>
           <Link href="/portal" className="hover:text-white transition-colors">My Portal</Link>
           <Link
             href="/journey"
@@ -43,7 +42,6 @@ export default function Header() {
           <Link href="/explore-texas" className="text-white/60 hover:text-white transition-colors" onClick={() => setOpen(false)}>Explore Texas</Link>
           <Link href="/metro-start" className="text-white/60 hover:text-white transition-colors" onClick={() => setOpen(false)}>Metro Mode</Link>
           <Link href="/methodology" className="text-white/60 hover:text-white transition-colors" onClick={() => setOpen(false)}>Methodology</Link>
-          <Link href="/for-realtors" className="text-white/60 hover:text-white transition-colors" onClick={() => setOpen(false)}>For Realtors</Link>
           <Link href="/portal" className="text-white/60 hover:text-white transition-colors" onClick={() => setOpen(false)}>My Portal</Link>
           <Link
             href="/journey"

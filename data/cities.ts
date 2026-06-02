@@ -1598,7 +1598,7 @@ export const texasCities: Location[] = [
       traffic: "CONTENT PENDING — Traffic narrative for Corpus Christi.",
       healthcare: "CONTENT PENDING — Healthcare narrative for Corpus Christi.",
     },
-    cityNarrative: "Corpus Christi is Texas's coastal city — and it makes the most of it. The Gulf of Mexico is a daily presence, from the morning pelicans to the evening sunsets over the bay. For buyers seeking waterfront lifestyle at a fraction of what coastal living costs in other states, Corpus Christi is worth serious consideration.",
+    cityNarrative: "Corpus Christi is Texas's coastal city — and it makes the most of it. The Gulf of America is a daily presence, from the morning pelicans to the evening sunsets over the bay. For buyers seeking waterfront lifestyle at a fraction of what coastal living costs in other states, Corpus Christi is worth serious consideration.",
     cityImageUrl: '/images/texas-flag.svg',
   },
   {
