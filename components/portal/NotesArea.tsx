@@ -1,30 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { createClient } from '../../lib/supabase/client'
 import { LOCAL_NOTES_KEY } from '../../utils/constants'
 
-export default function NotesArea() {
-  const [notes, setNotes] = useState('')
-  const [saved, setSaved] = useState(false)
+interface NotesAreaProps {
+  initialNotes?: string
+}
 
-  useEffect(() => {
-    const stored = localStorage.getItem(LOCAL_NOTES_KEY)
-    if (stored) setNotes(stored)
-    ;(async () => {
-      try {
-        const supabase = createClient()
-        const { data: { session } } = await supabase.auth.getSession()
-        if (!session?.user?.email) return
-        const { data: ud } = await supabase
-          .from('users')
-          .select('portal_notes')
-          .eq('email', session.user.email.toLowerCase())
-          .single()
-        if (ud?.portal_notes) setNotes(ud.portal_notes)
-      } catch {}
-    })()
-  }, [])
+export default function NotesArea({ initialNotes }: NotesAreaProps) {
+  const [notes, setNotes] = useState(initialNotes ?? '')
+  const [saved, setSaved] = useState(false)
 
   const handleBlur = async () => {
     localStorage.setItem(LOCAL_NOTES_KEY, notes)

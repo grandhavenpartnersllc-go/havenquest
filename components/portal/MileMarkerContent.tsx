@@ -14,6 +14,8 @@ interface MileMarkerContentProps {
   onAcknowledge: () => void
   onAdvanceToDiscover: () => void
   onAdvanceFromMM2: () => void
+  initialChecklist: Record<string, boolean>
+  initialNotes: string
 }
 
 const MM_NAMES: Record<number, string> = {
@@ -36,6 +38,8 @@ export default function MileMarkerContent({
   onAcknowledge,
   onAdvanceToDiscover,
   onAdvanceFromMM2,
+  initialChecklist,
+  initialNotes,
 }: MileMarkerContentProps) {
   switch (selectedMileMarker) {
     case 1:
@@ -56,7 +60,8 @@ export default function MileMarkerContent({
         <MM2Discover
           matches={matches}
           profile={profile}
-          session={session}
+          initialChecklist={initialChecklist}
+          initialNotes={initialNotes}
           onAdvanceToDiscover={onAdvanceFromMM2}
         />
       )

@@ -21,7 +21,7 @@ const GOLD = '#B8912A'
 const CREAM = '#F0EDE6'
 
 const MILEMARKER_NAMES: Record<number, string> = {
-  1: 'Explore',
+  1: 'Welcome',
   2: 'Explore',
   3: 'Discover',
   4: 'Connect',
@@ -57,6 +57,8 @@ export default function StarterPortal() {
   const [currentMileMarker, setCurrentMileMarker] = useState(2)
   const [activeMileMarker, setActiveMileMarker] = useState(2)
   const [onboardingAcknowledged, setOnboardingAcknowledged] = useState(false)
+  const [initialChecklist, setInitialChecklist] = useState<Record<string, boolean>>({})
+  const [initialNotes, setInitialNotes] = useState<string>('')
 
   useEffect(() => {
     const rawSession = localStorage.getItem(LOCAL_SESSION_KEY)
@@ -97,7 +99,7 @@ export default function StarterPortal() {
 
         const { data: ud } = await supabase
           .from('users')
-          .select('first_name, top_city_matches, annual_income, household_size, housing_preference, moving_timeline, must_haves, nice_to_haves, not_priorities, current_milemarker, onboarding_acknowledged')
+          .select('first_name, top_city_matches, annual_income, household_size, housing_preference, moving_timeline, must_haves, nice_to_haves, not_priorities, current_milemarker, onboarding_acknowledged, mm2_checklist, portal_notes')
           .eq('email', supaSession.user.email.toLowerCase())
           .single()
         if (!ud) return
@@ -116,6 +118,9 @@ export default function StarterPortal() {
         if (ud.onboarding_acknowledged) {
           setOnboardingAcknowledged(true)
         }
+
+        if (ud.mm2_checklist) setInitialChecklist(ud.mm2_checklist)
+        if (ud.portal_notes) setInitialNotes(ud.portal_notes)
 
         if (!profileWasLoaded && ud.annual_income && ud.top_city_matches?.length) {
           const reconstructedProfile: UserProfile = {
@@ -270,6 +275,8 @@ export default function StarterPortal() {
             onAcknowledge={handleAcknowledge}
             onAdvanceToDiscover={() => setActiveMileMarker(2)}
             onAdvanceFromMM2={() => setActiveMileMarker(3)}
+            initialChecklist={initialChecklist}
+            initialNotes={initialNotes}
           />
         </div>
       </div>

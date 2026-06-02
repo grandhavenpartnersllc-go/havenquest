@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { Download, Mail } from 'lucide-react'
-import { CityMatch, UserProfile, UserSession } from '../../../types'
+import { CityMatch, UserProfile } from '../../../types'
 import { createClient } from '../../../lib/supabase/client'
 import SavedMatches from '../SavedMatches'
 import NotesArea from '../NotesArea'
@@ -51,46 +51,41 @@ type BtnState = 'idle' | 'loading' | 'done' | 'error'
 interface MM2DiscoverProps {
   matches: CityMatch[]
   profile: UserProfile | null
-  session: UserSession
+  initialChecklist: Record<string, boolean>
+  initialNotes: string
   onAdvanceToDiscover: () => void
 }
 
-export default function MM2Discover({ matches, profile, onAdvanceToDiscover }: MM2DiscoverProps) {
+export default function MM2Discover({ matches, profile, initialChecklist, initialNotes, onAdvanceToDiscover }: MM2DiscoverProps) {
   const [dlState, setDlState] = useState<BtnState>('idle')
   const [emailState, setEmailState] = useState<BtnState>('idle')
   const [scorePopupOpen, setScorePopupOpen] = useState(false)
-  const [checklist, setChecklist] = useState<Record<string, boolean>>({})
+  const [checklist, setChecklist] = useState<Record<string, boolean>>(initialChecklist)
 
   const topCity = matches[0]?.location ?? null
   const allChecked = CHECKLIST_ITEMS.every(item => !!checklist[item.key])
+  const userEmailRef = useRef<string>('')
 
   useEffect(() => {
-    ;(async () => {
-      try {
-        const supabase = createClient()
-        const { data: { session: supaSession } } = await supabase.auth.getSession()
-        if (!supaSession?.user?.email) return
-        const { data: ud } = await supabase
-          .from('users')
-          .select('mm2_checklist')
-          .eq('email', supaSession.user.email.toLowerCase())
-          .single()
-        if (ud?.mm2_checklist) setChecklist(ud.mm2_checklist)
-      } catch {}
-    })()
+    const supabase = createClient()
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user?.email) {
+        userEmailRef.current = session.user.email.toLowerCase()
+      }
+    })
   }, [])
 
   async function handleChecklistChange(key: string, checked: boolean) {
     const updated = { ...checklist, [key]: checked }
     setChecklist(updated)
+    const email = userEmailRef.current
+    if (!email) return
     try {
       const supabase = createClient()
-      const { data: { session: supaSession } } = await supabase.auth.getSession()
-      if (!supaSession?.user?.email) return
       await supabase
         .from('users')
         .update({ mm2_checklist: updated })
-        .eq('email', supaSession.user.email.toLowerCase())
+        .eq('email', email)
     } catch {}
   }
 
@@ -248,7 +243,7 @@ export default function MM2Discover({ matches, profile, onAdvanceToDiscover }: M
               Your Market Director will see these when they review your profile.
             </p>
             <Card>
-              <NotesArea />
+              <NotesArea initialNotes={initialNotes} />
             </Card>
           </div>
         </section>
