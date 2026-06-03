@@ -90,19 +90,7 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
   const [emailSent, setEmailSent] = useState(false)
   const [sendingEmail, setSendingEmail] = useState(false)
 
-  const defaultMetro = (() => {
-    if (!profile) return 'Austin'
-    const topMatch = getTopMatches(
-      { ...profile, mustHaves: profile.mustHaves ?? [], niceToHaves: profile.niceToHaves ?? [], notPriorities: profile.notPriorities ?? [] },
-      getAllCities(),
-      1
-    )[0]
-    const metro = topMatch?.location.metroUsed ?? 'Austin'
-    const match = METRO_OPTIONS.find(m => metro.includes(m.label))
-    return match?.value ?? 'Austin'
-  })()
-
-  const [selectedMetro, setSelectedMetro] = useState<string>(defaultMetro)
+  const [selectedMetro, setSelectedMetro] = useState<string>('')
 
   useEffect(() => {
     if (!profile) return
@@ -122,6 +110,23 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
     if (!profile?.financial_picture) return
     setDownPayment(profile.financial_picture.down_payment_available ?? '$20,000 – $50,000')
     setProceeds(profile.financial_picture.home_sale_proceeds ?? null)
+  }, [profile])
+
+  useEffect(() => {
+    if (!profile || selectedMetro !== '') return
+    const topMatch = getTopMatches(
+      {
+        ...profile,
+        mustHaves: profile.mustHaves ?? [],
+        niceToHaves: profile.niceToHaves ?? [],
+        notPriorities: profile.notPriorities ?? [],
+      },
+      getAllCities(),
+      1
+    )[0]
+    const metro = topMatch?.location.metroUsed ?? ''
+    const match = METRO_OPTIONS.find(m => metro.includes(m.label))
+    setSelectedMetro(match?.value ?? 'Austin')
   }, [profile])
 
   useEffect(() => {
@@ -167,7 +172,9 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
     },
   }
 
-  const metroCities = getAllCities().filter(city => city.metroUsed.includes(selectedMetro))
+  const metroCities = selectedMetro
+    ? getAllCities().filter(city => city.metroUsed.includes(selectedMetro))
+    : getAllCities()
   const sandboxMatches = getTopMatches(sandboxProfile, metroCities, 5)
 
   // Computed financial outputs — recalculate on every render, client-side
