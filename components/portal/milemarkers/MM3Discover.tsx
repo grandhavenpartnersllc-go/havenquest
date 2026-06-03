@@ -745,10 +745,10 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
         {/* Bucket counter bar */}
         <div className="grid grid-cols-4 gap-2 mb-6">
           {[
-            { key: 'mustHaves',    label: 'Must Have',   count: mustHaves.length,    max: 4    },
-            { key: 'niceToHaves',  label: 'Important',   count: niceToHaves.length,  max: 5    },
-            { key: 'notPriorities',label: 'Nice to Have',count: notPriorities.length,max: null },
             { key: 'unassigned',   label: 'Unassigned',  count: unassigned.length,   max: null },
+            { key: 'notPriorities',label: 'Nice to Have',count: notPriorities.length,max: null },
+            { key: 'niceToHaves',  label: 'Important',   count: niceToHaves.length,  max: 5    },
+            { key: 'mustHaves',    label: 'Must Have',   count: mustHaves.length,    max: 4    },
           ].map(bucket => {
             const isFull = bucket.max !== null && bucket.count >= bucket.max
             const isFlashing = flashBucket === bucket.key
