@@ -21,7 +21,7 @@ const STEPS = [
     Icon: MapPin,
     title: 'Discover your Texas match',
     description:
-      'Get your top matched cities with verified scores, honest tradeoffs, real cost breakdowns, and vetted realtors ready to help you take the next step.',
+      'Get your top matched cities with verified scores, honest tradeoffs, and real affordability breakdowns — then connect with a HavenQuest Select Agent, hand-selected for your zone and ready to help from day one.',
   },
 ]
 
@@ -96,14 +96,14 @@ export default function HowItWorks() {
         <div className="text-center">
           <p className="text-gray-500 text-sm mb-4">Ready to find your city?</p>
           <Link
-            href="/explore"
+            href="/begin"
             className="inline-flex items-center gap-2 text-white font-bold px-8 py-3.5 rounded-xl text-sm transition-colors"
             style={{
               backgroundColor: '#1A5FA8',
               boxShadow: '0 2px 10px rgba(26,95,168,0.28)',
             }}
           >
-            Start My Match →
+            Begin My Journey →
           </Link>
         </div>
 

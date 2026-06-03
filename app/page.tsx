@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import Header from '../components/shared/Header'
 import Footer from '../components/shared/Footer'
 import HeroSection from '../components/landing/HeroSection'
-import TwoFrontDoors from '../components/landing/TwoFrontDoors'
 import HowItWorks from '../components/landing/HowItWorks'
 import FeaturedCities from '../components/landing/FeaturedCities'
 import RealtorCTA from '../components/landing/RealtorCTA'
@@ -30,7 +29,6 @@ export default function HomePage() {
       <Header />
       <main className="flex-1">
         <HeroSection />
-        <TwoFrontDoors />
         <HowItWorks />
         <FeaturedCities />
         <RealtorCTA />

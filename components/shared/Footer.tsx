@@ -19,7 +19,7 @@ export default function Footer() {
             <p className="text-white/70 text-xs font-bold uppercase tracking-widest mb-4">Product</p>
             <ul className="space-y-2.5 text-sm">
               <li><Link href="/explore" className="hover:text-white/80 transition-colors">Explore Texas</Link></li>
-              <li><Link href="/metro" className="hover:text-white/80 transition-colors">Metro Mode</Link></li>
+              <li><Link href="/begin" className="hover:text-white/80 transition-colors">Begin My Journey</Link></li>
               <li><Link href="/portal" className="hover:text-white/80 transition-colors">Your Portal</Link></li>
             </ul>
           </div>
@@ -37,6 +37,8 @@ export default function Footer() {
           <div>
             <p className="text-white/70 text-xs font-bold uppercase tracking-widest mb-4">Company</p>
             <ul className="space-y-2.5 text-sm">
+              <li><Link href="/about" className="hover:text-white/80 transition-colors">About</Link></li>
+              <li><Link href="/data-disclosure" className="hover:text-white/80 transition-colors">Data Disclosure</Link></li>
               <li><Link href="/methodology" className="hover:text-white/80 transition-colors">Methodology</Link></li>
               <li><Link href="/for-realtors" className="hover:text-white/80 transition-colors">For Realtors</Link></li>
             </ul>

@@ -35,7 +35,7 @@ export default function HeroSection() {
         {/* Badge */}
         <div className="inline-flex items-center gap-2.5 border border-white/10 bg-white/5 text-blue-300/80 text-xs font-semibold px-4 py-1.5 rounded-full mb-9 tracking-wide">
           <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full" />
-          4 metros · 100+ cities · Updated May 2026
+          4 metros · 101 cities · Updated June 2026
         </div>
 
         {/* Headline */}
@@ -62,17 +62,11 @@ export default function HeroSection() {
         {/* CTAs */}
         <div className="flex flex-col sm:flex-row gap-3 justify-center mb-14">
           <Link
-            href="/explore-texas"
+            href="/begin"
             className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-sm tracking-tight transition-opacity hover:opacity-85"
             style={{ backgroundColor: '#60B8FF', color: '#08101C', boxShadow: '0 0 0 1px rgba(96,184,255,0.3), 0 8px 24px rgba(96,184,255,0.25)' }}
           >
-            Explore Texas
-          </Link>
-          <Link
-            href="/metro-start"
-            className="inline-flex items-center justify-center gap-2 bg-white/5 text-white/70 border border-white/10 px-8 py-4 rounded-xl font-semibold text-sm tracking-tight transition-all hover:bg-white/10 hover:text-white hover:border-white/20"
-          >
-            I Know My City →
+            Begin My Journey →
           </Link>
         </div>
 
