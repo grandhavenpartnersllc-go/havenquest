@@ -28,7 +28,7 @@ export function getMonthlyHousingCost(city: Location): number {
 }
 
 // Standard 30-year amortization at 7.0% fixed rate
-function calculateMonthlyPayment(principal: number): number {
+export function calculateMonthlyPayment(principal: number): number {
   if (principal <= 0) return 0
   const monthlyRate = 0.07 / 12
   const numPayments = 360
@@ -36,7 +36,7 @@ function calculateMonthlyPayment(principal: number): number {
     (Math.pow(1 + monthlyRate, numPayments) - 1)
 }
 
-function getDownPaymentMidpoint(selection: string): number {
+export function getDownPaymentMidpoint(selection: string): number {
   switch (selection) {
     case 'Under $20,000':         return 10_000
     case '$20,000 – $50,000':    return 35_000
@@ -49,7 +49,7 @@ function getDownPaymentMidpoint(selection: string): number {
   }
 }
 
-function getProceedsMidpoint(selection: string | null): number {
+export function getProceedsMidpoint(selection: string | null): number {
   if (!selection) return 0
   switch (selection) {
     case 'Under $50,000':         return 25_000

@@ -4,8 +4,11 @@ import { useState, useEffect } from 'react'
 import { CityMatch, UserProfile, UserSession, SandboxProfile, LifestyleScores } from '../../../types'
 import { LIFESTYLE_CATEGORIES } from '../../../utils/constants'
 import { getAllCities } from '../../../services/locationService'
-import { getTopMatches } from '../../../services/matchingService'
+import { getTopMatches, getDownPaymentMidpoint, getProceedsMidpoint, calculateMonthlyPayment } from '../../../services/matchingService'
 import { createClient } from '../../../lib/supabase/client'
+
+// calculateMonthlyPayment exported for external use; MM3 computes inline with dynamic interestRate
+void calculateMonthlyPayment
 
 const WARM_DARK = '#16120D'
 const GOLD = '#B8912A'
@@ -37,21 +40,6 @@ const PROCEEDS_OPTIONS = [
 
 type BucketKey = 'mustHaves' | 'niceToHaves' | 'notPriorities' | 'unassigned'
 
-// Slider positions: 0=Unassigned, 1=Nice to Have, 2=Important, 3=Must Have
-const BUCKET_TO_POSITION: Record<BucketKey, number> = {
-  unassigned: 0,
-  notPriorities: 1,
-  niceToHaves: 2,
-  mustHaves: 3,
-}
-
-const POSITION_TO_BUCKET: Record<number, BucketKey> = {
-  0: 'unassigned',
-  1: 'notPriorities',
-  2: 'niceToHaves',
-  3: 'mustHaves',
-}
-
 interface MM3DiscoverProps {
   matches: CityMatch[]
   profile: UserProfile | null
@@ -59,7 +47,7 @@ interface MM3DiscoverProps {
   onAdvanceToConnect: () => void
 }
 
-export default function MM3Discover({ profile }: MM3DiscoverProps) {
+export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
   const [downPayment, setDownPayment] = useState<string>(
     profile?.financial_picture?.down_payment_available ?? '$20,000 – $50,000'
   )
@@ -90,6 +78,9 @@ export default function MM3Discover({ profile }: MM3DiscoverProps) {
   const [committed, setCommitted] = useState(false)
   const [committing, setCommitting] = useState(false)
   const [flashBucket, setFlashBucket] = useState<string | null>(null)
+  const [cityPopup, setCityPopup] = useState<CityMatch | null>(null)
+  const [emailSent, setEmailSent] = useState(false)
+  const [sendingEmail, setSendingEmail] = useState(false)
 
   useEffect(() => {
     if (!profile) return
@@ -156,38 +147,44 @@ export default function MM3Discover({ profile }: MM3DiscoverProps) {
 
   const sandboxMatches = getTopMatches(sandboxProfile, getAllCities(), 5)
 
+  // Computed financial outputs — recalculate on every render, client-side
+  const topCity = sandboxMatches[0]?.location
+  const topCityPrice = topCity?.housing?.medianHomePrice ?? 341800
+
+  const downMid = getDownPaymentMidpoint(downPayment)
+  const procMid = proceeds ? getProceedsMidpoint(proceeds) : 0
+  const totalFunds = downMid + procMid
+  const mortgageBalance = Math.max(0, topCityPrice - totalFunds)
+
+  const monthlyRate = interestRate / 100 / 12
+  const numPayments = 360
+  const monthlyMortgage = mortgageBalance > 0
+    ? Math.round((mortgageBalance * monthlyRate * Math.pow(1 + monthlyRate, numPayments)) /
+      (Math.pow(1 + monthlyRate, numPayments) - 1))
+    : 0
+
+  // propertyTaxRate is stored as a decimal (e.g. 0.0195 = 1.95%) — no /100 needed
+  const monthlyPropertyTax = topCity
+    ? Math.round((topCityPrice * topCity.housing.propertyTaxRate) / 12)
+    : 0
+
+  const totalMonthlyHousing = monthlyMortgage + monthlyPropertyTax
+
+  const grossMonthlyIncome = (profile?.annualIncome ?? 100000) / 12
+  const affordabilityPct = grossMonthlyIncome > 0
+    ? (totalMonthlyHousing / grossMonthlyIncome) * 100
+    : 0
+
+  const affordabilityStatus =
+    affordabilityPct <= 30 ? 'comfortable'
+    : affordabilityPct <= 40 ? 'moderate'
+    : 'stretched'
+
   function getBucket(key: keyof LifestyleScores): BucketKey {
     if (mustHaves.includes(key)) return 'mustHaves'
     if (niceToHaves.includes(key)) return 'niceToHaves'
     if (notPriorities.includes(key)) return 'notPriorities'
     return 'unassigned'
-  }
-
-  function handleSliderChange(key: keyof LifestyleScores, newPosition: number) {
-    const targetBucket = POSITION_TO_BUCKET[newPosition]
-    const currentBucket = getBucket(key)
-
-    if (targetBucket === currentBucket) return
-
-    if (targetBucket === 'mustHaves' && mustHaves.length >= 4) {
-      setFlashBucket('mustHaves')
-      setTimeout(() => setFlashBucket(null), 600)
-      return
-    }
-    if (targetBucket === 'niceToHaves' && niceToHaves.length >= 5) {
-      setFlashBucket('niceToHaves')
-      setTimeout(() => setFlashBucket(null), 600)
-      return
-    }
-
-    const setters: Record<BucketKey, React.Dispatch<React.SetStateAction<(keyof LifestyleScores)[]>>> = {
-      mustHaves: setMustHaves,
-      niceToHaves: setNiceToHaves,
-      notPriorities: setNotPriorities,
-      unassigned: setUnassigned,
-    }
-    setters[currentBucket](prev => prev.filter(k => k !== key))
-    setters[targetBucket](prev => [...prev, key])
   }
 
   async function handleCommit() {
@@ -221,12 +218,43 @@ export default function MM3Discover({ profile }: MM3DiscoverProps) {
     finally { setCommitting(false) }
   }
 
+  async function handleSendEmail() {
+    setSendingEmail(true)
+    try {
+      const res = await fetch('/api/sandbox-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: session.email,
+          firstName: session.firstName,
+          topCity: sandboxMatches[0]?.location.name,
+          topScore: sandboxMatches[0]?.matchScore,
+          mustHaves: mustHaves.map(k => LIFESTYLE_CATEGORIES.find(c => c.key === k)?.label ?? k),
+          niceToHaves: niceToHaves.map(k => LIFESTYLE_CATEGORIES.find(c => c.key === k)?.label ?? k),
+          downPayment,
+          proceeds,
+          interestRate,
+          monthlyMortgage,
+          monthlyPropertyTax,
+          totalMonthlyHousing,
+          topCities: sandboxMatches.map(m => ({
+            name: m.location.name,
+            metro: m.location.metroUsed,
+            score: m.matchScore,
+          })),
+        }),
+      })
+      if (res.ok) setEmailSent(true)
+    } catch {}
+    finally { setSendingEmail(false) }
+  }
+
   if (committed) {
     return (
       <div>
 
         {/* Post-commit Section 1 — Confirmation */}
-        <div className="mb-8 rounded-xl p-5"
+        <div className="mb-4 rounded-xl p-5"
              style={{ backgroundColor: '#F0FAF4', border: '1.5px solid #C6E8D4' }}>
           <div className="flex items-center gap-3 mb-3">
             <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
@@ -248,6 +276,30 @@ export default function MM3Discover({ profile }: MM3DiscoverProps) {
             Now you have a copilot.
           </p>
         </div>
+
+        {/* Post-commit actions */}
+        <button
+          onClick={() => window.print()}
+          className="w-full py-3 rounded-xl font-bold text-sm border mb-3"
+          style={{ borderColor: GOLD, color: GOLD, backgroundColor: 'transparent' }}
+        >
+          Download My Plan Summary
+        </button>
+
+        <button
+          onClick={handleSendEmail}
+          disabled={emailSent || sendingEmail}
+          className="w-full py-3 rounded-xl font-bold text-sm mb-6"
+          style={{
+            backgroundColor: emailSent ? '#F0FAF4' : GOLD,
+            color: emailSent ? '#2D7D4E' : '#16120D',
+            opacity: sendingEmail ? 0.6 : 1,
+          }}
+        >
+          {emailSent ? '✓ Plan summary sent to your email'
+           : sendingEmail ? 'Sending...'
+           : 'Email Me My Plan Summary'}
+        </button>
 
         {/* Post-commit Section 2 — Committed Direction Summary */}
         <div className="mb-8 rounded-xl p-5"
@@ -319,6 +371,14 @@ export default function MM3Discover({ profile }: MM3DiscoverProps) {
     )
   }
 
+  const BUCKET_ORDER: BucketKey[] = ['unassigned', 'notPriorities', 'niceToHaves', 'mustHaves']
+  const BUCKET_COLORS: Record<BucketKey, string> = {
+    unassigned: '#E5E7EB',
+    notPriorities: '#9CA3AF',
+    niceToHaves: '#4B7A5E',
+    mustHaves: GOLD,
+  }
+
   return (
     <div>
 
@@ -339,129 +399,253 @@ export default function MM3Discover({ profile }: MM3DiscoverProps) {
         </p>
       </div>
 
-      {/* Section 2 — Live City Rankings */}
-      <div className="mb-8 rounded-xl p-4" style={{ backgroundColor: '#F7F6F3' }}>
+      {/* Section 2 — Split Dashboard Panel */}
+      <div className="grid grid-cols-2 gap-3 mb-3">
+
+        {/* LEFT — Financial Summary */}
+        <div className="rounded-xl p-4"
+             style={{ backgroundColor: CARD_BG, boxShadow: CARD_SHADOW }}>
+          <p className="text-[10px] font-bold uppercase mb-3"
+             style={{ color: GOLD, letterSpacing: '0.18em' }}>
+            Your financial picture
+          </p>
+
+          <div className="grid grid-cols-2 gap-2 mb-4">
+            <div className="rounded-xl p-2.5" style={{ backgroundColor: '#F7F6F3' }}>
+              <p className="text-[10px] mb-1" style={{ color: '#9A8E82' }}>Down payment</p>
+              <p className="text-sm font-bold" style={{ color: WARM_DARK }}>
+                ${(downMid + procMid).toLocaleString()}
+              </p>
+            </div>
+            <div className="rounded-xl p-2.5" style={{ backgroundColor: '#F7F6F3' }}>
+              <p className="text-[10px] mb-1" style={{ color: '#9A8E82' }}>Est. mortgage</p>
+              <p className="text-sm font-bold" style={{ color: WARM_DARK }}>
+                ${monthlyMortgage.toLocaleString()}/mo
+              </p>
+            </div>
+            <div className="rounded-xl p-2.5" style={{ backgroundColor: '#F7F6F3' }}>
+              <p className="text-[10px] mb-1" style={{ color: '#9A8E82' }}>Est. property tax</p>
+              <p className="text-sm font-bold" style={{ color: WARM_DARK }}>
+                ${monthlyPropertyTax.toLocaleString()}/mo
+              </p>
+            </div>
+            <div
+              className="rounded-xl p-2.5"
+              style={{
+                backgroundColor:
+                  affordabilityStatus === 'comfortable' ? '#F0FAF4'
+                  : affordabilityStatus === 'moderate' ? '#FFFBEB'
+                  : '#FEF2F2',
+              }}
+            >
+              <p className="text-[10px] mb-1" style={{ color: '#9A8E82' }}>Total housing</p>
+              <p className="text-sm font-bold"
+                 style={{
+                   color: affordabilityStatus === 'comfortable' ? '#2D7D4E'
+                     : affordabilityStatus === 'moderate' ? '#B45309'
+                     : '#DC2626',
+                 }}>
+                ${totalMonthlyHousing.toLocaleString()}/mo
+              </p>
+            </div>
+          </div>
+
+          <div className="mb-3 rounded-lg p-2.5"
+               style={{
+                 backgroundColor:
+                   affordabilityStatus === 'comfortable' ? '#F0FAF4'
+                   : affordabilityStatus === 'moderate' ? '#FFFBEB'
+                   : '#FEF2F2',
+                 border: `1px solid ${
+                   affordabilityStatus === 'comfortable' ? '#C6E8D4'
+                   : affordabilityStatus === 'moderate' ? '#FDE68A'
+                   : '#FECACA'
+                 }`,
+               }}>
+            <p className="text-xs font-semibold"
+               style={{
+                 color: affordabilityStatus === 'comfortable' ? '#2D7D4E'
+                   : affordabilityStatus === 'moderate' ? '#B45309'
+                   : '#DC2626',
+               }}>
+              {affordabilityStatus === 'comfortable'
+                ? `✓ Comfortable — ${Math.round(affordabilityPct)}% of monthly income`
+                : affordabilityStatus === 'moderate'
+                ? `⚠ Moderate — ${Math.round(affordabilityPct)}% of monthly income`
+                : `⚠ Stretched — ${Math.round(affordabilityPct)}% of monthly income`}
+            </p>
+            <p className="text-[10px] mt-0.5" style={{ color: '#9A8E82' }}>
+              Based on {topCity?.name ?? 'your top city'} · {interestRate.toFixed(2)}% rate
+            </p>
+          </div>
+
+          <div style={{ borderTop: '1px solid #F0EDE6', paddingTop: '10px' }}>
+            <p className="text-[10px] font-bold uppercase mb-2"
+               style={{ color: '#9A8E82', letterSpacing: '0.08em' }}>
+              Priority summary
+            </p>
+            {mustHaves.length > 0 && (
+              <div className="flex flex-wrap gap-1 mb-1">
+                {mustHaves.map(k => {
+                  const cat = LIFESTYLE_CATEGORIES.find(c => c.key === k)!
+                  return (
+                    <span key={k} className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
+                          style={{ backgroundColor: 'rgba(184,145,42,0.12)', color: GOLD }}>
+                      {cat.icon} {cat.label}
+                    </span>
+                  )
+                })}
+              </div>
+            )}
+            {niceToHaves.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {niceToHaves.map(k => {
+                  const cat = LIFESTYLE_CATEGORIES.find(c => c.key === k)!
+                  return (
+                    <span key={k} className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
+                          style={{ backgroundColor: '#E8F5EE', color: '#2D7D4E' }}>
+                      {cat.icon} {cat.label}
+                    </span>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* RIGHT — Live City Rankings */}
+        <div className="rounded-xl p-4"
+             style={{ backgroundColor: CARD_BG, boxShadow: CARD_SHADOW }}>
+          <p className="text-[10px] font-bold uppercase mb-3"
+             style={{ color: GOLD, letterSpacing: '0.18em' }}>
+            Live city rankings
+          </p>
+          <div className="space-y-2">
+            {sandboxMatches.map((match, i) => (
+              <div
+                key={match.location.id}
+                className="rounded-xl p-3"
+                style={{
+                  backgroundColor: '#F7F6F3',
+                  borderLeft: i === 0 ? `3px solid ${GOLD}` : '3px solid transparent',
+                }}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold"
+                          style={{ color: i === 0 ? GOLD : '#9A8E82' }}>
+                      #{i + 1}
+                    </span>
+                    <span className="text-sm font-bold" style={{ color: WARM_DARK }}>
+                      {match.location.name}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-12 h-1.5 rounded-full overflow-hidden"
+                         style={{ backgroundColor: '#E5E7EB' }}>
+                      <div className="h-full rounded-full"
+                           style={{ width: `${match.matchScore}%`, backgroundColor: GOLD }} />
+                    </div>
+                    <span className="text-xs font-bold" style={{ color: GOLD }}>
+                      {match.matchScore}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px]" style={{ color: '#9A8E82' }}>
+                    {match.location.metroUsed}
+                  </p>
+                  <button
+                    onClick={() => setCityPopup(match)}
+                    className="text-[10px] font-semibold underline underline-offset-2"
+                    style={{ color: GOLD }}
+                  >
+                    Learn more →
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+      </div>
+
+      {/* Section 3 — Financial Adjustments Row */}
+      <div className="rounded-xl p-4 mb-6"
+           style={{ backgroundColor: CARD_BG, boxShadow: CARD_SHADOW }}>
         <p className="text-[10px] font-bold uppercase mb-3"
            style={{ color: GOLD, letterSpacing: '0.18em' }}>
-          Your Current Rankings
+          Adjust your financial picture
         </p>
-        <div className="space-y-2">
-          {sandboxMatches.map((match, i) => (
-            <div key={match.location.id} className="flex items-center gap-3">
-              <span className="text-xs font-bold w-5 text-right shrink-0"
-                    style={{ color: '#9A8E82' }}>
-                {i + 1}
-              </span>
-              <div className="flex-1 flex items-center gap-2">
-                <span className="text-sm font-semibold" style={{ color: WARM_DARK }}>
-                  {match.location.name}
-                </span>
-                <span className="text-xs" style={{ color: '#9A8E82' }}>
-                  {match.location.metroUsed}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <div className="w-20 h-1.5 rounded-full overflow-hidden"
-                     style={{ backgroundColor: '#E5E7EB' }}>
-                  <div className="h-full rounded-full"
-                       style={{ width: `${match.matchScore}%`, backgroundColor: GOLD }} />
-                </div>
-                <span className="text-xs font-bold tabular-nums w-8 text-right"
-                      style={{ color: GOLD }}>
-                  {match.matchScore}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Section 3 — Financial Sliders */}
-      <div className="mb-8">
-        <p className="text-[10px] font-bold uppercase mb-4"
-           style={{ color: GOLD, letterSpacing: '0.18em' }}>
-          Adjust Your Financial Picture
-        </p>
-
-        {/* Down payment */}
-        <div className="mb-5">
-          <label className="block text-sm font-semibold mb-1" style={{ color: WARM_DARK }}>
-            Down payment available
-          </label>
-          <p className="text-xs mb-2" style={{ color: '#9A8E82' }}>
-            Including additional savings, gifts, or other sources
-          </p>
-          <select
-            value={downPayment}
-            onChange={e => setDownPayment(e.target.value)}
-            className="w-full rounded-xl border px-4 py-2.5 text-sm appearance-none"
-            style={{ borderColor: '#E5E7EB', color: WARM_DARK }}
-          >
-            {DOWN_PAYMENT_OPTIONS.map(opt => (
-              <option key={opt} value={opt}>{opt}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Home sale proceeds */}
-        <div className="mb-5">
-          <label className="block text-sm font-semibold mb-1" style={{ color: WARM_DARK }}>
-            Estimated home sale proceeds
-          </label>
-          <p className="text-xs mb-2" style={{ color: '#9A8E82' }}>
-            Leave as &ldquo;None&rdquo; if you&apos;re not selling a home
-          </p>
-          <select
-            value={proceeds ?? 'None'}
-            onChange={e => setProceeds(e.target.value === 'None' ? null : e.target.value)}
-            className="w-full rounded-xl border px-4 py-2.5 text-sm appearance-none"
-            style={{ borderColor: '#E5E7EB', color: WARM_DARK }}
-          >
-            <option value="None">None</option>
-            {PROCEEDS_OPTIONS.map(opt => (
-              <option key={opt} value={opt}>{opt}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Interest rate */}
-        <div className="mb-5">
-          <div className="flex items-center justify-between mb-1">
-            <label className="text-sm font-semibold" style={{ color: WARM_DARK }}>
-              Interest rate assumption
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label className="block text-xs font-semibold mb-1" style={{ color: WARM_DARK }}>
+              Down payment
             </label>
-            <span className="text-sm font-bold" style={{ color: GOLD }}>
-              {interestRate.toFixed(2)}%
-            </span>
+            <select
+              value={downPayment}
+              onChange={e => setDownPayment(e.target.value)}
+              className="w-full rounded-xl border px-3 py-2 text-xs appearance-none"
+              style={{ borderColor: '#E5E7EB', color: WARM_DARK }}
+            >
+              {DOWN_PAYMENT_OPTIONS.map(opt => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
           </div>
-          <p className="text-xs mb-2" style={{ color: '#9A8E82' }}>
-            Default is 7.0% — adjust to model different scenarios
-          </p>
-          <input
-            type="range"
-            min={3.0}
-            max={10.0}
-            step={0.25}
-            value={interestRate}
-            onChange={e => setInterestRate(parseFloat(e.target.value))}
-            className="w-full accent-amber-600"
-          />
-          <div className="flex justify-between text-xs mt-1" style={{ color: '#9A8E82' }}>
-            <span>3.00%</span>
-            <span>10.00%</span>
+
+          <div>
+            <label className="block text-xs font-semibold mb-1" style={{ color: WARM_DARK }}>
+              Home sale proceeds
+            </label>
+            <select
+              value={proceeds ?? 'None'}
+              onChange={e => setProceeds(e.target.value === 'None' ? null : e.target.value)}
+              className="w-full rounded-xl border px-3 py-2 text-xs appearance-none"
+              style={{ borderColor: '#E5E7EB', color: WARM_DARK }}
+            >
+              <option value="None">None</option>
+              {PROCEEDS_OPTIONS.map(opt => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-semibold" style={{ color: WARM_DARK }}>
+                Rate assumption
+              </label>
+              <span className="text-xs font-bold" style={{ color: GOLD }}>
+                {interestRate.toFixed(2)}%
+              </span>
+            </div>
+            <input
+              type="range"
+              min={3.0}
+              max={10.0}
+              step={0.25}
+              value={interestRate}
+              onChange={e => setInterestRate(parseFloat(e.target.value))}
+              className="w-full accent-amber-600 mt-2"
+            />
+            <div className="flex justify-between text-[10px] mt-0.5" style={{ color: '#9A8E82' }}>
+              <span>3%</span>
+              <span>10%</span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Section 4 — Priority Sliders */}
+      {/* Section 4 — Priority Grid */}
       <div className="mb-8">
         <p className="text-[10px] font-bold uppercase mb-2"
            style={{ color: GOLD, letterSpacing: '0.18em' }}>
           Adjust Your Priorities
         </p>
         <p className="text-xs mb-5" style={{ color: '#9A8E82' }}>
-          Slide each category to assign its importance. Rankings update instantly.
-          Move right to increase priority — move left to decrease.
+          Click a column to assign each category. Rankings update instantly.
+          Must Have counts 3×. Important to Me counts 2×. Would Be Nice counts 1×.
         </p>
 
         {/* Bucket counter bar */}
@@ -519,69 +703,105 @@ export default function MM3Discover({ profile }: MM3DiscoverProps) {
           })}
         </div>
 
-        {/* Slider legend */}
-        <div className="flex justify-between text-[10px] font-semibold uppercase mb-3 px-1"
-             style={{ color: '#9A8E82', letterSpacing: '0.08em' }}>
-          <span>Unassigned</span>
-          <span>Nice to Have</span>
-          <span>Important</span>
-          <span>Must Have</span>
+        {/* Column headers */}
+        <div className="grid mb-2" style={{ gridTemplateColumns: '150px 1fr 1fr 1fr 1fr', gap: '4px' }}>
+          <div />
+          {[
+            { label: 'Unassigned',   color: '#C5BFB8' },
+            { label: 'Nice to Have', color: '#9A8E82' },
+            { label: 'Important',    color: '#4B7A5E' },
+            { label: 'Must Have',    color: GOLD },
+          ].map(col => (
+            <div key={col.label} style={{ textAlign: 'center' }}>
+              <span className="text-[10px] font-bold uppercase"
+                    style={{ color: col.color, letterSpacing: '0.08em' }}>
+                {col.label}
+              </span>
+            </div>
+          ))}
         </div>
 
-        {/* Category sliders */}
-        <div className="space-y-4">
+        {/* Divider */}
+        <div className="mb-3" style={{ borderBottom: '1px solid #F0EDE6' }} />
+
+        {/* Category rows */}
+        <div className="space-y-2">
           {LIFESTYLE_CATEGORIES.map(cat => {
             const currentBucket = getBucket(cat.key)
-            const position = BUCKET_TO_POSITION[currentBucket]
 
             return (
-              <div key={cat.key} className="flex items-center gap-3">
-                <div className="flex items-center gap-2 w-36 shrink-0">
-                  <span className="text-base">{cat.icon}</span>
-                  <span className="text-xs font-semibold truncate" style={{ color: WARM_DARK }}>
+              <div key={cat.key}
+                   className="grid items-center"
+                   style={{ gridTemplateColumns: '150px 1fr 1fr 1fr 1fr', gap: '4px' }}>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">{cat.icon}</span>
+                  <span className="text-xs font-semibold" style={{ color: WARM_DARK }}>
                     {cat.label}
                   </span>
                 </div>
 
-                <div className="flex-1">
-                  <input
-                    type="range"
-                    min={0}
-                    max={3}
-                    step={1}
-                    value={position}
-                    onChange={e => handleSliderChange(cat.key, parseInt(e.target.value))}
-                    className="w-full h-2 rounded-full appearance-none cursor-pointer"
-                    style={{
-                      background: position === 0
-                        ? '#E5E7EB'
-                        : position === 1
-                        ? `linear-gradient(to right, #9CA3AF ${(position/3)*100}%, #E5E7EB ${(position/3)*100}%)`
-                        : position === 2
-                        ? `linear-gradient(to right, #4B7A5E ${(position/3)*100}%, #E5E7EB ${(position/3)*100}%)`
-                        : `linear-gradient(to right, ${GOLD} ${(position/3)*100}%, #E5E7EB ${(position/3)*100}%)`,
-                      accentColor: position === 3 ? GOLD : position === 2 ? '#4B7A5E' : '#9CA3AF',
-                    }}
-                  />
-                </div>
+                {BUCKET_ORDER.map(bucket => {
+                  const isActive = currentBucket === bucket
+                  const isFull = (bucket === 'mustHaves' && mustHaves.length >= 4 && !isActive)
+                              || (bucket === 'niceToHaves' && niceToHaves.length >= 5 && !isActive)
+                  const isFlashingThis = flashBucket === bucket
 
-                <div className="w-20 shrink-0 text-right">
-                  <span
-                    className="text-[10px] font-bold uppercase"
-                    style={{
-                      color: position === 3 ? GOLD
-                           : position === 2 ? '#4B7A5E'
-                           : position === 1 ? '#6B7280'
-                           : '#C5BFB8',
-                      letterSpacing: '0.06em',
-                    }}
-                  >
-                    {position === 3 ? 'Must Have'
-                   : position === 2 ? 'Important'
-                   : position === 1 ? 'Nice to Have'
-                   : 'Unassigned'}
-                  </span>
-                </div>
+                  return (
+                    <div
+                      key={bucket}
+                      className="flex justify-center items-center"
+                      style={{ height: '36px' }}
+                    >
+                      <button
+                        onClick={() => {
+                          if (isActive) return
+                          if (bucket === 'mustHaves' && mustHaves.length >= 4) {
+                            setFlashBucket('mustHaves')
+                            setTimeout(() => setFlashBucket(null), 600)
+                            return
+                          }
+                          if (bucket === 'niceToHaves' && niceToHaves.length >= 5) {
+                            setFlashBucket('niceToHaves')
+                            setTimeout(() => setFlashBucket(null), 600)
+                            return
+                          }
+                          const setters: Record<BucketKey, React.Dispatch<React.SetStateAction<(keyof LifestyleScores)[]>>> = {
+                            mustHaves: setMustHaves,
+                            niceToHaves: setNiceToHaves,
+                            notPriorities: setNotPriorities,
+                            unassigned: setUnassigned,
+                          }
+                          setters[currentBucket](prev => prev.filter(k => k !== cat.key))
+                          setters[bucket](prev => [...prev, cat.key])
+                        }}
+                        className="transition-all"
+                        style={{
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '50%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '14px',
+                          cursor: isActive ? 'default' : isFull ? 'not-allowed' : 'pointer',
+                          backgroundColor: isActive
+                            ? BUCKET_COLORS[bucket]
+                            : isFlashingThis
+                            ? '#FEE2E2'
+                            : 'transparent',
+                          border: isActive
+                            ? 'none'
+                            : `1.5px dashed ${isFull ? '#FCA5A5' : '#E5E7EB'}`,
+                          opacity: isFull ? 0.4 : 1,
+                          transform: isFlashingThis ? 'scale(1.1)' : 'scale(1)',
+                        }}
+                      >
+                        {isActive ? cat.icon : ''}
+                      </button>
+                    </div>
+                  )
+                })}
               </div>
             )
           })}
@@ -606,6 +826,126 @@ export default function MM3Discover({ profile }: MM3DiscoverProps) {
           {committing ? 'Locking in your plan...' : 'This is my plan — connect me with my Market Director →'}
         </button>
       </div>
+
+      {/* City Snapshot Popup */}
+      {cityPopup && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+          onClick={() => setCityPopup(null)}
+        >
+          <div
+            className="rounded-2xl p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto"
+            style={{ backgroundColor: '#FDFCFA' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h3 className="font-bold text-lg" style={{ color: WARM_DARK }}>
+                  {cityPopup.location.name}, {cityPopup.location.state}
+                </h3>
+                <p className="text-xs" style={{ color: GOLD }}>
+                  {cityPopup.location.metroUsed}
+                </p>
+                <p className="text-xs" style={{ color: '#9A8E82' }}>
+                  {cityPopup.location.county} County · {cityPopup.location.tier}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-2xl font-bold" style={{ color: GOLD }}>
+                  {cityPopup.matchScore}
+                </p>
+                <p className="text-[10px] font-semibold uppercase"
+                   style={{ color: '#9A8E82', letterSpacing: '0.1em' }}>
+                  match score
+                </p>
+              </div>
+            </div>
+
+            <p className="text-sm leading-relaxed mb-4" style={{ color: '#4B5563' }}>
+              {cityPopup.location.description}
+            </p>
+
+            <div className="mb-4">
+              <p className="text-[10px] font-bold uppercase mb-2"
+                 style={{ color: '#9A8E82', letterSpacing: '0.1em' }}>
+                Your priority scores
+              </p>
+              <div className="space-y-1.5">
+                {[...mustHaves, ...niceToHaves].slice(0, 6).map(key => {
+                  const cat = LIFESTYLE_CATEGORIES.find(c => c.key === key)!
+                  const score = cityPopup.location.scores[key]
+                  const isMustHave = mustHaves.includes(key)
+                  return (
+                    <div key={key} className="flex items-center gap-2">
+                      <span className="text-xs w-4">{cat.icon}</span>
+                      <span className="text-xs w-24 shrink-0" style={{ color: WARM_DARK }}>
+                        {cat.label}
+                      </span>
+                      <div className="flex-1 h-1.5 rounded-full overflow-hidden"
+                           style={{ backgroundColor: '#E5E7EB' }}>
+                        <div className="h-full rounded-full"
+                             style={{
+                               width: `${score * 10}%`,
+                               backgroundColor: isMustHave ? GOLD : '#4B7A5E',
+                             }} />
+                      </div>
+                      <span className="text-xs font-bold w-8 text-right"
+                            style={{ color: isMustHave ? GOLD : '#4B7A5E' }}>
+                        {score}/10
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <div className="rounded-xl p-3" style={{ backgroundColor: '#F7F6F3' }}>
+                <p className="text-[10px] font-bold uppercase mb-1"
+                   style={{ color: '#9A8E82', letterSpacing: '0.08em' }}>
+                  Schools
+                </p>
+                <p className="text-sm font-bold" style={{ color: WARM_DARK }}>
+                  TEA {cityPopup.location.school.teaRating}
+                </p>
+                <p className="text-xs" style={{ color: '#9A8E82' }}>
+                  {cityPopup.location.school.primaryISD}
+                </p>
+              </div>
+              <div className="rounded-xl p-3" style={{ backgroundColor: '#F7F6F3' }}>
+                <p className="text-[10px] font-bold uppercase mb-1"
+                   style={{ color: '#9A8E82', letterSpacing: '0.08em' }}>
+                  Market
+                </p>
+                <p className="text-sm font-bold" style={{ color: WARM_DARK }}>
+                  {cityPopup.location.market.marketCondition}
+                </p>
+                <p className="text-xs" style={{ color: '#9A8E82' }}>
+                  ${cityPopup.location.housing.medianHomePrice.toLocaleString()} median
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => setCityPopup(null)}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold border"
+                style={{ borderColor: '#E5E7EB', color: '#6B7280' }}
+              >
+                Close
+              </button>
+              <button
+                onClick={() => setCityPopup(null)}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
+                style={{ backgroundColor: GOLD, color: '#16120D' }}
+              >
+                View Full Report →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   )
