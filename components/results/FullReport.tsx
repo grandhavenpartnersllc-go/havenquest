@@ -19,6 +19,14 @@ import MarketSnapshot from './MarketSnapshot'
 import SchoolSnapshot from './SchoolSnapshot'
 import ListingsButton from './ListingsButton'
 
+function getScoreLabel(score: number): { label: string; color: string; bg: string } {
+  if (score >= 88) return { label: 'Exceptional Match', color: '#2D7D4E', bg: '#E8F5EE' }
+  if (score >= 78) return { label: 'Excellent Match',   color: '#1A6B3C', bg: '#F0FAF4' }
+  if (score >= 67) return { label: 'Strong Match',      color: '#B8912A', bg: 'rgba(184,145,42,0.12)' }
+  if (score >= 55) return { label: 'Good Match',        color: '#7A6420', bg: 'rgba(184,145,42,0.08)' }
+  return                   { label: 'Potential Match',  color: '#6B7280', bg: '#F3F4F6' }
+}
+
 interface FullReportProps {
   match: CityMatch
   profile: UserProfile
@@ -28,6 +36,7 @@ interface FullReportProps {
 export default function FullReport({ match, profile, rank }: FullReportProps) {
   const { location, matchScore, affordabilityFlag } = match
   const { housing } = location
+  const scoreLabel = getScoreLabel(matchScore)
 
   return (
     <article className="bg-white rounded-2xl border border-gray-300 overflow-hidden" style={{ boxShadow: '0 4px 6px rgba(0,0,0,0.07), 0 12px 40px rgba(0,0,0,0.18)' }}>
@@ -38,20 +47,9 @@ export default function FullReport({ match, profile, rank }: FullReportProps) {
             <ScoreGauge score={matchScore} size={110} />
             <span
               className="text-[11px] font-bold uppercase tracking-wider text-center"
-              style={{
-                color: matchScore >= 85 ? '#2D7D4E'
-                     : matchScore >= 75 ? '#1A6B3C'
-                     : matchScore >= 65 ? '#B8912A'
-                     : matchScore >= 55 ? '#7A6420'
-                     : '#6B7280',
-                letterSpacing: '0.1em',
-              }}
+              style={{ color: scoreLabel.color, letterSpacing: '0.1em' }}
             >
-              {matchScore >= 85 ? 'Exceptional Match'
-             : matchScore >= 75 ? 'Excellent Match'
-             : matchScore >= 65 ? 'Strong Match'
-             : matchScore >= 55 ? 'Good Match'
-             : 'Potential Match'}
+              {scoreLabel.label}
             </span>
           </div>
           <div className="flex-1">

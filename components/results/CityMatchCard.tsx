@@ -11,15 +11,18 @@ interface CityMatchCardProps {
   blurred?: boolean
 }
 
+function getScoreLabel(score: number): { label: string; color: string; bg: string } {
+  if (score >= 88) return { label: 'Exceptional Match', color: '#2D7D4E', bg: '#E8F5EE' }
+  if (score >= 78) return { label: 'Excellent Match',   color: '#1A6B3C', bg: '#F0FAF4' }
+  if (score >= 67) return { label: 'Strong Match',      color: '#B8912A', bg: 'rgba(184,145,42,0.12)' }
+  if (score >= 55) return { label: 'Good Match',        color: '#7A6420', bg: 'rgba(184,145,42,0.08)' }
+  return                   { label: 'Potential Match',  color: '#6B7280', bg: '#F3F4F6' }
+}
+
 export default function CityMatchCard({ match, rank, blurred = false }: CityMatchCardProps) {
   const { location, matchScore, affordabilityFlag } = match
 
-  const scoreConfig =
-    matchScore >= 80
-      ? { bg: '#EAF3DE', color: '#3B6D11', label: 'Excellent' }
-      : matchScore >= 65
-      ? { bg: '#EBF3FB', color: '#1A5FA8', label: 'Good' }
-      : { bg: '#F3F4F6', color: '#6B7280', label: 'Fair' }
+  const scoreConfig = getScoreLabel(matchScore)
 
   return (
     <div

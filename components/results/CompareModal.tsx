@@ -50,11 +50,12 @@ function getSummary(cityA: CityMatch, cityB: CityMatch, profile: UserProfile): s
   return `On your ${priorityLabel} priorities, ${winner.location.name} leads — notably ${rest.join(', ')} and ${last}.`
 }
 
-function matchScoreConfig(score: number) {
-  if (score >= 80) return { bg: '#EAF3DE', color: '#3B6D11', label: 'Excellent' }
-  if (score >= 65) return { bg: '#EBF3FB', color: '#1A5FA8', label: 'Good' }
-  if (score >= 50) return { bg: '#F3F4F6', color: '#6B7280', label: 'Fair' }
-  return { bg: '#FCEBEB', color: '#A32D2D', label: 'Low' }
+function matchScoreConfig(score: number): { label: string; color: string; bg: string } {
+  if (score >= 88) return { label: 'Exceptional Match', color: '#2D7D4E', bg: '#E8F5EE' }
+  if (score >= 78) return { label: 'Excellent Match',   color: '#1A6B3C', bg: '#F0FAF4' }
+  if (score >= 67) return { label: 'Strong Match',      color: '#B8912A', bg: 'rgba(184,145,42,0.12)' }
+  if (score >= 55) return { label: 'Good Match',        color: '#7A6420', bg: 'rgba(184,145,42,0.08)' }
+  return                   { label: 'Potential Match',  color: '#6B7280', bg: '#F3F4F6' }
 }
 
 // Consistent 3-column layout: label | city A | city B
