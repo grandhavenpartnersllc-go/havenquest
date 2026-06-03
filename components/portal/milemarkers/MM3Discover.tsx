@@ -90,6 +90,7 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
   const [emailSent, setEmailSent] = useState(false)
   const [sendingEmail, setSendingEmail] = useState(false)
   const [selectedCityIndex, setSelectedCityIndex] = useState<number>(0)
+  const [sandboxTouched, setSandboxTouched] = useState(false)
 
   const [selectedMetro, setSelectedMetro] = useState<string>('')
 
@@ -115,7 +116,12 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
 
   useEffect(() => {
     setSelectedCityIndex(0)
-  }, [selectedMetro, mustHaves, niceToHaves, notPriorities])
+  }, [mustHaves, niceToHaves, notPriorities])
+
+  useEffect(() => {
+    setSelectedCityIndex(0)
+    setSandboxTouched(false)
+  }, [selectedMetro])
 
   useEffect(() => {
     if (!profile || selectedMetro !== '') return
@@ -180,7 +186,18 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
   const metroCities = selectedMetro
     ? getAllCities().filter(city => city.metroUsed.includes(selectedMetro))
     : getAllCities()
-  const sandboxMatches = getTopMatches(sandboxProfile, metroCities, 5)
+
+  const activeProfile: UserProfile = !sandboxTouched && profile
+    ? {
+        ...profile,
+        mustHaves: profile.mustHaves ?? [],
+        niceToHaves: profile.niceToHaves ?? [],
+        notPriorities: profile.notPriorities ?? [],
+        financial_picture: profile.financial_picture ?? sandboxProfile.financial_picture,
+      }
+    : sandboxProfile
+
+  const sandboxMatches = getTopMatches(activeProfile, metroCities, 5)
 
   // Computed financial outputs — recalculate on every render, client-side
   const topCity = sandboxMatches[selectedCityIndex]?.location ?? sandboxMatches[0]?.location
@@ -220,6 +237,25 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
     if (niceToHaves.includes(key)) return 'niceToHaves'
     if (notPriorities.includes(key)) return 'notPriorities'
     return 'unassigned'
+  }
+
+  function getCityAffordabilityStatus(match: CityMatch): 'comfortable' | 'moderate' | 'stretched' {
+    const grossMonthlyIncome = (profile?.annualIncome ?? 100000) / 12
+    const cityPrice = match.location.housing.medianHomePrice
+    const taxRate = match.location.housing.propertyTaxRate ?? 0.018
+    const totalFunds = downMid + procMid
+    const balance = Math.max(0, cityPrice - totalFunds)
+    if (balance === 0) return 'comfortable'
+    const mRate = interestRate / 100 / 12
+    const payment = Math.round(
+      (balance * mRate * Math.pow(1 + mRate, 360)) /
+      (Math.pow(1 + mRate, 360) - 1)
+    )
+    const tax = Math.round((cityPrice * taxRate) / 12)
+    const pct = (payment + tax) / grossMonthlyIncome
+    if (pct <= 0.30) return 'comfortable'
+    if (pct <= 0.40) return 'moderate'
+    return 'stretched'
   }
 
   async function handleCommit() {
@@ -619,6 +655,23 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
               })}
             </div>
           </div>
+          {/* Affordability legend */}
+          <div className="flex items-center gap-3 mb-3">
+            {[
+              { color: '#22C55E', label: 'Comfortable' },
+              { color: '#F59E0B', label: 'Moderate' },
+              { color: '#EF4444', label: 'Stretched' },
+            ].map(item => (
+              <div key={item.label} className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full shrink-0"
+                     style={{ backgroundColor: item.color }} />
+                <span className="text-[9px] font-medium" style={{ color: '#9A8E82' }}>
+                  {item.label}
+                </span>
+              </div>
+            ))}
+            <span className="text-[9px]" style={{ color: '#C5BFB8' }}>— based on your income</span>
+          </div>
           <div className="space-y-2">
             {sandboxMatches.map((match, i) => (
               <div
@@ -641,15 +694,32 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
                       {match.location.name}
                     </span>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-12 h-1.5 rounded-full overflow-hidden"
-                         style={{ backgroundColor: '#E5E7EB' }}>
-                      <div className="h-full rounded-full"
-                           style={{ width: `${match.matchScore}%`, backgroundColor: GOLD }} />
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-12 h-1.5 rounded-full overflow-hidden"
+                           style={{ backgroundColor: '#E5E7EB' }}>
+                        <div className="h-full rounded-full"
+                             style={{ width: `${match.matchScore}%`, backgroundColor: GOLD }} />
+                      </div>
+                      <span className="text-xs font-bold" style={{ color: GOLD }}>
+                        {match.matchScore}
+                      </span>
                     </div>
-                    <span className="text-xs font-bold" style={{ color: GOLD }}>
-                      {match.matchScore}
-                    </span>
+                    {(() => {
+                      const status = getCityAffordabilityStatus(match)
+                      const dotColor = status === 'comfortable' ? '#22C55E'
+                                     : status === 'moderate' ? '#F59E0B'
+                                     : '#EF4444'
+                      return (
+                        <div
+                          className="w-2.5 h-2.5 rounded-full shrink-0"
+                          style={{ backgroundColor: dotColor }}
+                          title={status === 'comfortable' ? 'Comfortable — within budget'
+                               : status === 'moderate' ? 'Moderate — close to the limit'
+                               : 'Stretched — over 40% of income'}
+                        />
+                      )
+                    })()}
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
@@ -691,7 +761,7 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
             </label>
             <select
               value={downPayment}
-              onChange={e => setDownPayment(e.target.value)}
+              onChange={e => { setSandboxTouched(true); setDownPayment(e.target.value) }}
               className="w-full rounded-xl border px-3 py-2 text-xs appearance-none"
               style={{ borderColor: '#E5E7EB', color: WARM_DARK }}
             >
@@ -707,7 +777,7 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
             </label>
             <select
               value={proceeds ?? 'None'}
-              onChange={e => setProceeds(e.target.value === 'None' ? null : e.target.value)}
+              onChange={e => { setSandboxTouched(true); setProceeds(e.target.value === 'None' ? null : e.target.value) }}
               className="w-full rounded-xl border px-3 py-2 text-xs appearance-none"
               style={{ borderColor: '#E5E7EB', color: WARM_DARK }}
             >
@@ -733,7 +803,7 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
               max={10.0}
               step={0.25}
               value={interestRate}
-              onChange={e => setInterestRate(parseFloat(e.target.value))}
+              onChange={e => { setSandboxTouched(true); setInterestRate(parseFloat(e.target.value)) }}
               className="w-full accent-amber-600 mt-2"
             />
             <div className="flex justify-between text-[10px] mt-0.5" style={{ color: '#9A8E82' }}>
@@ -866,6 +936,7 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
                     >
                       <button
                         onClick={() => {
+                          setSandboxTouched(true)
                           if (isActive) return
                           if (bucket === 'mustHaves' && mustHaves.length >= 4) {
                             setFlashBucket('mustHaves')
