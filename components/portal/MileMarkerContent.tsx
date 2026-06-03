@@ -2,6 +2,7 @@ import { CityMatch, UserProfile, UserSession } from '../../types'
 import MM1Explore from './milemarkers/MM1Explore'
 import MM2Discover from './milemarkers/MM2Discover'
 import MM3Decide from './milemarkers/MM3Decide'
+import MM3Discover from './milemarkers/MM3Discover'
 import MM4Connect from './milemarkers/MM4Connect'
 import MM4to10 from './milemarkers/MM4to10'
 
@@ -31,6 +32,7 @@ interface MileMarkerContentProps {
   onAcknowledge: () => void
   onAdvanceToDiscover: () => void
   onAdvanceFromMM2: () => void
+  onAdvanceToConnect: () => void
   initialChecklist: Record<string, boolean>
   initialNotes: string
 }
@@ -55,6 +57,7 @@ export default function MileMarkerContent({
   onAcknowledge,
   onAdvanceToDiscover,
   onAdvanceFromMM2,
+  onAdvanceToConnect,
   initialChecklist,
   initialNotes,
 }: MileMarkerContentProps) {
@@ -83,7 +86,25 @@ export default function MileMarkerContent({
         />
       )
     case 3:
-      return <MM3Decide />
+      if (selectedMileMarker < currentMileMarker) {
+        return (
+          <CompletedCard
+            name="Discover"
+            description="You explored your options and committed your direction."
+          />
+        )
+      }
+      if (selectedMileMarker === currentMileMarker) {
+        return (
+          <MM3Discover
+            matches={matches}
+            profile={profile}
+            session={session}
+            onAdvanceToConnect={onAdvanceToConnect}
+          />
+        )
+      }
+      return <MM4to10 mmNumber={3} name="Discover" />
     case 4:
       if (selectedMileMarker < currentMileMarker) {
         return (

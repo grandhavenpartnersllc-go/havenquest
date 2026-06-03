@@ -113,6 +113,16 @@ export interface UserProfile {
   financial_picture?: FinancialPicture
 }
 
+export interface SandboxProfile {
+  downPaymentOverride: string
+  proceedsOverride: string | null
+  interestRateOverride: number
+  mustHaves: (keyof LifestyleScores)[]
+  niceToHaves: (keyof LifestyleScores)[]
+  notPriorities: (keyof LifestyleScores)[]
+  unassigned: (keyof LifestyleScores)[]
+}
+
 export interface FamilyProfile {
   family_members: string[]
   family_names: string
