@@ -28,6 +28,13 @@ const DOWN_PAYMENT_OPTIONS = [
   "I'm not sure yet",
 ]
 
+const METRO_OPTIONS = [
+  { label: 'Austin',      value: 'Austin' },
+  { label: 'DFW',         value: 'Dallas' },
+  { label: 'Houston',     value: 'Houston' },
+  { label: 'San Antonio', value: 'San Antonio' },
+]
+
 const PROCEEDS_OPTIONS = [
   'Under $50,000',
   '$50,000 – $100,000',
@@ -82,6 +89,20 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
   const [cityPopup, setCityPopup] = useState<CityMatch | null>(null)
   const [emailSent, setEmailSent] = useState(false)
   const [sendingEmail, setSendingEmail] = useState(false)
+
+  const defaultMetro = (() => {
+    if (!profile) return 'Austin'
+    const topMatch = getTopMatches(
+      { ...profile, mustHaves: profile.mustHaves ?? [], niceToHaves: profile.niceToHaves ?? [], notPriorities: profile.notPriorities ?? [] },
+      getAllCities(),
+      1
+    )[0]
+    const metro = topMatch?.location.metroUsed ?? 'Austin'
+    const match = METRO_OPTIONS.find(m => metro.includes(m.label))
+    return match?.value ?? 'Austin'
+  })()
+
+  const [selectedMetro, setSelectedMetro] = useState<string>(defaultMetro)
 
   useEffect(() => {
     if (!profile) return
@@ -146,7 +167,8 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
     },
   }
 
-  const sandboxMatches = getTopMatches(sandboxProfile, getAllCities(), 5)
+  const metroCities = getAllCities().filter(city => city.metroUsed.includes(selectedMetro))
+  const sandboxMatches = getTopMatches(sandboxProfile, metroCities, 5)
 
   // Computed financial outputs — recalculate on every render, client-side
   const topCity = sandboxMatches[0]?.location
@@ -485,30 +507,73 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
                style={{ color: '#9A8E82', letterSpacing: '0.08em' }}>
               Priority summary
             </p>
+
             {mustHaves.length > 0 && (
-              <div className="flex flex-wrap gap-1 mb-1">
-                {mustHaves.map(k => {
-                  const cat = LIFESTYLE_CATEGORIES.find(c => c.key === k)!
-                  return (
-                    <span key={k} className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
-                          style={{ backgroundColor: 'rgba(184,145,42,0.12)', color: GOLD }}>
-                      {cat.icon} {cat.label}
-                    </span>
-                  )
-                })}
+              <div className="mb-2">
+                <p className="text-[9px] font-bold uppercase mb-1"
+                   style={{ color: GOLD, letterSpacing: '0.1em' }}>
+                  Must Have
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {mustHaves.map(k => {
+                    const cat = LIFESTYLE_CATEGORIES.find(c => c.key === k)!
+                    const Icon = CATEGORY_ICONS[k]
+                    return (
+                      <span key={k}
+                            className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-semibold"
+                            style={{ backgroundColor: 'rgba(184,145,42,0.12)', color: GOLD }}>
+                        <Icon size={10} strokeWidth={2} />
+                        {cat.label}
+                      </span>
+                    )
+                  })}
+                </div>
               </div>
             )}
+
             {niceToHaves.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {niceToHaves.map(k => {
-                  const cat = LIFESTYLE_CATEGORIES.find(c => c.key === k)!
-                  return (
-                    <span key={k} className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
-                          style={{ backgroundColor: '#E8F5EE', color: '#2D7D4E' }}>
-                      {cat.icon} {cat.label}
-                    </span>
-                  )
-                })}
+              <div className="mb-2">
+                <p className="text-[9px] font-bold uppercase mb-1"
+                   style={{ color: '#4B7A5E', letterSpacing: '0.1em' }}>
+                  Important
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {niceToHaves.map(k => {
+                    const cat = LIFESTYLE_CATEGORIES.find(c => c.key === k)!
+                    const Icon = CATEGORY_ICONS[k]
+                    return (
+                      <span key={k}
+                            className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-semibold"
+                            style={{ backgroundColor: '#E8F5EE', color: '#2D7D4E' }}>
+                        <Icon size={10} strokeWidth={2} />
+                        {cat.label}
+                      </span>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
+            {notPriorities.length > 0 && (
+              <div>
+                <p className="text-[9px] font-bold uppercase mb-1"
+                   style={{ color: '#9A8E82', letterSpacing: '0.1em' }}>
+                  Nice to Have
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {notPriorities.map(k => {
+                    const cat = LIFESTYLE_CATEGORIES.find(c => c.key === k)!
+                    const Icon = CATEGORY_ICONS[k]
+                    return (
+                      <span key={k}
+                            className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-semibold"
+                            style={{ backgroundColor: '#F7F6F3', color: '#6B7280' }}>
+                        <Icon size={10} strokeWidth={2} />
+                        {cat.label}
+                      </span>
+                    )
+                  })}
+                </div>
               </div>
             )}
           </div>
@@ -517,10 +582,31 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
         {/* RIGHT — Live City Rankings */}
         <div className="rounded-xl p-4"
              style={{ backgroundColor: CARD_BG, boxShadow: CARD_SHADOW }}>
-          <p className="text-[10px] font-bold uppercase mb-3"
-             style={{ color: GOLD, letterSpacing: '0.18em' }}>
-            Live city rankings
-          </p>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[10px] font-bold uppercase"
+               style={{ color: GOLD, letterSpacing: '0.18em' }}>
+              Live city rankings
+            </p>
+            <div className="flex gap-1">
+              {METRO_OPTIONS.map(metro => {
+                const isActive = selectedMetro === metro.value
+                return (
+                  <button
+                    key={metro.value}
+                    onClick={() => setSelectedMetro(metro.value)}
+                    className="px-2 py-0.5 rounded-full text-[10px] font-bold transition-all"
+                    style={{
+                      backgroundColor: isActive ? GOLD : 'transparent',
+                      color: isActive ? '#16120D' : '#9A8E82',
+                      border: isActive ? 'none' : '1px solid #E5E7EB',
+                    }}
+                  >
+                    {metro.label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
           <div className="space-y-2">
             {sandboxMatches.map((match, i) => (
               <div
@@ -889,7 +975,10 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
                   const isMustHave = mustHaves.includes(key)
                   return (
                     <div key={key} className="flex items-center gap-2">
-                      <span className="text-xs w-4">{cat.icon}</span>
+                      {(() => {
+                        const Icon = CATEGORY_ICONS[key]
+                        return <Icon size={12} strokeWidth={1.5} style={{ color: isMustHave ? GOLD : '#4B7A5E' }} />
+                      })()}
                       <span className="text-xs w-24 shrink-0" style={{ color: WARM_DARK }}>
                         {cat.label}
                       </span>
