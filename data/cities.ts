@@ -23,7 +23,7 @@ export const texasCities: Location[] = [
       outdoors: 9,
       familyFriendly: 6,
       remoteWork: 10,
-      lowTaxes: 7,
+      lowTaxes: 3,
       weather: 6,
       traffic: 1,
       healthcare: 8.5,
