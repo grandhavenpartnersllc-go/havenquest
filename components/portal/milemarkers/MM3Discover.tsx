@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { CityMatch, UserProfile, UserSession, SandboxProfile, LifestyleScores } from '../../../types'
 import { LIFESTYLE_CATEGORIES } from '../../../utils/constants'
+import { CATEGORY_ICONS } from '../../../utils/categoryIcons'
 import { getAllCities } from '../../../services/locationService'
 import { getTopMatches, getDownPaymentMidpoint, getProceedsMidpoint, calculateMonthlyPayment } from '../../../services/matchingService'
 import { createClient } from '../../../lib/supabase/client'
@@ -644,8 +645,8 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
           Adjust Your Priorities
         </p>
         <p className="text-xs mb-5" style={{ color: '#9A8E82' }}>
-          Click a column to assign each category. Rankings update instantly.
-          Must Have counts 3×. Important to Me counts 2×. Would Be Nice counts 1×.
+          Click any circle to move a category into that bucket. Rankings update instantly.
+          Gold = Must Have · Green = Important · Gray = Nice to Have
         </p>
 
         {/* Bucket counter bar */}
@@ -735,7 +736,10 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
                    style={{ gridTemplateColumns: '150px 1fr 1fr 1fr 1fr', gap: '4px' }}>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-sm">{cat.icon}</span>
+                  {(() => {
+                    const Icon = CATEGORY_ICONS[cat.key]
+                    return <Icon size={16} strokeWidth={1.5} style={{ color: WARM_DARK }} />
+                  })()}
                   <span className="text-xs font-semibold" style={{ color: WARM_DARK }}>
                     {cat.label}
                   </span>
@@ -789,15 +793,22 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
                             ? BUCKET_COLORS[bucket]
                             : isFlashingThis
                             ? '#FEE2E2'
-                            : 'transparent',
+                            : isFull
+                            ? 'transparent'
+                            : 'rgba(197,191,184,0.15)',
                           border: isActive
                             ? 'none'
-                            : `1.5px dashed ${isFull ? '#FCA5A5' : '#E5E7EB'}`,
+                            : `2px dashed ${isFull ? '#FCA5A5' : '#C5BFB8'}`,
                           opacity: isFull ? 0.4 : 1,
                           transform: isFlashingThis ? 'scale(1.1)' : 'scale(1)',
                         }}
                       >
-                        {isActive ? cat.icon : ''}
+                        {(() => {
+                          const Icon = CATEGORY_ICONS[cat.key]
+                          return isActive
+                            ? <Icon size={14} strokeWidth={2} style={{ color: '#FFFFFF' }} />
+                            : <span style={{ fontSize: '12px', color: '#C5BFB8', opacity: 0.6 }}>+</span>
+                        })()}
                       </button>
                     </div>
                   )
