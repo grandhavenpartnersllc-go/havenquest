@@ -97,7 +97,7 @@ export default function FinancialPictureStep({ onNext, onBack, initialData }: Fi
       {/* Field 1 — Homeowner toggle */}
       <div className="mb-5">
         <label className="block text-sm font-semibold text-gray-800 mb-2">
-          Are you currently a homeowner?
+          Will you be selling a home and applying the proceeds to your new purchase?
         </label>
         <div className="flex gap-3">
           {(['Yes', 'No'] as const).map(opt => {
@@ -134,7 +134,7 @@ export default function FinancialPictureStep({ onNext, onBack, initialData }: Fi
           <label className="block text-sm font-semibold text-gray-800 mb-0.5">
             Estimated proceeds from your home sale
           </label>
-          <p className="text-xs text-gray-400 mb-2">The equity you&apos;ll walk away with after paying off your mortgage and selling costs — this counts toward your down payment</p>
+          <p className="text-xs text-gray-400 mb-2">The equity you expect to walk away with after paying off your mortgage and selling costs — this goes toward your new purchase.</p>
           <SelectWrapper>
             <select
               value={proceeds}

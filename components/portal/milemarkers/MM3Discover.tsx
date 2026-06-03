@@ -91,6 +91,7 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
   const [sendingEmail, setSendingEmail] = useState(false)
   const [selectedCityIndex, setSelectedCityIndex] = useState<number>(0)
   const [sandboxTouched, setSandboxTouched] = useState(false)
+  const [preferredCity, setPreferredCity] = useState<string | null>(null)
 
   const [selectedMetro, setSelectedMetro] = useState<string>('')
 
@@ -146,7 +147,7 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
       if (!s?.user?.email) return
       supabase
         .from('users')
-        .select('sandbox_committed, sandbox_profile')
+        .select('sandbox_committed, sandbox_profile, preferred_city')
         .eq('email', s.user.email.toLowerCase())
         .single()
         .then(({ data }) => {
@@ -161,6 +162,7 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
             setUnassigned(sp.unassigned)
             setCommitted(true)
           }
+          if (data?.preferred_city) setPreferredCity(data.preferred_city)
         })
     })
   }, [])
@@ -256,6 +258,20 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
     if (pct <= 0.30) return 'comfortable'
     if (pct <= 0.40) return 'moderate'
     return 'stretched'
+  }
+
+  async function handleCityChoice(cityId: string) {
+    const newChoice = preferredCity === cityId ? null : cityId
+    setPreferredCity(newChoice)
+    try {
+      const supabase = createClient()
+      const { data: { session: s } } = await supabase.auth.getSession()
+      if (!s?.user?.email) return
+      await supabase
+        .from('users')
+        .update({ preferred_city: newChoice })
+        .eq('email', s.user.email.toLowerCase())
+    } catch {}
   }
 
   async function handleCommit() {
@@ -655,6 +671,15 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
               })}
             </div>
           </div>
+          {/* Metro context line */}
+          <p className="text-xs mb-2" style={{ color: '#9A8E82' }}>
+            {(() => {
+              const topMetroLabel = METRO_OPTIONS.find(m => m.value === selectedMetro)?.label ?? 'Austin'
+              return !sandboxTouched
+                ? `${topMetroLabel} is your top match — you can also explore other Texas metros below.`
+                : `Showing ${topMetroLabel} metro — adjust priorities or switch metros to explore.`
+            })()}
+          </p>
           {/* Affordability legend */}
           <div className="flex items-center gap-3 mb-3">
             {[
@@ -722,18 +747,38 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
                     })()}
                   </div>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mt-1">
                   <p className="text-[10px]" style={{ color: '#9A8E82' }}>
                     {match.location.metroUsed}
                   </p>
-                  <button
-                    onClick={() => setCityPopup(match)}
-                    className="text-[10px] font-semibold underline underline-offset-2"
-                    style={{ color: GOLD }}
-                  >
-                    Learn more →
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setCityPopup(match)}
+                      className="text-[10px] font-semibold underline underline-offset-2"
+                      style={{ color: GOLD }}
+                    >
+                      Learn more →
+                    </button>
+                    <button
+                      onClick={() => handleCityChoice(match.location.id)}
+                      className="text-[10px] font-semibold px-2 py-0.5 rounded-full transition-all"
+                      style={{
+                        backgroundColor: preferredCity === match.location.id
+                          ? 'rgba(184,145,42,0.15)'
+                          : 'transparent',
+                        color: preferredCity === match.location.id ? GOLD : '#C5BFB8',
+                        border: `1px solid ${preferredCity === match.location.id ? GOLD : '#E5E7EB'}`,
+                      }}
+                    >
+                      {preferredCity === match.location.id ? '✓ My Choice' : 'Choose'}
+                    </button>
+                  </div>
                 </div>
+                {preferredCity === match.location.id && (
+                  <p className="text-[9px] mt-1 font-medium" style={{ color: GOLD }}>
+                    Your Market Director will see this preference.
+                  </p>
+                )}
                 {i === selectedCityIndex && (
                   <p className="text-[9px] font-semibold mt-1"
                      style={{ color: GOLD, letterSpacing: '0.06em' }}>

@@ -233,6 +233,13 @@ export default function MM1Explore({
           Your Navigator Journey
         </p>
 
+        <p className="text-sm leading-relaxed mb-6" style={{ color: '#6B7280' }}>
+          Your journey with HavenQuest unfolds across 10 MileMarkers — from your
+          first city matches all the way to closing day. Each step builds on the last.
+          Below is your complete path. You&apos;re at MileMarker 1 today, and
+          everything ahead is designed to get you home.
+        </p>
+
         <div className="space-y-3">
           {NAVIGATOR_STEPS.map(step => {
             const isComplete = step.number < currentMileMarker

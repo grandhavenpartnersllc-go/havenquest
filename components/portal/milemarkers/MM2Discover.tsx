@@ -14,15 +14,6 @@ const GOLD = '#B8912A'
 const CARD_BG = '#FDFCFA'
 const CARD_SHADOW = '0 1px 3px rgba(0,0,0,0.05), 0 4px 20px rgba(0,0,0,0.07)'
 
-const CHECKLIST_ITEMS = [
-  { key: 'reviewed_top_city', label: 'I reviewed my top city match report' },
-  { key: 'checked_affordability', label: 'I checked the affordability breakdown' },
-  { key: 'looked_at_schools', label: 'I looked at school data for at least one city' },
-  { key: 'read_strengths', label: 'I read the strengths and tradeoffs' },
-  { key: 'explored_second_city', label: 'I explored a second city match' },
-  { key: 'understand_scores', label: 'I have a sense of what the scores mean' },
-  { key: 'ready_for_next', label: 'I feel ready to go deeper and start shaping my plan' },
-]
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -60,10 +51,8 @@ export default function MM2Discover({ matches, profile, initialChecklist, initia
   const [dlState, setDlState] = useState<BtnState>('idle')
   const [emailState, setEmailState] = useState<BtnState>('idle')
   const [scorePopupOpen, setScorePopupOpen] = useState(false)
-  const [checklist, setChecklist] = useState<Record<string, boolean>>(initialChecklist)
 
   const topCity = matches[0]?.location ?? null
-  const allChecked = CHECKLIST_ITEMS.every(item => !!checklist[item.key])
   const userEmailRef = useRef<string>('')
 
   useEffect(() => {
@@ -74,20 +63,6 @@ export default function MM2Discover({ matches, profile, initialChecklist, initia
       }
     })
   }, [])
-
-  async function handleChecklistChange(key: string, checked: boolean) {
-    const updated = { ...checklist, [key]: checked }
-    setChecklist(updated)
-    const email = userEmailRef.current
-    if (!email) return
-    try {
-      const supabase = createClient()
-      await supabase
-        .from('users')
-        .update({ mm2_checklist: updated })
-        .eq('email', email)
-    } catch {}
-  }
 
   async function handleDownload() {
     setDlState('loading')
@@ -137,14 +112,20 @@ export default function MM2Discover({ matches, profile, initialChecklist, initia
     <div className="space-y-10">
 
       {/* Forward-looking intro */}
-      <div className="p-4 rounded-xl" style={{ backgroundColor: '#F7F6F3' }}>
-        <p className="text-sm leading-relaxed" style={{ color: '#4B5563' }}>
-          These are your matched cities — and everything you need to explore them is right here.
-          As you flip through the reports, pay attention to what excites you and what gives you pause.
-          The scores, the numbers, the schools — it&apos;s all here to help you get a feel for each place.
-          And when you&apos;re ready to go deeper and start shaping your plan,{' '}
-          <strong>Discover</strong> is waiting with a live sandbox where you can move things around
-          and watch your matches respond in real time.
+      <div className="mb-6">
+        <p className="text-[10px] font-bold uppercase mb-2"
+           style={{ color: GOLD, letterSpacing: '0.18em' }}>
+          Welcome to Your Matched Cities
+        </p>
+        <h2 className="text-[20px] font-bold tracking-tight mb-3" style={{ color: WARM_DARK }}>
+          Meet your top Texas matches.
+        </h2>
+        <p className="text-sm leading-relaxed" style={{ color: '#6B7280' }}>
+          Based on everything you told us, these are the communities where your life
+          genuinely fits. This is your introduction to each of them — their schools,
+          their markets, their lifestyle scores, and what it actually costs to live there.
+          Take your time. Read the reports. Get a feel for each place. When something
+          catches your attention, that&apos;s worth paying attention to.
         </p>
       </div>
 
@@ -249,57 +230,22 @@ export default function MM2Discover({ matches, profile, initialChecklist, initia
         </section>
       )}
 
-      {/* Explore Checklist */}
-      <div className="mt-10 pt-8" style={{ borderTop: '1px solid #E5E7EB' }}>
-        <p className="text-[10px] font-bold uppercase mb-4"
-           style={{ color: GOLD, letterSpacing: '0.18em' }}>
-          Your Explore Checklist
-        </p>
-        <p className="text-sm mb-4" style={{ color: '#6B7280' }}>
-          Check these off as you go. There&apos;s no rush — but when you&apos;ve worked through them,
-          you&apos;ll know you&apos;re ready for what comes next.
-        </p>
-        <div className="space-y-3">
-          {CHECKLIST_ITEMS.map(item => (
-            <label key={item.key} className="flex items-start gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={!!checklist[item.key]}
-                onChange={e => handleChecklistChange(item.key, e.target.checked)}
-                className="mt-0.5 shrink-0"
-              />
-              <span className="text-sm" style={{ color: checklist[item.key] ? '#2D7D4E' : '#4B5563' }}>
-                {item.label}
-              </span>
-            </label>
-          ))}
-        </div>
-      </div>
-
       {/* Advance to Discover */}
-      <div className="mt-8 pt-6" style={{ borderTop: '1px solid #E5E7EB' }}>
+      <div className="mt-10 pt-6" style={{ borderTop: '1px solid #E5E7EB' }}>
         <p className="text-sm mb-4" style={{ color: '#6B7280' }}>
-          Explored enough to know you&apos;re ready to go deeper?
+          Taken a look at your matches? When you&apos;re ready to dial in your
+          direction, Discover is waiting.
         </p>
         <button
-          onClick={allChecked ? () => {
+          onClick={() => {
             const supabase = createClient()
             supabase.from('users').update({ current_milemarker: 3 }).eq('email', userEmailRef.current).then(() => {})
             onAdvanceToDiscover()
-          } : undefined}
-          disabled={!allChecked}
-          className="w-full py-3 rounded-xl font-bold text-sm"
-          style={{
-            backgroundColor: GOLD,
-            color: '#16120D',
-            opacity: allChecked ? 1 : 0.4,
-            cursor: allChecked ? 'pointer' : 'not-allowed',
-            transition: allChecked ? 'opacity 0.15s' : 'none',
           }}
-          onMouseEnter={e => { if (allChecked) e.currentTarget.style.opacity = '0.9' }}
-          onMouseLeave={e => { if (allChecked) e.currentTarget.style.opacity = '1' }}
+          className="w-full py-3 rounded-xl font-bold text-sm transition-opacity hover:opacity-90"
+          style={{ backgroundColor: GOLD, color: '#16120D' }}
         >
-          I&apos;m ready — take me to Discover →
+          I&apos;m ready to go deeper →
         </button>
       </div>
 
