@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { Download, Mail } from 'lucide-react'
 import { CityMatch, UserProfile } from '../../../types'
+import { getDownPaymentMidpoint, getProceedsMidpoint } from '../../../services/matchingService'
 import { createClient } from '../../../lib/supabase/client'
 import SavedMatches from '../SavedMatches'
 import NotesArea from '../NotesArea'
@@ -54,6 +55,29 @@ export default function MM2Discover({ matches, profile, initialChecklist, initia
 
   const topCity = matches[0]?.location ?? null
   const userEmailRef = useRef<string>('')
+
+  function getCityAffordabilityStatus(cityMedianPrice: number, cityTaxRate: number): 'comfortable' | 'moderate' | 'stretched' {
+    const grossMonthlyIncome = (profile?.annualIncome ?? 100000) / 12
+    const fp = profile?.financial_picture
+    const downMid = fp?.down_payment_available
+      ? getDownPaymentMidpoint(fp.down_payment_available)
+      : 30000
+    const procMid = fp?.home_sale_proceeds && fp.is_homeowner
+      ? getProceedsMidpoint(fp.home_sale_proceeds)
+      : 0
+    const balance = Math.max(0, cityMedianPrice - downMid - procMid)
+    if (balance === 0) return 'comfortable'
+    const monthlyRate = 0.07 / 12
+    const payment = Math.round(
+      (balance * monthlyRate * Math.pow(1 + monthlyRate, 360)) /
+      (Math.pow(1 + monthlyRate, 360) - 1)
+    )
+    const tax = Math.round((cityMedianPrice * (cityTaxRate ?? 0.018)) / 12)
+    const pct = (payment + tax) / grossMonthlyIncome
+    if (pct <= 0.30) return 'comfortable'
+    if (pct <= 0.40) return 'moderate'
+    return 'stretched'
+  }
 
   useEffect(() => {
     const supabase = createClient()
@@ -207,7 +231,30 @@ export default function MM2Discover({ matches, profile, initialChecklist, initia
           <SectionLabel>
             {i === 0 ? 'Top Pick' : i === 1 ? 'Runner-Up' : 'Strong Alt'} — {match.location.name}
           </SectionLabel>
-          <FullReport match={match} profile={profile} rank={i} />
+          <div className="relative">
+            <FullReport match={match} profile={profile} rank={i} />
+            {(() => {
+              const status = getCityAffordabilityStatus(
+                match.location.housing.medianHomePrice,
+                match.location.housing.propertyTaxRate ?? 0.018
+              )
+              const dotColor = status === 'comfortable' ? '#22C55E'
+                             : status === 'moderate' ? '#F59E0B'
+                             : '#EF4444'
+              const dotLabel = status === 'comfortable' ? 'Comfortable'
+                             : status === 'moderate' ? 'Moderate'
+                             : 'Stretched'
+              return (
+                <div className="absolute top-4 right-4 flex items-center gap-1.5 px-2 py-1 rounded-full"
+                     style={{ backgroundColor: 'white', border: `1px solid ${dotColor}33`, boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
+                  <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: dotColor }} />
+                  <span className="text-[10px] font-semibold" style={{ color: dotColor }}>
+                    {dotLabel}
+                  </span>
+                </div>
+              )
+            })()}
+          </div>
         </section>
       ))}
 

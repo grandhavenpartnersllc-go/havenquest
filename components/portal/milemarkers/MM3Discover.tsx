@@ -35,6 +35,20 @@ const METRO_OPTIONS = [
   { label: 'San Antonio', value: 'San Antonio' },
 ]
 
+// Current market rate data — update quarterly
+// Source: Freddie Mac PMMS, May 28, 2026
+const RATE_MARKET_LOW = 6.25
+const RATE_MARKET_HIGH = 7.00
+const RATE_MARKET_AVG = 6.53
+const RATE_DATA_DATE = 'May 2026'
+const RATE_DEFAULT = 6.75
+
+function getRateZone(rate: number): 'low' | 'market' | 'high' {
+  if (rate < RATE_MARKET_LOW) return 'low'
+  if (rate <= RATE_MARKET_HIGH) return 'market'
+  return 'high'
+}
+
 const PROCEEDS_OPTIONS = [
   'Under $50,000',
   '$50,000 – $100,000',
@@ -64,7 +78,7 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
   )
   // interestRate is stored and displayed but does not affect ranking math.
   // matchingService.ts uses a hardcoded 7.0% rate. Full interest rate integration is Phase 2.
-  const [interestRate, setInterestRate] = useState<number>(7.0)
+  const [interestRate, setInterestRate] = useState<number>(RATE_DEFAULT)
 
   const [mustHaves, setMustHaves] = useState<(keyof LifestyleScores)[]>(
     profile?.mustHaves ?? []
@@ -460,8 +474,8 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
 
   const BUCKET_ORDER: BucketKey[] = ['unassigned', 'notPriorities', 'niceToHaves', 'mustHaves']
   const BUCKET_COLORS: Record<BucketKey, string> = {
-    unassigned: '#E5E7EB',
-    notPriorities: '#9CA3AF',
+    unassigned: '#6B7280',
+    notPriorities: '#1A5FA8',
     niceToHaves: '#4B7A5E',
     mustHaves: GOLD,
   }
@@ -676,8 +690,8 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
             {(() => {
               const topMetroLabel = METRO_OPTIONS.find(m => m.value === selectedMetro)?.label ?? 'Austin'
               return !sandboxTouched
-                ? `${topMetroLabel} is your top match — you can also explore other Texas metros below.`
-                : `Showing ${topMetroLabel} metro — adjust priorities or switch metros to explore.`
+                ? `${topMetroLabel} is your top match. Use the buttons above to see how your priorities and budget rank cities in other Texas metros.`
+                : `Showing ${topMetroLabel} cities ranked by your current priorities and budget.`
             })()}
           </p>
           {/* Affordability legend */}
@@ -838,23 +852,69 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
               <label className="text-xs font-semibold" style={{ color: WARM_DARK }}>
                 Rate assumption
               </label>
-              <span className="text-xs font-bold" style={{ color: GOLD }}>
+              <span
+                className="text-xs font-bold"
+                style={{
+                  color: getRateZone(interestRate) === 'market' ? '#22C55E'
+                       : getRateZone(interestRate) === 'low' ? '#9A8E82'
+                       : '#F59E0B',
+                }}
+              >
                 {interestRate.toFixed(2)}%
               </span>
             </div>
-            <input
-              type="range"
-              min={3.0}
-              max={10.0}
-              step={0.25}
-              value={interestRate}
-              onChange={e => { setSandboxTouched(true); setInterestRate(parseFloat(e.target.value)) }}
-              className="w-full accent-amber-600 mt-2"
-            />
-            <div className="flex justify-between text-[10px] mt-0.5" style={{ color: '#9A8E82' }}>
-              <span>3%</span>
-              <span>10%</span>
+
+            {/* Color-zoned slider track */}
+            <div className="relative mt-2 mb-1">
+              {/* Background zone track */}
+              <div className="w-full h-2 rounded-full overflow-hidden flex"
+                   style={{ backgroundColor: '#E5E7EB' }}>
+                {/* Low zone — gray */}
+                <div style={{ width: `${((RATE_MARKET_LOW - 3) / (10 - 3)) * 100}%`, backgroundColor: '#D1D5DB' }} />
+                {/* Market zone — green */}
+                <div style={{ width: `${((RATE_MARKET_HIGH - RATE_MARKET_LOW) / (10 - 3)) * 100}%`, backgroundColor: 'rgba(34,197,94,0.3)' }} />
+                {/* High zone — amber */}
+                <div style={{ flex: 1, backgroundColor: 'rgba(245,158,11,0.2)' }} />
+              </div>
+
+              {/* Actual range input overlaid */}
+              <input
+                type="range"
+                min={3.0}
+                max={10.0}
+                step={0.25}
+                value={interestRate}
+                onChange={e => { setSandboxTouched(true); setInterestRate(parseFloat(e.target.value)) }}
+                className="absolute inset-0 w-full opacity-0 cursor-pointer"
+                style={{ height: '8px' }}
+              />
+
+              {/* Custom thumb */}
+              <div
+                className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 border-white pointer-events-none"
+                style={{
+                  left: `calc(${((interestRate - 3) / (10 - 3)) * 100}% - 8px)`,
+                  backgroundColor: getRateZone(interestRate) === 'market' ? '#22C55E'
+                                 : getRateZone(interestRate) === 'low' ? '#9CA3AF'
+                                 : '#F59E0B',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                }}
+              />
             </div>
+
+            {/* Zone labels */}
+            <div className="flex justify-between text-[9px] mb-1">
+              <span style={{ color: '#9A8E82' }}>3%</span>
+              <span style={{ color: '#22C55E', fontWeight: 600 }}>
+                ↑ Current market {RATE_MARKET_LOW}%–{RATE_MARKET_HIGH}%
+              </span>
+              <span style={{ color: '#9A8E82' }}>10%</span>
+            </div>
+
+            {/* Market rate note */}
+            <p className="text-[9px] leading-relaxed" style={{ color: '#9A8E82' }}>
+              Freddie Mac avg: {RATE_MARKET_AVG}% · {RATE_DATA_DATE} · Updated quarterly
+            </p>
           </div>
         </div>
       </div>
@@ -930,8 +990,8 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
         <div className="grid mb-2" style={{ gridTemplateColumns: '150px 1fr 1fr 1fr 1fr', gap: '4px' }}>
           <div />
           {[
-            { label: 'Unassigned',   color: '#C5BFB8' },
-            { label: 'Nice to Have', color: '#9A8E82' },
+            { label: 'Unassigned',   color: '#6B7280' },
+            { label: 'Nice to Have', color: '#1A5FA8' },
             { label: 'Important',    color: '#4B7A5E' },
             { label: 'Must Have',    color: GOLD },
           ].map(col => (
@@ -1030,7 +1090,7 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
                           const Icon = CATEGORY_ICONS[cat.key]
                           return isActive
                             ? <Icon size={14} strokeWidth={2} style={{ color: '#FFFFFF' }} />
-                            : <span style={{ fontSize: '12px', color: '#C5BFB8', opacity: 0.6 }}>+</span>
+                            : <span style={{ fontSize: '12px', color: '#9A8E82', opacity: 0.8 }}>+</span>
                         })()}
                       </button>
                     </div>
