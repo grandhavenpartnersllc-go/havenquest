@@ -89,6 +89,7 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
   const [cityPopup, setCityPopup] = useState<CityMatch | null>(null)
   const [emailSent, setEmailSent] = useState(false)
   const [sendingEmail, setSendingEmail] = useState(false)
+  const [selectedCityIndex, setSelectedCityIndex] = useState<number>(0)
 
   const [selectedMetro, setSelectedMetro] = useState<string>('')
 
@@ -111,6 +112,10 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
     setDownPayment(profile.financial_picture.down_payment_available ?? '$20,000 – $50,000')
     setProceeds(profile.financial_picture.home_sale_proceeds ?? null)
   }, [profile])
+
+  useEffect(() => {
+    setSelectedCityIndex(0)
+  }, [selectedMetro, mustHaves, niceToHaves, notPriorities])
 
   useEffect(() => {
     if (!profile || selectedMetro !== '') return
@@ -178,7 +183,7 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
   const sandboxMatches = getTopMatches(sandboxProfile, metroCities, 5)
 
   // Computed financial outputs — recalculate on every render, client-side
-  const topCity = sandboxMatches[0]?.location
+  const topCity = sandboxMatches[selectedCityIndex]?.location ?? sandboxMatches[0]?.location
   const topCityPrice = topCity?.housing?.medianHomePrice ?? 341800
 
   const downMid = getDownPaymentMidpoint(downPayment)
@@ -618,16 +623,18 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
             {sandboxMatches.map((match, i) => (
               <div
                 key={match.location.id}
-                className="rounded-xl p-3"
+                className="rounded-xl p-3 cursor-pointer transition-all"
+                onClick={() => setSelectedCityIndex(i)}
                 style={{
-                  backgroundColor: '#F7F6F3',
-                  borderLeft: i === 0 ? `3px solid ${GOLD}` : '3px solid transparent',
+                  backgroundColor: i === selectedCityIndex ? '#FBF3E3' : '#F7F6F3',
+                  borderLeft: i === selectedCityIndex ? `3px solid ${GOLD}` : '3px solid transparent',
+                  outline: i === selectedCityIndex ? '1px solid rgba(184,145,42,0.3)' : 'none',
                 }}
               >
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-bold"
-                          style={{ color: i === 0 ? GOLD : '#9A8E82' }}>
+                          style={{ color: i === selectedCityIndex ? GOLD : '#9A8E82' }}>
                       #{i + 1}
                     </span>
                     <span className="text-sm font-bold" style={{ color: WARM_DARK }}>
@@ -657,6 +664,12 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
                     Learn more →
                   </button>
                 </div>
+                {i === selectedCityIndex && (
+                  <p className="text-[9px] font-semibold mt-1"
+                     style={{ color: GOLD, letterSpacing: '0.06em' }}>
+                    ↑ Financial panel showing this city
+                  </p>
+                )}
               </div>
             ))}
           </div>
@@ -743,7 +756,8 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
         </p>
 
         {/* Bucket counter bar */}
-        <div className="grid grid-cols-4 gap-2 mb-6">
+        <div className="grid mb-6" style={{ gridTemplateColumns: '150px 1fr 1fr 1fr 1fr', gap: '4px' }}>
+          <div /> {/* label column spacer */}
           {[
             { key: 'unassigned',   label: 'Unassigned',  count: unassigned.length,   max: null },
             { key: 'notPriorities',label: 'Nice to Have',count: notPriorities.length,max: null },
