@@ -92,6 +92,26 @@ export default function MM3Discover({ profile }: MM3DiscoverProps) {
   const [flashBucket, setFlashBucket] = useState<string | null>(null)
 
   useEffect(() => {
+    if (!profile) return
+    setMustHaves(profile.mustHaves ?? [])
+    setNiceToHaves(profile.niceToHaves ?? [])
+    setNotPriorities(profile.notPriorities ?? [])
+    setUnassigned(
+      ALL_CATEGORY_KEYS.filter(k =>
+        !profile.mustHaves.includes(k) &&
+        !profile.niceToHaves.includes(k) &&
+        !profile.notPriorities.includes(k)
+      )
+    )
+  }, [profile])
+
+  useEffect(() => {
+    if (!profile?.financial_picture) return
+    setDownPayment(profile.financial_picture.down_payment_available ?? '$20,000 – $50,000')
+    setProceeds(profile.financial_picture.home_sale_proceeds ?? null)
+  }, [profile])
+
+  useEffect(() => {
     const supabase = createClient()
     supabase.auth.getSession().then(({ data: { session: s } }) => {
       if (!s?.user?.email) return
