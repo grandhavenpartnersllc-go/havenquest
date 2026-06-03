@@ -37,6 +37,21 @@ const PROCEEDS_OPTIONS = [
 
 type BucketKey = 'mustHaves' | 'niceToHaves' | 'notPriorities' | 'unassigned'
 
+// Slider positions: 0=Unassigned, 1=Nice to Have, 2=Important, 3=Must Have
+const BUCKET_TO_POSITION: Record<BucketKey, number> = {
+  unassigned: 0,
+  notPriorities: 1,
+  niceToHaves: 2,
+  mustHaves: 3,
+}
+
+const POSITION_TO_BUCKET: Record<number, BucketKey> = {
+  0: 'unassigned',
+  1: 'notPriorities',
+  2: 'niceToHaves',
+  3: 'mustHaves',
+}
+
 interface MM3DiscoverProps {
   matches: CityMatch[]
   profile: UserProfile | null
@@ -74,6 +89,7 @@ export default function MM3Discover({ profile }: MM3DiscoverProps) {
 
   const [committed, setCommitted] = useState(false)
   const [committing, setCommitting] = useState(false)
+  const [flashBucket, setFlashBucket] = useState<string | null>(null)
 
   useEffect(() => {
     const supabase = createClient()
@@ -120,17 +136,38 @@ export default function MM3Discover({ profile }: MM3DiscoverProps) {
 
   const sandboxMatches = getTopMatches(sandboxProfile, getAllCities(), 5)
 
-  function moveCategory(key: keyof LifestyleScores, from: BucketKey, to: BucketKey) {
-    const bucketSetters: Record<BucketKey, React.Dispatch<React.SetStateAction<(keyof LifestyleScores)[]>>> = {
+  function getBucket(key: keyof LifestyleScores): BucketKey {
+    if (mustHaves.includes(key)) return 'mustHaves'
+    if (niceToHaves.includes(key)) return 'niceToHaves'
+    if (notPriorities.includes(key)) return 'notPriorities'
+    return 'unassigned'
+  }
+
+  function handleSliderChange(key: keyof LifestyleScores, newPosition: number) {
+    const targetBucket = POSITION_TO_BUCKET[newPosition]
+    const currentBucket = getBucket(key)
+
+    if (targetBucket === currentBucket) return
+
+    if (targetBucket === 'mustHaves' && mustHaves.length >= 4) {
+      setFlashBucket('mustHaves')
+      setTimeout(() => setFlashBucket(null), 600)
+      return
+    }
+    if (targetBucket === 'niceToHaves' && niceToHaves.length >= 5) {
+      setFlashBucket('niceToHaves')
+      setTimeout(() => setFlashBucket(null), 600)
+      return
+    }
+
+    const setters: Record<BucketKey, React.Dispatch<React.SetStateAction<(keyof LifestyleScores)[]>>> = {
       mustHaves: setMustHaves,
       niceToHaves: setNiceToHaves,
       notPriorities: setNotPriorities,
       unassigned: setUnassigned,
     }
-    if (to === 'mustHaves' && mustHaves.length >= 4) return
-    if (to === 'niceToHaves' && niceToHaves.length >= 5) return
-    bucketSetters[from](prev => prev.filter(k => k !== key))
-    bucketSetters[to](prev => [...prev, key])
+    setters[currentBucket](prev => prev.filter(k => k !== key))
+    setters[targetBucket](prev => [...prev, key])
   }
 
   async function handleCommit() {
@@ -396,70 +433,139 @@ export default function MM3Discover({ profile }: MM3DiscoverProps) {
         </div>
       </div>
 
-      {/* Section 4 — Priority Buckets */}
+      {/* Section 4 — Priority Sliders */}
       <div className="mb-8">
         <p className="text-[10px] font-bold uppercase mb-2"
            style={{ color: GOLD, letterSpacing: '0.18em' }}>
           Adjust Your Priorities
         </p>
-        <p className="text-xs mb-4" style={{ color: '#9A8E82' }}>
-          Move categories between buckets and watch your city rankings update instantly.
-          Must Have counts 3×. Important to Me counts 2×. Would Be Nice counts 1×.
+        <p className="text-xs mb-5" style={{ color: '#9A8E82' }}>
+          Slide each category to assign its importance. Rankings update instantly.
+          Move right to increase priority — move left to decrease.
         </p>
 
-        {([
-          { key: 'mustHaves',    label: 'Must Have',    max: 4,    current: mustHaves,    color: '#B8912A' },
-          { key: 'niceToHaves',  label: 'Important',    max: 5,    current: niceToHaves,  color: '#4B7A5E' },
-          { key: 'notPriorities',label: 'Nice to Have', max: null, current: notPriorities,color: '#6B7280' },
-          { key: 'unassigned',   label: 'Unassigned',   max: null, current: unassigned,   color: '#9A8E82' },
-        ] as { key: BucketKey; label: string; max: number | null; current: (keyof LifestyleScores)[]; color: string }[]).map(bucket => (
-          <div key={bucket.key} className="mb-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold" style={{ color: bucket.color }}>
-                {bucket.label}{bucket.max && ` (max ${bucket.max})`}
-              </span>
-              <span className="text-xs" style={{ color: '#9A8E82' }}>
-                {bucket.current.length} selected
-              </span>
-            </div>
-            <div className="flex flex-wrap gap-2 min-h-10 p-2 rounded-xl"
-                 style={{ backgroundColor: '#F7F6F3', border: '1.5px dashed #E5E7EB' }}>
-              {bucket.current.map(key => {
-                const cat = LIFESTYLE_CATEGORIES.find(c => c.key === key)!
-                return (
-                  <div key={key}
-                       className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
-                       style={{ backgroundColor: 'white', border: `1px solid ${bucket.color}44`, color: WARM_DARK }}>
-                    <span>{cat.icon}</span>
-                    <span>{cat.label}</span>
-                    <div className="flex gap-0.5 ml-1">
-                      {bucket.key !== 'mustHaves' && (
-                        <button
-                          onClick={() => moveCategory(key, bucket.key, 'mustHaves')}
-                          disabled={mustHaves.length >= 4}
-                          className="text-[10px] px-1 rounded hover:bg-gray-100 disabled:opacity-30"
-                          title="Move to Must Have"
-                        >↑M</button>
-                      )}
-                      {bucket.key !== 'unassigned' && (
-                        <button
-                          onClick={() => moveCategory(key, bucket.key, 'unassigned')}
-                          className="text-[10px] px-1 rounded hover:bg-gray-100"
-                          title="Move to Unassigned"
-                        >✕</button>
-                      )}
-                    </div>
-                  </div>
-                )
-              })}
-              {bucket.current.length === 0 && (
-                <span className="text-xs italic" style={{ color: '#C5BFB8' }}>
-                  {bucket.key === 'unassigned' ? 'No unassigned categories' : 'Drop categories here'}
-                </span>
-              )}
-            </div>
-          </div>
-        ))}
+        {/* Bucket counter bar */}
+        <div className="grid grid-cols-4 gap-2 mb-6">
+          {[
+            { key: 'mustHaves',    label: 'Must Have',   count: mustHaves.length,    max: 4    },
+            { key: 'niceToHaves',  label: 'Important',   count: niceToHaves.length,  max: 5    },
+            { key: 'notPriorities',label: 'Nice to Have',count: notPriorities.length,max: null },
+            { key: 'unassigned',   label: 'Unassigned',  count: unassigned.length,   max: null },
+          ].map(bucket => {
+            const isFull = bucket.max !== null && bucket.count >= bucket.max
+            const isFlashing = flashBucket === bucket.key
+            return (
+              <div
+                key={bucket.key}
+                className="rounded-xl p-3 text-center transition-all"
+                style={{
+                  backgroundColor: isFlashing ? '#FEE2E2' : isFull ? '#FEF3C7' : '#F7F6F3',
+                  border: isFlashing ? '1.5px solid #EF4444' : isFull ? '1.5px solid #F59E0B' : '1.5px solid transparent',
+                  transform: isFlashing ? 'scale(1.02)' : 'scale(1)',
+                }}
+              >
+                <p
+                  className="text-[10px] font-bold uppercase mb-1"
+                  style={{
+                    color: isFlashing ? '#DC2626' : isFull ? '#B45309' : '#9A8E82',
+                    letterSpacing: '0.08em',
+                  }}
+                >
+                  {bucket.label}
+                </p>
+                <p
+                  className="text-lg font-bold tabular-nums"
+                  style={{ color: isFlashing ? '#DC2626' : isFull ? '#B45309' : WARM_DARK }}
+                >
+                  {bucket.count}
+                  {bucket.max && (
+                    <span className="text-xs font-normal" style={{ color: '#9A8E82' }}>
+                      /{bucket.max}
+                    </span>
+                  )}
+                </p>
+                {isFull && !isFlashing && (
+                  <p className="text-[9px] font-semibold mt-0.5" style={{ color: '#B45309' }}>
+                    FULL
+                  </p>
+                )}
+                {isFlashing && (
+                  <p className="text-[9px] font-semibold mt-0.5" style={{ color: '#DC2626' }}>
+                    MAX REACHED
+                  </p>
+                )}
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Slider legend */}
+        <div className="flex justify-between text-[10px] font-semibold uppercase mb-3 px-1"
+             style={{ color: '#9A8E82', letterSpacing: '0.08em' }}>
+          <span>Unassigned</span>
+          <span>Nice to Have</span>
+          <span>Important</span>
+          <span>Must Have</span>
+        </div>
+
+        {/* Category sliders */}
+        <div className="space-y-4">
+          {LIFESTYLE_CATEGORIES.map(cat => {
+            const currentBucket = getBucket(cat.key)
+            const position = BUCKET_TO_POSITION[currentBucket]
+
+            return (
+              <div key={cat.key} className="flex items-center gap-3">
+                <div className="flex items-center gap-2 w-36 shrink-0">
+                  <span className="text-base">{cat.icon}</span>
+                  <span className="text-xs font-semibold truncate" style={{ color: WARM_DARK }}>
+                    {cat.label}
+                  </span>
+                </div>
+
+                <div className="flex-1">
+                  <input
+                    type="range"
+                    min={0}
+                    max={3}
+                    step={1}
+                    value={position}
+                    onChange={e => handleSliderChange(cat.key, parseInt(e.target.value))}
+                    className="w-full h-2 rounded-full appearance-none cursor-pointer"
+                    style={{
+                      background: position === 0
+                        ? '#E5E7EB'
+                        : position === 1
+                        ? `linear-gradient(to right, #9CA3AF ${(position/3)*100}%, #E5E7EB ${(position/3)*100}%)`
+                        : position === 2
+                        ? `linear-gradient(to right, #4B7A5E ${(position/3)*100}%, #E5E7EB ${(position/3)*100}%)`
+                        : `linear-gradient(to right, ${GOLD} ${(position/3)*100}%, #E5E7EB ${(position/3)*100}%)`,
+                      accentColor: position === 3 ? GOLD : position === 2 ? '#4B7A5E' : '#9CA3AF',
+                    }}
+                  />
+                </div>
+
+                <div className="w-20 shrink-0 text-right">
+                  <span
+                    className="text-[10px] font-bold uppercase"
+                    style={{
+                      color: position === 3 ? GOLD
+                           : position === 2 ? '#4B7A5E'
+                           : position === 1 ? '#6B7280'
+                           : '#C5BFB8',
+                      letterSpacing: '0.06em',
+                    }}
+                  >
+                    {position === 3 ? 'Must Have'
+                   : position === 2 ? 'Important'
+                   : position === 1 ? 'Nice to Have'
+                   : 'Unassigned'}
+                  </span>
+                </div>
+              </div>
+            )
+          })}
+        </div>
       </div>
 
       {/* Section 5 — Commit Button */}
