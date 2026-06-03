@@ -282,7 +282,11 @@ export default function MM2Discover({ matches, profile, initialChecklist, initia
           Explored enough to know you&apos;re ready to go deeper?
         </p>
         <button
-          onClick={allChecked ? onAdvanceToDiscover : undefined}
+          onClick={allChecked ? () => {
+            const supabase = createClient()
+            supabase.from('users').update({ current_milemarker: 3 }).eq('email', userEmailRef.current).then(() => {})
+            onAdvanceToDiscover()
+          } : undefined}
           disabled={!allChecked}
           className="w-full py-3 rounded-xl font-bold text-sm"
           style={{

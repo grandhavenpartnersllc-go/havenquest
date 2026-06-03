@@ -278,7 +278,7 @@ export default function StarterPortal() {
             onboardingAcknowledged={onboardingAcknowledged}
             onAcknowledge={handleAcknowledge}
             onAdvanceToDiscover={() => setActiveMileMarker(2)}
-            onAdvanceFromMM2={() => setActiveMileMarker(3)}
+            onAdvanceFromMM2={() => { setCurrentMileMarker(3); setActiveMileMarker(3) }}
             onAdvanceToConnect={() => setActiveMileMarker(4)}
             initialChecklist={initialChecklist}
             initialNotes={initialNotes}
