@@ -139,7 +139,6 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
 
   useEffect(() => {
     setSelectedCityIndex(0)
-    setSandboxTouched(false)
   }, [selectedMetro])
 
   useEffect(() => {
@@ -208,8 +207,14 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
 
   const sandboxMatches = getTopMatches(activeProfile, metroCities, 5)
 
+  // On first load, show the MM2 saved matches so MM3 opens as a continuation of MM2.
+  // The moment the user adjusts any slider, priority, or metro tab, the live sandbox takes over.
+  const displayedMatches = (!sandboxTouched && matches.length > 0)
+    ? matches
+    : sandboxMatches
+
   // Computed financial outputs — recalculate on every render, client-side
-  const topCity = sandboxMatches[selectedCityIndex]?.location ?? sandboxMatches[0]?.location
+  const topCity = displayedMatches[selectedCityIndex]?.location ?? displayedMatches[0]?.location
   const topCityPrice = topCity?.housing?.medianHomePrice ?? 341800
 
   const downMid = getDownPaymentMidpoint(downPayment)
@@ -544,9 +549,9 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
                style={{ color: GOLD, letterSpacing: '0.18em' }}>
               Your financial picture
             </p>
-            {(topCity?.name || sandboxMatches[0]?.location.name) && (
+            {(topCity?.name || displayedMatches[0]?.location.name) && (
               <p className="text-sm font-semibold mt-0.5" style={{ color: '#B8912A' }}>
-                {topCity?.name ?? sandboxMatches[0]?.location.name}
+                {topCity?.name ?? displayedMatches[0]?.location.name}
               </p>
             )}
           </div>
@@ -711,7 +716,7 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
                 return (
                   <button
                     key={metro.value}
-                    onClick={() => setSelectedMetro(metro.value)}
+                    onClick={() => { setSandboxTouched(true); setSelectedMetro(metro.value) }}
                     className="px-2 py-0.5 rounded-full text-[10px] font-bold transition-all"
                     style={{
                       backgroundColor: isActive ? GOLD : 'transparent',
@@ -753,7 +758,7 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
             <span className="text-[9px]" style={{ color: '#C5BFB8' }}>— based on your income</span>
           </div>
           <div className="space-y-2">
-            {sandboxMatches.map((match, i) => (
+            {displayedMatches.map((match, i) => (
               <div
                 key={match.location.id}
                 className="rounded-xl p-3 cursor-pointer transition-all"
