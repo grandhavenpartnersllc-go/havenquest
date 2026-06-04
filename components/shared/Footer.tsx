@@ -11,14 +11,14 @@ export default function Footer() {
               Haven<span className="text-blue-400">Quest</span>
             </p>
             <p className="text-sm leading-relaxed text-white/40">
-              Relocation intelligence with a human touch.
+              Your guide to Texas, start to finish.
             </p>
           </div>
 
           <div>
             <p className="text-white/70 text-xs font-bold uppercase tracking-widest mb-4">Product</p>
             <ul className="space-y-2.5 text-sm">
-              <li><Link href="/explore" className="hover:text-white/80 transition-colors">Explore Texas</Link></li>
+              <li><Link href="/#how-it-works" className="hover:text-white/80 transition-colors">How It Works</Link></li>
               <li><Link href="/begin" className="hover:text-white/80 transition-colors">Begin My Journey</Link></li>
               <li><Link href="/portal" className="hover:text-white/80 transition-colors">Your Portal</Link></li>
             </ul>
