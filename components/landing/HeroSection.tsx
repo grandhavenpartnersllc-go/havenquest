@@ -39,18 +39,24 @@ export default function HeroSection() {
         </div>
 
         {/* Headline */}
-        <h1 className="font-bold tracking-tight mb-4 leading-[1.1]">
+        <h1 className="tracking-tight mb-4 leading-none">
           <span
-            className="block text-white"
-            style={{ fontSize: 'clamp(42px, 7vw, 84px)' }}
+            className="block italic"
+            style={{
+              fontSize: 'clamp(22px, 3.2vw, 42px)',
+              fontFamily: '"Times New Roman", Georgia, serif',
+              fontWeight: 300,
+              color: 'rgba(255,255,255,0.6)',
+              marginBottom: '0.05em',
+            }}
           >
-            So, you&apos;re Choosin&apos; Texas.
+            So, you&apos;re
           </span>
           <span
-            className="block gradient-text-light mt-2"
-            style={{ fontSize: 'clamp(22px, 3.5vw, 44px)' }}
+            className="block font-bold gradient-text-light"
+            style={{ fontSize: 'clamp(52px, 9vw, 108px)' }}
           >
-            Move with confidence. Arrive with peace of mind.
+            Choosin&apos; Texas.
           </span>
         </h1>
 
