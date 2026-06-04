@@ -15,18 +15,26 @@ import { initSession, updateSessionStep } from '../../services/quizSessionServic
 
 const STEPS = ['Income', 'Household & Dream Home', 'Financial Picture', 'Priorities']
 
-const STEP_HEADLINES = [
-  "Let's find your Texas city",
-  'Tell us about your household and dream home',
-  "Now let's talk about your purchasing power.",
-  'What matters most to you?',
-]
-
 type PartialProfile = Partial<UserProfile>
 
 export default function ExplorePage() {
   const router = useRouter()
   const [step, setStep] = useState(0)
+  const firstName = typeof window !== 'undefined' ? sessionStorage.getItem('hq_first_name') || '' : ''
+
+  const STEP_HEADLINES = [
+    firstName ? `Hi ${firstName}, let's find your Texas community.` : `Let's find your Texas community.`,
+    'Tell us about your household and dream home.',
+    "Now let's talk about your purchasing power.",
+    firstName ? `${firstName}, this is the heart of it.` : 'What matters most to you?',
+  ]
+
+  const STEP_SUBTEXTS = [
+    'Your income helps us match you to places where your lifestyle is genuinely affordable — not just technically possible.',
+    'The size of your household and the type of home you want shapes which communities fit best — schools, space, and neighborhood feel all come into play.',
+    'This helps us show you what homeownership actually looks like in each community — real numbers, not estimates pulled from thin air.',
+    'Tell us what matters most in your next home and community. This is what separates a good match from the right match.',
+  ]
   const [profile, setProfile] = useState<PartialProfile>({})
   const [sessionId, setSessionId] = useState<string>('')
 
@@ -90,7 +98,7 @@ export default function ExplorePage() {
               Step {step + 1} of {STEPS.length} · {STEPS[step]}
             </p>
             <h1 className="text-2xl font-bold text-white tracking-tight">{STEP_HEADLINES[step]}</h1>
-            <p className="text-white/40 text-sm mt-1.5">Matching you to the right Texas city</p>
+            <p className="text-white/40 text-sm mt-1.5">{STEP_SUBTEXTS[step]}</p>
           </div>
         </div>
 
