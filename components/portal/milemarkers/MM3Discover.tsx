@@ -30,10 +30,11 @@ const DOWN_PAYMENT_OPTIONS = [
 ]
 
 const METRO_OPTIONS = [
-  { label: 'Austin',      value: 'Austin' },
-  { label: 'DFW',         value: 'Dallas' },
-  { label: 'Houston',     value: 'Houston' },
-  { label: 'San Antonio', value: 'San Antonio' },
+  { label: 'State',        value: 'State' },
+  { label: 'Austin',       value: 'Austin' },
+  { label: 'DFW',          value: 'Dallas' },
+  { label: 'Houston',      value: 'Houston' },
+  { label: 'San Antonio',  value: 'San Antonio' },
 ]
 
 // Current market rate data — update quarterly
@@ -191,9 +192,9 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
     },
   }
 
-  const metroCities = selectedMetro
-    ? getAllCities().filter(city => city.metroUsed.includes(selectedMetro))
-    : getAllCities()
+  const metroCities = (!selectedMetro || selectedMetro === 'State')
+    ? getAllCities()
+    : getAllCities().filter(city => city.metroUsed.includes(selectedMetro))
 
   const activeProfile: UserProfile = !sandboxTouched && profile
     ? {
@@ -734,6 +735,9 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
           <p className="text-xs mb-2" style={{ color: '#9A8E82' }}>
             {(() => {
               if (!selectedMetro) return 'Select a metro above to explore how your priorities rank cities in each market.'
+              if (selectedMetro === 'State') return !sandboxTouched
+                ? 'Showing your top matches across all 101 Texas communities.'
+                : 'Showing all 101 Texas communities ranked by your current priorities and budget.'
               const metroLabel = METRO_OPTIONS.find(m => m.value === selectedMetro)?.label
               return !sandboxTouched
                 ? `${metroLabel} is your top match. Use the buttons above to see how your priorities and budget rank cities in other Texas metros.`

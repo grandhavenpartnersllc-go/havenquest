@@ -48,7 +48,7 @@ export default function SessionResultsPage({ params }: { params: Promise<{ sessi
     const cachedMatches = sessionStorage.getItem(SESSION_MATCHES_KEY)
     const topMatches: CityMatch[] = cachedMatches
       ? JSON.parse(cachedMatches)
-      : getTopMatches(prof, cities, 3)
+      : getTopMatches(prof, cities, 4)
     if (!cachedMatches) sessionStorage.setItem(SESSION_MATCHES_KEY, JSON.stringify(topMatches))
     setMatches(topMatches)
 
