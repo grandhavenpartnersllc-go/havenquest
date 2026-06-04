@@ -15,12 +15,9 @@ export default function Header() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-6 text-sm text-white/55">
-          <Link href="/explore-texas" className="hover:text-white transition-colors">Explore Texas</Link>
-          <Link href="/metro-start" className="hover:text-white transition-colors">Metro Mode</Link>
-          <Link href="/methodology" className="hover:text-white transition-colors">Methodology</Link>
           <Link href="/portal" className="hover:text-white transition-colors">My Portal</Link>
           <Link
-            href="/journey"
+            href="/begin"
             className="bg-white text-gray-950 px-4 py-2 rounded-lg text-sm font-bold hover:bg-gray-100 transition-colors"
             style={{ boxShadow: '0 0 0 1px rgba(255,255,255,0.12)' }}
           >
@@ -39,12 +36,9 @@ export default function Header() {
 
       {open && (
         <div className="md:hidden bg-[#08101C] border-t border-white/8 px-4 py-4 flex flex-col gap-4 text-sm">
-          <Link href="/explore-texas" className="text-white/60 hover:text-white transition-colors" onClick={() => setOpen(false)}>Explore Texas</Link>
-          <Link href="/metro-start" className="text-white/60 hover:text-white transition-colors" onClick={() => setOpen(false)}>Metro Mode</Link>
-          <Link href="/methodology" className="text-white/60 hover:text-white transition-colors" onClick={() => setOpen(false)}>Methodology</Link>
           <Link href="/portal" className="text-white/60 hover:text-white transition-colors" onClick={() => setOpen(false)}>My Portal</Link>
           <Link
-            href="/journey"
+            href="/begin"
             className="bg-white text-gray-950 px-4 py-3 rounded-xl font-bold text-center"
             onClick={() => setOpen(false)}
           >

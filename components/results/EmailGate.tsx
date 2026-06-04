@@ -16,7 +16,10 @@ interface EmailGateProps {
 }
 
 export default function EmailGate({ matches, profile, sessionId, onSuccess, onClose, storedSession }: EmailGateProps) {
-  const [firstName, setFirstName] = useState(storedSession?.firstName ?? '')
+  const [firstName, setFirstName] = useState(
+    storedSession?.firstName ??
+    (typeof window !== 'undefined' ? sessionStorage.getItem('hq_first_name') ?? '' : '')
+  )
   const [email, setEmail] = useState(storedSession?.email ?? '')
   const [phone, setPhone] = useState('')
   const [loading, setLoading] = useState(false)
