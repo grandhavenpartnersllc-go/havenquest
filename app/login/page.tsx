@@ -57,10 +57,24 @@ function LoginPageContent() {
       })
       console.log('[login] Cookie response status:', cookieRes.status)
 
+      // Pre-fetch real user data so the portal can render immediately
+      let firstName = email.split('@')[0]
+      let currentMileMarker = 2
+      try {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('first_name, current_milemarker')
+          .eq('email', email.toLowerCase())
+          .single()
+        if (userData?.first_name) firstName = userData.first_name
+        if (userData?.current_milemarker) currentMileMarker = userData.current_milemarker
+      } catch {}
+
       localStorage.setItem(LOCAL_SESSION_KEY, JSON.stringify({
         userId: data.user.id,
-        firstName: email.split('@')[0],
+        firstName,
         email: email.toLowerCase(),
+        currentMileMarker,
         createdAt: new Date().toISOString(),
       }))
 

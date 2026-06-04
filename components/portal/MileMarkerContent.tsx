@@ -95,12 +95,16 @@ export default function MileMarkerContent({
         )
       }
       if (selectedMileMarker === currentMileMarker) {
+        const topMetro = matches[0]?.location.metroUsed ?? ''
+        const initialMetro = ['Dallas', 'Houston', 'San Antonio', 'Austin'].find(v => topMetro.includes(v))
         return (
           <MM3Discover
             matches={matches}
             profile={profile}
             session={session}
             onAdvanceToConnect={onAdvanceToConnect}
+            initialMetro={initialMetro}
+            initialCityIndex={0}
           />
         )
       }

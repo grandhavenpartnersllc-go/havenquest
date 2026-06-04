@@ -10,7 +10,7 @@ import HouseholdForm from '../../components/form/HouseholdForm'
 import FinancialPictureStep from '../../components/quiz/FinancialPictureStep'
 import PrioritySelector from '../../components/form/PrioritySelector'
 import { UserProfile, BuyerProfile, LifestyleScores, FinancialPicture } from '../../types'
-import { SESSION_PROFILE_KEY } from '../../utils/constants'
+import { SESSION_PROFILE_KEY, SESSION_MATCHES_KEY } from '../../utils/constants'
 import { initSession, updateSessionStep } from '../../services/quizSessionService'
 
 const STEPS = ['Income', 'Household & Dream Home', 'Financial Picture', 'Priorities']
@@ -75,6 +75,7 @@ export default function ExplorePage() {
     }
     sessionStorage.setItem(SESSION_PROFILE_KEY, JSON.stringify(finalProfile))
     sessionStorage.removeItem('hq_metro')
+  sessionStorage.removeItem(SESSION_MATCHES_KEY)
     updateSessionStep(sessionId, 4, { mustHaves, niceToHaves, notPriorities })
     router.push(`/results/${sessionId}`)
   }

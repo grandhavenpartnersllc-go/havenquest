@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { CityMatch, UserProfile, UserSession, SandboxProfile, LifestyleScores } from '../../../types'
 import { LIFESTYLE_CATEGORIES } from '../../../utils/constants'
 import { CATEGORY_ICONS } from '../../../utils/categoryIcons'
@@ -67,9 +68,12 @@ interface MM3DiscoverProps {
   profile: UserProfile | null
   session: UserSession
   onAdvanceToConnect: () => void
+  initialMetro?: string
+  initialCityIndex?: number
 }
 
-export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
+export default function MM3Discover({ matches, profile, session, initialMetro, initialCityIndex }: MM3DiscoverProps) {
+  const router = useRouter()
   const [downPayment, setDownPayment] = useState<string>(
     profile?.financial_picture?.down_payment_available ?? '$20,000 – $50,000'
   )
@@ -103,7 +107,7 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
   const [cityPopup, setCityPopup] = useState<CityMatch | null>(null)
   const [emailSent, setEmailSent] = useState(false)
   const [sendingEmail, setSendingEmail] = useState(false)
-  const [selectedCityIndex, setSelectedCityIndex] = useState<number>(0)
+  const [selectedCityIndex, setSelectedCityIndex] = useState(initialCityIndex ?? 0)
   const [sandboxTouched, setSandboxTouched] = useState(false)
   const [preferredCity, setPreferredCity] = useState<string | null>(null)
 
@@ -139,21 +143,10 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
   }, [selectedMetro])
 
   useEffect(() => {
-    if (!profile || selectedMetro !== '') return
-    const topMatch = getTopMatches(
-      {
-        ...profile,
-        mustHaves: profile.mustHaves ?? [],
-        niceToHaves: profile.niceToHaves ?? [],
-        notPriorities: profile.notPriorities ?? [],
-      },
-      getAllCities(),
-      1
-    )[0]
-    const metro = topMatch?.location.metroUsed ?? ''
-    const match = METRO_OPTIONS.find(m => metro.includes(m.label))
-    setSelectedMetro(match?.value ?? 'Austin')
-  }, [profile])
+    if (initialMetro && selectedMetro === '') {
+      setSelectedMetro(initialMetro)
+    }
+  }, [initialMetro, matches])
 
   useEffect(() => {
     const supabase = createClient()
@@ -500,16 +493,63 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
         </p>
       </div>
 
+      {/* Anchor — Your Global Top Matches */}
+      {matches.length > 0 && (
+        <div className="mb-6 rounded-xl p-4"
+             style={{ backgroundColor: CARD_BG, boxShadow: CARD_SHADOW }}>
+          <p className="text-[10px] font-bold uppercase mb-0.5"
+             style={{ color: GOLD, letterSpacing: '0.18em' }}>
+            Your Top Matches
+          </p>
+          <p className="text-xs mb-3" style={{ color: '#9A8E82' }}>
+            From your full assessment of all 101 Texas communities
+          </p>
+          <div className="space-y-2 mb-3">
+            {matches.slice(0, 3).map((match, i) => (
+              <div key={match.location.id}
+                   className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold w-4 shrink-0"
+                        style={{ color: i === 0 ? GOLD : '#9A8E82' }}>
+                    #{i + 1}
+                  </span>
+                  <span className="text-sm font-semibold" style={{ color: WARM_DARK }}>
+                    {match.location.name}
+                  </span>
+                  <span className="text-xs" style={{ color: '#9A8E82' }}>
+                    {match.location.metroUsed}
+                  </span>
+                </div>
+                <span className="text-xs font-bold tabular-nums"
+                      style={{ color: i === 0 ? GOLD : '#9A8E82' }}>
+                  {match.matchScore}%
+                </span>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs leading-relaxed" style={{ color: '#9A8E82' }}>
+            Use the explorer below to dig deeper into any metro and see how cities rank by your current priorities.
+          </p>
+        </div>
+      )}
+
       {/* Section 2 — Split Dashboard Panel */}
       <div className="grid grid-cols-2 gap-3 mb-3">
 
         {/* LEFT — Financial Summary */}
         <div className="rounded-xl p-4"
              style={{ backgroundColor: CARD_BG, boxShadow: CARD_SHADOW }}>
-          <p className="text-[10px] font-bold uppercase mb-3"
-             style={{ color: GOLD, letterSpacing: '0.18em' }}>
-            Your financial picture
-          </p>
+          <div className="mb-3">
+            <p className="text-[10px] font-bold uppercase"
+               style={{ color: GOLD, letterSpacing: '0.18em' }}>
+              Your financial picture
+            </p>
+            {(topCity?.name || sandboxMatches[0]?.location.name) && (
+              <p className="text-sm font-semibold mt-0.5" style={{ color: '#B8912A' }}>
+                {topCity?.name ?? sandboxMatches[0]?.location.name}
+              </p>
+            )}
+          </div>
 
           <div className="grid grid-cols-2 gap-2 mb-4">
             <div className="rounded-xl p-2.5" style={{ backgroundColor: '#F7F6F3' }}>
@@ -688,10 +728,11 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
           {/* Metro context line */}
           <p className="text-xs mb-2" style={{ color: '#9A8E82' }}>
             {(() => {
-              const topMetroLabel = METRO_OPTIONS.find(m => m.value === selectedMetro)?.label ?? 'Austin'
+              if (!selectedMetro) return 'Select a metro above to explore how your priorities rank cities in each market.'
+              const metroLabel = METRO_OPTIONS.find(m => m.value === selectedMetro)?.label
               return !sandboxTouched
-                ? `${topMetroLabel} is your top match. Use the buttons above to see how your priorities and budget rank cities in other Texas metros.`
-                : `Showing ${topMetroLabel} cities ranked by your current priorities and budget.`
+                ? `${metroLabel} is your top match. Use the buttons above to see how your priorities and budget rank cities in other Texas metros.`
+                : `Showing ${metroLabel} cities ranked by your current priorities and budget.`
             })()}
           </p>
           {/* Affordability legend */}
@@ -1233,7 +1274,7 @@ export default function MM3Discover({ profile, session }: MM3DiscoverProps) {
                 Close
               </button>
               <button
-                onClick={() => setCityPopup(null)}
+                onClick={() => router.push(`/report/${cityPopup.location.id}`)}
                 className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
                 style={{ backgroundColor: GOLD, color: '#16120D' }}
               >

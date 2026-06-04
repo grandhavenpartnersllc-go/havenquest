@@ -180,6 +180,7 @@ export interface UserSession {
   firstName: string
   email: string
   phone?: string
+  currentMileMarker?: number
   createdAt: string
 }
 

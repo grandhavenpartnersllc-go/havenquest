@@ -54,11 +54,12 @@ export default function StarterPortal() {
   const [matches, setMatches] = useState<CityMatch[]>([])
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [ready, setReady] = useState(false)
-  const [currentMileMarker, setCurrentMileMarker] = useState(2)
-  const [activeMileMarker, setActiveMileMarker] = useState(2)
+  const [currentMileMarker, setCurrentMileMarker] = useState<number | null>(null)
+  const [activeMileMarker, setActiveMileMarker] = useState<number | null>(null)
   const [onboardingAcknowledged, setOnboardingAcknowledged] = useState(false)
   const [initialChecklist, setInitialChecklist] = useState<Record<string, boolean>>({})
   const [initialNotes, setInitialNotes] = useState<string>('')
+  const [portalError, setPortalError] = useState<string | null>(null)
 
   useEffect(() => {
     const rawSession = localStorage.getItem(LOCAL_SESSION_KEY)
@@ -72,6 +73,7 @@ export default function StarterPortal() {
 
     const rawProfile = sessionStorage.getItem(SESSION_PROFILE_KEY)
     const rawMatches = sessionStorage.getItem(SESSION_MATCHES_KEY)
+    const profileWasLoaded = !!rawProfile
 
     if (rawProfile) {
       const prof: UserProfile = JSON.parse(rawProfile)
@@ -87,22 +89,37 @@ export default function StarterPortal() {
       setMatches(m)
     }
 
-    setReady(true)
-
-    const profileWasLoaded = !!rawProfile
+    // If login pre-fetched the milemarker into localStorage, render immediately
+    // while the DB query refreshes state in the background
+    if (profileWasLoaded && typeof sess.currentMileMarker === 'number') {
+      setCurrentMileMarker(sess.currentMileMarker)
+      setActiveMileMarker(sess.currentMileMarker)
+      setReady(true)
+    }
 
     ;(async () => {
       try {
         const supabase = createClient()
         const { data: { session: supaSession } } = await supabase.auth.getSession()
-        if (!supaSession?.user?.email) return
+        if (!supaSession?.user?.email) {
+          if (!profileWasLoaded) {
+            setPortalError('Session expired. Please log in again.')
+          }
+          return
+        }
 
         const { data: ud } = await supabase
           .from('users')
           .select('first_name, top_city_matches, annual_income, household_size, housing_preference, moving_timeline, must_haves, nice_to_haves, not_priorities, current_milemarker, onboarding_acknowledged, mm2_checklist, portal_notes')
           .eq('email', supaSession.user.email.toLowerCase())
           .single()
-        if (!ud) return
+
+        if (!ud) {
+          if (!profileWasLoaded) {
+            setPortalError('Unable to load your profile. Please refresh or log in again.')
+          }
+          return
+        }
 
         if (ud.first_name && ud.first_name !== sess.firstName) {
           const updated: UserSession = { ...sess, firstName: ud.first_name }
@@ -110,10 +127,9 @@ export default function StarterPortal() {
           setSession(updated)
         }
 
-        if (ud.current_milemarker) {
-          setCurrentMileMarker(ud.current_milemarker)
-          setActiveMileMarker(ud.current_milemarker)
-        }
+        const savedMM = ud.current_milemarker ?? 2
+        setCurrentMileMarker(savedMM)
+        setActiveMileMarker(savedMM)
 
         if (ud.onboarding_acknowledged) {
           setOnboardingAcknowledged(true)
@@ -122,7 +138,7 @@ export default function StarterPortal() {
         if (ud.mm2_checklist) setInitialChecklist(ud.mm2_checklist)
         if (ud.portal_notes) setInitialNotes(ud.portal_notes)
 
-        if (!profileWasLoaded && ud.annual_income && ud.top_city_matches?.length) {
+        if (!profileWasLoaded && ud.annual_income) {
           const reconstructedProfile: UserProfile = {
             annualIncome: ud.annual_income,
             householdSize: ud.household_size ?? '1',
@@ -131,13 +147,52 @@ export default function StarterPortal() {
             niceToHaves: ud.nice_to_haves ?? [],
             notPriorities: ud.not_priorities ?? [],
           }
-          const restoredMatches = getTopMatches(reconstructedProfile, getAllCities(), 3)
+
+          const allCities = getAllCities()
+          let restoredMatches: CityMatch[] = []
+
+          if (ud.top_city_matches?.length) {
+            // Use saved matches as authoritative — preserves quiz-time scores and city order
+            const savedMatches = ud.top_city_matches as { cityId: string; cityName: string; matchScore: number }[]
+            restoredMatches = savedMatches
+              .map(saved => {
+                const location = allCities.find(c => c.id === saved.cityId)
+                if (!location) return null
+                const monthlyHousing = Math.round(location.housing.medianHomePrice * 0.007)
+                return {
+                  location,
+                  matchScore: saved.matchScore,
+                  affordabilityScore: Math.round(location.scores.affordability * 10),
+                  affordabilityFlag: false,
+                  estimatedMonthlyHousing: monthlyHousing,
+                  estimatedMonthlyTotal:
+                    monthlyHousing +
+                    location.housing.monthlyUtilities +
+                    location.housing.monthlyGroceries +
+                    location.housing.monthlyTransportation,
+                  zillowSearchUrl: '',
+                  segment: 'Mid-Market' as CityMatch['segment'],
+                }
+              })
+              .filter(Boolean) as CityMatch[]
+          } else {
+            // Fallback — top_city_matches missing, recompute from profile
+            restoredMatches = getTopMatches(reconstructedProfile, allCities, 3)
+          }
+
           if (restoredMatches.length > 0) {
             setProfile(reconstructedProfile)
             setMatches(restoredMatches)
           }
         }
-      } catch {}
+
+        setReady(true)
+      } catch (err) {
+        console.error('[portal] Load error:', err)
+        if (!profileWasLoaded) {
+          setPortalError('We had trouble loading your portal. Please refresh or log in again.')
+        }
+      }
     })()
   }, [router])
 
@@ -163,11 +218,22 @@ export default function StarterPortal() {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: CREAM }}>
         <div className="text-center">
-          <div
-            className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin mx-auto mb-3"
-            style={{ borderColor: GOLD, borderTopColor: 'transparent' }}
-          />
-          <p className="text-sm" style={{ color: '#9A8E82' }}>Loading your portal…</p>
+          {portalError ? (
+            <div className="max-w-sm mx-auto px-4">
+              <p className="text-sm mb-4" style={{ color: '#DC2626' }}>{portalError}</p>
+              <a href="/login" className="text-sm font-medium" style={{ color: GOLD }}>
+                Log in again →
+              </a>
+            </div>
+          ) : (
+            <>
+              <div
+                className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin mx-auto mb-3"
+                style={{ borderColor: GOLD, borderTopColor: 'transparent' }}
+              />
+              <p className="text-sm" style={{ color: '#9A8E82' }}>Loading your portal…</p>
+            </>
+          )}
         </div>
       </div>
     )
@@ -204,6 +270,8 @@ export default function StarterPortal() {
             </span>
             <button
               onClick={async () => {
+                sessionStorage.clear()
+                localStorage.removeItem(LOCAL_SESSION_KEY)
                 await fetch('/api/auth/session', { method: 'DELETE' })
                 router.push('/login')
               }}
@@ -241,7 +309,7 @@ export default function StarterPortal() {
                 YOUR NAVIGATOR JOURNEY
               </p>
               <p className="text-[11px]" style={{ color: 'rgba(237,231,220,0.4)' }}>
-                MileMarker {currentMileMarker} of 10 — {MILEMARKER_NAMES[currentMileMarker]}
+                MileMarker {currentMileMarker!} of 10 — {MILEMARKER_NAMES[currentMileMarker!]}
               </p>
             </div>
             <div
@@ -253,7 +321,7 @@ export default function StarterPortal() {
                 style={{
                   backgroundColor: GOLD,
                   height: '4px',
-                  width: `${((currentMileMarker - 1) / 9) * 100}%`,
+                  width: `${((currentMileMarker! - 1) / 9) * 100}%`,
                 }}
               />
             </div>
@@ -264,14 +332,14 @@ export default function StarterPortal() {
       {/* Navigator + content — cream section */}
       <div className="max-w-5xl mx-auto px-5 pt-6 pb-8">
         <NavigatorTabs
-          currentMileMarker={currentMileMarker}
-          activeMileMarker={activeMileMarker}
-          onSelect={setActiveMileMarker}
+          currentMileMarker={currentMileMarker!}
+          activeMileMarker={activeMileMarker!}
+          onSelect={(mm) => setActiveMileMarker(mm)}
         />
         <div className="mt-6">
           <MileMarkerContent
-            selectedMileMarker={activeMileMarker}
-            currentMileMarker={currentMileMarker}
+            selectedMileMarker={activeMileMarker!}
+            currentMileMarker={currentMileMarker!}
             matches={matches}
             profile={profile}
             session={session}
