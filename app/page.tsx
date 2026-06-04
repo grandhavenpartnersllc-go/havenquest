@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 import Header from '../components/shared/Header'
 import Footer from '../components/shared/Footer'
 import HeroSection from '../components/landing/HeroSection'
@@ -21,6 +22,24 @@ export const metadata: Metadata = {
     description: 'Find where your income and lifestyle actually fit in Texas.',
   },
 }
+
+const TESTIMONIALS = [
+  {
+    name: 'Sarah M.',
+    origin: 'Relocating from Chicago, IL',
+    quote: "I had no idea where to even start with Texas. HavenQuest narrowed it down to three communities that actually fit our life. We're under contract in Round Rock and couldn't be happier.",
+  },
+  {
+    name: 'David & Karen T.',
+    origin: 'Relocating from Denver, CO',
+    quote: "Our Market Director was with us every step of the way. From our first city match to closing day, we never felt lost or overwhelmed. This is how moving should work.",
+  },
+  {
+    name: 'Marcus R.',
+    origin: 'Relocating from Atlanta, GA',
+    quote: "I was skeptical that an online platform could really understand what I was looking for. HavenQuest proved me wrong. Plano checked every box.",
+  },
+]
 
 export default function HomePage() {
   return (
@@ -55,8 +74,68 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* Section 2b — Split: Difference */}
+        <section className="py-20 px-4" style={{ backgroundColor: '#FDFCFA' }}>
+          <div className="max-w-5xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-center">
+
+              {/* Left — Text */}
+              <div>
+                <p
+                  className="text-xs font-bold uppercase mb-4 tracking-widest"
+                  style={{ color: '#B8912A', letterSpacing: '0.18em' }}
+                >
+                  The HavenQuest Difference
+                </p>
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight leading-tight mb-6">
+                  This isn&apos;t just data.
+                  <br />
+                  It&apos;s a guided experience.
+                </h2>
+                <div className="space-y-4 text-gray-500 leading-relaxed">
+                  <p>
+                    Most relocation platforms hand you a list of cities and leave
+                    you to figure out the rest. HavenQuest is different.
+                  </p>
+                  <p>
+                    From the moment you begin, you&apos;re building toward something
+                    real — a community that fits your life, a home that fits your
+                    budget, and a team that stays with you until you&apos;re settled in.
+                  </p>
+                  <p>
+                    Your Market Director isn&apos;t a chatbot. They&apos;re a real person
+                    who knows your destination market, has read your profile, and
+                    is ready to walk beside you through every decision — from
+                    neighborhood exploration to closing day.
+                  </p>
+                  <p className="font-semibold text-gray-700">
+                    This is what peace of mind actually looks like.
+                  </p>
+                </div>
+              </div>
+
+              {/* Right — Image */}
+              <div
+                className="relative aspect-video rounded-2xl overflow-hidden"
+                style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)' }}
+              >
+                <Image
+                  src="/images/relocation-couple.png"
+                  alt="Couple relaxed and confident during their Texas relocation"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                />
+              </div>
+
+            </div>
+          </div>
+        </section>
+
         {/* Section 3 — How It Works */}
-        <HowItWorks />
+        <div id="how-it-works">
+          <HowItWorks />
+        </div>
 
         {/* Section 4 — The Differentiator */}
         <section
@@ -94,15 +173,38 @@ export default function HomePage() {
               </h2>
             </div>
             <div className="grid md:grid-cols-3 gap-5">
-              {[0, 1, 2].map(i => (
+              {TESTIMONIALS.map((t) => (
                 <div
-                  key={i}
-                  className="bg-white rounded-2xl p-8 min-h-[160px]"
+                  key={t.name}
+                  className="bg-white rounded-2xl p-8 flex flex-col relative"
                   style={{
                     boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06)',
                     border: '1px solid #F0EDE6',
                   }}
-                />
+                >
+                  {/* Stars */}
+                  <div className="flex gap-0.5 mb-4" aria-label="5 stars">
+                    {[1, 2, 3, 4, 5].map(s => (
+                      <span key={s} style={{ color: '#B8912A', fontSize: '14px' }}>★</span>
+                    ))}
+                  </div>
+                  {/* Quote */}
+                  <p className="text-gray-600 text-sm leading-relaxed flex-1 mb-5">
+                    &ldquo;{t.quote}&rdquo;
+                  </p>
+                  {/* Name + origin */}
+                  <div>
+                    <p className="font-bold text-gray-900 text-sm">{t.name}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{t.origin}</p>
+                  </div>
+                  {/* Sample review label */}
+                  <span
+                    className="absolute bottom-4 right-5 text-xs text-gray-400"
+                    style={{ opacity: 0.4 }}
+                  >
+                    Sample review
+                  </span>
+                </div>
               ))}
             </div>
           </div>
@@ -111,7 +213,7 @@ export default function HomePage() {
         {/* Section 6 — Final CTA */}
         <section
           className="py-24 px-4"
-          style={{ backgroundColor: '#08101C' }}
+          style={{ backgroundColor: '#16120D' }}
         >
           <div className="max-w-xl mx-auto text-center">
             <h2
