@@ -95,6 +95,23 @@ export default function MileMarkerContent({
         )
       }
       if (selectedMileMarker === currentMileMarker) {
+        const hqPath = typeof window !== 'undefined'
+          ? sessionStorage.getItem('hq_path')
+          : null
+
+        if (hqPath === 'explore') {
+          return (
+            <MM3Discover
+              matches={matches}
+              profile={profile}
+              session={session}
+              onAdvanceToConnect={onAdvanceToConnect}
+              initialMetro="State"
+              initialCityIndex={0}
+            />
+          )
+        }
+
         const topMetro = matches[0]?.location.metroUsed ?? ''
         const initialMetro = ['Dallas', 'Houston', 'San Antonio', 'Austin'].find(v => topMetro.includes(v))
         return (

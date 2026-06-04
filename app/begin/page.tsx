@@ -79,6 +79,7 @@ export default function BeginPage() {
     sessionStorage.setItem('hq_first_name', firstName.trim())
     sessionStorage.setItem('hq_origin_zip', zip.trim())
     sessionStorage.setItem('hq_origin_type', originType!)
+    sessionStorage.setItem('hq_path', selectedPath === '/explore' ? 'explore' : 'metro')
     const rawSession = localStorage.getItem(LOCAL_SESSION_KEY)
     if (rawSession) {
       try {

@@ -115,7 +115,7 @@ export default function SessionResultsPage({ params }: { params: Promise<{ sessi
                   </p>
                 </div>
               )}
-              <TeaserResults matches={matches} onUnlock={() => setShowGate(true)} />
+              <TeaserResults matches={matches.slice(0, 3)} onUnlock={() => setShowGate(true)} />
             </>
           )}
 
