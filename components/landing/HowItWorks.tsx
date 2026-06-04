@@ -1,18 +1,18 @@
 const CARDS = [
   {
     label: 'CLARITY',
-    headline: 'Find where you belong.',
-    copy: 'Tell us about your life — your income, your household, and what matters most to you. Our intelligence platform matches you to the Texas communities where your life genuinely fits. No guesswork. No endless tabs. Just clarity.',
+    headline: 'Find your Texas community.',
+    copy: 'Tell us about your life — your income, your household, and what matters most to you. Our platform matches you to the Texas communities where your life genuinely fits across 4 metros and 101 cities. No guesswork. No endless tabs. Just clarity.',
   },
   {
     label: 'CONFIDENCE',
     headline: 'Meet your Market Director.',
-    copy: "When you're ready to go deeper, your personal Market Director steps in. A real person who knows your destination market, knows your profile, and guides you from community discovery through closing day. You'll always know who to call.",
+    copy: "When you're ready to go deeper, your personal Market Director steps in. A real person who knows your Texas destination market, has read your profile, and guides you from community discovery through closing day. You'll always know who to call.",
   },
   {
     label: 'PEACE OF MIND',
     headline: 'Every step. Handled.',
-    copy: 'From your neighborhood search to your moving checklist, your Market Director keeps every piece of your relocation organized, tracked, and moving forward. Nothing falls through the cracks. You arrive prepared, connected, and at home.',
+    copy: 'From your Texas neighborhood search to your moving checklist, your Market Director keeps every piece of your relocation organized, tracked, and moving forward. Nothing falls through the cracks. You arrive in Texas prepared, connected, and at home.',
   },
 ]
 

@@ -54,14 +54,20 @@ export default function HomePage() {
         <section className="py-20 px-4 bg-white">
           <div className="max-w-2xl mx-auto text-center">
             <p className="text-lg md:text-xl text-gray-700 leading-relaxed mb-6">
-              HavenQuest is not just another relocation platform. It&apos;s a guided
-              experience built around the reality of what moving actually involves.
+              HavenQuest is built specifically for one of the biggest moves
+              in America — relocating to Texas.
+            </p>
+            <p className="text-gray-500 leading-relaxed mb-6">
+              Whether you&apos;re coming from Chicago, California, or across the
+              state line, Texas is not one place. It&apos;s 101 distinct communities
+              across four major metros — each with its own cost of living,
+              school systems, lifestyle, and character.
             </p>
             <p className="text-gray-500 leading-relaxed mb-6">
               Relocating is one of the most stressful decisions a family makes.
-              Not because finding a home is hard — but because there are a hundred
-              other decisions happening at the same time, and most people are
-              making them alone.
+              Not because finding a home is hard — but because there are a
+              hundred other decisions happening at the same time, and most
+              people are making them alone.
             </p>
             <p className="text-gray-500 leading-relaxed mb-6">
               Schools. Neighborhoods. Timelines. Realtors. Lenders. Movers.
@@ -69,7 +75,7 @@ export default function HomePage() {
               your corner.
             </p>
             <p className="text-xl font-bold text-gray-900 tracking-tight">
-              HavenQuest changes that.
+              HavenQuest changes that — for Texas.
             </p>
           </div>
         </section>
@@ -88,14 +94,16 @@ export default function HomePage() {
                   The HavenQuest Difference
                 </p>
                 <h2 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight leading-tight mb-6">
-                  This isn&apos;t just data.
+                  Texas is big.
                   <br />
-                  It&apos;s a guided experience.
+                  We help you find exactly where you belong.
                 </h2>
                 <div className="space-y-4 text-gray-500 leading-relaxed">
                   <p>
-                    Most relocation platforms hand you a list of cities and leave
-                    you to figure out the rest. HavenQuest is different.
+                    Most platforms hand you a list of Texas cities and leave
+                    you to figure out the rest. With 101 communities across Austin,
+                    DFW, Houston, and San Antonio — plus everything in between —
+                    that list can feel overwhelming. HavenQuest is different.
                   </p>
                   <p>
                     From the moment you begin, you&apos;re building toward something
@@ -147,13 +155,13 @@ export default function HomePage() {
               className="text-xl md:text-2xl mb-4"
               style={{ color: 'rgba(255,255,255,0.4)' }}
             >
-              Other platforms give you data.
+              Other platforms give you a list of Texas cities.
             </p>
             <p
               className="font-bold tracking-tight leading-tight"
               style={{ fontSize: 'clamp(32px, 5vw, 60px)', color: '#FFFFFF' }}
             >
-              HavenQuest gives you confidence.
+              HavenQuest guides you all the way there.
             </p>
           </div>
         </section>
@@ -223,7 +231,7 @@ export default function HomePage() {
               Your next chapter starts here.
             </h2>
             <p className="text-lg mb-8" style={{ color: 'rgba(255,255,255,0.45)' }}>
-              Two paths. One destination. Begin when you&apos;re ready.
+              Two paths into Texas. One guided experience. Begin when you&apos;re ready.
             </p>
             <p
               className="text-xs mb-6 mx-auto max-w-sm leading-relaxed"
