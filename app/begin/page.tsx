@@ -294,7 +294,7 @@ export default function BeginPage() {
                     type="text"
                     value={zip}
                     onChange={e => { setZip(e.target.value); setZipError('') }}
-                    placeholder="60614"
+                    placeholder="60631"
                     required
                     maxLength={5}
                     className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400"
