@@ -1,29 +1,22 @@
-import Link from 'next/link'
-import { User, Sliders, MapPin, ArrowRight } from 'lucide-react'
-
-const STEPS = [
+const CARDS = [
   {
-    number: '01',
-    Icon: User,
-    title: 'Tell us about your life',
-    description:
-      'Share your income, household size, housing preference, and moving timeline. Takes about 60 seconds and sets the foundation for your personalized matches.',
+    label: 'CLARITY',
+    headline: 'Find where you belong.',
+    copy: 'Tell us about your life — your income, your household, and what matters most to you. Our intelligence platform matches you to the Texas communities where your life genuinely fits. No guesswork. No endless tabs. Just clarity.',
   },
   {
-    number: '02',
-    Icon: Sliders,
-    title: 'Rank what matters to you',
-    description:
-      'Assign lifestyle categories to Must Have or Important to Me. Anything you leave out carries zero weight — so your results reflect exactly what you care about.',
+    label: 'CONFIDENCE',
+    headline: 'Meet your Market Director.',
+    copy: "When you're ready to go deeper, your personal Market Director steps in. A real person who knows your destination market, knows your profile, and guides you from community discovery through closing day. You'll always know who to call.",
   },
   {
-    number: '03',
-    Icon: MapPin,
-    title: 'Discover your Texas match',
-    description:
-      'Get your top matched cities with verified scores, honest tradeoffs, and real affordability breakdowns — then connect with a HavenQuest Select Agent, hand-selected for your zone and ready to help from day one.',
+    label: 'PEACE OF MIND',
+    headline: 'Every step. Handled.',
+    copy: 'From your neighborhood search to your moving checklist, your Market Director keeps every piece of your relocation organized, tracked, and moving forward. Nothing falls through the cracks. You arrive prepared, connected, and at home.',
   },
 ]
+
+const GOLD = '#B8912A'
 
 export default function HowItWorks() {
   return (
@@ -33,78 +26,41 @@ export default function HowItWorks() {
         {/* Header */}
         <div className="text-center mb-14">
           <p
-            className="text-xs font-bold uppercase mb-3"
-            style={{ color: '#1A5FA8', letterSpacing: '0.18em' }}
+            className="text-xs font-bold uppercase mb-4"
+            style={{ color: GOLD, letterSpacing: '0.18em' }}
           >
-            Simple Process
+            Your Journey With HavenQuest
           </p>
-          <h2 className="text-4xl font-bold text-gray-900 tracking-tight mb-4">
-            Three steps to find where you belong
+          <h2 className="text-4xl font-bold text-gray-900 tracking-tight">
+            Three promises. One journey.
           </h2>
-          <p className="text-gray-500 text-lg max-w-lg mx-auto leading-relaxed">
-            No guesswork. No generic lists. Just your life matched to the right Texas city.
-          </p>
         </div>
 
-        {/* Steps — desktop: row with arrow connectors; mobile: stacked */}
-        <div className="flex flex-col md:flex-row items-stretch gap-4 md:gap-0 mb-12">
-          {STEPS.map((step, i) => (
-            <div key={step.number} className="contents">
-              {/* Card */}
-              <div
-                className="flex-1 bg-white rounded-2xl p-7 flex flex-col"
-                style={{
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.05), 0 8px 32px rgba(0,0,0,0.08)',
-                  borderLeft: '3px solid #1A5FA8',
-                }}
+        {/* Cards */}
+        <div className="grid md:grid-cols-3 gap-6">
+          {CARDS.map(card => (
+            <div
+              key={card.label}
+              className="bg-white rounded-2xl p-8 flex flex-col"
+              style={{
+                boxShadow: '0 1px 3px rgba(0,0,0,0.05), 0 8px 32px rgba(0,0,0,0.07)',
+                borderTop: `3px solid ${GOLD}`,
+              }}
+            >
+              <p
+                className="text-[10px] font-bold uppercase mb-4 tracking-widest"
+                style={{ color: GOLD }}
               >
-                {/* Number badge */}
-                <div
-                  className="w-12 h-12 rounded-full flex items-center justify-center text-white text-base font-bold mb-5 shrink-0"
-                  style={{ backgroundColor: '#0F172A' }}
-                >
-                  {step.number}
-                </div>
-
-                {/* Icon */}
-                <step.Icon
-                  size={22}
-                  strokeWidth={1.5}
-                  className="mb-4 shrink-0"
-                  style={{ color: '#1A5FA8' }}
-                />
-
-                <h3 className="text-[17px] font-bold text-gray-900 tracking-tight mb-2">
-                  {step.title}
-                </h3>
-                <p className="text-gray-500 text-sm leading-relaxed">
-                  {step.description}
-                </p>
-              </div>
-
-              {/* Arrow connector — desktop only, between cards */}
-              {i < STEPS.length - 1 && (
-                <div className="hidden md:flex items-center justify-center w-10 shrink-0 self-center">
-                  <ArrowRight size={18} strokeWidth={1.5} style={{ color: '#93C5FD' }} />
-                </div>
-              )}
+                {card.label}
+              </p>
+              <h3 className="text-[18px] font-bold text-gray-900 tracking-tight mb-3">
+                {card.headline}
+              </h3>
+              <p className="text-gray-500 text-sm leading-relaxed">
+                {card.copy}
+              </p>
             </div>
           ))}
-        </div>
-
-        {/* CTA */}
-        <div className="text-center">
-          <p className="text-gray-500 text-sm mb-4">Ready to find your city?</p>
-          <Link
-            href="/begin"
-            className="inline-flex items-center gap-2 text-white font-bold px-8 py-3.5 rounded-xl text-sm transition-colors"
-            style={{
-              backgroundColor: '#1A5FA8',
-              boxShadow: '0 2px 10px rgba(26,95,168,0.28)',
-            }}
-          >
-            Begin My Journey →
-          </Link>
         </div>
 
       </div>

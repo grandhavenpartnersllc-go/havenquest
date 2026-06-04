@@ -25,7 +25,7 @@ export default function HeroSection() {
         }}
       />
 
-      {/* Bottom fade into surface */}
+      {/* Bottom fade */}
       <div
         className="absolute bottom-0 inset-x-0 h-24 pointer-events-none"
         style={{ background: 'linear-gradient(to top, #F4F5F7, transparent)' }}
@@ -39,28 +39,23 @@ export default function HeroSection() {
         </div>
 
         {/* Headline */}
-        <h1 className="font-bold leading-[1.05] tracking-tight mb-6">
-          <span
-            className="block text-white italic"
-            style={{ fontSize: 'clamp(36px, 6vw, 68px)', fontFamily: '"Times New Roman", Georgia, serif', fontWeight: 300 }}
-          >
-            So, you&apos;re
-          </span>
-          <span
-            className="block gradient-text-light"
-            style={{ fontSize: 'clamp(48px, 8.5vw, 96px)' }}
-          >
-            Choosin&apos; Texas.
-          </span>
+        <h1
+          className="font-bold tracking-tight mb-6 text-white leading-[1.1]"
+          style={{ fontSize: 'clamp(36px, 6vw, 72px)' }}
+        >
+          Move with confidence.
+          <br />
+          <span className="gradient-text-light">Arrive with peace of mind.</span>
         </h1>
 
-        {/* Subheading */}
-        <p className="text-lg md:text-xl text-white/45 max-w-[560px] mx-auto leading-relaxed mb-11">
-          Let&apos;s find your perfect Texas homestead — matched to your life, your budget, and your priorities.
+        {/* Subtext */}
+        <p className="text-lg md:text-xl text-white/45 max-w-[580px] mx-auto leading-relaxed mb-11">
+          HavenQuest guides your entire relocation journey — from discovering the right Texas community
+          to settling into your new home — so you never have to navigate it alone.
         </p>
 
-        {/* CTAs */}
-        <div className="flex flex-col sm:flex-row gap-3 justify-center mb-14">
+        {/* CTA */}
+        <div className="flex justify-center">
           <Link
             href="/begin"
             className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-sm tracking-tight transition-opacity hover:opacity-85"
@@ -68,15 +63,6 @@ export default function HeroSection() {
           >
             Begin My Journey →
           </Link>
-        </div>
-
-        {/* Stats row */}
-        <div className="flex items-center justify-center gap-5 text-xs text-white/30 font-medium tracking-wide">
-          <span>Free Personalized Report</span>
-          <span className="w-1 h-1 bg-white/20 rounded-full" />
-          <span>Private Portal Included</span>
-          <span className="w-1 h-1 bg-white/20 rounded-full" />
-          <span>Texas&apos; Most Sought-After Destinations</span>
         </div>
       </div>
     </section>
