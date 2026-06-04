@@ -226,7 +226,7 @@ export default function MM2Discover({ matches, profile, initialChecklist, initia
       )}
 
       {/* Full report for each matched city */}
-      {profile && matches.map((match, i) => (
+      {profile && matches.slice(0, 3).map((match, i) => (
         <section key={match.location.id} id={`report-${match.location.id}`}>
           <SectionLabel>
             {i === 0 ? 'Top Pick' : i === 1 ? 'Runner-Up' : 'Strong Alt'} — {match.location.name}

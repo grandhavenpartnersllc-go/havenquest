@@ -205,7 +205,7 @@ export default function MM1Explore({
 
       {/* Section 2 — Story city cards */}
       <div className="space-y-4 mb-8">
-        {matches.map((match, i) => (
+        {matches.slice(0, 3).map((match, i) => (
           <StoryCityCard
             key={match.location.id}
             match={match}

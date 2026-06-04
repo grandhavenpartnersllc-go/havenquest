@@ -292,7 +292,7 @@ export default function SavedMatches({ matches, profile }: SavedMatchesProps) {
       )}
 
       <div className="grid sm:grid-cols-3 gap-3">
-        {matches.map((match, i) => (
+        {matches.slice(0, 3).map((match, i) => (
           <MatchCard
             key={match.location.id}
             match={match}
