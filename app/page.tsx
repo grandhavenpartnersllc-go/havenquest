@@ -109,9 +109,9 @@ export default function HomePage() {
                   The HavenQuest Difference
                 </p>
                 <h2 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight leading-tight mb-6">
-                  Texas is big.
+                  This isn&apos;t just data.
                   <br />
-                  We help you find exactly where you belong.
+                  It&apos;s a guided experience.
                 </h2>
                 <div className="space-y-4 text-gray-500 leading-relaxed">
                   <p>
