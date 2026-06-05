@@ -231,7 +231,7 @@ export default function MM2Discover({ matches, profile, initialChecklist, initia
         <div style={{ marginTop: '8px', marginBottom: '0' }}>
 
           {/* Tab row — 3 columns matching city cards grid above */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2px' }}>
             {matches.slice(0, 3).map((match, i) => {
               const isActive = activeReportIndex === i
               return (
@@ -250,7 +250,10 @@ export default function MM2Discover({ matches, profile, initialChecklist, initia
                     textAlign: 'left',
                     transition: 'all 0.15s',
                   } : {
-                    border: '1.5px solid var(--color-border-secondary)',
+                    borderTop: '1.5px solid var(--color-border-secondary)',
+                    borderLeft: '1.5px solid var(--color-border-secondary)',
+                    borderRight: '1.5px solid var(--color-border-secondary)',
+                    borderBottom: '1.5px solid #B8912A',
                     borderRadius: '8px 8px 0 0',
                     background: 'var(--color-background-secondary)',
                     padding: '10px 12px',
