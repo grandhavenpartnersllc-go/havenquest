@@ -338,7 +338,12 @@ export default function MM1Explore({
           </div>
 
           {/* Tab Bar */}
-          <div style={{ backgroundColor: '#1C1814', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'stretch', overflowX: 'auto' }}>
+          <div style={{ position: 'relative', backgroundColor: '#1C1814', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+          {/* Phase label — purely decorative, non-interactive */}
+          <span style={{ position: 'absolute', top: '3px', left: '50%', transform: 'translateX(-50%)', fontSize: '8px', color: '#6B6560', whiteSpace: 'nowrap', pointerEvents: 'none', zIndex: 1 }}>
+            → Property Decision
+          </span>
+          <div style={{ display: 'flex', alignItems: 'stretch', overflowX: 'auto' }}>
 
             {/* MM1–MM5 (unlocked) */}
             {MOCK_TABS.slice(0, 5).map((tab, i) => {
@@ -369,11 +374,8 @@ export default function MM1Explore({
               )
             })}
 
-            {/* Phase divider — Property Decision */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 8px', flexShrink: 0 }}>
-              <span style={{ fontSize: '8px', color: '#6B6560', whiteSpace: 'nowrap', marginBottom: '3px' }}>→ Property Decision</span>
-              <div style={{ width: '1px', height: '14px', backgroundColor: 'rgba(255,255,255,0.12)' }} />
-            </div>
+            {/* Phase divider — vertical line only, non-interactive */}
+            <div style={{ width: '1px', alignSelf: 'stretch', margin: '6px 4px', flexShrink: 0, backgroundColor: 'rgba(255,255,255,0.12)', pointerEvents: 'none' }} />
 
             {/* MM6–MM10 (locked) */}
             {MOCK_TABS.slice(5).map((tab, i) => {
@@ -405,6 +407,7 @@ export default function MM1Explore({
                 </button>
               )
             })}
+          </div>
           </div>
 
           {/* Content Area */}
