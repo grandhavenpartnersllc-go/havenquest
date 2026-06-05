@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { CityMatch, UserProfile, UserSession, SandboxProfile, LifestyleScores } from '../../../types'
 import FullReport from '../../results/FullReport'
 import { LIFESTYLE_CATEGORIES } from '../../../utils/constants'
@@ -125,6 +125,9 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
 
   const [chosenCities, setChosenCities] = useState<string[]>([])
   const [confirmed, setConfirmed] = useState(false)
+  const [financialsLocked, setFinancialsLocked] = useState(false)
+
+  const rankingsRef = useRef<HTMLDivElement>(null)
 
   const [committed, setCommitted] = useState(false)
   const [committing, setCommitting] = useState(false)
@@ -341,6 +344,7 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
           exact_down_payment: parseExactAmount(exactDownPayment) ?? null,
           exact_home_proceeds: parseExactAmount(exactHomeProceeds) ?? null,
           loan_term_preference: loanTerm,
+          financials_locked: financialsLocked,
         })
         .eq('email', s.user.email.toLowerCase())
 
@@ -732,10 +736,41 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
               </div>
             )}
           </div>
+
+          {/* Lock financials */}
+          <div style={{ marginTop: '12px', borderTop: '1px solid #F0EDE6', paddingTop: '10px' }}>
+            <p style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', marginBottom: '8px' }}>
+              Lock your financial picture when you&apos;re ready. Your Market Director will use these numbers to guide your search.
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '8px' }}>
+              {financialsLocked && (
+                <button
+                  onClick={() => setFinancialsLocked(false)}
+                  style={{ fontSize: '11px', color: GOLD, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                >
+                  Edit
+                </button>
+              )}
+              <button
+                onClick={() => setFinancialsLocked(f => !f)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '6px',
+                  fontSize: '12px', padding: '5px 12px', borderRadius: '8px',
+                  border: financialsLocked ? '0.5px solid #1D9E75' : '0.5px solid var(--color-border-tertiary)',
+                  backgroundColor: financialsLocked ? 'rgba(29,158,117,0.06)' : 'transparent',
+                  color: financialsLocked ? '#1D9E75' : 'var(--color-text-secondary)',
+                  cursor: 'pointer',
+                }}
+              >
+                <span>{financialsLocked ? '✓' : '🔒'}</span>
+                <span>{financialsLocked ? 'Financials locked' : 'Lock my financials'}</span>
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* RIGHT — Live City Rankings */}
-        <div className="rounded-xl p-4"
+        <div ref={rankingsRef} className="rounded-xl p-4"
              style={{ backgroundColor: CARD_BG, boxShadow: CARD_SHADOW }}>
           <div className="flex items-center justify-between mb-3">
             <p className="text-[10px] font-bold uppercase"
@@ -896,7 +931,7 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
            style={{ color: GOLD, letterSpacing: '0.18em' }}>
           Adjust your financial picture
         </p>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-4" style={{ opacity: financialsLocked ? 0.6 : 1, pointerEvents: financialsLocked ? 'none' : 'auto', transition: 'opacity 0.2s' }}>
           <div>
             <label className="block text-xs font-semibold mb-1" style={{ color: WARM_DARK }}>
               Down payment
@@ -1327,11 +1362,23 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
                 {committing ? 'Locking in your plan...' : 'This is my plan — connect me with my Market Director →'}
               </button>
               {!canAdvance && (
-                <p style={{ fontSize: '12px', color: 'var(--color-text-tertiary)', textAlign: 'center', marginTop: '8px' }}>
-                  {chosenCities.length === 0
-                    ? 'Choose at least one community above to continue.'
-                    : 'Check the box above to continue.'}
-                </p>
+                <>
+                  <p style={{ fontSize: '12px', color: 'var(--color-text-tertiary)', textAlign: 'center', marginTop: '8px' }}>
+                    {chosenCities.length === 0
+                      ? 'Select at least one community from the Live City Rankings to continue.'
+                      : 'Check the box above to continue.'}
+                  </p>
+                  {chosenCities.length === 0 && (
+                    <p style={{ textAlign: 'center', marginTop: '4px' }}>
+                      <button
+                        onClick={() => rankingsRef.current?.scrollIntoView({ behavior: 'smooth' })}
+                        style={{ color: GOLD, background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}
+                      >
+                        ↑ Go to Live City Rankings
+                      </button>
+                    </p>
+                  )}
+                </>
               )}
             </>
           )
