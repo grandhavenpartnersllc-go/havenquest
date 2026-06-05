@@ -175,7 +175,7 @@ export default function MM1Explore({
                     alt={`${match.location.name}, Texas`}
                     fill
                     className="object-cover"
-                    onError={(e) => { e.currentTarget.src = '/images/cities/placeholder.jpg' }}
+                    onError={(e) => { e.currentTarget.src = '/images/cities/default-tx.jpg' }}
                   />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px' }}>

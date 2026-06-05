@@ -39,7 +39,7 @@ export default function CityMatchCard({ match, rank, blurred = false }: CityMatc
           alt={`${location.name}, Texas`}
           fill
           className="object-cover"
-          onError={(e) => { e.currentTarget.src = '/images/cities/placeholder.jpg' }}
+          onError={(e) => { e.currentTarget.src = '/images/cities/default-tx.jpg' }}
         />
       </div>
 
