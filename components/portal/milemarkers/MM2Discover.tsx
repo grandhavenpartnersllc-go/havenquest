@@ -52,6 +52,7 @@ export default function MM2Discover({ matches, profile, initialChecklist, initia
   const [dlState, setDlState] = useState<BtnState>('idle')
   const [emailState, setEmailState] = useState<BtnState>('idle')
   const [scorePopupOpen, setScorePopupOpen] = useState(false)
+  const [activeReportIndex, setActiveReportIndex] = useState(0)
 
   const topCity = matches[0]?.location ?? null
   const userEmailRef = useRef<string>('')
@@ -225,38 +226,93 @@ export default function MM2Discover({ matches, profile, initialChecklist, initia
         </section>
       )}
 
-      {/* Full report for each matched city */}
-      {profile && matches.slice(0, 3).map((match, i) => (
-        <section key={match.location.id} id={`report-${match.location.id}`}>
-          <SectionLabel>
-            {i === 0 ? 'Top Pick' : i === 1 ? 'Runner-Up' : 'Strong Alt'} — {match.location.name}
-          </SectionLabel>
-          <div className="relative">
-            <FullReport match={match} profile={profile} rank={i} />
-            {(() => {
-              const status = getCityAffordabilityStatus(
-                match.location.housing.medianHomePrice,
-                match.location.housing.propertyTaxRate ?? 0.018
-              )
-              const dotColor = status === 'comfortable' ? '#22C55E'
-                             : status === 'moderate' ? '#F59E0B'
-                             : '#EF4444'
-              const dotLabel = status === 'comfortable' ? 'Comfortable'
-                             : status === 'moderate' ? 'Moderate'
-                             : 'Stretched'
+      {/* Tabbed city reports */}
+      {matches.length > 0 && (
+        <div style={{ marginTop: '8px', marginBottom: '0' }}>
+
+          {/* Tab row — 3 columns matching city cards grid above */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+            {matches.slice(0, 3).map((match, i) => {
+              const isActive = activeReportIndex === i
               return (
-                <div className="absolute top-4 right-4 flex items-center gap-1.5 px-2 py-1 rounded-full"
-                     style={{ backgroundColor: 'white', border: `1px solid ${dotColor}33`, boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
-                  <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: dotColor }} />
-                  <span className="text-[10px] font-semibold" style={{ color: dotColor }}>
-                    {dotLabel}
-                  </span>
-                </div>
+                <button
+                  key={match.location.id}
+                  onClick={() => setActiveReportIndex(i)}
+                  style={{
+                    padding: '10px 12px',
+                    borderRadius: '8px 8px 0 0',
+                    border: '0.5px solid var(--color-border-tertiary)',
+                    borderBottom: isActive ? '2px solid #B8912A' : '0.5px solid var(--color-border-tertiary)',
+                    background: isActive ? 'var(--color-background-primary)' : 'var(--color-background-secondary)',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  <p style={{
+                    fontSize: '10px', fontWeight: 500,
+                    color: isActive ? '#B8912A' : 'var(--color-text-tertiary)',
+                    textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '2px',
+                  }}>
+                    {['Top Pick', 'Runner-Up', 'Strong Alt'][i]}
+                  </p>
+                  <p style={{
+                    fontSize: '13px', fontWeight: 600,
+                    color: isActive ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
+                  }}>
+                    {match.location.name}
+                  </p>
+                </button>
               )
-            })()}
+            })}
           </div>
-        </section>
-      ))}
+
+          {/* Report content area */}
+          <div
+            id="report-section"
+            style={{
+              border: '0.5px solid var(--color-border-tertiary)',
+              borderTop: 'none',
+              borderRadius: '0 0 12px 12px',
+              padding: '24px',
+              background: 'var(--color-background-primary)',
+            }}
+          >
+            {matches[activeReportIndex] && profile && (
+              <div className="relative">
+                <FullReport
+                  match={matches[activeReportIndex]}
+                  profile={profile}
+                  rank={activeReportIndex}
+                />
+                {(() => {
+                  const match = matches[activeReportIndex]
+                  const status = getCityAffordabilityStatus(
+                    match.location.housing.medianHomePrice,
+                    match.location.housing.propertyTaxRate ?? 0.018
+                  )
+                  const dotColor = status === 'comfortable' ? '#22C55E'
+                                 : status === 'moderate' ? '#F59E0B'
+                                 : '#EF4444'
+                  const dotLabel = status === 'comfortable' ? 'Comfortable'
+                                 : status === 'moderate' ? 'Moderate'
+                                 : 'Stretched'
+                  return (
+                    <div className="absolute top-4 right-4 flex items-center gap-1.5 px-2 py-1 rounded-full"
+                         style={{ backgroundColor: 'white', border: `1px solid ${dotColor}33`, boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
+                      <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: dotColor }} />
+                      <span className="text-[10px] font-semibold" style={{ color: dotColor }}>
+                        {dotLabel}
+                      </span>
+                    </div>
+                  )
+                })()}
+              </div>
+            )}
+          </div>
+
+        </div>
+      )}
 
       {/* Notes */}
       {topCity && (

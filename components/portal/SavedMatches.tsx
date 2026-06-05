@@ -247,18 +247,11 @@ function MatchCard({ match, rank, profile, compareSelected, onCompare }: MatchCa
         )}
       </div>
 
-      {/* Footer: jump link + compare chip */}
+      {/* Footer: compare chip */}
       <div
-        className="flex items-center justify-between mt-3 pt-3"
+        className="flex items-center justify-end mt-3 pt-3"
         style={{ borderTop: `1px solid ${t.divider}` }}
       >
-        <a
-          href={`#report-${match.location.id}`}
-          className="text-xs font-bold transition-opacity hover:opacity-70"
-          style={{ color: GOLD }}
-        >
-          Full report ↓
-        </a>
         <button
           onClick={onCompare}
           className="text-[11px] font-semibold px-2.5 py-1 rounded-full border transition-colors"
