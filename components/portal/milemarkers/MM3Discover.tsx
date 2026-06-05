@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { CityMatch, UserProfile, UserSession, SandboxProfile, LifestyleScores } from '../../../types'
+import FullReport from '../../results/FullReport'
 import { LIFESTYLE_CATEGORIES } from '../../../utils/constants'
 import { CATEGORY_ICONS } from '../../../utils/categoryIcons'
 import { getAllCities } from '../../../services/locationService'
@@ -62,10 +62,22 @@ const PROCEEDS_OPTIONS = [
   "I'm not sure yet",
 ]
 
-function parseExactAmount(val: string): number | null {
-  if (!val.trim()) return null
-  const num = parseFloat(val.replace(/[$,\s]/g, ''))
+function formatCurrency(raw: string): string {
+  const digits = raw.replace(/[^0-9]/g, '')
+  if (!digits) return ''
+  const num = parseInt(digits, 10)
+  return '$' + num.toLocaleString('en-US')
+}
+
+function parseCurrency(formatted: string): number | null {
+  const digits = formatted.replace(/[^0-9]/g, '')
+  if (!digits) return null
+  const num = parseInt(digits, 10)
   return isNaN(num) || num <= 0 ? null : num
+}
+
+function parseExactAmount(val: string): number | null {
+  return parseCurrency(val)
 }
 
 type BucketKey = 'mustHaves' | 'niceToHaves' | 'notPriorities' | 'unassigned'
@@ -80,7 +92,6 @@ interface MM3DiscoverProps {
 }
 
 export default function MM3Discover({ matches, profile, session, initialMetro, initialCityIndex }: MM3DiscoverProps) {
-  const router = useRouter()
   const [downPayment, setDownPayment] = useState<string>(
     profile?.financial_picture?.down_payment_available ?? '$20,000 – $50,000'
   )
@@ -90,8 +101,10 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
   // interestRate is stored and displayed but does not affect ranking math.
   // matchingService.ts uses a hardcoded 7.0% rate. Full interest rate integration is Phase 2.
   const [interestRate, setInterestRate] = useState<number>(RATE_DEFAULT)
+  const [loanTerm, setLoanTerm] = useState<30 | 15>(30)
   const [exactDownPayment, setExactDownPayment] = useState<string>('')
   const [exactHomeProceeds, setExactHomeProceeds] = useState<string>('')
+  const [reportCity, setReportCity] = useState<CityMatch | null>(null)
 
   const [mustHaves, setMustHaves] = useState<(keyof LifestyleScores)[]>(
     profile?.mustHaves ?? []
@@ -234,11 +247,12 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
   const totalFunds = downMid + procMid
   const mortgageBalance = Math.max(0, topCityPrice - totalFunds)
 
-  const monthlyRate = interestRate / 100 / 12
-  const numPayments = 360
+  const months = loanTerm * 12
+  const effectiveRate = loanTerm === 15 ? Math.max(interestRate - 0.5, 2.0) : interestRate
+  const monthlyRate = effectiveRate / 100 / 12
   const monthlyMortgage = mortgageBalance > 0
-    ? Math.round((mortgageBalance * monthlyRate * Math.pow(1 + monthlyRate, numPayments)) /
-      (Math.pow(1 + monthlyRate, numPayments) - 1))
+    ? Math.round((mortgageBalance * monthlyRate * Math.pow(1 + monthlyRate, months)) /
+      (Math.pow(1 + monthlyRate, months) - 1))
     : 0
 
   // propertyTaxRate is stored as a decimal (e.g. 0.0195 = 1.95%) — no /100 needed
@@ -272,10 +286,12 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
     const totalFunds = downMid + procMid
     const balance = Math.max(0, cityPrice - totalFunds)
     if (balance === 0) return 'comfortable'
-    const mRate = interestRate / 100 / 12
+    const cityEffectiveRate = loanTerm === 15 ? Math.max(interestRate - 0.5, 2.0) : interestRate
+    const cityMonths = loanTerm * 12
+    const mRate = cityEffectiveRate / 100 / 12
     const payment = Math.round(
-      (balance * mRate * Math.pow(1 + mRate, 360)) /
-      (Math.pow(1 + mRate, 360) - 1)
+      (balance * mRate * Math.pow(1 + mRate, cityMonths)) /
+      (Math.pow(1 + mRate, cityMonths) - 1)
     )
     const tax = Math.round((cityPrice * taxRate) / 12)
     const pct = (payment + tax) / grossMonthlyIncome
@@ -324,6 +340,7 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
           chosen_communities: chosenCities,
           exact_down_payment: parseExactAmount(exactDownPayment) ?? null,
           exact_home_proceeds: parseExactAmount(exactHomeProceeds) ?? null,
+          loan_term_preference: loanTerm,
         })
         .eq('email', s.user.email.toLowerCase())
 
@@ -636,7 +653,7 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
                 : `⚠ Stretched — ${Math.round(affordabilityPct)}% of monthly income`}
             </p>
             <p className="text-[10px] mt-0.5" style={{ color: '#9A8E82' }}>
-              Based on {topCity?.name ?? 'your top city'} · {interestRate.toFixed(2)}% rate
+              Based on {topCity?.name ?? 'your top city'} · {effectiveRate.toFixed(2)}% rate · {loanTerm}-year
             </p>
           </div>
 
@@ -902,14 +919,16 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
                 type="text"
                 placeholder="e.g. $47,500"
                 value={exactDownPayment}
-                onChange={e => { setSandboxTouched(true); setExactDownPayment(e.target.value) }}
+                onChange={e => { setSandboxTouched(true); setExactDownPayment(formatCurrency(e.target.value)) }}
+                onFocus={e => { e.target.style.border = '1px solid #B8912A' }}
+                onBlur={e => { e.target.style.border = '1px solid rgba(184,145,42,0.4)' }}
                 style={{
                   width: '100%',
                   fontSize: '13px',
                   padding: '6px 10px',
                   borderRadius: '6px',
-                  border: '0.5px solid var(--color-border-tertiary)',
-                  background: 'var(--color-background-primary)',
+                  border: '1px solid rgba(184,145,42,0.4)',
+                  background: 'rgba(184,145,42,0.04)',
                   color: 'var(--color-text-primary)',
                 }}
               />
@@ -939,14 +958,16 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
                 type="text"
                 placeholder="e.g. $120,000"
                 value={exactHomeProceeds}
-                onChange={e => { setSandboxTouched(true); setExactHomeProceeds(e.target.value) }}
+                onChange={e => { setSandboxTouched(true); setExactHomeProceeds(formatCurrency(e.target.value)) }}
+                onFocus={e => { e.target.style.border = '1px solid #B8912A' }}
+                onBlur={e => { e.target.style.border = '1px solid rgba(184,145,42,0.4)' }}
                 style={{
                   width: '100%',
                   fontSize: '13px',
                   padding: '6px 10px',
                   borderRadius: '6px',
-                  border: '0.5px solid var(--color-border-tertiary)',
-                  background: 'var(--color-background-primary)',
+                  border: '1px solid rgba(184,145,42,0.4)',
+                  background: 'rgba(184,145,42,0.04)',
                   color: 'var(--color-text-primary)',
                 }}
               />
@@ -1021,6 +1042,37 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
             <p className="text-[9px] leading-relaxed" style={{ color: '#9A8E82' }}>
               Freddie Mac avg: {RATE_MARKET_AVG}% · {RATE_DATA_DATE} · Updated quarterly
             </p>
+
+            {/* Loan term toggle */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
+              <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>Loan term</span>
+              <div style={{ display: 'flex', border: '0.5px solid var(--color-border-tertiary)', borderRadius: '6px', overflow: 'hidden' }}>
+                {([30, 15] as const).map(term => (
+                  <button
+                    key={term}
+                    type="button"
+                    onClick={() => setLoanTerm(term)}
+                    style={{
+                      padding: '4px 12px',
+                      fontSize: '12px',
+                      fontWeight: loanTerm === term ? 500 : 400,
+                      background: loanTerm === term ? '#B8912A' : 'transparent',
+                      color: loanTerm === term ? '#fff' : 'var(--color-text-secondary)',
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    {term}-yr
+                  </button>
+                ))}
+              </div>
+            </div>
+            {loanTerm === 15 && (
+              <p style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', marginTop: '4px' }}>
+                15-year builds equity faster — higher monthly, less total interest
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -1398,12 +1450,89 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
                 Close
               </button>
               <button
-                onClick={() => router.push(`/report/${cityPopup.location.id}`)}
+                onClick={() => { setReportCity(cityPopup); setCityPopup(null) }}
                 className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
                 style={{ backgroundColor: GOLD, color: '#16120D' }}
               >
                 View Full Report →
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Full Report Modal */}
+      {reportCity && profile && (
+        <div
+          onClick={() => setReportCity(null)}
+          style={{
+            position: 'fixed',
+            top: 0, right: 0, bottom: 0, left: 0,
+            background: 'rgba(0,0,0,0.75)',
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'center',
+            overflowY: 'auto',
+            padding: '40px 16px',
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: 'var(--color-background-primary)',
+              borderRadius: '16px',
+              width: '100%',
+              maxWidth: '800px',
+              overflow: 'hidden',
+              marginBottom: '40px',
+            }}
+          >
+            {/* Modal Header */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '16px 20px',
+              borderBottom: '0.5px solid var(--color-border-tertiary)',
+              background: '#16120D',
+              position: 'sticky',
+              top: 0,
+              zIndex: 10,
+            }}>
+              <div>
+                <p style={{ fontSize: '10px', color: '#9A8E82', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '2px' }}>
+                  Full Report
+                </p>
+                <p style={{ fontSize: '16px', fontWeight: 500, color: '#E8E2D9' }}>
+                  {reportCity.location.name}
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <button
+                  onClick={() => window.print()}
+                  style={{ padding: '6px 14px', fontSize: '12px', fontWeight: 500, border: '0.5px solid rgba(232,226,217,0.3)', borderRadius: '6px', background: 'transparent', color: '#E8E2D9', cursor: 'pointer' }}
+                >
+                  Print
+                </button>
+                <button
+                  onClick={() => window.open(`/report/${reportCity.location.id}`, '_blank')}
+                  style={{ padding: '6px 14px', fontSize: '12px', fontWeight: 500, border: 'none', borderRadius: '6px', background: '#B8912A', color: '#fff', cursor: 'pointer' }}
+                >
+                  Download ↓
+                </button>
+                <button
+                  onClick={() => setReportCity(null)}
+                  style={{ padding: '6px 10px', fontSize: '18px', border: 'none', background: 'transparent', color: '#9A8E82', cursor: 'pointer', lineHeight: 1 }}
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div style={{ padding: '24px' }}>
+              <FullReport match={reportCity} profile={profile} />
             </div>
           </div>
         </div>
