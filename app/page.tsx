@@ -58,14 +58,13 @@ export default function HomePage() {
               HavenQuest is built specifically for one of the biggest moves
               in America — relocating to Texas.
             </p>
-            <div
-              className="px-5 py-4 rounded-lg mb-6"
-              style={{ borderLeft: '4px solid #B8912A', backgroundColor: '#F4F1EC' }}
-            >
-              <p className="text-gray-800 font-medium leading-relaxed">
+            <div style={{ borderLeft: '4px solid #B8912A', background: '#F4F1EC', padding: '1rem 1.25rem', borderRadius: '0.5rem', marginBottom: '1.5rem' }}>
+              <p style={{ color: '#1a1a1a', fontWeight: 500, lineHeight: 1.6, margin: 0 }}>
                 In 2025, Texas swept the podium for American metro growth. Dallas-Fort Worth ranked #1 in the nation. Houston #2. Austin #3. Six Texas metros placed in the national top 25 — more than any other state.
               </p>
-              <p className="text-xs text-gray-400 mt-2">Source: 2025 U-Haul Growth Index</p>
+              <p style={{ color: '#9ca3af', fontSize: '0.75rem', marginTop: '0.5rem', marginBottom: 0 }}>
+                Source: 2025 U-Haul Growth Index
+              </p>
             </div>
             <p className="text-gray-500 leading-relaxed mb-6">
               Whether you&apos;re coming from Chicago, California, or across the
