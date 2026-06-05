@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import Image from 'next/image'
 import { Home, Search, Map, Handshake, ClipboardList, Building2, Key, FileText, Calendar, Star, Lock } from 'lucide-react'
 import { CityMatch, UserProfile, UserSession } from '../../../types'
 
@@ -163,25 +164,35 @@ export default function MM1Explore({
             const labels = ['Top Pick', 'Runner-Up', 'Strong Alt']
             return (
               <div key={match.location.id} style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '12px 14px',
+                overflow: 'hidden',
                 background: i === 0 ? '#16120D' : 'var(--color-background-primary)',
                 borderRadius: '8px',
                 border: '0.5px solid var(--color-border-tertiary)',
               }}>
-                <div>
-                  <p style={{ fontSize: '10px', fontWeight: 500, color: i === 0 ? '#B8912A' : 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '2px' }}>
-                    {labels[i]}
-                  </p>
-                  <p style={{ fontSize: '15px', fontWeight: 600, color: i === 0 ? '#E8E2D9' : 'var(--color-text-primary)' }}>
-                    {match.location.name}
-                  </p>
-                  <p style={{ fontSize: '12px', color: i === 0 ? 'rgba(232,226,217,0.5)' : 'var(--color-text-tertiary)' }}>
-                    {match.location.metroUsed}
-                  </p>
+                <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden', background: 'var(--color-background-tertiary)' }}>
+                  <Image
+                    src={`/images/cities/${match.location.id}.jpg`}
+                    alt={`${match.location.name}, Texas`}
+                    fill
+                    className="object-cover"
+                    onError={(e) => { e.currentTarget.src = '/images/cities/placeholder.jpg' }}
+                  />
                 </div>
-                <div style={{ fontSize: '20px', fontWeight: 700, color: i === 0 ? '#B8912A' : 'var(--color-text-secondary)' }}>
-                  {match.matchScore}%
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px' }}>
+                  <div>
+                    <p style={{ fontSize: '10px', fontWeight: 500, color: i === 0 ? '#B8912A' : 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '2px' }}>
+                      {labels[i]}
+                    </p>
+                    <p style={{ fontSize: '15px', fontWeight: 600, color: i === 0 ? '#E8E2D9' : 'var(--color-text-primary)' }}>
+                      {match.location.name}
+                    </p>
+                    <p style={{ fontSize: '12px', color: i === 0 ? 'rgba(232,226,217,0.5)' : 'var(--color-text-tertiary)' }}>
+                      {match.location.metroUsed}
+                    </p>
+                  </div>
+                  <div style={{ fontSize: '20px', fontWeight: 700, color: i === 0 ? '#B8912A' : 'var(--color-text-secondary)' }}>
+                    {match.matchScore}%
+                  </div>
                 </div>
               </div>
             )

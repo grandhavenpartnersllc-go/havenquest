@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { CityMatch, UserProfile } from '../../types'
 import { LIFESTYLE_CATEGORIES } from '../../utils/constants'
 import { getScoreColor } from '../../utils/scoring'
@@ -115,7 +116,7 @@ function MatchCard({ match, rank, profile, compareSelected, onCompare }: MatchCa
 
   return (
     <div
-      className="rounded-2xl p-5 flex flex-col relative overflow-hidden"
+      className="rounded-2xl flex flex-col relative overflow-hidden"
       style={{
         backgroundColor: isPrimary ? WARM_DARK : CARD_BG,
         boxShadow: isPrimary
@@ -126,6 +127,19 @@ function MatchCard({ match, rank, profile, compareSelected, onCompare }: MatchCa
       {isPrimary && (
         <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ backgroundColor: GOLD }} />
       )}
+
+      {/* City image */}
+      <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden', background: 'var(--color-background-tertiary)' }}>
+        <Image
+          src={`/images/cities/${match.location.id}.jpg`}
+          alt={`${match.location.name}, Texas`}
+          fill
+          className="object-cover"
+          onError={(e) => { e.currentTarget.src = '/images/cities/placeholder.jpg' }}
+        />
+      </div>
+
+      <div className="p-5 flex flex-col flex-1">
 
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
@@ -257,6 +271,8 @@ function MatchCard({ match, rank, profile, compareSelected, onCompare }: MatchCa
           {compareSelected ? '✓ Selected' : '+ Compare'}
         </button>
       </div>
+
+      </div>{/* end p-5 wrapper */}
     </div>
   )
 }

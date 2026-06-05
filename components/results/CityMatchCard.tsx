@@ -1,6 +1,7 @@
 'use client'
 
 import { CityMatch } from '../../types'
+import Image from 'next/image'
 import MarketBadge from '../shared/MarketBadge'
 import { AlertTriangle, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
@@ -30,6 +31,17 @@ export default function CityMatchCard({ match, rank, blurred = false }: CityMatc
     >
       {/* Score-colored top strip */}
       <div className="h-[3px]" style={{ backgroundColor: scoreConfig.color }} />
+
+      {/* City image */}
+      <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden', background: 'var(--color-background-tertiary)' }}>
+        <Image
+          src={`/images/cities/${location.id}.jpg`}
+          alt={`${location.name}, Texas`}
+          fill
+          className="object-cover"
+          onError={(e) => { e.currentTarget.src = '/images/cities/placeholder.jpg' }}
+        />
+      </div>
 
       <div className="p-5">
         {/* Header */}
