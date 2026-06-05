@@ -295,6 +295,46 @@ export default function MM2Discover({ matches, profile, initialChecklist, initia
           >
             {matches[activeReportIndex] && profile && (
               <div className="relative">
+                {(() => {
+                  const activeMatch = matches[activeReportIndex]
+                  const status = getCityAffordabilityStatus(
+                    activeMatch.location.housing.medianHomePrice,
+                    activeMatch.location.housing.propertyTaxRate ?? 0.018
+                  )
+                  const statusLabel = status === 'comfortable' ? 'Comfortable'
+                    : status === 'moderate' ? 'Moderate' : 'Stretched'
+                  const dotColor = status === 'comfortable' ? '#1D9E75'
+                    : status === 'moderate' ? '#C9A84C' : '#E53E3E'
+                  return (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+                      {/* Budget Fit indicator */}
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '6px 12px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)', background: 'var(--color-background-secondary)' }}>
+                        <p style={{ fontSize: '9px', fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '3px' }}>
+                          Budget Fit
+                        </p>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: dotColor }} />
+                          <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--color-text-primary)' }}>{statusLabel}</span>
+                        </div>
+                      </div>
+                      {/* Print / Download buttons */}
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                          onClick={() => window.print()}
+                          style={{ padding: '6px 14px', fontSize: '12px', fontWeight: 500, border: '0.5px solid var(--color-border-tertiary)', borderRadius: '6px', background: 'transparent', color: 'var(--color-text-secondary)', cursor: 'pointer' }}
+                        >
+                          Print
+                        </button>
+                        <button
+                          onClick={() => window.open(`/report/${activeMatch.location.id}`, '_blank')}
+                          style={{ padding: '6px 14px', fontSize: '12px', fontWeight: 500, border: 'none', borderRadius: '6px', background: '#B8912A', color: '#fff', cursor: 'pointer' }}
+                        >
+                          Download ↓
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })()}
                 <FullReport
                   match={matches[activeReportIndex]}
                   profile={profile}

@@ -145,8 +145,11 @@ export default function MM1Explore({
         </p>
       </div>
 
-      {/* Section 2 — City Teaser */}
-      <div style={{ background: 'var(--color-background-secondary)', borderRadius: '12px', padding: '20px', marginBottom: '2rem', border: '0.5px solid var(--color-border-tertiary)' }}>
+      {/* Sections reordered: Navigator Journey (order 1) renders before City Teaser (order 2) */}
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+
+      {/* Section 3 — City Teaser (renders second) */}
+      <div style={{ background: 'var(--color-background-secondary)', borderRadius: '12px', padding: '20px', marginBottom: '2rem', border: '0.5px solid var(--color-border-tertiary)', order: 2 }}>
         <p style={{ fontSize: '11px', fontWeight: 600, color: '#B8912A', letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: '4px' }}>
           Your First Look
         </p>
@@ -176,7 +179,7 @@ export default function MM1Explore({
                     alt={`${match.location.name}, Texas`}
                     fill
                     className="object-cover"
-                    onError={(e) => { e.currentTarget.src = '/images/cities/default-tx.jpg' }}
+                    onError={(e) => { const t = e.target as HTMLImageElement; if (t.src !== window.location.origin + '/images/cities/default-tx.jpg') { t.src = '/images/cities/default-tx.jpg' } }}
                   />
                 </div>
                 <div style={{ padding: '12px 14px' }}>
@@ -210,8 +213,8 @@ export default function MM1Explore({
         </div>
       </div>
 
-      {/* Section 3 — Navigator Journey (Mock Portal) */}
-      <div className="mb-8">
+      {/* Section 2 — Navigator Journey (Mock Portal, renders first) */}
+      <div className="mb-8" style={{ order: 1 }}>
         <div style={{ marginBottom: '20px' }}>
           <p style={{ fontSize: '11px', fontWeight: 600, color: '#B8912A', letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: '8px' }}>
             Your Navigator Journey
@@ -267,7 +270,7 @@ export default function MM1Explore({
                     fontWeight: isActive ? 700 : 500,
                     color: isActive ? '#B8912A' : '#9A8E82',
                     borderBottom: isActive ? '2px solid #B8912A' : '2px solid transparent',
-                    background: 'transparent',
+                    background: i === 2 && !isActive ? 'rgba(184,145,42,0.06)' : 'transparent',
                     whiteSpace: 'nowrap',
                     cursor: 'pointer',
                     display: 'flex',
@@ -278,6 +281,9 @@ export default function MM1Explore({
                 >
                   <tab.Icon size={14} style={{ verticalAlign: 'middle' }} />
                   <span>{tab.name}</span>
+                  {i === 2 && !isActive && (
+                    <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#B8912A', display: 'inline-block', marginLeft: '2px', opacity: 0.6, flexShrink: 0 }} />
+                  )}
                 </button>
               )
             })}
@@ -350,6 +356,8 @@ export default function MM1Explore({
 
         </div>
       </div>
+
+      </div>{/* end flex reorder wrapper */}
 
       {/* Section 4 — What Makes This Different */}
       <div style={{ marginTop: '2rem', marginBottom: '2rem' }}>

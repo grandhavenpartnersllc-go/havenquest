@@ -135,7 +135,7 @@ function MatchCard({ match, rank, profile, compareSelected, onCompare }: MatchCa
           alt={`${match.location.name}, Texas`}
           fill
           className="object-cover"
-          onError={(e) => { e.currentTarget.src = '/images/cities/default-tx.jpg' }}
+          onError={(e) => { const t = e.target as HTMLImageElement; if (t.src !== window.location.origin + '/images/cities/default-tx.jpg') { t.src = '/images/cities/default-tx.jpg' } }}
         />
       </div>
 
