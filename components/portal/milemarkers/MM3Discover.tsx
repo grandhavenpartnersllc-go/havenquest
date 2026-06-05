@@ -393,6 +393,13 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
   }
 
   if (committed) {
+    const downDisplay = parseCurrency(exactDownPayment)
+      ? `$${parseCurrency(exactDownPayment)!.toLocaleString('en-US')}`
+      : downPayment
+    const proceedsDisplay = parseCurrency(exactHomeProceeds)
+      ? `$${parseCurrency(exactHomeProceeds)!.toLocaleString('en-US')}`
+      : proceeds
+
     return (
       <div>
 
@@ -453,13 +460,32 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
           </p>
 
           <div className="mb-4">
-            <p className="text-xs font-semibold mb-1" style={{ color: '#9A8E82' }}>TOP MATCH</p>
-            <p className="text-lg font-bold" style={{ color: WARM_DARK }}>
-              {sandboxMatches[0]?.location.name} — {sandboxMatches[0]?.matchScore} points
+            <p style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', marginBottom: '4px' }}>
+              {chosenCities.length === 1 ? 'Selected community' : 'Selected communities'}
             </p>
-            <p className="text-xs" style={{ color: '#9A8E82' }}>
-              {sandboxMatches[0]?.location.metroUsed}
-            </p>
+            {chosenCities.length > 0 ? chosenCities.map(cityId => {
+              const city = getAllCities().find(c => c.id === cityId)
+              const match = displayedMatches.find(m => m.location.id === cityId)
+              return city ? (
+                <div key={cityId} style={{ marginBottom: '6px' }}>
+                  <span style={{ fontSize: '15px', fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                    {city.name}
+                  </span>
+                  {match && (
+                    <span style={{ fontSize: '12px', color: 'var(--color-text-tertiary)', marginLeft: '8px' }}>
+                      {match.matchScore}% match
+                    </span>
+                  )}
+                  <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '1px' }}>
+                    {city.metroUsed}
+                  </p>
+                </div>
+              ) : null
+            }) : (
+              <p className="text-sm" style={{ color: WARM_DARK }}>
+                {sandboxMatches[0]?.location.name} — {sandboxMatches[0]?.matchScore} points
+              </p>
+            )}
           </div>
 
           <div className="mb-4">
@@ -484,9 +510,9 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
           <div>
             <p className="text-xs font-semibold mb-1" style={{ color: '#9A8E82' }}>FINANCIAL PICTURE</p>
             <p className="text-sm" style={{ color: '#4B5563' }}>
-              Down payment: {downPayment}
-              {proceeds && proceeds !== 'None' && ` · Proceeds: ${proceeds}`}
-              {' '}· Rate assumption: {interestRate.toFixed(2)}%
+              Down payment: {downDisplay}
+              {proceeds && proceeds !== 'None' && ` · Proceeds: ${proceedsDisplay}`}
+              {' '}· Rate assumption: {effectiveRate.toFixed(2)}% · {loanTerm}-year
             </p>
           </div>
         </div>
