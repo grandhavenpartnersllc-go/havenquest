@@ -36,7 +36,7 @@ export const METRO_OPTIONS = [
 
 export const HOUSEHOLD_OPTIONS: { value: UserProfile['householdSize']; label: string; description: string }[] = [
   { value: '1', label: 'Just me', description: 'Solo living' },
-  { value: '2', label: '2 people', description: 'Partner or roommate' },
+  { value: '2', label: '2 people', description: 'Spouse, partner, or roommate' },
   { value: '3-4', label: 'Family of 3–4', description: 'Small family' },
   { value: '5+', label: 'Family of 5+', description: 'Larger family' },
 ]
