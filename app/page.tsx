@@ -221,22 +221,19 @@ export default function HomePage() {
         {/* Section 6 — Final CTA */}
         <section
           className="py-24 px-4"
-          style={{ backgroundColor: '#16120D' }}
+          style={{ backgroundColor: '#FDFCFA', borderBottom: '1px solid rgba(0,0,0,0.08)' }}
         >
           <div className="max-w-xl mx-auto text-center">
             <h2
-              className="font-bold tracking-tight mb-4 text-white"
+              className="font-bold tracking-tight mb-4 text-gray-900"
               style={{ fontSize: 'clamp(28px, 4vw, 48px)' }}
             >
               Your next chapter starts here.
             </h2>
-            <p className="text-lg mb-8" style={{ color: 'rgba(255,255,255,0.45)' }}>
+            <p className="text-lg mb-8 text-gray-500">
               Two paths into Texas. One guided experience. Begin when you&apos;re ready.
             </p>
-            <p
-              className="text-xs mb-6 mx-auto max-w-sm leading-relaxed"
-              style={{ color: 'rgba(255,255,255,0.25)' }}
-            >
+            <p className="text-xs mb-6 mx-auto max-w-sm leading-relaxed text-gray-400">
               No cost to you. HavenQuest is compensated through our Select Agent
               network — only when you close.
             </p>
