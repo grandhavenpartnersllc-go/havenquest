@@ -96,8 +96,8 @@ export default function SessionResultsPage({ params }: { params: Promise<{ sessi
         <div className="bg-[#08101C] border-b border-white/8 px-4 py-10">
           <div className="max-w-3xl mx-auto">
             <p className="text-blue-400/60 text-[11px] font-bold uppercase tracking-widest mb-3">Your Results</p>
-            <h1 className="text-3xl font-bold text-white tracking-tight">Your Texas matches</h1>
-            <p className="text-white/40 text-sm mt-2">Your full report includes affordability breakdowns, school data, market conditions, and everything you need to make a confident decision.</p>
+            <h1 className="text-3xl font-bold text-white tracking-tight">Your first look at Texas.</h1>
+            <p className="text-white/40 text-sm mt-2">These are your preliminary matches — a first peek at where your life fits in Texas. There&apos;s a lot more ahead. Create your free Navigator portal and we&apos;ll take you the rest of the way.</p>
           </div>
         </div>
 
@@ -115,6 +115,20 @@ export default function SessionResultsPage({ params }: { params: Promise<{ sessi
                   </p>
                 </div>
               )}
+              <p style={{
+                fontSize: '13px',
+                fontStyle: 'italic',
+                color: '#9A8E82',
+                textAlign: 'center',
+                maxWidth: '600px',
+                margin: '0 auto 24px auto',
+                lineHeight: 1.7,
+              }}>
+                We&apos;re just getting started. What you see here is the beginning
+                of your discovery — not the end. Your full Navigator experience
+                goes much deeper into your finances, your priorities, and the
+                communities that truly fit your life.
+              </p>
               <TeaserResults matches={matches.slice(0, 3)} onUnlock={() => setShowGate(true)} />
             </>
           )}
