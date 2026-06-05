@@ -62,6 +62,12 @@ const PROCEEDS_OPTIONS = [
   "I'm not sure yet",
 ]
 
+function parseExactAmount(val: string): number | null {
+  if (!val.trim()) return null
+  const num = parseFloat(val.replace(/[$,\s]/g, ''))
+  return isNaN(num) || num <= 0 ? null : num
+}
+
 type BucketKey = 'mustHaves' | 'niceToHaves' | 'notPriorities' | 'unassigned'
 
 interface MM3DiscoverProps {
@@ -84,6 +90,8 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
   // interestRate is stored and displayed but does not affect ranking math.
   // matchingService.ts uses a hardcoded 7.0% rate. Full interest rate integration is Phase 2.
   const [interestRate, setInterestRate] = useState<number>(RATE_DEFAULT)
+  const [exactDownPayment, setExactDownPayment] = useState<string>('')
+  const [exactHomeProceeds, setExactHomeProceeds] = useState<string>('')
 
   const [mustHaves, setMustHaves] = useState<(keyof LifestyleScores)[]>(
     profile?.mustHaves ?? []
@@ -221,8 +229,8 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
   const topCity = displayedMatches[selectedCityIndex]?.location ?? displayedMatches[0]?.location
   const topCityPrice = topCity?.housing?.medianHomePrice ?? 341800
 
-  const downMid = getDownPaymentMidpoint(downPayment)
-  const procMid = proceeds ? getProceedsMidpoint(proceeds) : 0
+  const downMid = parseExactAmount(exactDownPayment) ?? getDownPaymentMidpoint(downPayment)
+  const procMid = parseExactAmount(exactHomeProceeds) ?? (proceeds ? getProceedsMidpoint(proceeds) : 0)
   const totalFunds = downMid + procMid
   const mortgageBalance = Math.max(0, topCityPrice - totalFunds)
 
@@ -314,6 +322,8 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
           sandbox_committed: true,
           sandbox_committed_at: new Date().toISOString(),
           chosen_communities: chosenCities,
+          exact_down_payment: parseExactAmount(exactDownPayment) ?? null,
+          exact_home_proceeds: parseExactAmount(exactHomeProceeds) ?? null,
         })
         .eq('email', s.user.email.toLowerCase())
 
@@ -685,7 +695,7 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
             {notPriorities.length > 0 && (
               <div>
                 <p className="text-[9px] font-bold uppercase mb-1"
-                   style={{ color: '#9A8E82', letterSpacing: '0.1em' }}>
+                   style={{ color: '#1A5FA8', letterSpacing: '0.1em' }}>
                   Nice to Have
                 </p>
                 <div className="flex flex-wrap gap-1">
@@ -695,7 +705,7 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
                     return (
                       <span key={k}
                             className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-semibold"
-                            style={{ backgroundColor: '#F7F6F3', color: '#6B7280' }}>
+                            style={{ backgroundColor: 'rgba(26,95,168,0.12)', color: '#1A5FA8' }}>
                         <Icon size={10} strokeWidth={2} />
                         {cat.label}
                       </span>
@@ -884,6 +894,26 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
                 <option key={opt} value={opt}>{opt}</option>
               ))}
             </select>
+            <div style={{ marginTop: '6px' }}>
+              <label style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', display: 'block', marginBottom: '4px' }}>
+                Or enter exact amount (optional)
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. $47,500"
+                value={exactDownPayment}
+                onChange={e => { setSandboxTouched(true); setExactDownPayment(e.target.value) }}
+                style={{
+                  width: '100%',
+                  fontSize: '13px',
+                  padding: '6px 10px',
+                  borderRadius: '6px',
+                  border: '0.5px solid var(--color-border-tertiary)',
+                  background: 'var(--color-background-primary)',
+                  color: 'var(--color-text-primary)',
+                }}
+              />
+            </div>
           </div>
 
           <div>
@@ -901,6 +931,26 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
                 <option key={opt} value={opt}>{opt}</option>
               ))}
             </select>
+            <div style={{ marginTop: '6px' }}>
+              <label style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', display: 'block', marginBottom: '4px' }}>
+                Or enter exact amount (optional)
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. $120,000"
+                value={exactHomeProceeds}
+                onChange={e => { setSandboxTouched(true); setExactHomeProceeds(e.target.value) }}
+                style={{
+                  width: '100%',
+                  fontSize: '13px',
+                  padding: '6px 10px',
+                  borderRadius: '6px',
+                  border: '0.5px solid var(--color-border-tertiary)',
+                  background: 'var(--color-background-primary)',
+                  color: 'var(--color-text-primary)',
+                }}
+              />
+            </div>
           </div>
 
           <div>
@@ -983,7 +1033,7 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
         </p>
         <p className="text-xs mb-5" style={{ color: '#9A8E82' }}>
           Click any circle to move a category into that bucket. Rankings update instantly.
-          Gold = Must Have · Green = Important · Gray = Nice to Have
+          Gold = Must Have · Green = Important · Blue = Nice to Have
         </p>
 
         {/* Bucket counter bar */}
