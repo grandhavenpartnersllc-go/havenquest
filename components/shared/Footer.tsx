@@ -11,7 +11,7 @@ export default function Footer() {
               Haven<span className="text-blue-400">Quest</span>
             </p>
             <p className="text-sm leading-relaxed text-white/40">
-              Clarity. Confidence. Peace of mind. Your Lone Star Lifestyle™ awaits.
+              Clarity. Confidence. Peace of mind.<br />Your Lone Star Lifestyle™ awaits.
             </p>
           </div>
 
