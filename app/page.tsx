@@ -60,7 +60,7 @@ export default function HomePage() {
             </p>
             <p className="text-gray-500 leading-relaxed mb-6">
               Whether you&apos;re coming from Chicago, California, or across the
-              state line, Texas is not one place. It&apos;s 101 distinct communities
+              state line, Texas is not one place. It&apos;s hundreds of distinct communities
               across four major metros — each with its own cost of living,
               school systems, lifestyle, and character.
             </p>
@@ -109,7 +109,7 @@ export default function HomePage() {
                 <div className="space-y-4 text-gray-500 leading-relaxed">
                   <p>
                     Most platforms hand you a list of Texas cities and leave
-                    you to figure out the rest. With 101 communities across Austin,
+                    you to figure out the rest. With hundreds of distinct communities across Austin,
                     DFW, Houston, and San Antonio — plus everything in between —
                     that list can feel overwhelming. HavenQuest is different.
                   </p>
