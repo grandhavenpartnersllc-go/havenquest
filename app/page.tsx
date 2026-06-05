@@ -51,8 +51,9 @@ export default function HomePage() {
         <HeroSection />
 
         {/* Section 2 — The Problem */}
-        <section className="py-20 px-4 bg-white">
-          <div className="max-w-2xl mx-auto text-center">
+        <section className="py-20 px-4" style={{ backgroundColor: '#F4F1EC' }}>
+          <div className="max-w-2xl mx-auto">
+            <div style={{ height: '2px', width: '48px', backgroundColor: '#B8912A', marginBottom: '1.5rem' }} />
             <p className="text-lg md:text-xl text-gray-700 leading-relaxed mb-6">
               HavenQuest is built specifically for one of the biggest moves
               in America — relocating to Texas.
@@ -69,11 +70,18 @@ export default function HomePage() {
               hundred other decisions happening at the same time, and most
               people are making them alone.
             </p>
-            <p className="text-gray-500 leading-relaxed mb-6">
-              Schools. Neighborhoods. Timelines. Realtors. Lenders. Movers.
-              Community connections. All of it, all at once, with no one in
-              your corner.
-            </p>
+            <div className="flex flex-wrap gap-2 mb-6">
+              {['Schools', 'Neighborhoods', 'Timelines', 'Realtors', 'Lenders', 'Movers', 'Community connections'].map(tag => (
+                <span
+                  key={tag}
+                  className="bg-white text-gray-600 text-sm px-3 py-1 rounded-full"
+                  style={{ border: '1px solid rgba(0,0,0,0.10)' }}
+                >
+                  {tag}
+                </span>
+              ))}
+              <span className="text-gray-500 text-sm py-1">— all at once, with no one in your corner.</span>
+            </div>
             <p className="text-xl font-bold text-gray-900 tracking-tight">
               HavenQuest changes that — for Texas.
             </p>
