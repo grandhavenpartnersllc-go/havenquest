@@ -54,9 +54,8 @@ export default function HomePage() {
         <section className="py-20 px-4" style={{ backgroundColor: '#F4F1EC' }}>
           <div className="max-w-2xl mx-auto">
             <div style={{ height: '2px', width: '48px', backgroundColor: '#B8912A', marginBottom: '1.5rem' }} />
-            <p className="text-lg md:text-xl text-gray-700 leading-relaxed mb-6">
-              HavenQuest is built specifically for one of the biggest moves
-              in America — relocating to Texas.
+            <p className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight mb-6">
+              Texas is big. Finding your place in it shouldn&apos;t be a guessing game.
             </p>
             <div style={{ borderLeft: '4px solid #B8912A', background: '#F4F1EC', padding: '1rem 1.25rem', borderRadius: '0.5rem', marginBottom: '1.5rem' }}>
               <p style={{ color: '#1a1a1a', fontWeight: 500, lineHeight: 1.6, margin: 0 }}>
