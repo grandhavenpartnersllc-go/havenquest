@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function HeroSection() {
   return (
@@ -6,9 +7,21 @@ export default function HeroSection() {
       className="relative overflow-hidden pt-24 pb-24 px-4"
       style={{ backgroundColor: '#08101C' }}
     >
+      {/* Background image */}
+      <Image
+        src="/images/welcome-to-texas.jpg"
+        alt=""
+        fill
+        className="object-cover absolute inset-0 z-0"
+        priority
+      />
+
+      {/* Dark overlay */}
+      <div className="absolute inset-0 z-10" style={{ background: 'rgba(0,0,0,0.65)' }} />
+
       {/* Radial blue glow */}
       <div
-        className="absolute inset-0 pointer-events-none"
+        className="absolute inset-0 z-[15] pointer-events-none"
         style={{
           backgroundImage:
             'radial-gradient(ellipse 80% 55% at 50% -5%, rgba(26,95,168,0.28) 0%, transparent 65%)',
@@ -17,7 +30,7 @@ export default function HeroSection() {
 
       {/* Subtle grid */}
       <div
-        className="absolute inset-0 pointer-events-none"
+        className="absolute inset-0 z-[15] pointer-events-none"
         style={{
           backgroundImage:
             'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)',
@@ -27,11 +40,11 @@ export default function HeroSection() {
 
       {/* Bottom fade */}
       <div
-        className="absolute bottom-0 inset-x-0 h-24 pointer-events-none"
+        className="absolute bottom-0 inset-x-0 h-24 z-[15] pointer-events-none"
         style={{ background: 'linear-gradient(to top, #F4F5F7, transparent)' }}
       />
 
-      <div className="relative max-w-4xl mx-auto text-center">
+      <div className="relative z-20 max-w-4xl mx-auto text-center">
         {/* Badge */}
         <div className="inline-flex items-center gap-2.5 border border-white/10 bg-white/5 text-blue-300/80 text-xs font-semibold px-4 py-1.5 rounded-full mb-9 tracking-wide">
           <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full" />
