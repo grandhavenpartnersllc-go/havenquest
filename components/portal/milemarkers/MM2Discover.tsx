@@ -238,12 +238,22 @@ export default function MM2Discover({ matches, profile, initialChecklist, initia
                 <button
                   key={match.location.id}
                   onClick={() => setActiveReportIndex(i)}
-                  style={{
-                    padding: '10px 12px',
+                  style={isActive ? {
+                    borderTop: '1.5px solid #B8912A',
+                    borderLeft: '1.5px solid #B8912A',
+                    borderRight: '1.5px solid #B8912A',
+                    borderBottom: 'none',
                     borderRadius: '8px 8px 0 0',
-                    border: '0.5px solid var(--color-border-tertiary)',
-                    borderBottom: isActive ? '2px solid #B8912A' : '0.5px solid var(--color-border-tertiary)',
-                    background: isActive ? 'var(--color-background-primary)' : 'var(--color-background-secondary)',
+                    background: 'var(--color-background-primary)',
+                    padding: '10px 12px',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    transition: 'all 0.15s',
+                  } : {
+                    border: '1.5px solid var(--color-border-secondary)',
+                    borderRadius: '8px 8px 0 0',
+                    background: 'var(--color-background-secondary)',
+                    padding: '10px 12px',
                     cursor: 'pointer',
                     textAlign: 'left',
                     transition: 'all 0.15s',
@@ -271,7 +281,9 @@ export default function MM2Discover({ matches, profile, initialChecklist, initia
           <div
             id="report-section"
             style={{
-              border: '0.5px solid var(--color-border-tertiary)',
+              borderLeft: '1.5px solid #B8912A',
+              borderRight: '1.5px solid #B8912A',
+              borderBottom: '1.5px solid #B8912A',
               borderTop: 'none',
               borderRadius: '0 0 12px 12px',
               padding: '24px',
