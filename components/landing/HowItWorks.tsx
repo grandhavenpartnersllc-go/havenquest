@@ -29,7 +29,7 @@ export default function HowItWorks() {
             className="text-xs font-bold uppercase mb-4"
             style={{ color: GOLD, letterSpacing: '0.18em' }}
           >
-            Your Journey With HavenQuest
+            Find Your Lone Star Lifestyle™
           </p>
           <h2 className="text-4xl font-bold text-gray-900 tracking-tight">
             Three promises. One journey.

@@ -17,7 +17,7 @@ export default function HeroSection() {
       />
 
       {/* Dark overlay */}
-      <div className="absolute inset-0 z-10" style={{ background: 'rgba(0,0,0,0.65)' }} />
+      <div className="absolute inset-0 z-10" style={{ background: 'rgba(0,0,0,0.80)' }} />
 
       {/* Radial blue glow */}
       <div
@@ -45,6 +45,14 @@ export default function HeroSection() {
       />
 
       <div className="relative z-20 max-w-4xl mx-auto text-center">
+        {/* Lone Star Lifestyle label */}
+        <p
+          className="text-xs font-bold uppercase mb-4"
+          style={{ color: '#B8912A', letterSpacing: '0.18em' }}
+        >
+          Find Your Lone Star Lifestyle™
+        </p>
+
         {/* Badge */}
         <div className="inline-flex items-center gap-2.5 border border-white/10 bg-white/5 text-blue-300/80 text-xs font-semibold px-4 py-1.5 rounded-full mb-9 tracking-wide">
           <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full" />
@@ -59,7 +67,7 @@ export default function HeroSection() {
               fontSize: 'clamp(22px, 3.2vw, 42px)',
               fontFamily: '"Times New Roman", Georgia, serif',
               fontWeight: 300,
-              color: 'rgba(255,255,255,0.6)',
+              color: '#FFFFFF',
               marginBottom: '0.05em',
             }}
           >
@@ -74,7 +82,7 @@ export default function HeroSection() {
         </h1>
 
         {/* Subtext */}
-        <p className="text-lg md:text-xl text-white/45 max-w-[580px] mx-auto leading-relaxed mb-11">
+        <p className="text-lg md:text-xl text-white max-w-[580px] mx-auto leading-relaxed mb-11">
           HavenQuest guides your entire relocation journey — from discovering the right Texas community
           to settling into your new home — so you never have to navigate it alone.
         </p>

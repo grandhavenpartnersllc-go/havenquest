@@ -236,7 +236,7 @@ export default function HomePage() {
               className="font-bold tracking-tight mb-4 text-gray-900"
               style={{ fontSize: 'clamp(28px, 4vw, 48px)' }}
             >
-              Your next chapter starts here.
+              Your Lone Star Lifestyle starts here.
             </h2>
             <p className="text-lg mb-8 text-gray-500">
               Two paths into Texas. One guided experience. Begin when you&apos;re ready.
