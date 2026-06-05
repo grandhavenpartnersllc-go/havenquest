@@ -83,7 +83,7 @@ export default function HomePage() {
               <span className="text-gray-500 text-sm py-1">— all at once, with no one in your corner.</span>
             </div>
             <p className="text-xl font-bold text-gray-900 tracking-tight">
-              HavenQuest changes that — for Texas.
+              HavenQuest changes that — for Texans and Future Texans.
             </p>
           </div>
         </section>
