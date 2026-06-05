@@ -83,7 +83,7 @@ export default function HomePage() {
         {/* Section 2b — Split: Difference */}
         <section className="py-20 px-4" style={{ backgroundColor: '#FDFCFA' }}>
           <div className="max-w-5xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-center">
+            <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-stretch">
 
               {/* Left — Text */}
               <div>
@@ -124,7 +124,7 @@ export default function HomePage() {
 
               {/* Right — Image */}
               <div
-                className="relative aspect-video rounded-2xl overflow-hidden"
+                className="relative rounded-2xl overflow-hidden h-full min-h-[400px]"
                 style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)' }}
               >
                 <Image
