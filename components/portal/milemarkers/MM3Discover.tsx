@@ -346,6 +346,7 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
       await supabase
         .from('users')
         .update({
+          current_milemarker: 4,
           sandbox_profile: sandboxData,
           sandbox_committed: true,
           sandbox_committed_at: new Date().toISOString(),
@@ -358,7 +359,9 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
         .eq('email', s.user.email.toLowerCase())
 
       setCommitted(true)
-    } catch {}
+    } catch (err) {
+      console.error('MM3 handleCommit write failed:', err)
+    }
     finally { setCommitting(false) }
   }
 

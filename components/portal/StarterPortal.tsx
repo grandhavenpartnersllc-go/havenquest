@@ -211,7 +211,9 @@ export default function StarterPortal() {
         .from('users')
         .update({ onboarding_acknowledged: true, current_milemarker: 2 })
         .eq('email', supaSession.user.email.toLowerCase())
-    } catch {}
+    } catch (err) {
+      console.error('handleAcknowledge write failed:', err)
+    }
   }
 
   if (!ready) {

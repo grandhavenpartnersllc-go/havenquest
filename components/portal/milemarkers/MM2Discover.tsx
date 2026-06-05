@@ -395,9 +395,22 @@ export default function MM2Discover({ matches, profile, initialChecklist, initia
           direction, Discover is waiting.
         </p>
         <button
-          onClick={() => {
-            const supabase = createClient()
-            supabase.from('users').update({ current_milemarker: 3 }).eq('email', userEmailRef.current).then(() => {})
+          onClick={async () => {
+            try {
+              const supabase = createClient()
+              const { data: { session: supaSession } } = await supabase.auth.getSession()
+              if (!supaSession?.user?.email) {
+                console.error('MM2 advance: no session')
+                onAdvanceToDiscover()
+                return
+              }
+              await supabase
+                .from('users')
+                .update({ current_milemarker: 3 })
+                .eq('email', supaSession.user.email.toLowerCase())
+            } catch (err) {
+              console.error('MM2 advance write failed:', err)
+            }
             onAdvanceToDiscover()
           }}
           className="w-full py-3 rounded-xl font-bold text-sm transition-opacity hover:opacity-90"
