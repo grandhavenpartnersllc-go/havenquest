@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { CityMatch, UserProfile, UserSession } from '../../../types'
 import { LIFESTYLE_CATEGORIES } from '../../../utils/constants'
 import { formatCurrency } from '../../../utils/formatting'
@@ -25,6 +26,96 @@ const NAVIGATOR_STEPS = [
   { number: 9,  name: 'Contract',  description: 'You found it. The right home, in the right place. Going under contract is one of the best feelings in the world — and your whole team is right there celebrating with you.' },
   { number: 10, name: 'Home',      description: "You're home. Everything you hoped for when this journey started — it happened. HavenQuest celebrates with you. And when you're ready, your Journey Recap is waiting to tell the whole story." },
 ]
+
+const MOCK_TABS = [
+  { name: 'Welcome',  icon: '🏠', locked: false },
+  { name: 'Explore',  icon: '🔍', locked: false },
+  { name: 'Discover', icon: '🗺️', locked: false },
+  { name: 'Connect',  icon: '🤝', locked: true  },
+  { name: 'Plan',     icon: '📋', locked: true  },
+  { name: 'Prepare',  icon: '🏘️', locked: true  },
+  { name: 'Match',    icon: '🔑', locked: true  },
+  { name: 'Engage',   icon: '📝', locked: true  },
+  { name: 'Contract', icon: '🗓️', locked: true  },
+  { name: 'Home',     icon: '⭐', locked: true  },
+]
+
+const TAB_CONTENT = [
+  {
+    headline: 'Welcome to your Navigator.',
+    body: 'This is your private HavenQuest portal — your home base for the entire relocation journey. Everything you do here is saved and waiting for you when you come back. Start by exploring your Texas city matches in the next step.',
+    role: 'Your first step',
+  },
+  {
+    headline: 'Discover your top Texas matches.',
+    body: 'Answer four quick questions about your income, household, financial picture, and priorities. The HavenQuest intelligence platform scores all 101 Texas communities and surfaces your top matches — the places where your life genuinely fits.',
+    role: 'You + the platform',
+  },
+  {
+    headline: 'Refine your direction.',
+    body: "Dig deeper into your matches. Adjust your priorities and financial picture in real time and watch how your rankings change. Choose up to 2 communities to highlight. When you're ready, commit your direction and your Market Director steps in.",
+    role: 'You + the platform',
+  },
+  {
+    headline: 'Meet your Market Director.',
+    body: 'Your personal Market Director reviews your full profile and reaches out within 24 hours. They know your priorities, your budget, and your target communities before the first call. This is where the human guidance begins.',
+    role: 'Market Director',
+  },
+  {
+    headline: 'Narrow your communities.',
+    body: "Your Market Director helps you refine your shortlist to specific neighborhoods and introduces you to a lender for pre-qualification. By the end of this stage you know exactly where you're headed and what you can spend.",
+    role: 'You + Market Director',
+  },
+  {
+    headline: 'Meet your Select Agent.',
+    body: "Your Market Director personally introduces you to a vetted HavenQuest Select Agent in your target market. They've already read your profile. Your first conversation picks up where your Market Director left off.",
+    role: 'Market Director + Select Agent',
+  },
+  {
+    headline: 'Find your home.',
+    body: 'Your Select Agent schedules showings in your target communities. Properties you tour appear in your Property Decision Workspace — with financial comparisons, lifestyle alignment scores, and space for your notes and theirs.',
+    role: 'Select Agent + Market Director',
+  },
+  {
+    headline: 'Make your move.',
+    body: 'When you find the right home, your Select Agent prepares and submits your offer. Your Market Director keeps your portal checklist current and stays by your side through inspection, appraisal, and option period decisions.',
+    role: 'Select Agent + Market Director',
+  },
+  {
+    headline: 'Close with confidence.',
+    body: 'Your Market Director coordinates every piece of the closing process — insurance, movers, utilities, school enrollment, change of address. Nothing falls through the cracks. You arrive in Texas prepared and ready.',
+    role: 'You + Market Director + Select Agent',
+  },
+  {
+    headline: "You're home in Texas.",
+    body: 'Your Market Director delivers your Welcome Home moment and schedules a 30-day check-in to make sure everything is going well. Your Lone Star Lifestyle™ begins here.',
+    role: 'Journey complete',
+  },
+]
+
+const ROLE_CONFIG: Record<string, Array<{ label: string; color: string; bg: string }>> = {
+  'Your first step':              [{ label: 'Your first step',   color: '#B8912A', bg: 'rgba(184,145,42,0.15)' }],
+  'You + the platform':           [{ label: 'You + the platform', color: '#1D9E75', bg: 'rgba(29,158,117,0.12)' }],
+  'Market Director':              [{ label: 'Market Director',    color: '#B8912A', bg: 'rgba(184,145,42,0.15)' }],
+  'You + Market Director':        [
+    { label: 'You',              color: '#1D9E75', bg: 'rgba(29,158,117,0.12)' },
+    { label: 'Market Director',  color: '#B8912A', bg: 'rgba(184,145,42,0.15)' },
+  ],
+  'Market Director + Select Agent': [
+    { label: 'Market Director',  color: '#B8912A', bg: 'rgba(184,145,42,0.15)' },
+    { label: 'Select Agent',     color: '#185FA5', bg: 'rgba(24,95,165,0.12)' },
+  ],
+  'Select Agent + Market Director': [
+    { label: 'Select Agent',     color: '#185FA5', bg: 'rgba(24,95,165,0.12)' },
+    { label: 'Market Director',  color: '#B8912A', bg: 'rgba(184,145,42,0.15)' },
+  ],
+  'You + Market Director + Select Agent': [
+    { label: 'You',              color: '#1D9E75', bg: 'rgba(29,158,117,0.12)' },
+    { label: 'Market Director',  color: '#B8912A', bg: 'rgba(184,145,42,0.15)' },
+    { label: 'Select Agent',     color: '#185FA5', bg: 'rgba(24,95,165,0.12)' },
+  ],
+  'Journey complete':             [{ label: '⭐ Journey complete', color: '#E8E2D9', bg: '#16120D' }],
+}
 
 function getBuyerSegment(profile: UserProfile): string {
   const income = profile.annualIncome
@@ -148,6 +239,8 @@ export default function MM1Explore({
   onboardingAcknowledged,
   onAcknowledge,
 }: MM1ExploreProps) {
+  const [activeTab, setActiveTab] = useState(0)
+
   return (
     <div>
 
@@ -224,130 +317,125 @@ export default function MM1Explore({
         </p>
       </div>
 
-      {/* Section 4 — Your Navigator Journey */}
+      {/* Section 4 — Mock Portal Orientation */}
       <div className="mb-8">
-        <p
-          className="text-[10px] font-bold uppercase mb-6"
-          style={{ color: GOLD, letterSpacing: '0.18em' }}
-        >
+        <p className="text-[10px] font-bold uppercase mb-3" style={{ color: GOLD, letterSpacing: '0.18em' }}>
           Your Navigator Journey
         </p>
-
-        <p className="text-sm leading-relaxed mb-6" style={{ color: '#6B7280' }}>
-          Your journey with HavenQuest unfolds across 10 MileMarkers — from your
-          first city matches all the way to closing day. Each step builds on the last.
-          Below is your complete path. You&apos;re at MileMarker 1 today, and
-          everything ahead is designed to get you home.
+        <p className="text-sm leading-relaxed mb-4" style={{ color: '#6B7280' }}>
+          Your journey unfolds across 10 MileMarkers — from your first city matches all the way to closing day.
+          Click each stage below to explore what&apos;s ahead.
         </p>
 
-        <div className="space-y-3">
-          {NAVIGATOR_STEPS.map(step => {
-            const isComplete = step.number < currentMileMarker
-            const isActive = step.number === currentMileMarker
-            const isUpcoming = step.number > currentMileMarker
+        {/* Mock Portal */}
+        <div style={{ borderRadius: '14px', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 4px 28px rgba(0,0,0,0.14)' }}>
 
-            return (
-              <div
-                key={step.number}
-                className="rounded-xl p-4"
-                style={{
-                  backgroundColor: isComplete
-                    ? '#F0FAF4'
-                    : isActive
-                    ? '#FDFCFA'
-                    : '#FDFCFA',
-                  border: isActive
-                    ? `2px solid ${GOLD}`
-                    : isComplete
-                    ? '1.5px solid #C6E8D4'
-                    : '1.5px solid #E8E4DE',
-                  boxShadow: isActive
-                    ? '0 2px 12px rgba(184,145,42,0.12)'
-                    : '0 1px 3px rgba(0,0,0,0.04)',
-                }}
-              >
-                {/* Card header — number + name + status */}
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-3">
-                    {/* MileMarker number circle */}
-                    <div
-                      className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 font-bold text-sm"
-                      style={{
-                        backgroundColor: isComplete
-                          ? '#2D7D4E'
-                          : isActive
-                          ? GOLD
-                          : '#E8E4DE',
-                        color: isComplete || isActive ? '#FFFFFF' : '#9A8E82',
-                      }}
-                    >
-                      {isComplete ? '✓' : step.number}
-                    </div>
+          {/* Mock Nav Bar */}
+          <div style={{ backgroundColor: '#16120D', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ fontWeight: 700, fontSize: '14px', color: '#E8E2D9', letterSpacing: '-0.01em' }}>Haven</span>
+            <span style={{ fontWeight: 700, fontSize: '14px', color: '#B8912A', letterSpacing: '-0.01em' }}>Quest</span>
+            <span style={{ fontSize: '9px', fontWeight: 700, color: '#B8912A', letterSpacing: '0.2em', textTransform: 'uppercase', marginLeft: '3px' }}>Navigator</span>
+          </div>
 
-                    {/* MileMarker name */}
-                    <span
-                      className="font-bold text-[15px] tracking-tight"
-                      style={{
-                        color: isComplete
-                          ? '#2D7D4E'
-                          : isActive
-                          ? '#16120D'
-                          : '#4B5563',
-                      }}
-                    >
-                      {step.name}
-                    </span>
-                  </div>
+          {/* Tab Bar */}
+          <div style={{ backgroundColor: '#1C1814', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'stretch', overflowX: 'auto' }}>
 
-                  {/* Status badge */}
-                  <span
-                    className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full"
-                    style={{
-                      backgroundColor: isComplete
-                        ? '#E8F5EE'
-                        : isActive
-                        ? 'rgba(184,145,42,0.12)'
-                        : '#F0EDE6',
-                      color: isComplete
-                        ? '#2D7D4E'
-                        : isActive
-                        ? GOLD
-                        : '#9A8E82',
-                    }}
-                  >
-                    {isComplete ? 'Complete' : isActive ? 'You Are Here' : 'Coming Up'}
-                  </span>
-                </div>
-
-                {/* Divider */}
-                <div
-                  className="mb-3"
+            {/* MM1–MM5 (unlocked) */}
+            {MOCK_TABS.slice(0, 5).map((tab, i) => {
+              const isActive = activeTab === i
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setActiveTab(i)}
                   style={{
-                    height: '1px',
-                    backgroundColor: isComplete
-                      ? '#C6E8D4'
-                      : isActive
-                      ? 'rgba(184,145,42,0.2)'
-                      : '#E8E4DE',
-                  }}
-                />
-
-                {/* Description */}
-                <p
-                  className="text-sm leading-relaxed"
-                  style={{
-                    color: isComplete
-                      ? '#4B7A5E'
-                      : isActive
-                      ? '#374151'
-                      : '#6B7280',
+                    padding: '10px 11px',
+                    fontSize: '11px',
+                    fontWeight: isActive ? 700 : 500,
+                    color: isActive ? '#B8912A' : '#9A8E82',
+                    borderBottom: isActive ? '2px solid #B8912A' : '2px solid transparent',
+                    background: 'transparent',
+                    whiteSpace: 'nowrap',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    flexShrink: 0,
                   }}
                 >
-                  {step.description}
-                </p>
-              </div>
-            )
-          })}
+                  <span>{tab.icon}</span>
+                  <span>{tab.name}</span>
+                </button>
+              )
+            })}
+
+            {/* Phase divider — Property Decision */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 8px', flexShrink: 0 }}>
+              <span style={{ fontSize: '8px', color: '#6B6560', whiteSpace: 'nowrap', marginBottom: '3px' }}>→ Property Decision</span>
+              <div style={{ width: '1px', height: '14px', backgroundColor: 'rgba(255,255,255,0.12)' }} />
+            </div>
+
+            {/* MM6–MM10 (locked) */}
+            {MOCK_TABS.slice(5).map((tab, i) => {
+              const tabIndex = i + 5
+              const isActive = activeTab === tabIndex
+              return (
+                <button
+                  key={tabIndex}
+                  type="button"
+                  onClick={() => setActiveTab(tabIndex)}
+                  style={{
+                    padding: '10px 11px',
+                    fontSize: '11px',
+                    fontWeight: isActive ? 700 : 500,
+                    color: isActive ? '#B8912A' : '#6B6560',
+                    borderBottom: isActive ? '2px solid #B8912A' : '2px solid transparent',
+                    background: 'transparent',
+                    whiteSpace: 'nowrap',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    flexShrink: 0,
+                  }}
+                >
+                  <span style={{ fontSize: '9px', opacity: 0.5 }}>🔒</span>
+                  <span>{tab.icon}</span>
+                  <span>{tab.name}</span>
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Content Area */}
+          <div style={{ backgroundColor: CARD_BG, padding: '20px 20px 24px', minHeight: '180px' }}>
+            {(() => {
+              const tab = TAB_CONTENT[activeTab]
+              const pills = ROLE_CONFIG[tab.role] ?? []
+              return (
+                <>
+                  <div style={{ fontSize: '28px', marginBottom: '8px', lineHeight: 1 }}>{MOCK_TABS[activeTab].icon}</div>
+                  <h3 style={{ fontSize: '17px', fontWeight: 700, color: WARM_DARK, marginBottom: '10px', letterSpacing: '-0.01em', lineHeight: 1.3 }}>
+                    {tab.headline}
+                  </h3>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' }}>
+                    {pills.map((pill, pi) => (
+                      <span key={pi} style={{
+                        fontSize: '11px', fontWeight: 600, padding: '3px 10px', borderRadius: '20px',
+                        backgroundColor: pill.bg, color: pill.color,
+                      }}>
+                        {pill.label}
+                      </span>
+                    ))}
+                  </div>
+                  <p style={{ fontSize: '13px', lineHeight: 1.65, color: '#4B5563', margin: 0 }}>
+                    {tab.body}
+                  </p>
+                </>
+              )
+            })()}
+          </div>
+
         </div>
       </div>
 
