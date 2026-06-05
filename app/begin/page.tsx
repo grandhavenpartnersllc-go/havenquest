@@ -102,9 +102,12 @@ export default function BeginPage() {
                style={{ color: GOLD, letterSpacing: '0.18em' }}>
               Your Navigator Journey
             </p>
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight mb-6">
-              First, tell us about your move.
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight mb-4">
+              So, you&apos;ve decided on Texas. Welcome.
             </h2>
+            <p className="text-base text-gray-500 leading-relaxed max-w-lg mb-8">
+              We&apos;re glad you&apos;re here. Before we match you to the right Texas community, we just need to understand a little about your move. It&apos;ll only take a minute — and everything from here gets more personal.
+            </p>
             <div className="grid md:grid-cols-2 gap-4">
 
               {/* Card A — Out of state */}
