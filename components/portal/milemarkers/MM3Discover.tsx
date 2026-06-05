@@ -126,6 +126,7 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
   const [chosenCities, setChosenCities] = useState<string[]>([])
   const [confirmed, setConfirmed] = useState(false)
   const [financialsLocked, setFinancialsLocked] = useState(false)
+  const [worksheetDismissed, setWorksheetDismissed] = useState(false)
 
   const rankingsRef = useRef<HTMLDivElement>(null)
 
@@ -199,6 +200,12 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
           if (data?.preferred_city) setPreferredCity(data.preferred_city)
         })
     })
+  }, [])
+
+  useEffect(() => {
+    if (sessionStorage.getItem('mm3_worksheet_dismissed') === 'true') {
+      setWorksheetDismissed(true)
+    }
   }, [])
 
   // Build sandbox profile from current slider/priority state.
@@ -516,6 +523,58 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
 
   return (
     <div>
+
+      {/* Worksheet orientation banner */}
+      {!worksheetDismissed && (
+        <div style={{
+          borderLeft: '4px solid #B8912A',
+          background: 'rgba(184,145,42,0.06)',
+          borderRadius: '0 8px 8px 0',
+          padding: '16px 20px',
+          marginBottom: '24px',
+          position: 'relative',
+        }}>
+          <p style={{ fontSize: '10px', fontWeight: 600, color: '#B8912A', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '8px' }}>
+            Your Discover Worksheet
+          </p>
+          <p style={{ fontSize: '13px', color: 'var(--color-text-primary)', fontWeight: 500, marginBottom: '8px', lineHeight: 1.5 }}>
+            This is one of the most important steps in your Navigator journey.
+          </p>
+          <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: 1.6, marginBottom: '8px' }}>
+            Before your Market Director can guide you effectively, they need
+            a clear picture of two things: where you want to be, and what you
+            can realistically spend. This worksheet helps you define both.
+          </p>
+          <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
+            Take your time. Adjust your priorities. Refine your financial
+            picture. Explore the cities that match your life. When you&apos;re
+            ready — lock your financials, choose your top communities, and
+            commit your direction. Your Market Director receives everything
+            you complete here before your first conversation.
+          </p>
+          <button
+            onClick={() => {
+              setWorksheetDismissed(true)
+              sessionStorage.setItem('mm3_worksheet_dismissed', 'true')
+            }}
+            style={{
+              position: 'absolute',
+              top: '12px',
+              right: '16px',
+              background: 'transparent',
+              border: 'none',
+              fontSize: '12px',
+              color: '#B8912A',
+              cursor: 'pointer',
+              fontWeight: 500,
+              padding: '4px 8px',
+              borderRadius: '4px',
+            }}
+          >
+            Got it ✓
+          </button>
+        </div>
+      )}
 
       {/* Section 1 — Header */}
       <div className="mb-6">
