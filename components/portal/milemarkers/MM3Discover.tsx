@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { Lock } from 'lucide-react'
 import { CityMatch, UserProfile, UserSession, SandboxProfile, LifestyleScores } from '../../../types'
 import FullReport from '../../results/FullReport'
 import { LIFESTYLE_CATEGORIES } from '../../../utils/constants'
@@ -504,7 +505,7 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
           <div className="rounded-xl p-4"
                style={{ backgroundColor: 'rgba(184,145,42,0.08)', border: `1px solid ${GOLD}33` }}>
             <p className="text-sm font-medium" style={{ color: '#7A5A1A' }}>
-              🔒 Connect (MM4) will unlock when your Market Director initiates contact.
+              <Lock size={13} style={{ verticalAlign: 'middle', marginRight: 4 }} /> Connect (MM4) will unlock when your Market Director initiates contact.
             </p>
           </div>
         </div>
@@ -821,7 +822,7 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
                   cursor: 'pointer',
                 }}
               >
-                <span>{financialsLocked ? '✓' : '🔒'}</span>
+                <span>{financialsLocked ? '✓' : <Lock size={14} style={{ verticalAlign: 'middle' }} />}</span>
                 <span>{financialsLocked ? 'Financials locked' : 'Lock my financials'}</span>
               </button>
             </div>

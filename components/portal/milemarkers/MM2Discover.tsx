@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { Download, Mail } from 'lucide-react'
+import { Download, Mail, Map } from 'lucide-react'
 import { CityMatch, UserProfile } from '../../../types'
 import { getDownPaymentMidpoint, getProceedsMidpoint } from '../../../services/matchingService'
 import { createClient } from '../../../lib/supabase/client'
@@ -204,7 +204,7 @@ export default function MM2Discover({ matches, profile, initialChecklist, initia
       ) : (
         <section>
           <Card className="text-center py-10">
-            <div className="text-4xl mb-4">🗺️</div>
+            <div className="mb-4"><Map size={48} style={{ color: 'var(--color-text-tertiary)' }} /></div>
             <h2
               className="font-bold text-lg tracking-tight mb-2"
               style={{ color: WARM_DARK }}

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { Phone } from 'lucide-react'
 import { UserSession, FamilyProfile } from '../../../types'
 import { createClient } from '../../../lib/supabase/client'
 
@@ -122,7 +123,7 @@ export default function MM4Connect({ session }: MM4ConnectProps) {
              style={{ borderTop: '1px solid #F0EDE6' }}>
           <div className="rounded-xl px-4 py-2 text-sm font-semibold"
                style={{ backgroundColor: '#F7F6F3', color: '#4B5563' }}>
-            📞 Reaching out within 24 hours
+            <Phone size={14} style={{ verticalAlign: 'middle', marginRight: 4 }} /> Reaching out within 24 hours
           </div>
         </div>
       </div>

@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
+import { Home, Search, Map, Handshake, ClipboardList, Building2, Key, FileText, Calendar, Star, Lock } from 'lucide-react'
 import { CityMatch, UserProfile, UserSession } from '../../../types'
 import { LIFESTYLE_CATEGORIES } from '../../../utils/constants'
 import { formatCurrency } from '../../../utils/formatting'
@@ -27,17 +28,17 @@ const NAVIGATOR_STEPS = [
   { number: 10, name: 'Home',      description: "You're home. Everything you hoped for when this journey started — it happened. HavenQuest celebrates with you. And when you're ready, your Journey Recap is waiting to tell the whole story." },
 ]
 
-const MOCK_TABS = [
-  { name: 'Welcome',  icon: '🏠', locked: false },
-  { name: 'Explore',  icon: '🔍', locked: false },
-  { name: 'Discover', icon: '🗺️', locked: false },
-  { name: 'Connect',  icon: '🤝', locked: true  },
-  { name: 'Plan',     icon: '📋', locked: true  },
-  { name: 'Prepare',  icon: '🏘️', locked: true  },
-  { name: 'Match',    icon: '🔑', locked: true  },
-  { name: 'Engage',   icon: '📝', locked: true  },
-  { name: 'Contract', icon: '🗓️', locked: true  },
-  { name: 'Home',     icon: '⭐', locked: true  },
+const MOCK_TABS: Array<{ name: string; Icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>; locked: boolean }> = [
+  { name: 'Welcome',  Icon: Home,          locked: false },
+  { name: 'Explore',  Icon: Search,        locked: false },
+  { name: 'Discover', Icon: Map,           locked: false },
+  { name: 'Connect',  Icon: Handshake,     locked: true  },
+  { name: 'Plan',     Icon: ClipboardList, locked: true  },
+  { name: 'Prepare',  Icon: Building2,     locked: true  },
+  { name: 'Match',    Icon: Key,           locked: true  },
+  { name: 'Engage',   Icon: FileText,      locked: true  },
+  { name: 'Contract', Icon: Calendar,      locked: true  },
+  { name: 'Home',     Icon: Star,          locked: true  },
 ]
 
 const TAB_CONTENT = [
@@ -93,7 +94,7 @@ const TAB_CONTENT = [
   },
 ]
 
-const ROLE_CONFIG: Record<string, Array<{ label: string; color: string; bg: string }>> = {
+const ROLE_CONFIG: Record<string, Array<{ label: React.ReactNode; color: string; bg: string }>> = {
   'Your first step':              [{ label: 'Your first step',   color: '#B8912A', bg: 'rgba(184,145,42,0.15)' }],
   'You + the platform':           [{ label: 'You + the platform', color: '#1D9E75', bg: 'rgba(29,158,117,0.12)' }],
   'Market Director':              [{ label: 'Market Director',    color: '#B8912A', bg: 'rgba(184,145,42,0.15)' }],
@@ -114,7 +115,7 @@ const ROLE_CONFIG: Record<string, Array<{ label: string; color: string; bg: stri
     { label: 'Market Director',  color: '#B8912A', bg: 'rgba(184,145,42,0.15)' },
     { label: 'Select Agent',     color: '#185FA5', bg: 'rgba(24,95,165,0.12)' },
   ],
-  'Journey complete':             [{ label: '⭐ Journey complete', color: '#E8E2D9', bg: '#16120D' }],
+  'Journey complete':             [{ label: <><Star size={12} style={{ verticalAlign: 'middle', marginRight: '3px' }} />Journey complete</>, color: '#E8E2D9', bg: '#16120D' }],
 }
 
 function getBuyerSegment(profile: UserProfile): string {
@@ -368,7 +369,7 @@ export default function MM1Explore({
                     flexShrink: 0,
                   }}
                 >
-                  <span>{tab.icon}</span>
+                  <tab.Icon size={14} style={{ verticalAlign: 'middle' }} />
                   <span>{tab.name}</span>
                 </button>
               )
@@ -401,8 +402,8 @@ export default function MM1Explore({
                     flexShrink: 0,
                   }}
                 >
-                  <span style={{ fontSize: '9px', opacity: 0.5 }}>🔒</span>
-                  <span>{tab.icon}</span>
+                  <Lock size={12} style={{ opacity: 0.5, verticalAlign: 'middle' }} />
+                  <tab.Icon size={14} style={{ verticalAlign: 'middle' }} />
                   <span>{tab.name}</span>
                 </button>
               )
@@ -415,9 +416,10 @@ export default function MM1Explore({
             {(() => {
               const tab = TAB_CONTENT[activeTab]
               const pills = ROLE_CONFIG[tab.role] ?? []
+              const TabIcon = MOCK_TABS[activeTab].Icon
               return (
                 <>
-                  <div style={{ fontSize: '28px', marginBottom: '8px', lineHeight: 1 }}>{MOCK_TABS[activeTab].icon}</div>
+                  <div style={{ marginBottom: '8px' }}><TabIcon size={24} /></div>
                   <h3 style={{ fontSize: '17px', fontWeight: 700, color: WARM_DARK, marginBottom: '10px', letterSpacing: '-0.01em', lineHeight: 1.3 }}>
                     {tab.headline}
                   </h3>

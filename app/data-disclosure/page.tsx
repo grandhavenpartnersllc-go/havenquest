@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { Lock } from 'lucide-react'
 import Header from '../../components/shared/Header'
 import Footer from '../../components/shared/Footer'
 
@@ -50,7 +51,7 @@ export default function DataDisclosurePage() {
               <div className="flex items-start gap-3 mb-5">
                 <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
                      style={{ backgroundColor: '#E8F5EE' }}>
-                  <span className="text-lg">🔒</span>
+                  <Lock size={18} />
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-gray-900 tracking-tight">
