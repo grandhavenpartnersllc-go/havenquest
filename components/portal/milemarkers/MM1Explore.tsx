@@ -134,12 +134,12 @@ export default function MM1Explore({
         <h1 style={{ fontSize: '28px', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '16px', lineHeight: 1.3 }}>
           Welcome{firstName !== 'there' ? `, ${firstName}` : ''}. Your Texas journey starts here.
         </h1>
-        <p style={{ fontSize: '15px', color: 'var(--color-text-secondary)', lineHeight: 1.7, maxWidth: '600px', marginBottom: '12px' }}>
+        <p style={{ fontSize: '15px', color: 'var(--color-text-secondary)', lineHeight: 1.7, maxWidth: '100%', marginBottom: '12px' }}>
           This is your private HavenQuest Navigator — your home base for
           the entire relocation journey. Everything you do here is saved
           and waiting for you when you come back.
         </p>
-        <p style={{ fontSize: '15px', color: 'var(--color-text-secondary)', lineHeight: 1.7, maxWidth: '600px' }}>
+        <p style={{ fontSize: '15px', color: 'var(--color-text-secondary)', lineHeight: 1.7, maxWidth: '100%' }}>
           You&apos;ve taken the first step. Now let us show you what&apos;s ahead —
           and give you a first look at where your life fits in Texas.
         </p>
