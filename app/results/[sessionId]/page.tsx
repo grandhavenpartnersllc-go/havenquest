@@ -2,9 +2,10 @@
 
 import { use, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Image from 'next/image'
+import { Lock } from 'lucide-react'
 import Header from '../../../components/shared/Header'
 import Footer from '../../../components/shared/Footer'
-import TeaserResults from '../../../components/results/TeaserResults'
 import EmailGate from '../../../components/results/EmailGate'
 import PasswordCreation from '../../../components/results/PasswordCreation'
 import { CityMatch, UserProfile, UserSession } from '../../../types'
@@ -129,7 +130,78 @@ export default function SessionResultsPage({ params }: { params: Promise<{ sessi
                 goes much deeper into your finances, your priorities, and the
                 communities that truly fit your life.
               </p>
-              <TeaserResults matches={matches.slice(0, 3)} onUnlock={() => setShowGate(true)} />
+              {/* Horizontal city cards */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', maxWidth: '900px', margin: '0 auto 24px auto' }}>
+                {matches.slice(0, 3).map((match, i) => {
+                  const isLocked = i > 0
+                  const labels = ['#1 Top Pick', '#2 Runner-Up', '#3 Strong Alt']
+                  return (
+                    <div
+                      key={match.location.id}
+                      style={{
+                        borderRadius: '12px',
+                        border: i === 0 ? '1.5px solid #B8912A' : '0.5px solid var(--color-border-tertiary)',
+                        background: 'var(--color-background-primary)',
+                        overflow: 'hidden',
+                        position: 'relative',
+                        boxShadow: i === 0 ? '0 4px 20px rgba(184,145,42,0.15)' : '0 1px 4px rgba(0,0,0,0.06)',
+                      }}
+                    >
+                      {/* City image */}
+                      <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: 'var(--color-background-tertiary)', filter: isLocked ? 'blur(3px)' : 'none' }}>
+                        <Image
+                          src={`/images/cities/${match.location.id}.jpg`}
+                          alt={`${match.location.name}, Texas`}
+                          fill
+                          className="object-cover"
+                          onError={(e) => { const target = e.target as HTMLImageElement; if (!target.src.includes('default-tx')) { target.src = '/images/cities/default-tx.jpg' } }}
+                        />
+                      </div>
+                      {/* Card content */}
+                      <div style={{ padding: '14px 16px', filter: isLocked ? 'blur(3px)' : 'none' }}>
+                        <p style={{ fontSize: '10px', fontWeight: 600, color: '#B8912A', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>
+                          {labels[i]}
+                        </p>
+                        <p style={{ fontSize: '17px', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '2px' }}>
+                          {match.location.name}
+                        </p>
+                        <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '10px' }}>
+                          {match.location.metroUsed}
+                        </p>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '22px', fontWeight: 700, color: '#B8912A' }}>{match.matchScore}%</span>
+                          <span style={{ fontSize: '11px', color: 'var(--color-text-tertiary)' }}>match</span>
+                        </div>
+                      </div>
+                      {/* Lock overlay */}
+                      {isLocked && (
+                        <div style={{ position: 'absolute', inset: 0, background: 'rgba(253,252,250,0.75)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px', backdropFilter: 'blur(2px)' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(184,145,42,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Lock size={18} style={{ color: '#B8912A' }} />
+                          </div>
+                          <p style={{ fontSize: '12px', fontWeight: 500, color: 'var(--color-text-primary)', textAlign: 'center', maxWidth: '120px', lineHeight: 1.4 }}>
+                            Create your free portal to unlock
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* Unlock CTA — appears immediately below cards */}
+              <div style={{ textAlign: 'center', maxWidth: '900px', margin: '0 auto' }}>
+                <button
+                  onClick={() => setShowGate(true)}
+                  className="bg-accent text-white px-10 py-4 rounded-xl font-bold text-sm hover:bg-[#154d8a] transition-colors"
+                  style={{ boxShadow: '0 2px 10px rgba(26,95,168,0.28)' }}
+                >
+                  Create my free portal — see all my matches →
+                </button>
+                <p style={{ fontSize: '12px', color: '#9A8E82', marginTop: '10px' }}>
+                  Free. No credit card. Your full results are waiting.
+                </p>
+              </div>
             </>
           )}
 
