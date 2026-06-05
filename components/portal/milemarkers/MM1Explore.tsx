@@ -159,17 +159,18 @@ export default function MM1Explore({
           telling us at this stage.
         </p>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '12px', marginBottom: '16px' }}>
           {matches.slice(0, 3).map((match, i) => {
-            const labels = ['Top Pick', 'Runner-Up', 'Strong Alt']
+            const labels = ['#1 Match', '#2 Match', '#3 Match']
             return (
               <div key={match.location.id} style={{
-                overflow: 'hidden',
-                background: i === 0 ? '#16120D' : 'var(--color-background-primary)',
-                borderRadius: '8px',
+                borderRadius: '12px',
                 border: '0.5px solid var(--color-border-tertiary)',
+                background: 'var(--color-background-primary)',
+                overflow: 'hidden',
+                boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
               }}>
-                <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden', background: 'var(--color-background-tertiary)' }}>
+                <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: 'var(--color-background-tertiary)' }}>
                   <Image
                     src={`/images/cities/${match.location.id}.jpg`}
                     alt={`${match.location.name}, Texas`}
@@ -178,20 +179,19 @@ export default function MM1Explore({
                     onError={(e) => { e.currentTarget.src = '/images/cities/default-tx.jpg' }}
                   />
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px' }}>
-                  <div>
-                    <p style={{ fontSize: '10px', fontWeight: 500, color: i === 0 ? '#B8912A' : 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '2px' }}>
-                      {labels[i]}
-                    </p>
-                    <p style={{ fontSize: '15px', fontWeight: 600, color: i === 0 ? '#E8E2D9' : 'var(--color-text-primary)' }}>
-                      {match.location.name}
-                    </p>
-                    <p style={{ fontSize: '12px', color: i === 0 ? 'rgba(232,226,217,0.5)' : 'var(--color-text-tertiary)' }}>
-                      {match.location.metroUsed}
-                    </p>
-                  </div>
-                  <div style={{ fontSize: '20px', fontWeight: 700, color: i === 0 ? '#B8912A' : 'var(--color-text-secondary)' }}>
-                    {match.matchScore}%
+                <div style={{ padding: '12px 14px' }}>
+                  <p style={{ fontSize: '10px', fontWeight: 500, color: '#B8912A', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>
+                    {labels[i]}
+                  </p>
+                  <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: '2px' }}>
+                    {match.location.name}
+                  </p>
+                  <p style={{ fontSize: '12px', color: 'var(--color-text-tertiary)', marginBottom: '8px' }}>
+                    {match.location.metroUsed}
+                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--color-text-tertiary)' }}>Match score</span>
+                    <span style={{ fontSize: '18px', fontWeight: 700, color: '#B8912A' }}>{match.matchScore}%</span>
                   </div>
                 </div>
               </div>
@@ -212,14 +212,26 @@ export default function MM1Explore({
 
       {/* Section 3 — Navigator Journey (Mock Portal) */}
       <div className="mb-8">
-        <div style={{ marginBottom: '1rem' }}>
+        <div style={{ marginBottom: '20px' }}>
           <p style={{ fontSize: '11px', fontWeight: 600, color: '#B8912A', letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: '8px' }}>
             Your Navigator Journey
           </p>
-          <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
-            Your journey unfolds across 10 MileMarkers — from your first city
-            matches all the way to closing day. Click each stage below to
-            explore what&apos;s ahead and who&apos;s with you at each step.
+          <h2 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '12px', lineHeight: 1.3 }}>
+            This portal is where you&apos;ll live throughout the entire process.
+          </h2>
+          <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', lineHeight: 1.7, marginBottom: '8px' }}>
+            From your first city matches all the way to closing day —
+            everything happens here. Your progress is saved, your Market
+            Director works from this portal, and every step of your
+            relocation is tracked in one place.
+          </p>
+          <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', lineHeight: 1.7, marginBottom: '4px' }}>
+            Your journey unfolds across 10 MileMarkers. Each one has a
+            purpose, a set of actions, and a guide.
+          </p>
+          <p style={{ fontSize: '13px', fontWeight: 500, color: '#B8912A', marginBottom: '16px' }}>
+            Click any stage below to see what&apos;s included and who&apos;s
+            with you at each step. →
           </p>
         </div>
 
@@ -369,6 +381,17 @@ export default function MM1Explore({
             </p>
           </div>
         </div>
+      </div>
+
+      {/* Portal ownership statement */}
+      <div style={{ background: 'rgba(184,145,42,0.05)', borderRadius: '10px', padding: '16px 20px', marginBottom: '24px', borderLeft: '3px solid #B8912A' }}>
+        <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: 1.7 }}>
+          <strong style={{ color: 'var(--color-text-primary)' }}>This is your space.</strong>
+          {' '}Come back anytime. Your matches, your financial picture,
+          your progress — it&apos;s all here waiting for you. And when your
+          Market Director joins you at MileMarker 4, they&apos;ll be working
+          from this same portal, seeing exactly what you see.
+        </p>
       </div>
 
       {/* Section 5 — Ready to Begin CTA */}
