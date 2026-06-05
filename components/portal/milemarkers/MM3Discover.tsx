@@ -102,6 +102,9 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
     )
   )
 
+  const [chosenCities, setChosenCities] = useState<string[]>([])
+  const [confirmed, setConfirmed] = useState(false)
+
   const [committed, setCommitted] = useState(false)
   const [committing, setCommitting] = useState(false)
   const [flashBucket, setFlashBucket] = useState<string | null>(null)
@@ -310,6 +313,7 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
           sandbox_profile: sandboxData,
           sandbox_committed: true,
           sandbox_committed_at: new Date().toISOString(),
+          chosen_communities: chosenCities,
         })
         .eq('email', s.user.email.toLowerCase())
 
@@ -768,9 +772,9 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
                 className="rounded-xl p-3 cursor-pointer transition-all"
                 onClick={() => setSelectedCityIndex(i)}
                 style={{
-                  backgroundColor: i === selectedCityIndex ? '#FBF3E3' : '#F7F6F3',
-                  borderLeft: i === selectedCityIndex ? `3px solid ${GOLD}` : '3px solid transparent',
-                  outline: i === selectedCityIndex ? '1px solid rgba(184,145,42,0.3)' : 'none',
+                  backgroundColor: (chosenCities.includes(match.location.id) || i === selectedCityIndex) ? '#FBF3E3' : '#F7F6F3',
+                  borderLeft: (chosenCities.includes(match.location.id) || i === selectedCityIndex) ? `3px solid ${GOLD}` : '3px solid transparent',
+                  outline: (chosenCities.includes(match.location.id) || i === selectedCityIndex) ? '1px solid rgba(184,145,42,0.3)' : 'none',
                 }}
               >
                 <div className="flex items-center justify-between mb-1">
@@ -824,25 +828,27 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
                       Learn more →
                     </button>
                     <button
-                      onClick={() => handleCityChoice(match.location.id)}
+                      onClick={() => {
+                        const cityId = match.location.id
+                        if (chosenCities.includes(cityId)) {
+                          setChosenCities(prev => prev.filter(id => id !== cityId))
+                        } else if (chosenCities.length < 2) {
+                          setChosenCities(prev => [...prev, cityId])
+                        }
+                      }}
                       className="text-[10px] font-semibold px-2 py-0.5 rounded-full transition-all"
                       style={{
-                        backgroundColor: preferredCity === match.location.id
-                          ? 'rgba(184,145,42,0.15)'
-                          : 'transparent',
-                        color: preferredCity === match.location.id ? GOLD : '#C5BFB8',
-                        border: `1px solid ${preferredCity === match.location.id ? GOLD : '#E5E7EB'}`,
+                        backgroundColor: chosenCities.includes(match.location.id) ? '#FAEEDA' : 'transparent',
+                        color: chosenCities.includes(match.location.id) ? GOLD : '#C5BFB8',
+                        border: `1px solid ${chosenCities.includes(match.location.id) ? GOLD : '#E5E7EB'}`,
+                        opacity: !chosenCities.includes(match.location.id) && chosenCities.length >= 2 ? 0.4 : 1,
+                        cursor: !chosenCities.includes(match.location.id) && chosenCities.length >= 2 ? 'not-allowed' : 'pointer',
                       }}
                     >
-                      {preferredCity === match.location.id ? '✓ My Choice' : 'Choose'}
+                      {chosenCities.includes(match.location.id) ? '✓ Chosen' : 'Choose'}
                     </button>
                   </div>
                 </div>
-                {preferredCity === match.location.id && (
-                  <p className="text-[9px] mt-1 font-medium" style={{ color: GOLD }}>
-                    Your Market Director will see this preference.
-                  </p>
-                )}
                 {i === selectedCityIndex && (
                   <p className="text-[9px] font-semibold mt-1"
                      style={{ color: GOLD, letterSpacing: '0.06em' }}>
@@ -1152,7 +1158,7 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
         </div>
       </div>
 
-      {/* Section 5 — Commit Button */}
+      {/* Section 5 — Confirmation + Commit */}
       <div className="mt-8 pt-6" style={{ borderTop: '1px solid #E5E7EB' }}>
         <p className="text-sm font-medium mb-2" style={{ color: '#4B5563' }}>
           Found your direction? Lock it in and your Market Director steps in as your copilot.
@@ -1161,14 +1167,73 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
           Your original profile is always preserved. This becomes your new starting point —
           not a contract, not a cage.
         </p>
-        <button
-          onClick={handleCommit}
-          disabled={committing}
-          className="w-full py-4 rounded-xl font-bold text-base transition-opacity hover:opacity-90 disabled:opacity-50"
-          style={{ backgroundColor: GOLD, color: '#16120D' }}
-        >
-          {committing ? 'Locking in your plan...' : 'This is my plan — connect me with my Market Director →'}
-        </button>
+
+        {/* Confirmation checkbox — appears after at least 1 city chosen */}
+        {chosenCities.length > 0 && (
+          <div style={{
+            marginTop: '2rem',
+            padding: '1.25rem',
+            borderRadius: '12px',
+            border: '0.5px solid rgba(184,145,42,0.3)',
+            background: '#FAEEDA',
+          }}>
+            <p style={{ fontSize: '13px', color: '#633806', marginBottom: '12px', fontWeight: 500 }}>
+              Your selected {chosenCities.length === 1 ? 'community' : 'communities'} for your Market Director:
+            </p>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+              {chosenCities.map(cityId => {
+                const city = getAllCities().find(c => c.id === cityId)
+                return city ? (
+                  <span key={cityId} style={{
+                    background: '#B8912A', color: '#fff',
+                    padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 500,
+                  }}>
+                    {city.name}
+                  </span>
+                ) : null
+              })}
+            </div>
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={confirmed}
+                onChange={e => setConfirmed(e.target.checked)}
+                style={{ marginTop: '2px', accentColor: '#B8912A', width: '16px', height: '16px', flexShrink: 0 }}
+              />
+              <span style={{ fontSize: '13px', color: '#633806', lineHeight: 1.5 }}>
+                I&apos;m ready to connect with a Market Director and take the next step toward my Lone Star Lifestyle.
+              </span>
+            </label>
+          </div>
+        )}
+
+        {(() => {
+          const canAdvance = chosenCities.length >= 1 && confirmed
+          return (
+            <>
+              <button
+                onClick={canAdvance ? handleCommit : undefined}
+                disabled={committing}
+                className="w-full py-4 rounded-xl font-bold text-base transition-opacity hover:opacity-90 mt-4"
+                style={{
+                  backgroundColor: GOLD,
+                  color: '#16120D',
+                  opacity: !canAdvance || committing ? 0.4 : 1,
+                  cursor: !canAdvance || committing ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {committing ? 'Locking in your plan...' : 'This is my plan — connect me with my Market Director →'}
+              </button>
+              {!canAdvance && (
+                <p style={{ fontSize: '12px', color: 'var(--color-text-tertiary)', textAlign: 'center', marginTop: '8px' }}>
+                  {chosenCities.length === 0
+                    ? 'Choose at least one community above to continue.'
+                    : 'Check the box above to continue.'}
+                </p>
+              )}
+            </>
+          )
+        })()}
       </div>
 
       {/* City Snapshot Popup */}
