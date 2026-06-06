@@ -136,6 +136,8 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
   const [committed, setCommitted] = useState(false)
   const [committing, setCommitting] = useState(false)
   const [flashBucket, setFlashBucket] = useState<string | null>(null)
+  const [draggedCat, setDraggedCat] = useState<keyof LifestyleScores | null>(null)
+  const [dragOverBucket, setDragOverBucket] = useState<BucketKey | null>(null)
   const [cityPopup, setCityPopup] = useState<CityMatch | null>(null)
   const [emailSent, setEmailSent] = useState(false)
   const [sendingEmail, setSendingEmail] = useState(false)
@@ -539,12 +541,111 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
     )
   }
 
-  const BUCKET_ORDER: BucketKey[] = ['unassigned', 'notPriorities', 'niceToHaves', 'mustHaves']
-  const BUCKET_COLORS: Record<BucketKey, string> = {
-    unassigned: '#6B7280',
-    notPriorities: '#1A5FA8',
-    niceToHaves: '#4B7A5E',
-    mustHaves: GOLD,
+  // Interactive priority selector — buckets map to scoring weights:
+  // mustHaves = Must Have (3x, cap 4) · niceToHaves = Important (2x, cap 5) ·
+  // notPriorities = Nice to Have (1x, no cap) · unassigned = Unassigned (0x, no cap)
+  const PRIORITY_BUCKETS: Array<{ key: BucketKey; label: string; items: (keyof LifestyleScores)[]; cap: number | null; pillBg: string; pillColor: string }> = [
+    { key: 'mustHaves',     label: 'Must Have',    items: mustHaves,     cap: 4,    pillBg: 'rgba(184,145,42,0.12)', pillColor: GOLD },
+    { key: 'niceToHaves',   label: 'Important',    items: niceToHaves,   cap: 5,    pillBg: '#E8F5EE',               pillColor: '#2D7D4E' },
+    { key: 'notPriorities', label: 'Nice to Have', items: notPriorities, cap: null, pillBg: 'rgba(26,95,168,0.12)',  pillColor: '#1A5FA8' },
+  ]
+  const UNASSIGNED_BUCKET: typeof PRIORITY_BUCKETS[number] =
+    { key: 'unassigned', label: 'Unassigned', items: unassigned, cap: null, pillBg: 'rgba(107,114,128,0.12)', pillColor: '#6B7280' }
+
+  const bucketSetters: Record<BucketKey, React.Dispatch<React.SetStateAction<(keyof LifestyleScores)[]>>> = {
+    mustHaves: setMustHaves,
+    niceToHaves: setNiceToHaves,
+    notPriorities: setNotPriorities,
+    unassigned: setUnassigned,
+  }
+
+  function movePriority(key: keyof LifestyleScores, from: BucketKey, to: BucketKey) {
+    if (from === to) return
+    bucketSetters[from](prev => prev.filter(k => k !== key))
+    bucketSetters[to](prev => [...prev, key])
+  }
+
+  function flashFull(b: BucketKey) {
+    setFlashBucket(b)
+    setTimeout(() => setFlashBucket(null), 600)
+  }
+
+  function handlePriorityDrop(to: BucketKey) {
+    const key = draggedCat
+    setDraggedCat(null)
+    setDragOverBucket(null)
+    if (!key) return
+    const from = getBucket(key)
+    if (from === to) return
+    setSandboxTouched(true)
+    if (to === 'mustHaves' && mustHaves.length >= 4) { flashFull('mustHaves'); return }
+    if (to === 'niceToHaves' && niceToHaves.length >= 5) { flashFull('niceToHaves'); return }
+    movePriority(key, from, to)
+  }
+
+  // Click cycles Unassigned → Nice to Have → Important → Must Have → Unassigned,
+  // skipping any capped-full bucket per the brief.
+  function cyclePriority(key: keyof LifestyleScores) {
+    setSandboxTouched(true)
+    const from = getBucket(key)
+    let to: BucketKey
+    if (from === 'unassigned') to = 'notPriorities'
+    else if (from === 'notPriorities') to = niceToHaves.length >= 5 ? (mustHaves.length >= 4 ? 'unassigned' : 'mustHaves') : 'niceToHaves'
+    else if (from === 'niceToHaves') to = mustHaves.length >= 4 ? 'unassigned' : 'mustHaves'
+    else to = 'unassigned'
+    movePriority(key, from, to)
+  }
+
+  function renderPriorityZone(b: typeof PRIORITY_BUCKETS[number]) {
+    const isOver = dragOverBucket === b.key
+    const isFlashing = flashBucket === b.key
+    return (
+      <div key={b.key}>
+        <p className="text-[9px] font-bold uppercase mb-1" style={{ color: GOLD, letterSpacing: '0.1em' }}>
+          {b.label}{' '}
+          <span style={{ color: isFlashing ? '#EF4444' : '#9A8E82' }}>
+            {b.items.length}{b.cap ? `/${b.cap}` : ''}
+          </span>
+        </p>
+        <div
+          onDragOver={e => { e.preventDefault(); if (dragOverBucket !== b.key) setDragOverBucket(b.key) }}
+          onDragLeave={() => setDragOverBucket(prev => (prev === b.key ? null : prev))}
+          onDrop={() => handlePriorityDrop(b.key)}
+          style={{
+            border: isFlashing ? '1px solid #EF4444' : isOver ? '1px solid #C9A84C' : '1px solid #D4C5A9',
+            borderRadius: '8px',
+            background: isFlashing ? 'rgba(239,68,68,0.06)' : isOver ? 'rgba(201,168,76,0.12)' : '#F9F6F1',
+            minHeight: '60px',
+            padding: '8px',
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '4px',
+            alignContent: 'flex-start',
+            transition: 'border-color 0.15s, background 0.15s',
+          }}
+        >
+          {b.items.map(k => {
+            const cat = LIFESTYLE_CATEGORIES.find(c => c.key === k)!
+            const Icon = CATEGORY_ICONS[k]
+            return (
+              <span
+                key={k}
+                draggable
+                onDragStart={() => setDraggedCat(k)}
+                onDragEnd={() => { setDraggedCat(null); setDragOverBucket(null) }}
+                onClick={() => cyclePriority(k)}
+                className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-semibold"
+                style={{ backgroundColor: b.pillBg, color: b.pillColor, cursor: 'grab', userSelect: 'none' }}
+                title="Drag to a bucket or click to cycle"
+              >
+                <Icon size={10} strokeWidth={2} />
+                {cat.label}
+              </span>
+            )
+          })}
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -1183,7 +1284,7 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
             ))}
           </div>
 
-          {/* What Shaped Your Rankings — inside right panel, below the ranking list */}
+          {/* What Shaped Your Rankings — interactive priority selector */}
           <div style={{ borderTop: '1px solid #F0EDE6', marginTop: '16px', paddingTop: '12px' }}>
             <p className="text-[10px] font-bold uppercase mb-2"
                style={{ color: GOLD, letterSpacing: '0.18em' }}>
@@ -1191,263 +1292,15 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
             </p>
             <p className="text-xs mb-4 leading-relaxed" style={{ color: '#6B7280' }}>
               These are the priorities you set — and they&apos;re what shaped these
-              rankings. Fine-tune them in the priority grid below and watch your
-              results update instantly.
+              rankings. Drag or click any category to reassign it. Rankings update instantly.
             </p>
-            {mustHaves.length > 0 && (
-              <div className="mb-2">
-                <p className="text-[9px] font-bold uppercase mb-1"
-                   style={{ color: GOLD, letterSpacing: '0.1em' }}>
-                  Must Have
-                </p>
-                <div className="flex flex-wrap gap-1">
-                  {mustHaves.map(k => {
-                    const cat = LIFESTYLE_CATEGORIES.find(c => c.key === k)!
-                    const Icon = CATEGORY_ICONS[k]
-                    return (
-                      <span key={k}
-                            className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-semibold"
-                            style={{ backgroundColor: 'rgba(184,145,42,0.12)', color: GOLD }}>
-                        <Icon size={10} strokeWidth={2} />
-                        {cat.label}
-                      </span>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-
-            {niceToHaves.length > 0 && (
-              <div className="mb-2">
-                <p className="text-[9px] font-bold uppercase mb-1"
-                   style={{ color: '#4B7A5E', letterSpacing: '0.1em' }}>
-                  Important
-                </p>
-                <div className="flex flex-wrap gap-1">
-                  {niceToHaves.map(k => {
-                    const cat = LIFESTYLE_CATEGORIES.find(c => c.key === k)!
-                    const Icon = CATEGORY_ICONS[k]
-                    return (
-                      <span key={k}
-                            className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-semibold"
-                            style={{ backgroundColor: '#E8F5EE', color: '#2D7D4E' }}>
-                        <Icon size={10} strokeWidth={2} />
-                        {cat.label}
-                      </span>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-
-            {notPriorities.length > 0 && (
-              <div>
-                <p className="text-[9px] font-bold uppercase mb-1"
-                   style={{ color: '#1A5FA8', letterSpacing: '0.1em' }}>
-                  Nice to Have
-                </p>
-                <div className="flex flex-wrap gap-1">
-                  {notPriorities.map(k => {
-                    const cat = LIFESTYLE_CATEGORIES.find(c => c.key === k)!
-                    const Icon = CATEGORY_ICONS[k]
-                    return (
-                      <span key={k}
-                            className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-semibold"
-                            style={{ backgroundColor: 'rgba(26,95,168,0.12)', color: '#1A5FA8' }}>
-                        <Icon size={10} strokeWidth={2} />
-                        {cat.label}
-                      </span>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
+            <div className="grid grid-cols-3 gap-2 mb-2">
+              {PRIORITY_BUCKETS.map(renderPriorityZone)}
+            </div>
+            {renderPriorityZone(UNASSIGNED_BUCKET)}
           </div>
         </div>
 
-      </div>
-
-      {/* Section 4 — Priority Grid */}
-      <div className="mb-8">
-        <p className="text-[10px] font-bold uppercase mb-2"
-           style={{ color: GOLD, letterSpacing: '0.18em' }}>
-          Adjust Your Priorities
-        </p>
-        <p className="text-xs mb-5" style={{ color: '#9A8E82' }}>
-          Click any circle to move a category into that bucket. Rankings update instantly.
-          Gold = Must Have · Green = Important · Blue = Nice to Have
-        </p>
-
-        {/* Bucket counter bar */}
-        <div className="grid mb-6" style={{ gridTemplateColumns: '150px 1fr 1fr 1fr 1fr', gap: '4px' }}>
-          <div /> {/* label column spacer */}
-          {[
-            { key: 'unassigned',   label: 'Unassigned',  count: unassigned.length,   max: null },
-            { key: 'notPriorities',label: 'Nice to Have',count: notPriorities.length,max: null },
-            { key: 'niceToHaves',  label: 'Important',   count: niceToHaves.length,  max: 5    },
-            { key: 'mustHaves',    label: 'Must Have',   count: mustHaves.length,    max: 4    },
-          ].map(bucket => {
-            const isFull = bucket.max !== null && bucket.count >= bucket.max
-            const isFlashing = flashBucket === bucket.key
-            return (
-              <div
-                key={bucket.key}
-                className="rounded-xl p-3 text-center transition-all"
-                style={{
-                  backgroundColor: isFlashing ? '#FEE2E2' : isFull ? '#FEF3C7' : '#F7F6F3',
-                  border: isFlashing ? '1.5px solid #EF4444' : isFull ? '1.5px solid #F59E0B' : '1.5px solid transparent',
-                  transform: isFlashing ? 'scale(1.02)' : 'scale(1)',
-                }}
-              >
-                <p
-                  className="text-[10px] font-bold uppercase mb-1"
-                  style={{
-                    color: isFlashing ? '#DC2626' : isFull ? '#B45309' : '#9A8E82',
-                    letterSpacing: '0.08em',
-                  }}
-                >
-                  {bucket.label}
-                </p>
-                <p
-                  className="text-lg font-bold tabular-nums"
-                  style={{ color: isFlashing ? '#DC2626' : isFull ? '#B45309' : WARM_DARK }}
-                >
-                  {bucket.count}
-                  {bucket.max && (
-                    <span className="text-xs font-normal" style={{ color: '#9A8E82' }}>
-                      /{bucket.max}
-                    </span>
-                  )}
-                </p>
-                {isFull && !isFlashing && (
-                  <p className="text-[9px] font-semibold mt-0.5" style={{ color: '#B45309' }}>
-                    FULL
-                  </p>
-                )}
-                {isFlashing && (
-                  <p className="text-[9px] font-semibold mt-0.5" style={{ color: '#DC2626' }}>
-                    MAX REACHED
-                  </p>
-                )}
-              </div>
-            )
-          })}
-        </div>
-
-        {/* Column headers */}
-        <div className="grid mb-2" style={{ gridTemplateColumns: '150px 1fr 1fr 1fr 1fr', gap: '4px' }}>
-          <div />
-          {[
-            { label: 'Unassigned',   color: '#6B7280' },
-            { label: 'Nice to Have', color: '#1A5FA8' },
-            { label: 'Important',    color: '#4B7A5E' },
-            { label: 'Must Have',    color: GOLD },
-          ].map(col => (
-            <div key={col.label} style={{ textAlign: 'center' }}>
-              <span className="text-[10px] font-bold uppercase"
-                    style={{ color: col.color, letterSpacing: '0.08em' }}>
-                {col.label}
-              </span>
-            </div>
-          ))}
-        </div>
-
-        {/* Divider */}
-        <div className="mb-3" style={{ borderBottom: '1px solid #F0EDE6' }} />
-
-        {/* Category rows */}
-        <div className="space-y-2">
-          {LIFESTYLE_CATEGORIES.map(cat => {
-            const currentBucket = getBucket(cat.key)
-
-            return (
-              <div key={cat.key}
-                   className="grid items-center"
-                   style={{ gridTemplateColumns: '150px 1fr 1fr 1fr 1fr', gap: '4px' }}>
-
-                <div className="flex items-center gap-2">
-                  {(() => {
-                    const Icon = CATEGORY_ICONS[cat.key]
-                    return <Icon size={16} strokeWidth={1.5} style={{ color: WARM_DARK }} />
-                  })()}
-                  <span className="text-xs font-semibold" style={{ color: WARM_DARK }}>
-                    {cat.label}
-                  </span>
-                </div>
-
-                {BUCKET_ORDER.map(bucket => {
-                  const isActive = currentBucket === bucket
-                  const isFull = (bucket === 'mustHaves' && mustHaves.length >= 4 && !isActive)
-                              || (bucket === 'niceToHaves' && niceToHaves.length >= 5 && !isActive)
-                  const isFlashingThis = flashBucket === bucket
-
-                  return (
-                    <div
-                      key={bucket}
-                      className="flex justify-center items-center"
-                      style={{ height: '36px' }}
-                    >
-                      <button
-                        onClick={() => {
-                          setSandboxTouched(true)
-                          if (isActive) return
-                          if (bucket === 'mustHaves' && mustHaves.length >= 4) {
-                            setFlashBucket('mustHaves')
-                            setTimeout(() => setFlashBucket(null), 600)
-                            return
-                          }
-                          if (bucket === 'niceToHaves' && niceToHaves.length >= 5) {
-                            setFlashBucket('niceToHaves')
-                            setTimeout(() => setFlashBucket(null), 600)
-                            return
-                          }
-                          const setters: Record<BucketKey, React.Dispatch<React.SetStateAction<(keyof LifestyleScores)[]>>> = {
-                            mustHaves: setMustHaves,
-                            niceToHaves: setNiceToHaves,
-                            notPriorities: setNotPriorities,
-                            unassigned: setUnassigned,
-                          }
-                          setters[currentBucket](prev => prev.filter(k => k !== cat.key))
-                          setters[bucket](prev => [...prev, cat.key])
-                        }}
-                        className="transition-all"
-                        style={{
-                          width: '32px',
-                          height: '32px',
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '14px',
-                          cursor: isActive ? 'default' : isFull ? 'not-allowed' : 'pointer',
-                          backgroundColor: isActive
-                            ? BUCKET_COLORS[bucket]
-                            : isFlashingThis
-                            ? '#FEE2E2'
-                            : isFull
-                            ? 'transparent'
-                            : 'rgba(197,191,184,0.15)',
-                          border: isActive
-                            ? 'none'
-                            : `2px dashed ${isFull ? '#FCA5A5' : '#C5BFB8'}`,
-                          opacity: isFull ? 0.4 : 1,
-                          transform: isFlashingThis ? 'scale(1.1)' : 'scale(1)',
-                        }}
-                      >
-                        {(() => {
-                          const Icon = CATEGORY_ICONS[cat.key]
-                          return isActive
-                            ? <Icon size={14} strokeWidth={2} style={{ color: '#FFFFFF' }} />
-                            : <span style={{ fontSize: '12px', color: '#9A8E82', opacity: 0.8 }}>+</span>
-                        })()}
-                      </button>
-                    </div>
-                  )
-                })}
-              </div>
-            )
-          })}
-        </div>
       </div>
 
       {/* Section 5 — Confirmation + Commit */}
