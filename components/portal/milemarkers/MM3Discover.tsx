@@ -1190,8 +1190,9 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
               What Shaped Your Rankings
             </p>
             <p className="text-xs mb-4 leading-relaxed" style={{ color: '#6B7280' }}>
-              These are the priorities you set. They&apos;re what drove your city rankings
-              above. Adjust them below and watch your results update instantly.
+              These are the priorities you set — and they&apos;re what shaped these
+              rankings. Fine-tune them in the priority grid below and watch your
+              results update instantly.
             </p>
             {mustHaves.length > 0 && (
               <div className="mb-2">
