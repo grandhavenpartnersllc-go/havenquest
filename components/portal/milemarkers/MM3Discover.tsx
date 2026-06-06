@@ -1182,92 +1182,88 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
               </div>
             ))}
           </div>
+
+          {/* What Shaped Your Rankings — inside right panel, below the ranking list */}
+          <div style={{ borderTop: '1px solid #F0EDE6', marginTop: '16px', paddingTop: '12px' }}>
+            <p className="text-[10px] font-bold uppercase mb-2"
+               style={{ color: GOLD, letterSpacing: '0.18em' }}>
+              What Shaped Your Rankings
+            </p>
+            <p className="text-xs mb-4 leading-relaxed" style={{ color: '#6B7280' }}>
+              These are the priorities you set. They&apos;re what drove your city rankings
+              above. Adjust them below and watch your results update instantly.
+            </p>
+            {mustHaves.length > 0 && (
+              <div className="mb-2">
+                <p className="text-[9px] font-bold uppercase mb-1"
+                   style={{ color: GOLD, letterSpacing: '0.1em' }}>
+                  Must Have
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {mustHaves.map(k => {
+                    const cat = LIFESTYLE_CATEGORIES.find(c => c.key === k)!
+                    const Icon = CATEGORY_ICONS[k]
+                    return (
+                      <span key={k}
+                            className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-semibold"
+                            style={{ backgroundColor: 'rgba(184,145,42,0.12)', color: GOLD }}>
+                        <Icon size={10} strokeWidth={2} />
+                        {cat.label}
+                      </span>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
+            {niceToHaves.length > 0 && (
+              <div className="mb-2">
+                <p className="text-[9px] font-bold uppercase mb-1"
+                   style={{ color: '#4B7A5E', letterSpacing: '0.1em' }}>
+                  Important
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {niceToHaves.map(k => {
+                    const cat = LIFESTYLE_CATEGORIES.find(c => c.key === k)!
+                    const Icon = CATEGORY_ICONS[k]
+                    return (
+                      <span key={k}
+                            className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-semibold"
+                            style={{ backgroundColor: '#E8F5EE', color: '#2D7D4E' }}>
+                        <Icon size={10} strokeWidth={2} />
+                        {cat.label}
+                      </span>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
+            {notPriorities.length > 0 && (
+              <div>
+                <p className="text-[9px] font-bold uppercase mb-1"
+                   style={{ color: '#1A5FA8', letterSpacing: '0.1em' }}>
+                  Nice to Have
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {notPriorities.map(k => {
+                    const cat = LIFESTYLE_CATEGORIES.find(c => c.key === k)!
+                    const Icon = CATEGORY_ICONS[k]
+                    return (
+                      <span key={k}
+                            className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-semibold"
+                            style={{ backgroundColor: 'rgba(26,95,168,0.12)', color: '#1A5FA8' }}>
+                        <Icon size={10} strokeWidth={2} />
+                        {cat.label}
+                      </span>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
-      </div>
-
-      {/* Section A — What Shaped Your Rankings */}
-      <div className="mb-8">
-        <p className="text-[10px] font-bold uppercase mb-2"
-           style={{ color: GOLD, letterSpacing: '0.18em' }}>
-          What Shaped Your Rankings
-        </p>
-        <p className="text-xs mb-4 leading-relaxed" style={{ color: '#6B7280' }}>
-          These are the priorities you set. They&apos;re what drove your city rankings
-          above. Adjust them below and watch your results update instantly.
-        </p>
-
-        {/* Priority Summary — read-only tag display (relocated from left panel) */}
-        <div className="rounded-xl p-4" style={{ backgroundColor: CARD_BG, boxShadow: CARD_SHADOW }}>
-          {mustHaves.length > 0 && (
-            <div className="mb-2">
-              <p className="text-[9px] font-bold uppercase mb-1"
-                 style={{ color: GOLD, letterSpacing: '0.1em' }}>
-                Must Have
-              </p>
-              <div className="flex flex-wrap gap-1">
-                {mustHaves.map(k => {
-                  const cat = LIFESTYLE_CATEGORIES.find(c => c.key === k)!
-                  const Icon = CATEGORY_ICONS[k]
-                  return (
-                    <span key={k}
-                          className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-semibold"
-                          style={{ backgroundColor: 'rgba(184,145,42,0.12)', color: GOLD }}>
-                      <Icon size={10} strokeWidth={2} />
-                      {cat.label}
-                    </span>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-
-          {niceToHaves.length > 0 && (
-            <div className="mb-2">
-              <p className="text-[9px] font-bold uppercase mb-1"
-                 style={{ color: '#4B7A5E', letterSpacing: '0.1em' }}>
-                Important
-              </p>
-              <div className="flex flex-wrap gap-1">
-                {niceToHaves.map(k => {
-                  const cat = LIFESTYLE_CATEGORIES.find(c => c.key === k)!
-                  const Icon = CATEGORY_ICONS[k]
-                  return (
-                    <span key={k}
-                          className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-semibold"
-                          style={{ backgroundColor: '#E8F5EE', color: '#2D7D4E' }}>
-                      <Icon size={10} strokeWidth={2} />
-                      {cat.label}
-                    </span>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-
-          {notPriorities.length > 0 && (
-            <div>
-              <p className="text-[9px] font-bold uppercase mb-1"
-                 style={{ color: '#1A5FA8', letterSpacing: '0.1em' }}>
-                Nice to Have
-              </p>
-              <div className="flex flex-wrap gap-1">
-                {notPriorities.map(k => {
-                  const cat = LIFESTYLE_CATEGORIES.find(c => c.key === k)!
-                  const Icon = CATEGORY_ICONS[k]
-                  return (
-                    <span key={k}
-                          className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-semibold"
-                          style={{ backgroundColor: 'rgba(26,95,168,0.12)', color: '#1A5FA8' }}>
-                      <Icon size={10} strokeWidth={2} />
-                      {cat.label}
-                    </span>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-        </div>
       </div>
 
       {/* Section 4 — Priority Grid */}
