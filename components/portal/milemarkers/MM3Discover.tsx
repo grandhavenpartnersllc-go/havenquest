@@ -129,7 +129,7 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
   const [confirmed, setConfirmed] = useState(false)
   const [financialsLocked, setFinancialsLocked] = useState(false)
   const [worksheetDismissed, setWorksheetDismissed] = useState(false)
-  const [financialCalcOpen, setFinancialCalcOpen] = useState(true)
+  const [financialCalcOpen, setFinancialCalcOpen] = useState(false)
 
   const rankingsRef = useRef<HTMLDivElement>(null)
 
@@ -212,6 +212,10 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
     if (sessionStorage.getItem('mm3_worksheet_dismissed') === 'true') {
       setWorksheetDismissed(true)
     }
+  }, [])
+
+  useEffect(() => {
+    setFinancialCalcOpen(window.innerWidth >= 768)
   }, [])
 
   // Build sandbox profile from current slider/priority state.
@@ -620,7 +624,7 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
             border: isFlashing ? '1px solid #EF4444' : isOver ? '1px solid #C9A84C' : '1px solid #D4C5A9',
             borderRadius: '8px',
             background: isFlashing ? 'rgba(239,68,68,0.06)' : isOver ? 'rgba(201,168,76,0.12)' : '#F9F6F1',
-            minHeight: '60px',
+            minHeight: '80px',
             padding: '8px',
             display: 'flex',
             flexWrap: 'wrap',
@@ -736,7 +740,7 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
           <p className="text-xs mb-3" style={{ color: '#9A8E82' }}>
             From your full assessment of all 101 Texas communities
           </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '12px' }}>
+          <div className="flex overflow-x-auto md:grid md:grid-cols-3 flex-nowrap md:flex-wrap md:overflow-x-visible pb-1 md:pb-0" style={{ gap: '10px', marginBottom: '12px', scrollbarWidth: 'none' }}>
             {displayedMatches.slice(0, 3).map((match, i) => {
               const afStatus = getCityAffordabilityStatus(match)
               const afDotColor = afStatus === 'comfortable' ? '#22C55E'
@@ -751,6 +755,7 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
                     overflow: 'hidden',
                     cursor: 'pointer',
                     transition: 'border-color 0.15s',
+                    minWidth: '160px',
                   }}
                   onClick={() => setSelectedCityIndex(i)}
                 >
@@ -795,7 +800,7 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
       )}
 
       {/* Section 2 — Split Dashboard Panel */}
-      <div className="grid grid-cols-2 gap-3 mb-3 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3 items-start">
 
         {/* LEFT — Financial Summary */}
         <div className="rounded-xl p-4"
@@ -1140,12 +1145,12 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
         {/* RIGHT — Live City Rankings */}
         <div ref={rankingsRef} className="rounded-xl p-4"
              style={{ backgroundColor: CARD_BG, boxShadow: CARD_SHADOW }}>
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-3 gap-1.5">
             <p className="text-[10px] font-bold uppercase"
                style={{ color: GOLD, letterSpacing: '0.18em' }}>
               Live city rankings
             </p>
-            <div className="flex gap-1">
+            <div className="flex gap-1 overflow-x-auto flex-nowrap pb-0.5 md:pb-0" style={{ scrollbarWidth: 'none' }}>
               {METRO_OPTIONS.map(metro => {
                 const isActive = selectedMetro === metro.value
                 return (
@@ -1286,6 +1291,7 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
                       style={{
                         fontSize: '11px',
                         padding: '6px 14px',
+                        minHeight: '44px',
                         borderRadius: '8px',
                         whiteSpace: 'nowrap',
                         backgroundColor: chosenCities.includes(match.location.id) ? '#FBF3E3' : '#C9A84C',
@@ -1320,10 +1326,18 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
               These are the priorities you set — and they&apos;re what shaped these
               rankings. Drag or click any category to reassign it. Rankings update instantly.
             </p>
-            <div className="grid grid-cols-3 gap-2 mb-2">
+            {/* Mobile: 2×2 grid */}
+            <div className="grid grid-cols-2 md:hidden gap-2 mb-2">
+              {PRIORITY_BUCKETS.map(renderPriorityZone)}
+              {renderPriorityZone(UNASSIGNED_BUCKET)}
+            </div>
+            {/* Desktop: 3-col + full-width unassigned */}
+            <div className="hidden md:grid grid-cols-3 gap-2 mb-2">
               {PRIORITY_BUCKETS.map(renderPriorityZone)}
             </div>
-            {renderPriorityZone(UNASSIGNED_BUCKET)}
+            <div className="hidden md:block">
+              {renderPriorityZone(UNASSIGNED_BUCKET)}
+            </div>
           </div>
         </div>
 
