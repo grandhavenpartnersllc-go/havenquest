@@ -288,6 +288,11 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
     : affordabilityPct <= 40 ? 'moderate'
     : 'stretched'
 
+  const annualIncome = profile?.annualIncome ?? 100000
+  const priceToIncomeRatio = annualIncome > 0 ? topCityPrice / annualIncome : 0
+  const estClosingCosts = Math.round(topCityPrice * 0.025)
+  const totalCashToClose = (downMid + procMid) + estClosingCosts
+
   function getBucket(key: keyof LifestyleScores): BucketKey {
     if (mustHaves.includes(key)) return 'mustHaves'
     if (niceToHaves.includes(key)) return 'niceToHaves'
@@ -843,6 +848,27 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
                      : '#DC2626',
                  }}>
                 ${totalMonthlyHousing.toLocaleString()}/mo
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 mb-4">
+            <div className="rounded-xl p-2.5" style={{ backgroundColor: '#F7F6F3' }}>
+              <p className="text-[10px] mb-1" style={{ color: '#9A8E82' }}>Price-to-income ratio</p>
+              <p className="text-sm font-bold" style={{ color: WARM_DARK }}>
+                {priceToIncomeRatio.toFixed(1)}× your income
+              </p>
+            </div>
+            <div className="rounded-xl p-2.5" style={{ backgroundColor: '#F7F6F3' }}>
+              <p className="text-[10px] mb-1" style={{ color: '#9A8E82' }}>Est. closing costs</p>
+              <p className="text-sm font-bold" style={{ color: WARM_DARK }}>
+                ${estClosingCosts.toLocaleString()}
+              </p>
+            </div>
+            <div className="rounded-xl p-2.5 col-span-2" style={{ backgroundColor: '#F7F6F3' }}>
+              <p className="text-[10px] mb-1" style={{ color: '#9A8E82' }}>Total cash to close</p>
+              <p className="text-sm font-bold" style={{ color: WARM_DARK }}>
+                ${totalCashToClose.toLocaleString()}
               </p>
             </div>
           </div>
