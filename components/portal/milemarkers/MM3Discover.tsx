@@ -140,7 +140,6 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
   const [sendingEmail, setSendingEmail] = useState(false)
   const [selectedCityIndex, setSelectedCityIndex] = useState(initialCityIndex ?? 0)
   const [sandboxTouched, setSandboxTouched] = useState(false)
-  const [preferredCity, setPreferredCity] = useState<string | null>(null)
 
   const [selectedMetro, setSelectedMetro] = useState<string>('')
 
@@ -184,7 +183,7 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
       if (!s?.user?.email) return
       supabase
         .from('users')
-        .select('sandbox_committed, sandbox_profile, preferred_city')
+        .select('sandbox_committed, sandbox_profile, chosen_communities')
         .eq('email', s.user.email.toLowerCase())
         .single()
         .then(({ data }) => {
@@ -199,7 +198,9 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
             setUnassigned(sp.unassigned)
             setCommitted(true)
           }
-          if (data?.preferred_city) setPreferredCity(data.preferred_city)
+          if (Array.isArray(data?.chosen_communities)) {
+            setChosenCities(data.chosen_communities)
+          }
         })
     })
   }, [])
@@ -310,20 +311,6 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
     if (pct <= 0.30) return 'comfortable'
     if (pct <= 0.40) return 'moderate'
     return 'stretched'
-  }
-
-  async function handleCityChoice(cityId: string) {
-    const newChoice = preferredCity === cityId ? null : cityId
-    setPreferredCity(newChoice)
-    try {
-      const supabase = createClient()
-      const { data: { session: s } } = await supabase.auth.getSession()
-      if (!s?.user?.email) return
-      await supabase
-        .from('users')
-        .update({ preferred_city: newChoice })
-        .eq('email', s.user.email.toLowerCase())
-    } catch {}
   }
 
   async function handleCommit() {
