@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import Image from 'next/image'
 import Header from '../components/shared/Header'
 import Footer from '../components/shared/Footer'
 import HeroSection from '../components/landing/HeroSection'
@@ -41,147 +40,78 @@ const TESTIMONIALS = [
   },
 ]
 
+const NAVY = '#002868'
+const GOLD = '#C9A84C'
+const BORDER = 'rgba(0,0,0,0.08)'
+const MUTED = '#6B7280'
+
+const SNAPSHOT_METROS = [
+  { label: 'Austin median', value: '$460,000', sub: "Buyer's market · -16% from peak" },
+  { label: 'DFW median', value: '$375,000', sub: '#1 market to watch nationally' },
+  { label: 'Houston median', value: '$270,000', sub: 'Most affordable major metro' },
+]
+
 export default function HomePage() {
   return (
     <>
       <Header />
       <main className="flex-1">
 
-        {/* Section 1 — Hero */}
         <HeroSection />
+        <HowItWorks />
 
-        {/* Section 2 — The Problem */}
-        <section className="py-20 px-4" style={{ backgroundColor: '#F4F1EC' }}>
-          <div className="max-w-2xl mx-auto">
-            <div style={{ height: '2px', width: '48px', backgroundColor: '#B8912A', marginBottom: '1.5rem' }} />
-            <p className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight mb-6">
-              Texas is big. Finding your place in it shouldn&apos;t be a guessing game.
-            </p>
-            <div style={{ borderLeft: '4px solid #B8912A', background: '#F4F1EC', padding: '1rem 1.25rem', borderRadius: '0.5rem', marginBottom: '1.5rem' }}>
-              <p style={{ color: '#1a1a1a', fontWeight: 500, lineHeight: 1.6, margin: 0 }}>
-                In 2025, Texas swept the podium for American metro growth. Dallas-Fort Worth ranked #1 in the nation. Houston #2. Austin #3. Six Texas metros placed in the national top 25 — more than any other state.
-              </p>
-              <p style={{ color: '#9ca3af', fontSize: '0.75rem', marginTop: '0.5rem', marginBottom: 0 }}>
-                Source: 2025 U-Haul Growth Index
-              </p>
-            </div>
-            <p className="text-gray-500 leading-relaxed mb-6">
-              Whether you&apos;re coming from Chicago, California, or across the
-              state line, Texas is not one place. It&apos;s hundreds of distinct communities
-              across four major metros — each with its own cost of living,
-              school systems, lifestyle, and character.
-            </p>
-            <p className="text-gray-500 leading-relaxed mb-6">
-              Relocating is one of the most stressful decisions a family makes.
-              Not because finding a home is hard — but because there are a
-              hundred other decisions happening at the same time, and most
-              people are making them alone.
-            </p>
-            <div className="flex flex-wrap gap-2 mb-6">
-              {['Schools', 'Neighborhoods', 'Timelines', 'Realtors', 'Lenders', 'Movers', 'Community connections'].map(tag => (
-                <span
-                  key={tag}
-                  className="bg-white text-gray-600 text-sm px-3 py-1 rounded-full"
-                  style={{ border: '1px solid rgba(0,0,0,0.10)' }}
-                >
-                  {tag}
-                </span>
-              ))}
-              <span className="text-gray-500 text-sm py-1">— all at once, with no one in your corner.</span>
-            </div>
-            <p className="text-xl font-bold text-gray-900 tracking-tight">
-              HavenQuest changes that — for Texans and Future Texans.
-            </p>
+        {/* Texas Market Snapshot Strip */}
+        <div style={{
+          margin: '0 32px 28px',
+          border: `0.5px solid ${BORDER}`,
+          borderRadius: '8px',
+          overflow: 'hidden',
+        }}>
+          {/* Header bar */}
+          <div style={{
+            background: NAVY,
+            padding: '12px 16px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}>
+            <span style={{ fontSize: '12px', fontWeight: 500, color: '#fff' }}>
+              Texas market snapshot · Q2 2026
+            </span>
+            <Link
+              href="/texas/texas-insider"
+              style={{ fontSize: '11px', color: GOLD, textDecoration: 'none' }}
+            >
+              Full Texas Insider →
+            </Link>
           </div>
-        </section>
-
-        {/* Section 2b — Split: Difference */}
-        <section className="py-20 px-4" style={{ backgroundColor: '#FDFCFA' }}>
-          <div className="max-w-5xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-stretch">
-
-              {/* Left — Text */}
-              <div>
-                <p
-                  className="text-xs font-bold uppercase mb-4 tracking-widest"
-                  style={{ color: '#B8912A', letterSpacing: '0.18em' }}
-                >
-                  The HavenQuest Difference
-                </p>
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight leading-tight mb-6">
-                  This isn&apos;t just data.
-                  <br />
-                  It&apos;s a guided experience.
-                </h2>
-                <div className="space-y-4 text-gray-500 leading-relaxed">
-                  <p>
-                    Most platforms hand you a list of Texas cities and leave
-                    you to figure out the rest. With hundreds of distinct communities across Austin,
-                    DFW, Houston, and San Antonio — plus everything in between —
-                    that list can feel overwhelming. HavenQuest is different.
-                  </p>
-                  <p>
-                    From the moment you begin, you&apos;re building toward something
-                    real — a community that fits your life, a home that fits your
-                    budget, and a team that stays with you until you&apos;re settled in.
-                  </p>
-                  <p>
-                    Your Market Director isn&apos;t a chatbot. They&apos;re a real person
-                    who knows your destination market, has read your profile, and
-                    is ready to walk beside you through every decision — from
-                    neighborhood exploration to closing day.
-                  </p>
-                  <p className="font-semibold text-gray-700">
-                    This is what peace of mind actually looks like.
-                  </p>
-                </div>
-              </div>
-
-              {/* Right — Image */}
+          {/* Data row */}
+          <div className="grid grid-cols-1 md:grid-cols-3">
+            {SNAPSHOT_METROS.map((metro, i) => (
               <div
-                className="relative rounded-2xl overflow-hidden h-full min-h-[400px]"
-                style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)' }}
+                key={metro.label}
+                style={{
+                  padding: '12px 16px',
+                  borderRight: i < 2 ? `0.5px solid ${BORDER}` : 'none',
+                  borderBottom: `0.5px solid ${BORDER}`,
+                }}
+                className="md:border-b-0"
               >
-                <Image
-                  src="/images/relocation-couple.png"
-                  alt="Couple relaxed and confident during their Texas relocation"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                />
+                <p style={{ fontSize: '10px', letterSpacing: '1px', textTransform: 'uppercase', color: MUTED, marginBottom: '4px' }}>
+                  {metro.label}
+                </p>
+                <p style={{ fontSize: '16px', fontWeight: 500, color: NAVY, marginBottom: '2px' }}>
+                  {metro.value}
+                </p>
+                <p style={{ fontSize: '11px', color: MUTED }}>
+                  {metro.sub}
+                </p>
               </div>
-
-            </div>
+            ))}
           </div>
-        </section>
-
-        {/* Section 3 — How It Works */}
-        <div id="how-it-works">
-          <HowItWorks />
         </div>
 
-        {/* Section 4 — The Differentiator */}
-        <section
-          className="py-24 px-4"
-          style={{ backgroundColor: '#08101C' }}
-        >
-          <div className="max-w-3xl mx-auto text-center">
-            <p
-              className="text-xl md:text-2xl mb-4"
-              style={{ color: 'rgba(255,255,255,0.4)' }}
-            >
-              Other platforms give you a list of Texas cities.
-            </p>
-            <p
-              className="font-bold tracking-tight leading-tight"
-              style={{ fontSize: 'clamp(32px, 5vw, 60px)', color: '#FFFFFF' }}
-            >
-              HavenQuest guides you all the way there.
-            </p>
-          </div>
-        </section>
-
-        {/* Section 5 — Social Proof */}
+        {/* Social Proof */}
         <section className="py-20 px-4 bg-surface">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-12">
@@ -205,22 +135,18 @@ export default function HomePage() {
                     border: '1px solid #F0EDE6',
                   }}
                 >
-                  {/* Stars */}
                   <div className="flex gap-0.5 mb-4" aria-label="5 stars">
                     {[1, 2, 3, 4, 5].map(s => (
                       <span key={s} style={{ color: '#B8912A', fontSize: '14px' }}>★</span>
                     ))}
                   </div>
-                  {/* Quote */}
                   <p className="text-gray-600 text-sm leading-relaxed flex-1 mb-5">
                     &ldquo;{t.quote}&rdquo;
                   </p>
-                  {/* Name + origin */}
                   <div>
                     <p className="font-bold text-gray-900 text-sm">{t.name}</p>
                     <p className="text-xs text-gray-400 mt-0.5">{t.origin}</p>
                   </div>
-                  {/* Sample review label */}
                   <span
                     className="absolute bottom-4 right-5 text-xs text-gray-400"
                     style={{ opacity: 0.4 }}
@@ -233,7 +159,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Section 6 — Final CTA */}
+        {/* Final CTA */}
         <section
           className="py-24 px-4"
           style={{ backgroundColor: '#FDFCFA', borderBottom: '1px solid rgba(0,0,0,0.08)' }}

@@ -1,68 +1,41 @@
-const CARDS = [
-  {
-    label: 'CLARITY',
-    headline: 'Find your Texas community.',
-    copy: 'Tell us about your life — your income, your household, and what matters most to you. Our platform matches you to the Texas communities where your life genuinely fits across 4 metros and 101 cities. No guesswork. No endless tabs. Just clarity.',
-  },
-  {
-    label: 'CONFIDENCE',
-    headline: 'Meet your Market Director.',
-    copy: "When you're ready to go deeper, your personal Market Director steps in. A real person who knows your Texas destination market, has read your profile, and guides you from community discovery through closing day. You'll always know who to call.",
-  },
-  {
-    label: 'PEACE OF MIND',
-    headline: 'Every step. Handled.',
-    copy: 'From your Texas neighborhood search to your moving checklist, your Market Director keeps every piece of your relocation organized, tracked, and moving forward. Nothing falls through the cracks. You arrive in Texas prepared, connected, and at home.',
-  },
-]
+const NAVY = '#002868'
+const RED = '#BF0A30'
+const MUTED = '#6B7280'
+const BORDER = 'rgba(0,0,0,0.08)'
 
-const GOLD = '#B8912A'
+const STEPS = [
+  { label: '01 · Discover', title: 'Tell us about your life', desc: 'Income, household, and what matters most to you in a community.' },
+  { label: '02 · Match', title: 'Get your Texas matches', desc: 'Your top communities ranked by your priorities and budget.' },
+  { label: '03 · Explore', title: 'Go deeper in your portal', desc: 'Full reports, financial breakdown, and community intelligence.' },
+  { label: '04 · Connect', title: 'Meet your Market Director', desc: 'A real guide steps in — then introduces your Select Agent.' },
+]
 
 export default function HowItWorks() {
   return (
-    <section style={{ backgroundColor: '#F8F7F4' }} className="py-20 px-4">
-      <div className="max-w-5xl mx-auto">
-
-        {/* Header */}
-        <div className="text-center mb-14">
-          <p
-            className="text-xs font-bold uppercase mb-4"
-            style={{ color: GOLD, letterSpacing: '0.18em' }}
+    <section style={{ padding: '28px 32px' }}>
+      <p style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: MUTED, marginBottom: '16px' }}>
+        HOW IT WORKS
+      </p>
+      <div
+        className="grid grid-cols-2 md:grid-cols-4"
+        style={{ gap: '10px' }}
+      >
+        {STEPS.map(step => (
+          <div
+            key={step.label}
+            style={{
+              border: `0.5px solid ${BORDER}`,
+              borderTop: `2px solid ${NAVY}`,
+              borderRadius: '8px',
+              padding: '14px',
+              background: '#fff',
+            }}
           >
-            Find Your Lone Star Lifestyle™
-          </p>
-          <h2 className="text-4xl font-bold text-gray-900 tracking-tight">
-            Three promises. One journey.
-          </h2>
-        </div>
-
-        {/* Cards */}
-        <div className="grid md:grid-cols-3 gap-6">
-          {CARDS.map(card => (
-            <div
-              key={card.label}
-              className="bg-white rounded-2xl p-8 flex flex-col"
-              style={{
-                boxShadow: '0 1px 3px rgba(0,0,0,0.05), 0 8px 32px rgba(0,0,0,0.07)',
-                borderTop: `3px solid ${GOLD}`,
-              }}
-            >
-              <p
-                className="text-[10px] font-bold uppercase mb-4 tracking-widest"
-                style={{ color: GOLD }}
-              >
-                {card.label}
-              </p>
-              <h3 className="text-[18px] font-bold text-gray-900 tracking-tight mb-3">
-                {card.headline}
-              </h3>
-              <p className="text-gray-500 text-sm leading-relaxed">
-                {card.copy}
-              </p>
-            </div>
-          ))}
-        </div>
-
+            <p style={{ fontSize: '11px', color: RED, fontWeight: 500, marginBottom: '6px' }}>{step.label}</p>
+            <p style={{ fontSize: '13px', fontWeight: 500, color: NAVY, marginBottom: '4px' }}>{step.title}</p>
+            <p style={{ fontSize: '11px', color: MUTED, lineHeight: 1.5, margin: 0 }}>{step.desc}</p>
+          </div>
+        ))}
       </div>
     </section>
   )

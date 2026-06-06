@@ -1,103 +1,216 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import { BarChart2, UserCheck, ShieldCheck, Lock, Map } from 'lucide-react'
+
+const NAVY = '#002868'
+const RED = '#BF0A30'
+const GOLD = '#C9A84C'
+const MUTED = '#6B7280'
+const BORDER = 'rgba(0,0,0,0.08)'
+
+const PROOF_ITEMS = [
+  { Icon: BarChart2, label: 'Data-driven matching', desc: 'Verified data across 12 lifestyle categories' },
+  { Icon: UserCheck, label: 'A real person guides you', desc: 'Your Market Director steps in at MileMarker 4' },
+  { Icon: ShieldCheck, label: 'Vetted Select Agents', desc: 'Hand-picked realtors who know your market' },
+  { Icon: Lock, label: 'Your data stays yours', desc: 'Nothing sold, nothing shared without consent' },
+]
+
+const TRUST_STATS = [
+  { num: '101', label: 'Texas communities' },
+  { num: '4', label: 'Major metros' },
+  { num: '12', label: 'Lifestyle categories' },
+  { num: 'Free', label: 'To start' },
+]
 
 export default function HeroSection() {
   return (
-    <section
-      className="relative overflow-hidden pt-24 pb-24 px-4"
-      style={{ backgroundColor: '#08101C' }}
-    >
-      {/* Background image */}
-      <Image
-        src="/images/welcome-to-texas.jpg"
-        alt=""
-        fill
-        className="object-cover absolute inset-0 z-0"
-        priority
-      />
-
-      {/* Dark overlay */}
-      <div className="absolute inset-0 z-10" style={{ background: 'rgba(0,0,0,0.80)' }} />
-
-      {/* Radial blue glow */}
+    <>
+      {/* Hero — split layout */}
       <div
-        className="absolute inset-0 z-[15] pointer-events-none"
-        style={{
-          backgroundImage:
-            'radial-gradient(ellipse 80% 55% at 50% -5%, rgba(26,95,168,0.28) 0%, transparent 65%)',
-        }}
-      />
-
-      {/* Subtle grid */}
-      <div
-        className="absolute inset-0 z-[15] pointer-events-none"
-        style={{
-          backgroundImage:
-            'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)',
-          backgroundSize: '64px 64px',
-        }}
-      />
-
-      {/* Bottom fade */}
-      <div
-        className="absolute bottom-0 inset-x-0 h-24 z-[15] pointer-events-none"
-        style={{ background: 'linear-gradient(to top, #F4F5F7, transparent)' }}
-      />
-
-      <div className="relative z-20 max-w-4xl mx-auto text-center">
-        {/* Lone Star Lifestyle label */}
-        <p
-          className="text-xs font-bold uppercase mb-4"
-          style={{ color: '#B8912A', letterSpacing: '0.18em' }}
+        className="flex flex-col-reverse md:grid"
+        style={{ gridTemplateColumns: '55% 45%', minHeight: '400px' }}
+      >
+        {/* Left panel */}
+        <div
+          className="hero-left"
+          style={{ background: '#fff', padding: '52px 44px 52px 32px' }}
         >
-          Find Your Lone Star Lifestyle™
-        </p>
+          {/* Eyebrow */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '18px' }}>
+            <div style={{ width: '28px', height: '1.5px', background: RED, flexShrink: 0 }} />
+            <p style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: RED, margin: 0 }}>
+              Texas Relocation Intelligence
+            </p>
+          </div>
 
-        {/* Badge */}
-        <div className="inline-flex items-center gap-2.5 border border-white/10 bg-white/5 text-blue-300/80 text-xs font-semibold px-4 py-1.5 rounded-full mb-9 tracking-wide">
-          <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full" />
-          4 metros · 101 cities · Updated June 2026
+          {/* Headline */}
+          <h1 style={{
+            fontFamily: "'Playfair Display', Georgia, serif",
+            fontSize: '34px',
+            fontWeight: 500,
+            lineHeight: 1.25,
+            color: NAVY,
+            marginBottom: '16px',
+          }}>
+            Find your place<br />
+            in the <span style={{ color: RED }}>Lone Star State.</span>
+          </h1>
+
+          {/* Subhead */}
+          <p style={{ fontSize: '13.5px', color: MUTED, lineHeight: 1.8, maxWidth: '400px', marginBottom: '28px' }}>
+            HavenQuest matches you to the right Texas community based on your income, priorities, and lifestyle — then guides you every step of the way to your front door.
+          </p>
+
+          {/* CTA row */}
+          <div className="flex flex-col md:flex-row md:items-center gap-4" style={{ marginBottom: '32px' }}>
+            <Link
+              href="/begin"
+              className="w-full md:w-auto text-center"
+              style={{
+                background: NAVY,
+                color: '#fff',
+                fontSize: '13px',
+                fontWeight: 500,
+                padding: '12px 24px',
+                borderRadius: '8px',
+                textDecoration: 'none',
+                display: 'inline-block',
+              }}
+            >
+              Begin My Journey →
+            </Link>
+            <Link
+              href="/texas/texas-insider"
+              className="text-center md:text-left"
+              style={{
+                color: NAVY,
+                borderBottom: `1px solid ${NAVY}`,
+                fontSize: '13px',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '4px',
+              }}
+            >
+              <Map size={13} />
+              Explore Texas markets
+            </Link>
+          </div>
+
+          {/* Trust stats */}
+          <div
+            className="grid grid-cols-2 md:flex"
+            style={{ paddingTop: '24px', borderTop: `0.5px solid ${BORDER}` }}
+          >
+            {TRUST_STATS.map((stat, i) => (
+              <div
+                key={stat.label}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  paddingLeft: i > 0 ? '20px' : '0',
+                  paddingRight: '20px',
+                  paddingTop: '8px',
+                  paddingBottom: '8px',
+                  borderLeft: i > 0 ? `0.5px solid ${BORDER}` : 'none',
+                }}
+              >
+                <span style={{ fontSize: '20px', fontWeight: 500, color: NAVY }}>{stat.num}</span>
+                <span style={{ fontSize: '11px', color: MUTED }}>{stat.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Headline */}
-        <h1 className="tracking-tight mb-4 leading-none">
-          <span
-            className="block italic"
-            style={{
-              fontSize: 'clamp(22px, 3.2vw, 42px)',
-              fontFamily: '"Times New Roman", Georgia, serif',
-              fontWeight: 300,
-              color: '#FFFFFF',
-              marginBottom: '0.05em',
-            }}
-          >
-            So, you&apos;re
-          </span>
-          <span
-            className="block font-bold gradient-text-light"
-            style={{ fontSize: 'clamp(52px, 9vw, 108px)' }}
-          >
-            Choosin&apos; Texas.
-          </span>
-        </h1>
-
-        {/* Subtext */}
-        <p className="text-lg md:text-xl text-white max-w-[580px] mx-auto leading-relaxed mb-11">
-          HavenQuest guides your entire relocation journey — from discovering the right Texas community
-          to settling into your new home — so you never have to navigate it alone.
-        </p>
-
-        {/* CTA */}
-        <div className="flex justify-center">
-          <Link
-            href="/begin"
-            className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-sm tracking-tight transition-opacity hover:opacity-85"
-            style={{ backgroundColor: '#60B8FF', color: '#08101C', boxShadow: '0 0 0 1px rgba(96,184,255,0.3), 0 8px 24px rgba(96,184,255,0.25)' }}
-          >
-            Begin My Journey →
-          </Link>
+        {/* Right panel — image */}
+        <div
+          className="relative h-[220px] md:h-auto"
+          style={{ borderLeft: `0.5px solid ${BORDER}`, overflow: 'hidden' }}
+        >
+          <Image
+            src="/images/texas-intel/state-hero.jpg"
+            alt="Texas lifestyle — community life in the Lone Star State"
+            fill
+            className="object-cover"
+            priority
+          />
+          {/* Bottom gradient */}
+          <div style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: '120px',
+            background: 'linear-gradient(transparent, rgba(0,40,104,0.55))',
+            zIndex: 1,
+          }} />
+          {/* Badge */}
+          <div style={{
+            position: 'absolute',
+            bottom: '16px',
+            left: '16px',
+            zIndex: 2,
+            background: 'rgba(0,40,104,0.15)',
+            border: '1px solid rgba(255,255,255,0.4)',
+            borderRadius: '20px',
+            padding: '5px 12px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}>
+            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: RED, flexShrink: 0 }} />
+            <span style={{ fontSize: '11px', color: '#fff' }}>4 metros · 101 cities · Updated June 2026</span>
+          </div>
         </div>
       </div>
-    </section>
+
+      {/* Texas flag stripe */}
+      <div style={{ display: 'flex', height: '4px' }}>
+        <div style={{ flex: 1, background: RED }} />
+        <div style={{ flex: 1, background: '#FFFFFF', borderTop: `0.5px solid ${BORDER}`, borderBottom: `0.5px solid ${BORDER}` }} />
+        <div style={{ flex: 1, background: NAVY }} />
+      </div>
+
+      {/* Proof strip */}
+      <div
+        className="grid grid-cols-2 md:grid-cols-4"
+        style={{ background: NAVY }}
+      >
+        {PROOF_ITEMS.map((item, i) => (
+          <div
+            key={item.label}
+            style={{
+              padding: '16px 20px',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '10px',
+              borderRight: i % 2 === 0 ? '0.5px solid rgba(255,255,255,0.1)' : 'none',
+            }}
+            className="md:[&:not(:last-child)]:border-r md:border-r-[rgba(255,255,255,0.1)]"
+          >
+            <div style={{
+              width: '30px',
+              height: '30px',
+              borderRadius: '6px',
+              background: 'rgba(255,255,255,0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}>
+              <item.Icon size={15} color={GOLD} />
+            </div>
+            <div>
+              <p style={{ fontSize: '12px', fontWeight: 500, color: '#fff', margin: '0 0 2px' }}>{item.label}</p>
+              <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.4, margin: 0 }}>{item.desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Red rule */}
+      <div style={{ height: '2px', background: RED }} />
+    </>
   )
 }
