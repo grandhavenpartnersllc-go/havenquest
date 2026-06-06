@@ -84,13 +84,8 @@ export default function TexasMarketProfilesHub() {
                 width: '100%',
                 transition: 'box-shadow 0.2s',
               }}>
-                {/* State image placeholder */}
-                <div style={{ height: '220px', background: 'linear-gradient(135deg, #C4B48C 0%, #A89060 100%)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="0.8">
-                    <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
-                    <line x1="9" y1="3" x2="9" y2="18" />
-                    <line x1="15" y1="6" x2="15" y2="21" />
-                  </svg>
+                <div style={{ position: 'relative', height: '220px' }}>
+                  <Image src="/images/texas-intel/hub-texas-state.jpg" alt="Texas statewide guide" fill className="object-cover" />
                   <div style={{ position: 'absolute', top: '16px', left: '16px', background: GOLD, borderRadius: '6px', padding: '4px 12px', fontSize: '11px', fontWeight: 700, color: DARK }}>
                     Start here
                   </div>

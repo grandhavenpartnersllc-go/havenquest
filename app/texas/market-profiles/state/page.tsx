@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import Header from '@/components/shared/Header'
 import Footer from '@/components/shared/Footer'
@@ -25,18 +26,6 @@ function StatCard({ label, value, sub, color }: { label: string; value: string; 
   )
 }
 
-function ImgPlaceholder({ caption, height = 160 }: { caption: string; height?: number }) {
-  return (
-    <div style={{ width: '100%', height, background: '#DDD8CF', borderRadius: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#8A8280" strokeWidth="1.5">
-        <rect x="3" y="8" width="18" height="13" rx="2" />
-        <circle cx="12" cy="14.5" r="3" />
-        <path d="M8 8V6a2 2 0 012-2h4a2 2 0 012 2v2" />
-      </svg>
-      <p style={{ fontSize: '11px', color: '#8A8280', fontStyle: 'italic', textAlign: 'center', padding: '0 16px' }}>{caption}</p>
-    </div>
-  )
-}
 
 function TexasStatewideFullArticle() {
   return (
@@ -75,7 +64,9 @@ function TexasStatewideFullArticle() {
       </div>
 
       <div style={{ marginBottom: '40px' }}>
-        <ImgPlaceholder caption="Texas landscape — Hill Country or bluebonnet fields" height={200} />
+        <div style={{ position: 'relative', width: '100%', height: 200, borderRadius: '10px', overflow: 'hidden' }}>
+          <Image src="/images/texas-intel/state-landscape.jpg" alt="Texas landscape — Hill Country or bluebonnet fields" fill className="object-cover" />
+        </div>
       </div>
 
       {/* Legislative changes — the most important section */}
@@ -120,11 +111,15 @@ function TexasStatewideFullArticle() {
       {/* Image pair */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" style={{ marginBottom: '40px' }}>
         <div>
-          <ImgPlaceholder caption="Texas urban skyline — downtown Dallas or Austin" />
+          <div style={{ position: 'relative', width: '100%', height: 160, borderRadius: '10px', overflow: 'hidden' }}>
+            <Image src="/images/texas-intel/state-skyline.jpg" alt="Texas urban skyline — downtown Dallas or Austin" fill className="object-cover" />
+          </div>
           <p style={{ fontSize: '11px', color: '#9A8E82', marginTop: '8px', fontStyle: 'italic' }}>Urban Texas is growing faster than any comparable metros nationally</p>
         </div>
         <div>
-          <ImgPlaceholder caption="Texas small town or rural landscape" />
+          <div style={{ position: 'relative', width: '100%', height: 160, borderRadius: '10px', overflow: 'hidden' }}>
+            <Image src="/images/texas-intel/state-small-town.jpg" alt="Texas small town or rural landscape" fill className="object-cover" />
+          </div>
           <p style={{ fontSize: '11px', color: '#9A8E82', marginTop: '8px', fontStyle: 'italic' }}>Beyond the metros, Texas offers genuine small-town character at affordable prices</p>
         </div>
       </div>
@@ -180,7 +175,9 @@ function TexasStatewideFullArticle() {
 
       {/* Second image */}
       <div style={{ marginBottom: '40px' }}>
-        <ImgPlaceholder caption="Texas Hill Country — bluebonnets or Pedernales Falls" height={180} />
+        <div style={{ position: 'relative', width: '100%', height: 180, borderRadius: '10px', overflow: 'hidden' }}>
+          <Image src="/images/texas-intel/state-hill-country.jpg" alt="Texas Hill Country — bluebonnets or Pedernales Falls" fill className="object-cover" />
+        </div>
       </div>
 
       {/* True cost of ownership in Texas */}
@@ -263,10 +260,12 @@ export default function TexasStatewideProfile() {
           <span>/</span><span>Texas Statewide</span>
         </div>
 
-        {/* Hero — placeholder since no statewide image */}
-        <div style={{ height: '260px', borderRadius: '12px', overflow: 'hidden', marginBottom: '28px', background: 'linear-gradient(135deg, #1A1A1A 0%, #3A2800 60%, #C9A84C 100%)', position: 'relative', display: 'flex', alignItems: 'flex-end', padding: '0' }}>
+        {/* Hero image */}
+        <div style={{ position: 'relative', height: '260px', borderRadius: '12px', overflow: 'hidden', marginBottom: '28px' }}>
+          <Image src="/images/texas-intel/state-hero.jpg" alt="Texas statewide" fill className="object-cover" priority />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.2) 55%, transparent 100%)' }} />
           <div style={{ position: 'absolute', top: '16px', right: '16px', background: 'rgba(201,168,76,0.92)', borderRadius: '6px', padding: '4px 12px', fontSize: '11px', fontWeight: 700, color: DARK }}>Q2 2026</div>
-          <div style={{ padding: '24px', color: 'white' }}>
+          <div style={{ position: 'absolute', bottom: '20px', left: '24px', right: '24px', color: 'white' }}>
             <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', opacity: 0.7, marginBottom: '6px' }}>Texas Statewide · Q2 2026</p>
             <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: '32px', fontWeight: 500, lineHeight: 1.2, marginBottom: '5px' }}>Texas Statewide</h1>
             <p style={{ fontSize: '14px', opacity: 0.8 }}>The full picture — before you commit to anything</p>

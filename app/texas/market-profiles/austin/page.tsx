@@ -26,18 +26,6 @@ function StatCard({ label, value, sub, color }: { label: string; value: string; 
   )
 }
 
-function ImgPlaceholder({ caption, height = 160 }: { caption: string; height?: number }) {
-  return (
-    <div style={{ width: '100%', height, background: '#DDD8CF', borderRadius: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#8A8280" strokeWidth="1.5">
-        <rect x="3" y="8" width="18" height="13" rx="2" />
-        <circle cx="12" cy="14.5" r="3" />
-        <path d="M8 8V6a2 2 0 012-2h4a2 2 0 012 2v2" />
-      </svg>
-      <p style={{ fontSize: '11px', color: '#8A8280', fontStyle: 'italic', textAlign: 'center', padding: '0 16px' }}>{caption}</p>
-    </div>
-  )
-}
 
 function AustinFullArticle() {
   return (
@@ -78,7 +66,9 @@ function AustinFullArticle() {
 
       {/* 4. Full-width lifestyle image */}
       <div style={{ marginBottom: '40px' }}>
-        <ImgPlaceholder caption="Austin neighborhood street scene — South Congress or Mueller District" height={200} />
+        <div style={{ position: 'relative', width: '100%', height: 200, borderRadius: '10px', overflow: 'hidden' }}>
+          <Image src="/images/texas-intel/austin-neighborhood.jpg" alt="Austin neighborhood street scene — South Congress or Mueller District" fill className="object-cover" />
+        </div>
       </div>
 
       {/* 5. Economy section */}
@@ -100,11 +90,15 @@ function AustinFullArticle() {
       {/* 6. Image pair */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" style={{ marginBottom: '40px' }}>
         <div>
-          <ImgPlaceholder caption="Barton Springs or Barton Creek Greenbelt" />
+          <div style={{ position: 'relative', width: '100%', height: 160, borderRadius: '10px', overflow: 'hidden' }}>
+            <Image src="/images/texas-intel/austin-barton-springs.jpg" alt="Barton Springs or Barton Creek Greenbelt" fill className="object-cover" />
+          </div>
           <p style={{ fontSize: '11px', color: '#9A8E82', marginTop: '8px', fontStyle: 'italic' }}>Austin&apos;s outdoor corridor — a major quality-of-life differentiator</p>
         </div>
         <div>
-          <ImgPlaceholder caption="Texas Hill Country landscape — near Bee Cave or Lakeway" />
+          <div style={{ position: 'relative', width: '100%', height: 160, borderRadius: '10px', overflow: 'hidden' }}>
+            <Image src="/images/texas-intel/austin-hill-country.jpg" alt="Texas Hill Country landscape — near Bee Cave or Lakeway" fill className="object-cover" />
+          </div>
           <p style={{ fontSize: '11px', color: '#9A8E82', marginTop: '8px', fontStyle: 'italic' }}>Hill Country access within 30 minutes of downtown</p>
         </div>
       </div>
@@ -186,7 +180,9 @@ function AustinFullArticle() {
 
       {/* 9. Second lifestyle image */}
       <div style={{ marginBottom: '40px' }}>
-        <ImgPlaceholder caption="Austin community park or Barton Springs Pool" height={180} />
+        <div style={{ position: 'relative', width: '100%', height: 180, borderRadius: '10px', overflow: 'hidden' }}>
+          <Image src="/images/texas-intel/austin-community.jpg" alt="Austin community park or Barton Springs Pool" fill className="object-cover" />
+        </div>
       </div>
 
       {/* 10. True cost of homeownership */}
@@ -277,7 +273,7 @@ export default function AustinProfile() {
         {/* Hero image */}
         <div style={{ position: 'relative', height: '260px', borderRadius: '12px', overflow: 'hidden', marginBottom: '28px' }}>
           <Image
-            src="/images/cities/austin-tx.jpg"
+            src="/images/texas-intel/austin-hero.jpg"
             alt="Austin, Texas"
             fill
             className="object-cover"

@@ -26,18 +26,6 @@ function StatCard({ label, value, sub, color }: { label: string; value: string; 
   )
 }
 
-function ImgPlaceholder({ caption, height = 160 }: { caption: string; height?: number }) {
-  return (
-    <div style={{ width: '100%', height, background: '#DDD8CF', borderRadius: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#8A8280" strokeWidth="1.5">
-        <rect x="3" y="8" width="18" height="13" rx="2" />
-        <circle cx="12" cy="14.5" r="3" />
-        <path d="M8 8V6a2 2 0 012-2h4a2 2 0 012 2v2" />
-      </svg>
-      <p style={{ fontSize: '11px', color: '#8A8280', fontStyle: 'italic', textAlign: 'center', padding: '0 16px' }}>{caption}</p>
-    </div>
-  )
-}
 
 function HoustonFullArticle() {
   return (
@@ -76,7 +64,9 @@ function HoustonFullArticle() {
       </div>
 
       <div style={{ marginBottom: '40px' }}>
-        <ImgPlaceholder caption="The Woodlands Town Center or Sugar Land suburban neighborhood" height={200} />
+        <div style={{ position: 'relative', width: '100%', height: 200, borderRadius: '10px', overflow: 'hidden' }}>
+          <Image src="/images/texas-intel/houston-woodlands.jpg" alt="The Woodlands Town Center or Sugar Land suburban neighborhood" fill className="object-cover" />
+        </div>
       </div>
 
       {/* Economy */}
@@ -98,11 +88,15 @@ function HoustonFullArticle() {
       {/* Image pair */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" style={{ marginBottom: '40px' }}>
         <div>
-          <ImgPlaceholder caption="Houston Heights or Montrose neighborhood — urban lifestyle" />
+          <div style={{ position: 'relative', width: '100%', height: 160, borderRadius: '10px', overflow: 'hidden' }}>
+            <Image src="/images/texas-intel/houston-heights.jpg" alt="Houston Heights or Montrose neighborhood — urban lifestyle" fill className="object-cover" />
+          </div>
           <p style={{ fontSize: '11px', color: '#9A8E82', marginTop: '8px', fontStyle: 'italic' }}>Inner-loop Houston offers walkability and urban amenities</p>
         </div>
         <div>
-          <ImgPlaceholder caption="Katy or Cypress master-planned community" />
+          <div style={{ position: 'relative', width: '100%', height: 160, borderRadius: '10px', overflow: 'hidden' }}>
+            <Image src="/images/texas-intel/houston-neighborhood.jpg" alt="Katy or Cypress master-planned community" fill className="object-cover" />
+          </div>
           <p style={{ fontSize: '11px', color: '#9A8E82', marginTop: '8px', fontStyle: 'italic' }}>The suburbs deliver the best value and school access</p>
         </div>
       </div>
@@ -197,7 +191,9 @@ function HoustonFullArticle() {
 
       {/* Second image */}
       <div style={{ marginBottom: '40px' }}>
-        <ImgPlaceholder caption="Houston master-planned community clubhouse or The Woodlands waterway" height={180} />
+        <div style={{ position: 'relative', width: '100%', height: 180, borderRadius: '10px', overflow: 'hidden' }}>
+          <Image src="/images/texas-intel/houston-community.jpg" alt="Houston master-planned community clubhouse or The Woodlands waterway" fill className="object-cover" />
+        </div>
       </div>
 
       {/* True cost */}
@@ -280,7 +276,7 @@ export default function HoustonProfile() {
         </div>
 
         <div style={{ position: 'relative', height: '260px', borderRadius: '12px', overflow: 'hidden', marginBottom: '28px' }}>
-          <Image src="/images/cities/houston-tx.jpg" alt="Houston, Texas" fill className="object-cover" priority />
+          <Image src="/images/texas-intel/houston-hero.jpg" alt="Houston, Texas" fill className="object-cover" priority />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.2) 55%, transparent 100%)' }} />
           <div style={{ position: 'absolute', top: '16px', right: '16px', background: 'rgba(201,168,76,0.92)', borderRadius: '6px', padding: '4px 12px', fontSize: '11px', fontWeight: 700, color: DARK }}>Q2 2026</div>
           <div style={{ position: 'absolute', bottom: '20px', left: '24px', right: '24px', color: 'white' }}>

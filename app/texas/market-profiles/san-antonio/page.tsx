@@ -26,18 +26,6 @@ function StatCard({ label, value, sub, color }: { label: string; value: string; 
   )
 }
 
-function ImgPlaceholder({ caption, height = 160 }: { caption: string; height?: number }) {
-  return (
-    <div style={{ width: '100%', height, background: '#DDD8CF', borderRadius: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#8A8280" strokeWidth="1.5">
-        <rect x="3" y="8" width="18" height="13" rx="2" />
-        <circle cx="12" cy="14.5" r="3" />
-        <path d="M8 8V6a2 2 0 012-2h4a2 2 0 012 2v2" />
-      </svg>
-      <p style={{ fontSize: '11px', color: '#8A8280', fontStyle: 'italic', textAlign: 'center', padding: '0 16px' }}>{caption}</p>
-    </div>
-  )
-}
 
 function SanAntonioFullArticle() {
   return (
@@ -76,7 +64,9 @@ function SanAntonioFullArticle() {
       </div>
 
       <div style={{ marginBottom: '40px' }}>
-        <ImgPlaceholder caption="San Antonio River Walk or King William Historic District" height={200} />
+        <div style={{ position: 'relative', width: '100%', height: 200, borderRadius: '10px', overflow: 'hidden' }}>
+          <Image src="/images/texas-intel/san-antonio-riverwalk.jpg" alt="San Antonio River Walk or King William Historic District" fill className="object-cover" />
+        </div>
       </div>
 
       {/* Economy */}
@@ -98,11 +88,15 @@ function SanAntonioFullArticle() {
       {/* Image pair */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" style={{ marginBottom: '40px' }}>
         <div>
-          <ImgPlaceholder caption="Alamo Heights or Olmos Park neighborhood" />
+          <div style={{ position: 'relative', width: '100%', height: 160, borderRadius: '10px', overflow: 'hidden' }}>
+            <Image src="/images/texas-intel/san-antonio-neighborhood.jpg" alt="Alamo Heights or Olmos Park neighborhood" fill className="object-cover" />
+          </div>
           <p style={{ fontSize: '11px', color: '#9A8E82', marginTop: '8px', fontStyle: 'italic' }}>San Antonio&apos;s premium neighborhoods offer charm at a fraction of Austin prices</p>
         </div>
         <div>
-          <ImgPlaceholder caption="Texas Hill Country — Boerne or New Braunfels gateway" />
+          <div style={{ position: 'relative', width: '100%', height: 160, borderRadius: '10px', overflow: 'hidden' }}>
+            <Image src="/images/texas-intel/san-antonio-hill-country.jpg" alt="Texas Hill Country — Boerne or New Braunfels gateway" fill className="object-cover" />
+          </div>
           <p style={{ fontSize: '11px', color: '#9A8E82', marginTop: '8px', fontStyle: 'italic' }}>Hill Country access is a 20–30 minute drive from most San Antonio suburbs</p>
         </div>
       </div>
@@ -195,7 +189,9 @@ function SanAntonioFullArticle() {
 
       {/* Second image */}
       <div style={{ marginBottom: '40px' }}>
-        <ImgPlaceholder caption="Texas Hill Country landscape — Guadalupe River or Enchanted Rock" height={180} />
+        <div style={{ position: 'relative', width: '100%', height: 180, borderRadius: '10px', overflow: 'hidden' }}>
+          <Image src="/images/texas-intel/san-antonio-landscape.jpg" alt="Texas Hill Country landscape — Guadalupe River or Enchanted Rock" fill className="object-cover" />
+        </div>
       </div>
 
       {/* True cost */}
@@ -278,7 +274,7 @@ export default function SanAntonioProfile() {
         </div>
 
         <div style={{ position: 'relative', height: '260px', borderRadius: '12px', overflow: 'hidden', marginBottom: '28px' }}>
-          <Image src="/images/cities/san-antonio-tx.jpg" alt="San Antonio, Texas" fill className="object-cover" priority />
+          <Image src="/images/texas-intel/san-antonio-hero.jpg" alt="San Antonio, Texas" fill className="object-cover" priority />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.2) 55%, transparent 100%)' }} />
           <div style={{ position: 'absolute', top: '16px', right: '16px', background: 'rgba(201,168,76,0.92)', borderRadius: '6px', padding: '4px 12px', fontSize: '11px', fontWeight: 700, color: DARK }}>Q2 2026</div>
           <div style={{ position: 'absolute', bottom: '20px', left: '24px', right: '24px', color: 'white' }}>
