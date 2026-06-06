@@ -343,7 +343,8 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
         unassigned,
       }
 
-      await supabase
+      const email = s.user.email.toLowerCase()
+      const { data, error } = await supabase
         .from('users')
         .update({
           current_milemarker: 4,
@@ -356,7 +357,13 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
           loan_term_preference: loanTerm,
           financials_locked: financialsLocked,
         })
-        .eq('email', s.user.email.toLowerCase())
+        .eq('email', email)
+        .select('current_milemarker')
+      console.log('[MM3→4] current_milemarker write result:', { data, error })
+      if (error) throw error
+      if (!data || data.length === 0) {
+        console.warn('[MM3→4] write affected 0 rows — RLS UPDATE policy missing or JWT email mismatch for', email)
+      }
 
       setCommitted(true)
     } catch (err) {
@@ -946,6 +953,22 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
             ))}
             <span className="text-[9px]" style={{ color: '#C5BFB8' }}>— based on your income</span>
           </div>
+          {/* Selection instructions */}
+          <div style={{
+            background: 'rgba(184,145,42,0.07)',
+            border: '1px solid rgba(184,145,42,0.35)',
+            borderRadius: '12px',
+            padding: '12px 14px',
+            marginBottom: '12px',
+          }}>
+            <p style={{ fontSize: '12px', fontWeight: 600, color: '#7A5A1A', marginBottom: '4px', lineHeight: 1.5 }}>
+              Choose up to 3 communities you want to explore.
+            </p>
+            <p style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
+              Hit &ldquo;Choose This Community&rdquo; on any city card to select it. Your
+              selections tell your Market Director exactly where to focus.
+            </p>
+          </div>
           <div className="space-y-2">
             {displayedMatches.map((match, i) => (
               <div
@@ -1000,7 +1023,7 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
                   <p className="text-[10px]" style={{ color: '#9A8E82' }}>
                     {match.location.metroUsed}
                   </p>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap justify-end">
                     <button
                       onClick={() => setCityPopup(match)}
                       className="text-[10px] font-semibold underline underline-offset-2"
@@ -1013,20 +1036,25 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
                         const cityId = match.location.id
                         if (chosenCities.includes(cityId)) {
                           setChosenCities(prev => prev.filter(id => id !== cityId))
-                        } else if (chosenCities.length < 2) {
+                        } else if (chosenCities.length < 3) {
                           setChosenCities(prev => [...prev, cityId])
                         }
                       }}
-                      className="text-[10px] font-semibold px-2 py-0.5 rounded-full transition-all"
+                      className="font-bold transition-all"
                       style={{
-                        backgroundColor: chosenCities.includes(match.location.id) ? '#FAEEDA' : 'transparent',
-                        color: chosenCities.includes(match.location.id) ? GOLD : '#C5BFB8',
-                        border: `1px solid ${chosenCities.includes(match.location.id) ? GOLD : '#E5E7EB'}`,
-                        opacity: !chosenCities.includes(match.location.id) && chosenCities.length >= 2 ? 0.4 : 1,
-                        cursor: !chosenCities.includes(match.location.id) && chosenCities.length >= 2 ? 'not-allowed' : 'pointer',
+                        fontSize: '11px',
+                        padding: '6px 14px',
+                        borderRadius: '8px',
+                        whiteSpace: 'nowrap',
+                        backgroundColor: chosenCities.includes(match.location.id) ? '#FBF3E3' : '#C9A84C',
+                        color: chosenCities.includes(match.location.id) ? '#8A6D1F' : '#FFFFFF',
+                        border: chosenCities.includes(match.location.id) ? '1.5px solid #B8912A' : '1.5px solid #C9A84C',
+                        boxShadow: chosenCities.includes(match.location.id) ? 'none' : '0 1px 3px rgba(184,145,42,0.3)',
+                        opacity: !chosenCities.includes(match.location.id) && chosenCities.length >= 3 ? 0.4 : 1,
+                        cursor: !chosenCities.includes(match.location.id) && chosenCities.length >= 3 ? 'not-allowed' : 'pointer',
                       }}
                     >
-                      {chosenCities.includes(match.location.id) ? '✓ Chosen' : 'Choose'}
+                      {chosenCities.includes(match.location.id) ? '✓ Selected' : 'Choose This Community'}
                     </button>
                   </div>
                 </div>

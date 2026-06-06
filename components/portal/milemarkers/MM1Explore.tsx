@@ -36,7 +36,7 @@ const TAB_CONTENT = [
   },
   {
     headline: 'Refine your direction.',
-    body: "Dig deeper into your matches. Adjust your priorities and financial picture in real time and watch how your rankings change. Choose up to 2 communities to highlight. When you're ready, commit your direction and your Market Director steps in.",
+    body: "Dig deeper into your matches. Adjust your priorities and financial picture in real time and watch how your rankings change. Choose up to 3 communities to highlight. When you're ready, commit your direction and your Market Director steps in.",
     role: 'You + the platform',
   },
   {
@@ -154,12 +154,11 @@ export default function MM1Explore({
           Your First Look
         </p>
         <h2 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: '6px' }}>
-          Your preliminary Texas matches
+          Meet your Texas matches.
         </h2>
         <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: 1.6, marginBottom: '16px' }}>
-          Based on what you told us, here&apos;s where your life fits in Texas
-          right now. These are your first impressions — what the data is
-          telling us at this stage.
+          These communities rose to the top based on everything you told us.
+          Take a look — one of these could be where you plant your flag.
         </p>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '12px', marginBottom: '16px' }}>
@@ -204,11 +203,9 @@ export default function MM1Explore({
 
         <div style={{ borderLeft: '3px solid #B8912A', borderRadius: '0 6px 6px 0', padding: '10px 12px', background: 'rgba(184,145,42,0.04)' }}>
           <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
-            <strong style={{ color: 'var(--color-text-primary)' }}>These are your starting point — not your final answer.</strong>
-            {' '}In MileMarker 3 — Discover — you&apos;ll dial these in. Adjust your
-            priorities, refine your financial picture, and choose the communities
-            you want to explore with your Market Director. What you see here
-            is just the beginning.
+            These are your starting point — and they&apos;re a good one. In
+            MileMarker 3, you&apos;ll dial these in with your full financial
+            picture and priorities. Your Market Director will take it from there.
           </p>
         </div>
       </div>
@@ -249,11 +246,7 @@ export default function MM1Explore({
           </div>
 
           {/* Tab Bar */}
-          <div style={{ position: 'relative', backgroundColor: '#1C1814', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-          {/* Phase label — purely decorative, non-interactive */}
-          <span style={{ position: 'absolute', top: '3px', left: '50%', transform: 'translateX(-50%)', fontSize: '8px', color: '#6B6560', whiteSpace: 'nowrap', pointerEvents: 'none', zIndex: 1 }}>
-            → Property Decision
-          </span>
+          <div style={{ backgroundColor: '#1C1814', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           <div style={{ display: 'flex', alignItems: 'stretch', overflowX: 'auto' }}>
 
             {/* MM1–MM5 (unlocked) */}
@@ -364,16 +357,17 @@ export default function MM1Explore({
         <p style={{ fontSize: '11px', fontWeight: 600, color: '#B8912A', letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: '16px' }}>
           What Makes HavenQuest Different
         </p>
+        <div style={{ background: '#F0EBE1', border: '1px solid #D4C5A9', borderRadius: '12px', padding: '32px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
           <div style={{ padding: '16px', borderRadius: '10px', border: '0.5px solid var(--color-border-tertiary)', background: 'var(--color-background-primary)' }}>
-            <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: '6px' }}>Your data is yours</p>
+            <p style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '6px' }}>Your data is yours</p>
             <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
               Everything you share stays private and powers your personal
               experience. Nothing is sold. Nothing is shared without your consent.
             </p>
           </div>
           <div style={{ padding: '16px', borderRadius: '10px', border: '0.5px solid var(--color-border-tertiary)', background: 'var(--color-background-primary)' }}>
-            <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: '6px' }}>A real person joins you</p>
+            <p style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '6px' }}>A real person joins you</p>
             <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
               At MileMarker 4, your personal Market Director steps in. They&apos;ve
               already read your profile and are ready to guide you the rest
@@ -381,13 +375,14 @@ export default function MM1Explore({
             </p>
           </div>
           <div style={{ padding: '16px', borderRadius: '10px', border: '0.5px solid var(--color-border-tertiary)', background: 'var(--color-background-primary)' }}>
-            <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: '6px' }}>Nothing falls through the cracks</p>
+            <p style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '6px' }}>Nothing falls through the cracks</p>
             <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
               Your Navigator tracks every step — from community discovery to
               closing day. You always know where you are, what&apos;s done, and
               what&apos;s next.
             </p>
           </div>
+        </div>
         </div>
       </div>
 

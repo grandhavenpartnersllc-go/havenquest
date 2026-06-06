@@ -207,10 +207,16 @@ export default function StarterPortal() {
       const supabase = createClient()
       const { data: { session: supaSession } } = await supabase.auth.getSession()
       if (!supaSession?.user?.email) return
-      await supabase
+      const email = supaSession.user.email.toLowerCase()
+      const { data, error } = await supabase
         .from('users')
         .update({ onboarding_acknowledged: true, current_milemarker: 2 })
-        .eq('email', supaSession.user.email.toLowerCase())
+        .eq('email', email)
+        .select('current_milemarker')
+      console.log('[MM1→2] current_milemarker write result:', { data, error })
+      if (!error && (!data || data.length === 0)) {
+        console.warn('[MM1→2] write affected 0 rows — RLS UPDATE policy missing or JWT email mismatch for', email)
+      }
     } catch (err) {
       console.error('handleAcknowledge write failed:', err)
     }

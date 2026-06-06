@@ -306,19 +306,9 @@ export default function MM2Discover({ matches, profile, initialChecklist, initia
                   const dotColor = status === 'comfortable' ? '#1D9E75'
                     : status === 'moderate' ? '#C9A84C' : '#E53E3E'
                   return (
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
-                      {/* Budget Fit indicator */}
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '6px 12px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)', background: 'var(--color-background-secondary)' }}>
-                        <p style={{ fontSize: '9px', fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '3px' }}>
-                          Budget Fit
-                        </p>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: dotColor }} />
-                          <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--color-text-primary)' }}>{statusLabel}</span>
-                        </div>
-                      </div>
-                      {/* Print / Download buttons */}
-                      <div style={{ display: 'flex', gap: '8px' }}>
+                    <>
+                      {/* Print / Download buttons — top-right, alone */}
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginBottom: '12px' }}>
                         <button
                           onClick={() => window.print()}
                           style={{ padding: '6px 14px', fontSize: '12px', fontWeight: 500, border: '0.5px solid var(--color-border-tertiary)', borderRadius: '6px', background: 'transparent', color: 'var(--color-text-secondary)', cursor: 'pointer' }}
@@ -332,7 +322,17 @@ export default function MM2Discover({ matches, profile, initialChecklist, initia
                           Download ↓
                         </button>
                       </div>
-                    </div>
+                      {/* Budget Fit indicator — left-aligned, above report body */}
+                      <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-start', padding: '6px 12px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)', background: 'var(--color-background-secondary)', marginBottom: '16px' }}>
+                        <p style={{ fontSize: '9px', fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '3px' }}>
+                          Budget Fit
+                        </p>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: dotColor }} />
+                          <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--color-text-primary)' }}>{statusLabel}</span>
+                        </div>
+                      </div>
+                    </>
                   )
                 })()}
                 <FullReport
@@ -340,28 +340,6 @@ export default function MM2Discover({ matches, profile, initialChecklist, initia
                   profile={profile}
                   rank={activeReportIndex}
                 />
-                {(() => {
-                  const match = matches[activeReportIndex]
-                  const status = getCityAffordabilityStatus(
-                    match.location.housing.medianHomePrice,
-                    match.location.housing.propertyTaxRate ?? 0.018
-                  )
-                  const dotColor = status === 'comfortable' ? '#22C55E'
-                                 : status === 'moderate' ? '#F59E0B'
-                                 : '#EF4444'
-                  const dotLabel = status === 'comfortable' ? 'Comfortable'
-                                 : status === 'moderate' ? 'Moderate'
-                                 : 'Stretched'
-                  return (
-                    <div className="absolute top-4 right-4 flex items-center gap-1.5 px-2 py-1 rounded-full"
-                         style={{ backgroundColor: 'white', border: `1px solid ${dotColor}33`, boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
-                      <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: dotColor }} />
-                      <span className="text-[10px] font-semibold" style={{ color: dotColor }}>
-                        {dotLabel}
-                      </span>
-                    </div>
-                  )
-                })()}
               </div>
             )}
           </div>
@@ -404,10 +382,16 @@ export default function MM2Discover({ matches, profile, initialChecklist, initia
                 onAdvanceToDiscover()
                 return
               }
-              await supabase
+              const email = supaSession.user.email.toLowerCase()
+              const { data, error } = await supabase
                 .from('users')
                 .update({ current_milemarker: 3 })
-                .eq('email', supaSession.user.email.toLowerCase())
+                .eq('email', email)
+                .select('current_milemarker')
+              console.log('[MM2→3] current_milemarker write result:', { data, error })
+              if (!error && (!data || data.length === 0)) {
+                console.warn('[MM2→3] write affected 0 rows — RLS UPDATE policy missing or JWT email mismatch for', email)
+              }
             } catch (err) {
               console.error('MM2 advance write failed:', err)
             }

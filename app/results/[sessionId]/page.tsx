@@ -94,11 +94,11 @@ export default function SessionResultsPage({ params }: { params: Promise<{ sessi
     <>
       <Header />
       <main className="flex-1 bg-surface">
-        <div className="bg-[#08101C] border-b border-white/8 px-4 py-10">
-          <div className="max-w-3xl mx-auto">
-            <p className="text-blue-400/60 text-[11px] font-bold uppercase tracking-widest mb-3">Your Results</p>
-            <h1 className="text-3xl font-bold text-white tracking-tight">Your first look at Texas.</h1>
-            <p className="text-white/40 text-sm mt-2">These are your preliminary matches — a first peek at where your life fits in Texas. There&apos;s a lot more ahead. Create your free Navigator portal and we&apos;ll take you the rest of the way.</p>
+        <div className="bg-surface border-b border-black/5 px-4 py-12">
+          <div className="max-w-3xl mx-auto text-left">
+            <p style={{ fontSize: '11px', fontWeight: 700, color: '#B8912A', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '12px' }}>Your Results</p>
+            <h1 style={{ fontSize: '2.25rem', fontWeight: 700, color: 'var(--color-text-primary)', letterSpacing: '-0.02em', lineHeight: 1.12 }}>Here are your top Texas matches.</h1>
+            <p style={{ fontSize: '15px', color: 'var(--color-text-secondary)', marginTop: '12px', lineHeight: 1.6, maxWidth: '620px' }}>Based on your income, household, and priorities — this is where your life fits in Texas right now. Your full Navigator report goes much deeper.</p>
           </div>
         </div>
 
@@ -117,12 +117,13 @@ export default function SessionResultsPage({ params }: { params: Promise<{ sessi
                 </div>
               )}
               <p style={{
-                fontSize: '13px',
-                fontStyle: 'italic',
-                color: '#9A8E82',
-                textAlign: 'center',
-                maxWidth: '600px',
-                margin: '0 auto 24px auto',
+                fontSize: '15px',
+                fontStyle: 'normal',
+                fontWeight: 400,
+                color: 'var(--color-text-secondary)',
+                textAlign: 'left',
+                maxWidth: '640px',
+                margin: '0 0 24px 0',
                 lineHeight: 1.7,
               }}>
                 We&apos;re just getting started. What you see here is the beginning
@@ -131,7 +132,7 @@ export default function SessionResultsPage({ params }: { params: Promise<{ sessi
                 communities that truly fit your life.
               </p>
               {/* Horizontal city cards */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', maxWidth: '900px', margin: '0 auto 24px auto' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', maxWidth: '900px', margin: '0 auto 24px auto' }}>
                 {matches.slice(0, 3).map((match, i) => {
                   const isLocked = i > 0
                   const labels = ['#1 Top Pick', '#2 Runner-Up', '#3 Strong Alt']
