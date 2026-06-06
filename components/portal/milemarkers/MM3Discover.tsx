@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
-import { Lock } from 'lucide-react'
+import { Lock, ChevronDown, ChevronRight } from 'lucide-react'
 import { CityMatch, UserProfile, UserSession, SandboxProfile, LifestyleScores } from '../../../types'
 import FullReport from '../../results/FullReport'
 import { LIFESTYLE_CATEGORIES } from '../../../utils/constants'
@@ -129,6 +129,7 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
   const [confirmed, setConfirmed] = useState(false)
   const [financialsLocked, setFinancialsLocked] = useState(false)
   const [worksheetDismissed, setWorksheetDismissed] = useState(false)
+  const [financialCalcOpen, setFinancialCalcOpen] = useState(true)
 
   const rankingsRef = useRef<HTMLDivElement>(null)
 
@@ -688,7 +689,7 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
       )}
 
       {/* Section 2 — Split Dashboard Panel */}
-      <div className="grid grid-cols-2 gap-3 mb-3">
+      <div className="grid grid-cols-2 gap-3 mb-3 items-start">
 
         {/* LEFT — Financial Summary */}
         <div className="rounded-xl p-4"
@@ -774,80 +775,207 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
             </p>
           </div>
 
+          {/* Collapsible — Adjust your financial picture */}
           <div style={{ borderTop: '1px solid #F0EDE6', paddingTop: '10px' }}>
-            <p className="text-[10px] font-bold uppercase mb-2"
-               style={{ color: '#9A8E82', letterSpacing: '0.08em' }}>
-              Priority summary
-            </p>
+            <button
+              type="button"
+              onClick={() => setFinancialCalcOpen(o => !o)}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+            >
+              <span className="text-[10px] font-bold uppercase"
+                    style={{ color: GOLD, letterSpacing: '0.18em' }}>
+                Adjust your financial picture
+              </span>
+              {financialCalcOpen
+                ? <ChevronDown size={16} style={{ color: GOLD }} />
+                : <ChevronRight size={16} style={{ color: GOLD }} />}
+            </button>
+            <div style={{
+              overflow: 'hidden',
+              maxHeight: financialCalcOpen ? '1200px' : '0px',
+              opacity: financialCalcOpen ? 1 : 0,
+              transition: 'max-height 0.3s ease, opacity 0.2s ease',
+            }}>
+              <div className="grid grid-cols-1 gap-4" style={{ paddingTop: '12px', opacity: financialsLocked ? 0.6 : 1, pointerEvents: financialsLocked ? 'none' : 'auto', transition: 'opacity 0.2s' }}>
+                <div>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: WARM_DARK }}>
+                    Down payment
+                  </label>
+                  <select
+                    value={downPayment}
+                    onChange={e => { setSandboxTouched(true); setDownPayment(e.target.value) }}
+                    className="w-full rounded-xl border px-3 py-2 text-xs appearance-none"
+                    style={{ borderColor: '#E5E7EB', color: WARM_DARK }}
+                  >
+                    {DOWN_PAYMENT_OPTIONS.map(opt => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                  <div style={{ marginTop: '6px' }}>
+                    <label style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', display: 'block', marginBottom: '4px' }}>
+                      Or enter exact amount (optional)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. $47,500"
+                      value={exactDownPayment}
+                      onChange={e => { setSandboxTouched(true); setExactDownPayment(formatCurrency(e.target.value)) }}
+                      onFocus={e => { e.target.style.border = '1px solid #B8912A' }}
+                      onBlur={e => { e.target.style.border = '1px solid rgba(184,145,42,0.4)' }}
+                      style={{
+                        width: '100%',
+                        fontSize: '13px',
+                        padding: '6px 10px',
+                        borderRadius: '6px',
+                        border: '1px solid rgba(184,145,42,0.4)',
+                        background: 'rgba(184,145,42,0.04)',
+                        color: 'var(--color-text-primary)',
+                      }}
+                    />
+                  </div>
+                </div>
 
-            {mustHaves.length > 0 && (
-              <div className="mb-2">
-                <p className="text-[9px] font-bold uppercase mb-1"
-                   style={{ color: GOLD, letterSpacing: '0.1em' }}>
-                  Must Have
-                </p>
-                <div className="flex flex-wrap gap-1">
-                  {mustHaves.map(k => {
-                    const cat = LIFESTYLE_CATEGORIES.find(c => c.key === k)!
-                    const Icon = CATEGORY_ICONS[k]
-                    return (
-                      <span key={k}
-                            className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-semibold"
-                            style={{ backgroundColor: 'rgba(184,145,42,0.12)', color: GOLD }}>
-                        <Icon size={10} strokeWidth={2} />
-                        {cat.label}
-                      </span>
-                    )
-                  })}
+                <div>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: WARM_DARK }}>
+                    Home sale proceeds
+                  </label>
+                  <select
+                    value={proceeds ?? 'None'}
+                    onChange={e => { setSandboxTouched(true); setProceeds(e.target.value === 'None' ? null : e.target.value) }}
+                    className="w-full rounded-xl border px-3 py-2 text-xs appearance-none"
+                    style={{ borderColor: '#E5E7EB', color: WARM_DARK }}
+                  >
+                    <option value="None">None</option>
+                    {PROCEEDS_OPTIONS.map(opt => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                  <div style={{ marginTop: '6px' }}>
+                    <label style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', display: 'block', marginBottom: '4px' }}>
+                      Or enter exact amount (optional)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. $120,000"
+                      value={exactHomeProceeds}
+                      onChange={e => { setSandboxTouched(true); setExactHomeProceeds(formatCurrency(e.target.value)) }}
+                      onFocus={e => { e.target.style.border = '1px solid #B8912A' }}
+                      onBlur={e => { e.target.style.border = '1px solid rgba(184,145,42,0.4)' }}
+                      style={{
+                        width: '100%',
+                        fontSize: '13px',
+                        padding: '6px 10px',
+                        borderRadius: '6px',
+                        border: '1px solid rgba(184,145,42,0.4)',
+                        background: 'rgba(184,145,42,0.04)',
+                        color: 'var(--color-text-primary)',
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-semibold" style={{ color: WARM_DARK }}>
+                      Rate assumption
+                    </label>
+                    <span
+                      className="text-xs font-bold"
+                      style={{
+                        color: getRateZone(interestRate) === 'market' ? '#22C55E'
+                             : getRateZone(interestRate) === 'low' ? '#9A8E82'
+                             : '#F59E0B',
+                      }}
+                    >
+                      {interestRate.toFixed(2)}%
+                    </span>
+                  </div>
+
+                  {/* Color-zoned slider track */}
+                  <div className="relative mt-2 mb-1">
+                    {/* Background zone track */}
+                    <div className="w-full h-2 rounded-full overflow-hidden flex"
+                         style={{ backgroundColor: '#E5E7EB' }}>
+                      {/* Low zone — gray */}
+                      <div style={{ width: `${((RATE_MARKET_LOW - 3) / (10 - 3)) * 100}%`, backgroundColor: '#D1D5DB' }} />
+                      {/* Market zone — green */}
+                      <div style={{ width: `${((RATE_MARKET_HIGH - RATE_MARKET_LOW) / (10 - 3)) * 100}%`, backgroundColor: 'rgba(34,197,94,0.3)' }} />
+                      {/* High zone — amber */}
+                      <div style={{ flex: 1, backgroundColor: 'rgba(245,158,11,0.2)' }} />
+                    </div>
+
+                    {/* Actual range input overlaid */}
+                    <input
+                      type="range"
+                      min={3.0}
+                      max={10.0}
+                      step={0.25}
+                      value={interestRate}
+                      onChange={e => { setSandboxTouched(true); setInterestRate(parseFloat(e.target.value)) }}
+                      className="absolute inset-0 w-full opacity-0 cursor-pointer"
+                      style={{ height: '8px' }}
+                    />
+
+                    {/* Custom thumb */}
+                    <div
+                      className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 border-white pointer-events-none"
+                      style={{
+                        left: `calc(${((interestRate - 3) / (10 - 3)) * 100}% - 8px)`,
+                        backgroundColor: getRateZone(interestRate) === 'market' ? '#22C55E'
+                                       : getRateZone(interestRate) === 'low' ? '#9CA3AF'
+                                       : '#F59E0B',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                      }}
+                    />
+                  </div>
+
+                  {/* Zone labels */}
+                  <div className="flex justify-between text-[9px] mb-1">
+                    <span style={{ color: '#9A8E82' }}>3%</span>
+                    <span style={{ color: '#22C55E', fontWeight: 600 }}>
+                      ↑ Current market {RATE_MARKET_LOW}%–{RATE_MARKET_HIGH}%
+                    </span>
+                    <span style={{ color: '#9A8E82' }}>10%</span>
+                  </div>
+
+                  {/* Market rate note */}
+                  <p className="text-[9px] leading-relaxed" style={{ color: '#9A8E82' }}>
+                    Freddie Mac avg: {RATE_MARKET_AVG}% · {RATE_DATA_DATE} · Updated quarterly
+                  </p>
+
+                  {/* Loan term toggle */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>Loan term</span>
+                    <div style={{ display: 'flex', border: '0.5px solid var(--color-border-tertiary)', borderRadius: '6px', overflow: 'hidden' }}>
+                      {([30, 15] as const).map(term => (
+                        <button
+                          key={term}
+                          type="button"
+                          onClick={() => setLoanTerm(term)}
+                          style={{
+                            padding: '4px 12px',
+                            fontSize: '12px',
+                            fontWeight: loanTerm === term ? 500 : 400,
+                            background: loanTerm === term ? '#B8912A' : 'transparent',
+                            color: loanTerm === term ? '#fff' : 'var(--color-text-secondary)',
+                            border: 'none',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s',
+                          }}
+                        >
+                          {term}-yr
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {loanTerm === 15 && (
+                    <p style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', marginTop: '4px' }}>
+                      15-year builds equity faster — higher monthly, less total interest
+                    </p>
+                  )}
                 </div>
               </div>
-            )}
-
-            {niceToHaves.length > 0 && (
-              <div className="mb-2">
-                <p className="text-[9px] font-bold uppercase mb-1"
-                   style={{ color: '#4B7A5E', letterSpacing: '0.1em' }}>
-                  Important
-                </p>
-                <div className="flex flex-wrap gap-1">
-                  {niceToHaves.map(k => {
-                    const cat = LIFESTYLE_CATEGORIES.find(c => c.key === k)!
-                    const Icon = CATEGORY_ICONS[k]
-                    return (
-                      <span key={k}
-                            className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-semibold"
-                            style={{ backgroundColor: '#E8F5EE', color: '#2D7D4E' }}>
-                        <Icon size={10} strokeWidth={2} />
-                        {cat.label}
-                      </span>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-
-            {notPriorities.length > 0 && (
-              <div>
-                <p className="text-[9px] font-bold uppercase mb-1"
-                   style={{ color: '#1A5FA8', letterSpacing: '0.1em' }}>
-                  Nice to Have
-                </p>
-                <div className="flex flex-wrap gap-1">
-                  {notPriorities.map(k => {
-                    const cat = LIFESTYLE_CATEGORIES.find(c => c.key === k)!
-                    const Icon = CATEGORY_ICONS[k]
-                    return (
-                      <span key={k}
-                            className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-semibold"
-                            style={{ backgroundColor: 'rgba(26,95,168,0.12)', color: '#1A5FA8' }}>
-                        <Icon size={10} strokeWidth={2} />
-                        {cat.label}
-                      </span>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
+            </div>
           </div>
 
           {/* Lock financials */}
@@ -1058,191 +1186,87 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
 
       </div>
 
-      {/* Section 3 — Financial Adjustments Row */}
-      <div className="rounded-xl p-4 mb-6"
-           style={{ backgroundColor: CARD_BG, boxShadow: CARD_SHADOW }}>
-        <p className="text-[10px] font-bold uppercase mb-3"
+      {/* Section A — What Shaped Your Rankings */}
+      <div className="mb-8">
+        <p className="text-[10px] font-bold uppercase mb-2"
            style={{ color: GOLD, letterSpacing: '0.18em' }}>
-          Adjust your financial picture
+          What Shaped Your Rankings
         </p>
-        <div className="grid grid-cols-3 gap-4" style={{ opacity: financialsLocked ? 0.6 : 1, pointerEvents: financialsLocked ? 'none' : 'auto', transition: 'opacity 0.2s' }}>
-          <div>
-            <label className="block text-xs font-semibold mb-1" style={{ color: WARM_DARK }}>
-              Down payment
-            </label>
-            <select
-              value={downPayment}
-              onChange={e => { setSandboxTouched(true); setDownPayment(e.target.value) }}
-              className="w-full rounded-xl border px-3 py-2 text-xs appearance-none"
-              style={{ borderColor: '#E5E7EB', color: WARM_DARK }}
-            >
-              {DOWN_PAYMENT_OPTIONS.map(opt => (
-                <option key={opt} value={opt}>{opt}</option>
-              ))}
-            </select>
-            <div style={{ marginTop: '6px' }}>
-              <label style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', display: 'block', marginBottom: '4px' }}>
-                Or enter exact amount (optional)
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. $47,500"
-                value={exactDownPayment}
-                onChange={e => { setSandboxTouched(true); setExactDownPayment(formatCurrency(e.target.value)) }}
-                onFocus={e => { e.target.style.border = '1px solid #B8912A' }}
-                onBlur={e => { e.target.style.border = '1px solid rgba(184,145,42,0.4)' }}
-                style={{
-                  width: '100%',
-                  fontSize: '13px',
-                  padding: '6px 10px',
-                  borderRadius: '6px',
-                  border: '1px solid rgba(184,145,42,0.4)',
-                  background: 'rgba(184,145,42,0.04)',
-                  color: 'var(--color-text-primary)',
-                }}
-              />
-            </div>
-          </div>
+        <p className="text-xs mb-4 leading-relaxed" style={{ color: '#6B7280' }}>
+          These are the priorities you set. They&apos;re what drove your city rankings
+          above. Adjust them below and watch your results update instantly.
+        </p>
 
-          <div>
-            <label className="block text-xs font-semibold mb-1" style={{ color: WARM_DARK }}>
-              Home sale proceeds
-            </label>
-            <select
-              value={proceeds ?? 'None'}
-              onChange={e => { setSandboxTouched(true); setProceeds(e.target.value === 'None' ? null : e.target.value) }}
-              className="w-full rounded-xl border px-3 py-2 text-xs appearance-none"
-              style={{ borderColor: '#E5E7EB', color: WARM_DARK }}
-            >
-              <option value="None">None</option>
-              {PROCEEDS_OPTIONS.map(opt => (
-                <option key={opt} value={opt}>{opt}</option>
-              ))}
-            </select>
-            <div style={{ marginTop: '6px' }}>
-              <label style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', display: 'block', marginBottom: '4px' }}>
-                Or enter exact amount (optional)
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. $120,000"
-                value={exactHomeProceeds}
-                onChange={e => { setSandboxTouched(true); setExactHomeProceeds(formatCurrency(e.target.value)) }}
-                onFocus={e => { e.target.style.border = '1px solid #B8912A' }}
-                onBlur={e => { e.target.style.border = '1px solid rgba(184,145,42,0.4)' }}
-                style={{
-                  width: '100%',
-                  fontSize: '13px',
-                  padding: '6px 10px',
-                  borderRadius: '6px',
-                  border: '1px solid rgba(184,145,42,0.4)',
-                  background: 'rgba(184,145,42,0.04)',
-                  color: 'var(--color-text-primary)',
-                }}
-              />
-            </div>
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-xs font-semibold" style={{ color: WARM_DARK }}>
-                Rate assumption
-              </label>
-              <span
-                className="text-xs font-bold"
-                style={{
-                  color: getRateZone(interestRate) === 'market' ? '#22C55E'
-                       : getRateZone(interestRate) === 'low' ? '#9A8E82'
-                       : '#F59E0B',
-                }}
-              >
-                {interestRate.toFixed(2)}%
-              </span>
-            </div>
-
-            {/* Color-zoned slider track */}
-            <div className="relative mt-2 mb-1">
-              {/* Background zone track */}
-              <div className="w-full h-2 rounded-full overflow-hidden flex"
-                   style={{ backgroundColor: '#E5E7EB' }}>
-                {/* Low zone — gray */}
-                <div style={{ width: `${((RATE_MARKET_LOW - 3) / (10 - 3)) * 100}%`, backgroundColor: '#D1D5DB' }} />
-                {/* Market zone — green */}
-                <div style={{ width: `${((RATE_MARKET_HIGH - RATE_MARKET_LOW) / (10 - 3)) * 100}%`, backgroundColor: 'rgba(34,197,94,0.3)' }} />
-                {/* High zone — amber */}
-                <div style={{ flex: 1, backgroundColor: 'rgba(245,158,11,0.2)' }} />
-              </div>
-
-              {/* Actual range input overlaid */}
-              <input
-                type="range"
-                min={3.0}
-                max={10.0}
-                step={0.25}
-                value={interestRate}
-                onChange={e => { setSandboxTouched(true); setInterestRate(parseFloat(e.target.value)) }}
-                className="absolute inset-0 w-full opacity-0 cursor-pointer"
-                style={{ height: '8px' }}
-              />
-
-              {/* Custom thumb */}
-              <div
-                className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 border-white pointer-events-none"
-                style={{
-                  left: `calc(${((interestRate - 3) / (10 - 3)) * 100}% - 8px)`,
-                  backgroundColor: getRateZone(interestRate) === 'market' ? '#22C55E'
-                                 : getRateZone(interestRate) === 'low' ? '#9CA3AF'
-                                 : '#F59E0B',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
-                }}
-              />
-            </div>
-
-            {/* Zone labels */}
-            <div className="flex justify-between text-[9px] mb-1">
-              <span style={{ color: '#9A8E82' }}>3%</span>
-              <span style={{ color: '#22C55E', fontWeight: 600 }}>
-                ↑ Current market {RATE_MARKET_LOW}%–{RATE_MARKET_HIGH}%
-              </span>
-              <span style={{ color: '#9A8E82' }}>10%</span>
-            </div>
-
-            {/* Market rate note */}
-            <p className="text-[9px] leading-relaxed" style={{ color: '#9A8E82' }}>
-              Freddie Mac avg: {RATE_MARKET_AVG}% · {RATE_DATA_DATE} · Updated quarterly
-            </p>
-
-            {/* Loan term toggle */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
-              <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>Loan term</span>
-              <div style={{ display: 'flex', border: '0.5px solid var(--color-border-tertiary)', borderRadius: '6px', overflow: 'hidden' }}>
-                {([30, 15] as const).map(term => (
-                  <button
-                    key={term}
-                    type="button"
-                    onClick={() => setLoanTerm(term)}
-                    style={{
-                      padding: '4px 12px',
-                      fontSize: '12px',
-                      fontWeight: loanTerm === term ? 500 : 400,
-                      background: loanTerm === term ? '#B8912A' : 'transparent',
-                      color: loanTerm === term ? '#fff' : 'var(--color-text-secondary)',
-                      border: 'none',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s',
-                    }}
-                  >
-                    {term}-yr
-                  </button>
-                ))}
-              </div>
-            </div>
-            {loanTerm === 15 && (
-              <p style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', marginTop: '4px' }}>
-                15-year builds equity faster — higher monthly, less total interest
+        {/* Priority Summary — read-only tag display (relocated from left panel) */}
+        <div className="rounded-xl p-4" style={{ backgroundColor: CARD_BG, boxShadow: CARD_SHADOW }}>
+          {mustHaves.length > 0 && (
+            <div className="mb-2">
+              <p className="text-[9px] font-bold uppercase mb-1"
+                 style={{ color: GOLD, letterSpacing: '0.1em' }}>
+                Must Have
               </p>
-            )}
-          </div>
+              <div className="flex flex-wrap gap-1">
+                {mustHaves.map(k => {
+                  const cat = LIFESTYLE_CATEGORIES.find(c => c.key === k)!
+                  const Icon = CATEGORY_ICONS[k]
+                  return (
+                    <span key={k}
+                          className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-semibold"
+                          style={{ backgroundColor: 'rgba(184,145,42,0.12)', color: GOLD }}>
+                      <Icon size={10} strokeWidth={2} />
+                      {cat.label}
+                    </span>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {niceToHaves.length > 0 && (
+            <div className="mb-2">
+              <p className="text-[9px] font-bold uppercase mb-1"
+                 style={{ color: '#4B7A5E', letterSpacing: '0.1em' }}>
+                Important
+              </p>
+              <div className="flex flex-wrap gap-1">
+                {niceToHaves.map(k => {
+                  const cat = LIFESTYLE_CATEGORIES.find(c => c.key === k)!
+                  const Icon = CATEGORY_ICONS[k]
+                  return (
+                    <span key={k}
+                          className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-semibold"
+                          style={{ backgroundColor: '#E8F5EE', color: '#2D7D4E' }}>
+                      <Icon size={10} strokeWidth={2} />
+                      {cat.label}
+                    </span>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {notPriorities.length > 0 && (
+            <div>
+              <p className="text-[9px] font-bold uppercase mb-1"
+                 style={{ color: '#1A5FA8', letterSpacing: '0.1em' }}>
+                Nice to Have
+              </p>
+              <div className="flex flex-wrap gap-1">
+                {notPriorities.map(k => {
+                  const cat = LIFESTYLE_CATEGORIES.find(c => c.key === k)!
+                  const Icon = CATEGORY_ICONS[k]
+                  return (
+                    <span key={k}
+                          className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-semibold"
+                          style={{ backgroundColor: 'rgba(26,95,168,0.12)', color: '#1A5FA8' }}>
+                      <Icon size={10} strokeWidth={2} />
+                      {cat.label}
+                    </span>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
