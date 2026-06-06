@@ -16,7 +16,7 @@ export default function Header() {
 
         <nav className="hidden md:flex items-center gap-6 text-sm text-white/55">
           <Link href="/portal" className="hover:text-white transition-colors">My Portal</Link>
-          <Link href="/texas/market-profiles" className="hover:text-white transition-colors">Texas Intel</Link>
+          <Link href="/texas/texas-insider" className="hover:text-white transition-colors">Texas Insider</Link>
           <Link
             href="/begin"
             className="bg-white text-gray-950 px-4 py-2 rounded-lg text-sm font-bold hover:bg-gray-100 transition-colors"
@@ -38,7 +38,7 @@ export default function Header() {
       {open && (
         <div className="md:hidden bg-[#08101C] border-t border-white/8 px-4 py-4 flex flex-col gap-4 text-sm">
           <Link href="/portal" className="text-white/60 hover:text-white transition-colors" onClick={() => setOpen(false)}>My Portal</Link>
-          <Link href="/texas/market-profiles" className="text-white/60 hover:text-white transition-colors" onClick={() => setOpen(false)}>Texas Intel</Link>
+          <Link href="/texas/texas-insider" className="text-white/60 hover:text-white transition-colors" onClick={() => setOpen(false)}>Texas Insider</Link>
           <Link
             href="/begin"
             className="bg-white text-gray-950 px-4 py-3 rounded-xl font-bold text-center"

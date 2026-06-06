@@ -5,8 +5,8 @@ import Header from '@/components/shared/Header'
 import Footer from '@/components/shared/Footer'
 
 export const metadata: Metadata = {
-  title: 'Texas Market Intelligence | HavenQuest',
-  description: 'Real data and honest assessments on Texas real estate markets, homeowner laws, property taxes, and what it actually costs to own a home in Texas.',
+  title: 'Texas Insider | HavenQuest',
+  description: 'Your inside look at Texas — the markets, the communities, and the Lone Star lifestyle. Real data and honest assessments on Texas real estate, homeowner laws, and what life here actually looks like.',
 }
 
 const GOLD = '#C9A84C'
@@ -16,28 +16,28 @@ const BORDER = '#D4C5A9'
 
 const metroCards = [
   {
-    href: '/texas/market-profiles/austin',
+    href: '/texas/texas-insider/austin',
     image: '/images/cities/austin-tx.jpg',
     title: 'Austin',
     desc: 'Tech · Hill Country · The city that reset',
     price: '$460,000 median',
   },
   {
-    href: '/texas/market-profiles/dfw',
+    href: '/texas/texas-insider/dfw',
     image: '/images/cities/dallas-tx.jpg',
     title: 'Dallas-Fort Worth',
     desc: 'Corporate · Suburbs · #1 market to watch nationally',
     price: '$375,000 median',
   },
   {
-    href: '/texas/market-profiles/houston',
+    href: '/texas/texas-insider/houston',
     image: '/images/cities/houston-tx.jpg',
     title: 'Houston',
     desc: 'Energy · Medical · Most affordable major Texas metro',
     price: '$270,000 median',
   },
   {
-    href: '/texas/market-profiles/san-antonio',
+    href: '/texas/texas-insider/san-antonio',
     image: '/images/cities/san-antonio-tx.jpg',
     title: 'San Antonio',
     desc: "Military · Value · Texas's most underrated market",
@@ -54,16 +54,13 @@ export default function TexasMarketProfilesHub() {
         {/* Hero */}
         <div style={{ maxWidth: '1080px', margin: '0 auto', padding: '64px 24px 32px' }}>
           <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: GOLD, marginBottom: '18px' }}>
-            Texas Market Intelligence
+            Texas Insider
           </p>
           <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(28px, 4vw, 46px)', fontWeight: 500, color: DARK, lineHeight: 1.25, marginBottom: '20px', maxWidth: '680px' }}>
-            Everything you need to know about Texas — before you move here.
+            Your inside look at Texas — the markets, the communities, and the Lone Star lifestyle.
           </h1>
-          <p style={{ fontSize: '16px', color: WARM_GRAY, lineHeight: 1.8, maxWidth: '600px', marginBottom: '20px' }}>
-            Real data. Honest assessments. Everything you need to understand the state, the markets, and what homeownership actually looks like — before you commit to anything.
-          </p>
-          <p style={{ fontSize: '12px', color: '#9A8E82', marginBottom: '36px' }}>
-            Updated quarterly · Q2 2026 · Sources: TRERC · Redfin · Zillow · Dallas Fed · U.S. Census
+          <p style={{ fontSize: '16px', color: WARM_GRAY, lineHeight: 1.8, maxWidth: '600px', marginBottom: '36px' }}>
+            Real data. Honest assessments. The intelligence you need to understand Texas markets, communities, and what life here actually looks like — before you commit to anything.
           </p>
           <div style={{ height: '1px', background: `linear-gradient(to right, ${GOLD}, transparent)`, marginBottom: '52px' }} />
         </div>
@@ -73,7 +70,7 @@ export default function TexasMarketProfilesHub() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
             {/* Featured state card */}
-            <Link href="/texas/market-profiles/state" style={{ textDecoration: 'none', display: 'flex' }}>
+            <Link href="/texas/texas-insider/state" style={{ textDecoration: 'none', display: 'flex' }}>
               <div style={{
                 border: `1px solid ${GOLD}`,
                 borderRadius: '12px',
@@ -146,7 +143,7 @@ export default function TexasMarketProfilesHub() {
         {/* Footer strip */}
         <div style={{ borderTop: `1px solid ${BORDER}`, padding: '20px 24px', textAlign: 'center' }}>
           <p style={{ fontSize: '12px', color: '#9A8E82' }}>
-            Data updated quarterly · Q2 2026 · HavenQuest Texas Market Intelligence
+            Data updated quarterly · Q2 2026 · Sources: TRERC, Redfin, Zillow, Dallas Fed, U.S. Census Bureau
           </p>
         </div>
       </main>

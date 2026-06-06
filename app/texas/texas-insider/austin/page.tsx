@@ -263,7 +263,7 @@ export default function AustinProfile() {
 
         {/* Breadcrumb */}
         <div style={{ marginBottom: '28px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#9A8E82' }}>
-          <Link href="/texas/market-profiles" style={{ color: GOLD, textDecoration: 'none', fontWeight: 500 }}>Texas Market Intelligence</Link>
+          <Link href="/texas/texas-insider" style={{ color: GOLD, textDecoration: 'none', fontWeight: 500 }}>Texas Insider</Link>
           <span>/</span>
           <span>Austin</span>
         </div>

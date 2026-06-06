@@ -145,7 +145,7 @@ function TexasStatewideFullArticle() {
               ].map(([metro, price, status, dom, col, economy], i) => (
                 <tr key={metro} style={{ borderBottom: '1px solid #F0EDE6', background: i % 2 === 0 ? 'transparent' : CREAM }}>
                   <td style={{ padding: '11px 12px', fontWeight: 600, color: GOLD }}>
-                    <Link href={`/texas/market-profiles/${metro.toLowerCase().replace(' / ', '/').replace('dallas-fort worth', 'dfw').replace('san antonio', 'san-antonio').replace('austin', 'austin').replace('houston', 'houston')}`} style={{ color: GOLD, textDecoration: 'none' }}>{metro}</Link>
+                    <Link href={`/texas/texas-insider/${metro.toLowerCase().replace(' / ', '/').replace('dallas-fort worth', 'dfw').replace('san antonio', 'san-antonio').replace('austin', 'austin').replace('houston', 'houston')}`} style={{ color: GOLD, textDecoration: 'none' }}>{metro}</Link>
                   </td>
                   <td style={{ padding: '11px 12px', fontWeight: 500, color: DARK }}>{price}</td>
                   <td style={{ padding: '11px 12px', color: WARM_GRAY }}>{status}</td>
@@ -256,7 +256,7 @@ export default function TexasStatewideProfile() {
       <main style={{ maxWidth: '760px', margin: '0 auto', padding: '40px 24px 64px' }}>
 
         <div style={{ marginBottom: '28px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#9A8E82' }}>
-          <Link href="/texas/market-profiles" style={{ color: GOLD, textDecoration: 'none', fontWeight: 500 }}>Texas Market Intelligence</Link>
+          <Link href="/texas/texas-insider" style={{ color: GOLD, textDecoration: 'none', fontWeight: 500 }}>Texas Insider</Link>
           <span>/</span><span>Texas Statewide</span>
         </div>
 
