@@ -15,17 +15,19 @@ const TRUST_STATS = [
 export default function HeroSection() {
   return (
     <div className="relative overflow-hidden min-h-[500px] md:min-h-[560px]">
-      {/* Background image */}
+      {/* Background image — mobile: center center, desktop: center */}
       <Image
         src="/images/relocation-couple.png"
         alt="Couple with confident smiles surrounded by moving boxes — ready for their Texas move"
         fill
-        style={{ objectFit: 'cover', objectPosition: 'center' }}
+        className="[object-position:center_center] md:[object-position:center]"
+        style={{ objectFit: 'cover' }}
         priority
       />
 
-      {/* Left-to-right overlay — readable left, photo shows through on right */}
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(10,30,61,0.78) 0%, rgba(10,30,61,0.60) 35%, rgba(10,30,61,0.20) 65%, transparent 100%)', zIndex: 1 }} />
+      {/* Overlay — mobile: uniform dark for readability, desktop: left-to-right gradient */}
+      <div className="absolute inset-0 md:hidden" style={{ background: 'rgba(10,30,61,0.72)', zIndex: 1 }} />
+      <div className="absolute inset-0 hidden md:block" style={{ background: 'linear-gradient(to right, rgba(10,30,61,0.78) 0%, rgba(10,30,61,0.60) 35%, rgba(10,30,61,0.20) 65%, transparent 100%)', zIndex: 1 }} />
 
       {/* Content layer */}
       <div
@@ -91,7 +93,7 @@ export default function HeroSection() {
           </div>
 
           {/* Trust stats — mobile: 2×2 grid */}
-          <div className="grid grid-cols-2 gap-4 md:hidden">
+          <div className="grid grid-cols-2 gap-4 pb-6 md:hidden">
             {TRUST_STATS.map((stat) => (
               <div key={stat.label} style={{ display: 'flex', flexDirection: 'column' }}>
                 <span style={{ fontSize: '28px', fontWeight: 700, color: '#fff', lineHeight: 1 }}>{stat.num}</span>
@@ -102,16 +104,15 @@ export default function HeroSection() {
         </div>
       </div>
 
-      {/* Pill badge */}
+      {/* Pill badge — hidden on mobile, visible on desktop */}
       <div
-        className="absolute bottom-4 right-4 md:bottom-6 md:right-8"
+        className="hidden md:flex absolute md:bottom-6 md:right-8"
         style={{
           zIndex: 3,
           background: 'rgba(10,30,61,0.3)',
           border: '1px solid rgba(255,255,255,0.3)',
           borderRadius: '20px',
           padding: '6px 14px',
-          display: 'flex',
           alignItems: 'center',
           gap: '6px',
         }}
