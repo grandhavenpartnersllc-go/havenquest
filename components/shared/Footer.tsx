@@ -37,7 +37,7 @@ export default function Footer() {
         <div className="pt-6 flex flex-col md:flex-row justify-between items-center gap-3" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
           <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>© 2026 HavenQuest</p>
           <div className="flex items-center gap-6" style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>
-            <Link href="/data-disclosure" className="hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.5)' }}>Privacy</Link>
+            <Link href="/privacy-policy" className="hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.5)' }}>Privacy</Link>
             <Link href="/methodology" className="hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.5)' }}>Terms</Link>
             <Link href="/texas/texas-insider" className="hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.5)' }}>Texas Insider</Link>
             <Link href="/for-realtors" className="hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.5)' }}>For Realtors</Link>
