@@ -14,7 +14,7 @@ const TRUST_STATS = [
 
 export default function HeroSection() {
   return (
-    <div className="relative overflow-hidden min-h-[500px] md:min-h-[560px]">
+    <div className="relative overflow-hidden min-h-[680px] md:min-h-[560px]">
       {/* Background image — mobile: center center, desktop: center */}
       <Image
         src="/images/relocation-couple.png"
@@ -31,7 +31,7 @@ export default function HeroSection() {
 
       {/* Content layer */}
       <div
-        className="absolute inset-0 flex flex-col justify-center px-6 pt-[72px] pb-10 md:px-16 md:py-20"
+        className="absolute inset-0 flex flex-col justify-center px-6 pt-[96px] pb-[48px] md:px-16 md:py-20"
         style={{ zIndex: 2 }}
       >
         <div style={{ maxWidth: '680px' }}>
