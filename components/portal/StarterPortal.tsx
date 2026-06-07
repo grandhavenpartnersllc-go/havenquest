@@ -255,8 +255,8 @@ export default function StarterPortal() {
     <div style={{ backgroundColor: CREAM, minHeight: '100vh' }}>
 
       {/* Portal nav */}
-      <nav style={{ backgroundColor: WARM_DARK }} className="sticky top-0 z-40">
-        <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
+      <nav style={{ backgroundColor: WARM_DARK }} className="sticky top-0 z-40 px-5">
+        <div className="max-w-5xl mx-auto h-14 flex items-center justify-between">
           <Link href="/" className="font-bold text-[16px] tracking-tight" style={{ color: '#E8E2D9' }}>
             Haven<span style={{ color: GOLD }}>Quest</span>
             <span
@@ -338,27 +338,29 @@ export default function StarterPortal() {
       </div>
 
       {/* Navigator + content — cream section */}
-      <div className="max-w-5xl mx-auto px-5 pt-6 pb-8">
-        <NavigatorTabs
-          currentMileMarker={currentMileMarker!}
-          activeMileMarker={activeMileMarker!}
-          onSelect={(mm) => setActiveMileMarker(mm)}
-        />
-        <div className="mt-6">
-          <MileMarkerContent
-            selectedMileMarker={activeMileMarker!}
+      <div className="px-5 pt-6 pb-8">
+        <div className="max-w-5xl mx-auto">
+          <NavigatorTabs
             currentMileMarker={currentMileMarker!}
-            matches={matches}
-            profile={profile}
-            session={session}
-            onboardingAcknowledged={onboardingAcknowledged}
-            onAcknowledge={handleAcknowledge}
-            onAdvanceToDiscover={() => setActiveMileMarker(2)}
-            onAdvanceFromMM2={() => { setCurrentMileMarker(3); setActiveMileMarker(3) }}
-            onAdvanceToConnect={() => setActiveMileMarker(4)}
-            initialChecklist={initialChecklist}
-            initialNotes={initialNotes}
+            activeMileMarker={activeMileMarker!}
+            onSelect={(mm) => setActiveMileMarker(mm)}
           />
+          <div className="mt-6">
+            <MileMarkerContent
+              selectedMileMarker={activeMileMarker!}
+              currentMileMarker={currentMileMarker!}
+              matches={matches}
+              profile={profile}
+              session={session}
+              onboardingAcknowledged={onboardingAcknowledged}
+              onAcknowledge={handleAcknowledge}
+              onAdvanceToDiscover={() => setActiveMileMarker(2)}
+              onAdvanceFromMM2={() => { setCurrentMileMarker(3); setActiveMileMarker(3) }}
+              onAdvanceToConnect={() => setActiveMileMarker(4)}
+              initialChecklist={initialChecklist}
+              initialNotes={initialNotes}
+            />
+          </div>
         </div>
       </div>
 
