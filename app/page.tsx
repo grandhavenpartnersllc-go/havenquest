@@ -131,8 +131,7 @@ export default function HomePage() {
         <section style={{ background: '#fff', borderBottom: '0.5px solid var(--color-border-tertiary)' }}>
           <div style={{ ...CONTAINER, padding: '60px 40px 48px' }}>
             {/* Top block */}
-            <p style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: GOLD, marginBottom: '0' }}>WELCOME TO THE LONE STAR STATE</p>
-            <p style={{ fontSize: '15px', fontWeight: 500, color: NAVY, fontStyle: 'italic', marginTop: '6px', marginBottom: '20px' }}>We don&apos;t help you pick a house. We help you find a home.</p>
+            <p style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: GOLD, marginBottom: '20px' }}>WELCOME TO THE LONE STAR STATE</p>
             <h2 style={{ fontSize: '36px', fontWeight: 700, color: NAVY, lineHeight: 1.25, maxWidth: '640px', marginBottom: '12px' }}>
               Texas is big. Finding your place{' '}
               in it shouldn&apos;t be a guessing game.
