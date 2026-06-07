@@ -56,9 +56,10 @@ export default function HeroSection() {
           </p>
 
           {/* CTA row */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px', flexWrap: 'wrap' }}>
+          <div className="flex flex-col md:flex-row md:items-center" style={{ gap: '16px', marginBottom: '32px' }}>
             <Link
               href="/begin"
+              className="w-full md:w-auto text-center"
               style={{
                 background: BLUE,
                 color: '#fff',
@@ -67,20 +68,19 @@ export default function HeroSection() {
                 padding: '13px 28px',
                 borderRadius: '8px',
                 textDecoration: 'none',
-                display: 'inline-block',
+                display: 'block',
               }}
             >
               Begin My Journey →
             </Link>
             <Link
               href="/texas/texas-insider"
+              className="flex items-center justify-center md:justify-start"
               style={{
                 color: NAVY,
                 opacity: 0.7,
                 fontSize: '13px',
                 textDecoration: 'none',
-                display: 'inline-flex',
-                alignItems: 'center',
                 gap: '4px',
               }}
             >
