@@ -20,7 +20,7 @@ export default function HeroSection() {
         src="/images/relocation-couple.png"
         alt="Couple with confident smiles surrounded by moving boxes — ready for their Texas move"
         fill
-        className="[object-position:20%_center] md:[object-position:center]"
+        className="[object-position:75%_center] md:[object-position:center]"
         style={{ objectFit: 'cover' }}
         priority
       />
@@ -31,7 +31,7 @@ export default function HeroSection() {
 
       {/* Content layer */}
       <div
-        className="absolute inset-0 flex flex-col justify-center px-6 pt-12 pb-10 md:px-16 md:py-20"
+        className="absolute inset-0 flex flex-col justify-center px-6 pt-[72px] pb-10 md:px-16 md:py-20"
         style={{ zIndex: 2 }}
       >
         <div style={{ maxWidth: '680px' }}>
@@ -93,7 +93,7 @@ export default function HeroSection() {
           </div>
 
           {/* Trust stats — mobile: 2×2 grid */}
-          <div className="grid grid-cols-2 gap-4 pb-6 md:hidden">
+          <div className="grid grid-cols-2 gap-4 pb-8 md:hidden">
             {TRUST_STATS.map((stat) => (
               <div key={stat.label} style={{ display: 'flex', flexDirection: 'column' }}>
                 <span style={{ fontSize: '28px', fontWeight: 700, color: '#fff', lineHeight: 1 }}>{stat.num}</span>
