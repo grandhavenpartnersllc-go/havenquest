@@ -106,6 +106,14 @@ const SNAPSHOT_CITIES = [
     badgeColor: '#3B6D11',
     badgeBg: '#EAF3DE',
   },
+  {
+    city: 'San Antonio',
+    price: '$260,000',
+    sub: "Texas's most underrated relocation market",
+    badge: "Buyer's market",
+    badgeColor: '#3B6D11',
+    badgeBg: '#EAF3DE',
+  },
 ]
 
 export default function HomePage() {
@@ -276,7 +284,7 @@ export default function HomePage() {
                 Full Texas Insider →
               </Link>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: '16px' }}>
+            <div className="grid grid-cols-2 md:grid-cols-4" style={{ gap: '16px' }}>
               {SNAPSHOT_CITIES.map((metro) => (
                 <div
                   key={metro.city}
