@@ -121,7 +121,7 @@ export default function HeroSection() {
         >
           {/* TODO: Replace with final relocation-couple.jpg asset */}
           <Image
-            src="/images/relocation-couple.jpg"
+            src="/images/relocation-couple.png"
             alt="Couple with confident smiles surrounded by moving boxes — ready for their Texas move"
             fill
             className="object-cover"
