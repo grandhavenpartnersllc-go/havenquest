@@ -33,8 +33,7 @@ export default function HeroSection() {
         style={{ zIndex: 2 }}
       >
         <div style={{ maxWidth: '680px' }}>
-          {/* Intro — Dancing Script */}
-          <p style={{ fontFamily: 'var(--font-dancing-script), cursive', fontSize: '28px', fontWeight: 600, color: 'rgba(255,255,255,0.85)', fontStyle: 'normal', marginBottom: '8px' }}>
+          <p style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontStyle: 'italic', fontSize: '26px', fontWeight: 400, color: 'rgba(255,255,255,0.85)', marginBottom: '8px' }}>
             So, you&apos;re
           </p>
 

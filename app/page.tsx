@@ -30,35 +30,35 @@ const MUTED = '#6B7280'
 const CONTAINER = { maxWidth: '1080px', margin: '0 auto', padding: '0 40px' } as const
 
 const PROMISE_ITEMS = [
-  { Icon: BarChart2, label: 'Matched to your life', desc: 'Verified data across 12 lifestyle categories — not just home prices.' },
-  { Icon: UserCheck, label: 'A real guide at your side', desc: 'Your Market Director steps in personally at MileMarker 4.' },
-  { Icon: ShieldCheck, label: 'Vetted local experts', desc: 'Hand-picked Select Agents who specialize in your target market.' },
-  { Icon: Lock, label: 'Your data stays yours', desc: 'Nothing sold, nothing shared without your consent. Ever.' },
+  { Icon: BarChart2, label: 'Matched to your life', desc: 'We score every Texas community across 12 lifestyle categories — schools, safety, walkability, weather, healthcare, and more — weighted by what matters most to you.' },
+  { Icon: UserCheck, label: 'A real guide at your side', desc: "At MileMarker 4, your personal Market Director steps in. They've already read your full profile and are ready to guide you — not sell you — the rest of the way." },
+  { Icon: ShieldCheck, label: 'Vetted Select Agents', desc: "Every Select Agent in the HavenQuest network is hand-picked for your market. They're not leads — they're specialists who know your target communities inside and out." },
+  { Icon: Lock, label: 'Your data stays yours', desc: 'Everything you share powers your personal experience. Nothing is sold. Nothing is shared without your consent. Your profile is private by default — always.' },
 ]
 
 const HOW_STEPS = [
   {
     num: '01',
     title: 'Tell us about your life',
-    desc: 'Income, household size, and the lifestyle priorities that matter most — from schools and safety to walkability and outdoor access.',
+    desc: 'Income, household size, and the lifestyle priorities that matter most to you — from top-rated schools and safety to walkability and outdoor access.',
     link: 'Takes about 4 minutes →',
   },
   {
     num: '02',
     title: 'Get your Texas matches',
-    desc: 'We rank 101 Texas communities against your priorities and budget. Your top matches are waiting — with full reports inside your portal.',
+    desc: 'We rank 101 Texas communities against your priorities and budget. Your top matches are ready — with full reports waiting inside your private portal.',
     link: null,
   },
   {
     num: '03',
     title: 'Explore and refine',
-    desc: 'Adjust your financial picture, shift your priorities, and watch your rankings respond in real time. No pressure — just clarity.',
+    desc: 'Adjust your financial picture, shift your priorities, and watch your rankings respond in real time. No pressure — just clarity about where you actually fit.',
     link: null,
   },
   {
     num: '04',
     title: 'Meet your Market Director',
-    desc: 'A real person steps in — reviews your full profile, answers your questions, and introduces you to a vetted Select Agent who knows your market.',
+    desc: 'A real person steps in — reviews your full profile, answers your questions, and introduces you to a vetted Select Agent who knows your market cold.',
     link: null,
   },
 ]
@@ -119,83 +119,80 @@ export default function HomePage() {
         {/* Gold Strip */}
         <div style={{ height: '3px', background: GOLD, width: '100%' }} />
 
-        {/* Statement — 2-col contained */}
+        {/* Section 2 — Statement + Promise Blocks */}
         <section style={{ background: '#fff', borderBottom: '0.5px solid var(--color-border-tertiary)' }}>
-          <div style={{ ...CONTAINER, padding: '56px 40px' }}>
-            <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: '60px', alignItems: 'start' }}>
-              {/* Left column */}
-              <div>
-                <div style={{ width: '36px', height: '2px', background: GOLD, marginBottom: '20px' }} />
-                <h2 style={{ fontSize: '28px', fontWeight: 700, color: NAVY, lineHeight: 1.3, margin: 0 }}>
-                  Texas is big.<br />
-                  Finding your place in it<br />
-                  shouldn&apos;t be a guessing game.
-                </h2>
-              </div>
-              {/* Right column */}
-              <div>
-                <p style={{ fontSize: '14px', color: MUTED, lineHeight: 1.85, marginBottom: '24px' }}>
-                  You&apos;ve made the decision. Now the real question is: which Texas is yours?
-                  Whether you&apos;re drawn to the energy of a growing suburb, the charm of a historic small town,
-                  or the pulse of a major city — HavenQuest helps you find the community where your life
-                  actually fits. Not just the zip code with the right price tag.
-                </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                  {PROMISE_ITEMS.map((item) => (
-                    <div key={item.label} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                      <div style={{
-                        width: '32px',
-                        height: '32px',
-                        borderRadius: '8px',
-                        background: '#F3F5F8',
-                        border: '0.5px solid var(--color-border-tertiary)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                      }}>
-                        <item.Icon size={15} color={BLUE} />
-                      </div>
-                      <div>
-                        <p style={{ fontSize: '13px', fontWeight: 600, color: NAVY, margin: '0 0 2px' }}>{item.label}</p>
-                        <p style={{ fontSize: '12px', color: MUTED, margin: 0 }}>{item.desc}</p>
-                      </div>
-                    </div>
-                  ))}
+          <div style={{ ...CONTAINER, padding: '60px 40px 48px' }}>
+            {/* Top block */}
+            <div style={{ width: '36px', height: '2px', background: GOLD, marginBottom: '20px' }} />
+            <h2 style={{ fontSize: '36px', fontWeight: 700, color: NAVY, lineHeight: 1.25, maxWidth: '640px', marginBottom: '12px' }}>
+              Texas is big. Finding your place{' '}
+              in it shouldn&apos;t be a guessing game.
+            </h2>
+            <p style={{ fontSize: '16px', color: MUTED, lineHeight: 1.8, maxWidth: '680px', marginBottom: '48px' }}>
+              You&apos;ve made the decision. Now the real question is: which Texas is yours? Whether you&apos;re drawn to the energy of a growing suburb, the charm of a historic small town, or the pulse of a major city — HavenQuest helps you find the community where your life actually fits. Not just the zip code with the right price tag.
+            </p>
+            {/* Promise blocks grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4" style={{ gap: '20px' }}>
+              {PROMISE_ITEMS.map((item) => (
+                <div
+                  key={item.label}
+                  style={{
+                    background: '#F3F5F8',
+                    border: '0.5px solid var(--color-border-tertiary)',
+                    borderRadius: '12px',
+                    padding: '24px 20px',
+                    borderTop: `2px solid ${BLUE}`,
+                  }}
+                >
+                  <div style={{
+                    width: '44px',
+                    height: '44px',
+                    borderRadius: '10px',
+                    background: '#fff',
+                    border: '0.5px solid var(--color-border-tertiary)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: '16px',
+                  }}>
+                    <item.Icon size={20} color={BLUE} />
+                  </div>
+                  <h3 style={{ fontSize: '15px', fontWeight: 700, color: NAVY, marginBottom: '8px', lineHeight: 1.3 }}>{item.label}</h3>
+                  <p style={{ fontSize: '13px', color: MUTED, lineHeight: 1.65, margin: 0 }}>{item.desc}</p>
                 </div>
-              </div>
+              ))}
             </div>
           </div>
         </section>
 
-        {/* How It Works — editorial, contained */}
-        <section style={{ background: '#fff', borderBottom: '0.5px solid var(--color-border-tertiary)' }}>
-          <div style={{ ...CONTAINER, padding: '52px 40px' }}>
+        {/* Section 3 — How It Works (navy background) */}
+        <section style={{ background: '#0A1E3D' }}>
+          <div style={{ ...CONTAINER, padding: '56px 40px' }}>
             {/* Header row */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '36px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '40px' }}>
               <p style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: GOLD, margin: 0, whiteSpace: 'nowrap' }}>
                 HOW IT WORKS
               </p>
-              <div style={{ flex: 1, height: '0.5px', background: 'var(--color-border-tertiary)' }} />
+              <div style={{ flex: 1, height: '0.5px', background: 'rgba(255,255,255,0.15)' }} />
             </div>
-            {/* Steps — desktop: 4-col open flex */}
+            {/* Steps — desktop: 4-col */}
             <div className="hidden md:flex">
               {HOW_STEPS.map((step, i) => (
                 <div
                   key={step.num}
                   style={{
                     flex: 1,
-                    paddingRight: i < 3 ? '28px' : '0',
-                    borderRight: i < 3 ? '0.5px solid var(--color-border-tertiary)' : 'none',
-                    marginRight: i < 3 ? '28px' : '0',
+                    paddingLeft: i > 0 ? '32px' : '0',
+                    paddingRight: i < 3 ? '32px' : '0',
+                    borderRight: i < 3 ? '0.5px solid rgba(255,255,255,0.1)' : 'none',
                   }}
                 >
-                  <p style={{ fontSize: '32px', fontWeight: 700, color: '#F3F5F8', lineHeight: 1, marginBottom: '10px' }}>{step.num}</p>
-                  <div style={{ width: '24px', height: '2px', background: BLUE, marginBottom: '12px' }} />
-                  <h3 style={{ fontSize: '15px', fontWeight: 600, color: NAVY, marginBottom: '8px', lineHeight: 1.3 }}>{step.title}</h3>
-                  <p style={{ fontSize: '12.5px', color: MUTED, lineHeight: 1.65, margin: 0 }}>{step.desc}</p>
+                  <p style={{ fontSize: '48px', fontWeight: 700, color: 'rgba(255,255,255,0.18)', lineHeight: 1, marginBottom: '8px' }}>{step.num}</p>
+                  <div style={{ width: '24px', height: '2px', background: GOLD, marginBottom: '16px' }} />
+                  <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#fff', marginBottom: '10px', lineHeight: 1.3 }}>{step.title}</h3>
+                  <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.7, margin: 0 }}>{step.desc}</p>
                   {step.link && (
-                    <Link href="/begin" style={{ display: 'inline-block', fontSize: '12px', color: BLUE, textDecoration: 'none', marginTop: '10px' }}>
+                    <Link href="/begin" style={{ display: 'inline-block', fontSize: '12px', color: GOLD, textDecoration: 'none', marginTop: '12px' }}>
                       {step.link}
                     </Link>
                   )}
@@ -203,15 +200,15 @@ export default function HomePage() {
               ))}
             </div>
             {/* Steps — mobile: 2×2 grid */}
-            <div className="grid grid-cols-2 gap-6 md:hidden">
+            <div className="grid grid-cols-2 gap-8 md:hidden">
               {HOW_STEPS.map((step) => (
                 <div key={step.num}>
-                  <p style={{ fontSize: '32px', fontWeight: 700, color: '#F3F5F8', lineHeight: 1, marginBottom: '10px' }}>{step.num}</p>
-                  <div style={{ width: '24px', height: '2px', background: BLUE, marginBottom: '12px' }} />
-                  <h3 style={{ fontSize: '15px', fontWeight: 600, color: NAVY, marginBottom: '8px', lineHeight: 1.3 }}>{step.title}</h3>
-                  <p style={{ fontSize: '12.5px', color: MUTED, lineHeight: 1.65, margin: 0 }}>{step.desc}</p>
+                  <p style={{ fontSize: '48px', fontWeight: 700, color: 'rgba(255,255,255,0.18)', lineHeight: 1, marginBottom: '8px' }}>{step.num}</p>
+                  <div style={{ width: '24px', height: '2px', background: GOLD, marginBottom: '16px' }} />
+                  <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#fff', marginBottom: '10px', lineHeight: 1.3 }}>{step.title}</h3>
+                  <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.7, margin: 0 }}>{step.desc}</p>
                   {step.link && (
-                    <Link href="/begin" style={{ display: 'inline-block', fontSize: '12px', color: BLUE, textDecoration: 'none', marginTop: '10px' }}>
+                    <Link href="/begin" style={{ display: 'inline-block', fontSize: '12px', color: GOLD, textDecoration: 'none', marginTop: '12px' }}>
                       {step.link}
                     </Link>
                   )}
