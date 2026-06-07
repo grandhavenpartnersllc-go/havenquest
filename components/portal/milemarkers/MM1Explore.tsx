@@ -359,24 +359,24 @@ export default function MM1Explore({
         </p>
         <div style={{ background: '#F0EBE1', border: '1px solid #D4C5A9', borderRadius: '12px', padding: '32px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
-          <div style={{ padding: '16px', borderRadius: '10px', border: '0.5px solid var(--color-border-tertiary)', background: 'var(--color-background-primary)' }}>
-            <p style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '6px' }}>Your data is yours</p>
-            <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
+          <div style={{ padding: '16px', borderRadius: '10px', border: '0.5px solid rgba(255,255,255,0.1)', background: '#1C1C1C' }}>
+            <p style={{ fontSize: '16px', fontWeight: 700, color: '#fff', marginBottom: '6px' }}>Your data is yours</p>
+            <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6 }}>
               Everything you share stays private and powers your personal
               experience. Nothing is sold. Nothing is shared without your consent.
             </p>
           </div>
-          <div style={{ padding: '16px', borderRadius: '10px', border: '0.5px solid var(--color-border-tertiary)', background: 'var(--color-background-primary)' }}>
-            <p style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '6px' }}>A real person joins you</p>
-            <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
-              At MileMarker 4, your personal Market Director steps in. They&apos;ve
-              already read your profile and are ready to guide you the rest
-              of the way.
+          <div style={{ padding: '16px', borderRadius: '10px', border: '0.5px solid rgba(255,255,255,0.1)', background: '#1C1C1C' }}>
+            <p style={{ fontSize: '16px', fontWeight: 700, color: '#fff', marginBottom: '6px' }}>A real person joins you</p>
+            <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6 }}>
+              Once you&apos;ve explored your matches, your personal Market Director
+              steps in — already briefed on your profile and ready to guide you
+              every step of the way.
             </p>
           </div>
-          <div style={{ padding: '16px', borderRadius: '10px', border: '0.5px solid var(--color-border-tertiary)', background: 'var(--color-background-primary)' }}>
-            <p style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '6px' }}>Nothing falls through the cracks</p>
-            <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
+          <div style={{ padding: '16px', borderRadius: '10px', border: '0.5px solid rgba(255,255,255,0.1)', background: '#1C1C1C' }}>
+            <p style={{ fontSize: '16px', fontWeight: 700, color: '#fff', marginBottom: '6px' }}>Nothing falls through the cracks</p>
+            <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6 }}>
               Your Navigator tracks every step — from community discovery to
               closing day. You always know where you are, what&apos;s done, and
               what&apos;s next.
