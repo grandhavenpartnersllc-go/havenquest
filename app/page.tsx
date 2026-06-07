@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { BarChart2, UserCheck, ShieldCheck, Lock } from 'lucide-react'
 import Header from '../components/shared/Header'
 import Footer from '../components/shared/Footer'
 import HeroSection from '../components/landing/HeroSection'
-import HowItWorks from '../components/landing/HowItWorks'
 
 export const metadata: Metadata = {
   title: 'HavenQuest — Find Where Your Life Fits in Texas',
@@ -21,6 +21,45 @@ export const metadata: Metadata = {
     description: 'Find where your income and lifestyle actually fit in Texas.',
   },
 }
+
+const NAVY = '#0A1E3D'
+const BLUE = '#0076B6'
+const GOLD = '#C5B783'
+const MUTED = '#6B7280'
+
+const PROMISE_ITEMS = [
+  { Icon: BarChart2, label: 'Matched to your life', desc: 'Verified data across 12 lifestyle categories — not just home prices.' },
+  { Icon: UserCheck, label: 'A real guide at your side', desc: 'Your Market Director steps in personally at MileMarker 4.' },
+  { Icon: ShieldCheck, label: 'Vetted local experts', desc: 'Hand-picked Select Agents who specialize in your target market.' },
+  { Icon: Lock, label: 'Your data stays yours', desc: 'Nothing sold, nothing shared without your consent. Ever.' },
+]
+
+const HOW_STEPS = [
+  {
+    num: '01',
+    title: 'Tell us about your life',
+    desc: 'Income, household size, and the lifestyle priorities that matter most — from schools and safety to walkability and outdoor access.',
+    link: 'Takes about 4 minutes →',
+  },
+  {
+    num: '02',
+    title: 'Get your Texas matches',
+    desc: 'We rank 101 Texas communities against your priorities and budget. Your top matches are waiting — with full reports inside your portal.',
+    link: null,
+  },
+  {
+    num: '03',
+    title: 'Explore and refine',
+    desc: 'Adjust your financial picture, shift your priorities, and watch your rankings respond in real time. No pressure — just clarity.',
+    link: null,
+  },
+  {
+    num: '04',
+    title: 'Meet your Market Director',
+    desc: 'A real person steps in — reviews your full profile, answers your questions, and introduces you to a vetted Select Agent who knows your market.',
+    link: null,
+  },
+]
 
 const TESTIMONIALS = [
   {
@@ -40,15 +79,31 @@ const TESTIMONIALS = [
   },
 ]
 
-const NAVY = '#0A1E3D'
-const GOLD = '#C5B783'
-const BORDER = 'rgba(0,0,0,0.08)'
-const MUTED = '#6B7280'
-
-const SNAPSHOT_METROS = [
-  { label: 'Austin median', value: '$460,000', sub: "Buyer's market · -16% from peak" },
-  { label: 'DFW median', value: '$375,000', sub: '#1 market to watch nationally' },
-  { label: 'Houston median', value: '$270,000', sub: 'Most affordable major metro' },
+const SNAPSHOT_CITIES = [
+  {
+    city: 'Austin',
+    price: '$460,000',
+    sub: 'Most corrected major market · -16% from peak',
+    badge: "Buyer's market",
+    badgeColor: '#B45309',
+    badgeBg: '#FEF3C7',
+  },
+  {
+    city: 'Dallas-Fort Worth',
+    price: '$375,000',
+    sub: '#1 market to watch nationally · PwC/ULI',
+    badge: 'Rebalancing',
+    badgeColor: '#B45309',
+    badgeBg: '#FEF3C7',
+  },
+  {
+    city: 'Houston',
+    price: '$270,000',
+    sub: 'Most affordable major Texas metro',
+    badge: "Buyer's market",
+    badgeColor: '#3B6D11',
+    badgeBg: '#EAF3DE',
+  },
 ]
 
 export default function HomePage() {
@@ -58,134 +113,188 @@ export default function HomePage() {
       <main className="flex-1">
 
         <HeroSection />
-        <HowItWorks />
 
-        {/* Texas Market Snapshot Strip */}
-        <div style={{
-          margin: '0 32px 28px',
-          border: `0.5px solid ${BORDER}`,
-          borderRadius: '8px',
-          overflow: 'hidden',
-        }}>
-          {/* Header bar */}
-          <div style={{
-            background: NAVY,
-            padding: '12px 16px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}>
-            <span style={{ fontSize: '12px', fontWeight: 500, color: '#fff' }}>
-              Texas market snapshot · Q2 2026
-            </span>
-            <Link
-              href="/texas/texas-insider"
-              style={{ fontSize: '11px', color: GOLD, textDecoration: 'none' }}
+        {/* Section A — Gold Strip */}
+        <div style={{ height: '3px', background: GOLD, width: '100%' }} />
+
+        {/* Section B — Warm Statement */}
+        <section style={{ background: '#fff', borderBottom: '0.5px solid var(--color-border-tertiary)', padding: '52px 48px', textAlign: 'center' }}>
+          <div style={{ width: '40px', height: '2px', background: GOLD, margin: '0 auto 20px' }} />
+          <h2 style={{ fontSize: '26px', fontWeight: 500, color: NAVY, lineHeight: 1.35, maxWidth: '620px', margin: '0 auto 16px' }}>
+            Texas is big. Finding your place in it shouldn&apos;t be a guessing game.
+          </h2>
+          <p style={{ fontSize: '14px', color: MUTED, lineHeight: 1.8, maxWidth: '520px', margin: '0 auto' }}>
+            Whether you&apos;re drawn to a thriving suburb, a charming small town, or the energy of a major city — HavenQuest helps you find the community that fits the life you actually want to live.
+          </p>
+        </section>
+
+        {/* Section C — Promise Strip (softer) */}
+        <div
+          className="grid grid-cols-2 md:grid-cols-4"
+          style={{ background: '#F3F5F8', borderBottom: '0.5px solid var(--color-border-tertiary)' }}
+        >
+          {PROMISE_ITEMS.map((item, i) => (
+            <div
+              key={item.label}
+              style={{
+                padding: '22px 20px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+                borderRight: i < 3 ? '0.5px solid var(--color-border-tertiary)' : 'none',
+              }}
             >
-              Full Texas Insider →
-            </Link>
+              <div style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '10px',
+                background: '#fff',
+                border: '0.5px solid var(--color-border-tertiary)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}>
+                <item.Icon size={17} color={BLUE} />
+              </div>
+              <p style={{ fontSize: '13px', fontWeight: 500, color: NAVY, margin: 0 }}>{item.label}</p>
+              <p style={{ fontSize: '12px', color: MUTED, lineHeight: 1.5, margin: 0 }}>{item.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Section D — How It Works (editorial) */}
+        <section style={{ background: '#fff', borderBottom: '0.5px solid var(--color-border-tertiary)', padding: '52px 48px' }}>
+          {/* Header row */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '36px' }}>
+            <p style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: GOLD, margin: 0, whiteSpace: 'nowrap' }}>
+              HOW IT WORKS
+            </p>
+            <div style={{ flex: 1, height: '0.5px', background: 'var(--color-border-tertiary)' }} />
           </div>
-          {/* Data row */}
-          <div className="grid grid-cols-1 md:grid-cols-3">
-            {SNAPSHOT_METROS.map((metro, i) => (
+          {/* Steps — desktop: 4-col flex; mobile: 2×2 grid */}
+          <div className="hidden md:flex">
+            {HOW_STEPS.map((step, i) => (
               <div
-                key={metro.label}
+                key={step.num}
                 style={{
-                  padding: '12px 16px',
-                  borderRight: i < 2 ? `0.5px solid ${BORDER}` : 'none',
-                  borderBottom: `0.5px solid ${BORDER}`,
+                  flex: 1,
+                  paddingRight: i < 3 ? '28px' : '0',
+                  borderRight: i < 3 ? '0.5px solid var(--color-border-tertiary)' : 'none',
+                  marginRight: i < 3 ? '28px' : '0',
                 }}
-                className="md:border-b-0"
               >
-                <p style={{ fontSize: '10px', letterSpacing: '1px', textTransform: 'uppercase', color: MUTED, marginBottom: '4px' }}>
-                  {metro.label}
-                </p>
-                <p style={{ fontSize: '16px', fontWeight: 500, color: NAVY, marginBottom: '2px' }}>
-                  {metro.value}
-                </p>
-                <p style={{ fontSize: '11px', color: MUTED }}>
-                  {metro.sub}
-                </p>
+                <p style={{ fontSize: '36px', fontWeight: 700, color: '#F3F5F8', lineHeight: 1, marginBottom: '12px' }}>{step.num}</p>
+                <p style={{ fontSize: '15px', fontWeight: 500, color: NAVY, marginBottom: '8px', lineHeight: 1.3 }}>{step.title}</p>
+                <p style={{ fontSize: '12.5px', color: MUTED, lineHeight: 1.65, margin: 0 }}>{step.desc}</p>
+                {step.link && (
+                  <Link href="/begin" style={{ display: 'inline-block', fontSize: '12px', color: BLUE, textDecoration: 'none', marginTop: '12px' }}>
+                    {step.link}
+                  </Link>
+                )}
               </div>
             ))}
           </div>
-        </div>
-
-        {/* Social Proof */}
-        {/* TODO: Replace sample reviews with real beta feedback */}
-        <section className="py-20 px-4 bg-surface">
-          <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-12">
-              <p
-                className="text-xs font-bold uppercase mb-4"
-                style={{ color: '#C5B783', letterSpacing: '0.18em' }}
-              >
-                Trusted by People Relocating to Texas
-              </p>
-              <h2 className="text-3xl font-bold tracking-tight" style={{ color: '#0A1E3D' }}>
-                Built for anyone ready to make Texas home.
-              </h2>
-            </div>
-            <div className="grid md:grid-cols-3 gap-5">
-              {TESTIMONIALS.map((t) => (
-                <div
-                  key={t.name}
-                  className="bg-white rounded-2xl p-8 flex flex-col relative"
-                  style={{
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06)',
-                    border: '1px solid #F0EDE6',
-                  }}
-                >
-                  <div className="flex gap-0.5 mb-4" aria-label="5 stars">
-                    {[1, 2, 3, 4, 5].map(s => (
-                      <span key={s} style={{ color: '#C5B783', fontSize: '14px' }}>★</span>
-                    ))}
-                  </div>
-                  <p className="text-gray-600 text-sm leading-relaxed flex-1 mb-5">
-                    &ldquo;{t.quote}&rdquo;
-                  </p>
-                  <div>
-                    <p className="font-bold text-gray-900 text-sm">{t.name}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{t.origin}</p>
-                  </div>
-                  <span
-                    className="absolute bottom-4 right-5 text-xs text-gray-400"
-                    style={{ opacity: 0.4 }}
-                  >
-                    Sample review
-                  </span>
-                </div>
-              ))}
-            </div>
+          <div className="grid grid-cols-2 gap-6 md:hidden">
+            {HOW_STEPS.map((step) => (
+              <div key={step.num}>
+                <p style={{ fontSize: '36px', fontWeight: 700, color: '#F3F5F8', lineHeight: 1, marginBottom: '12px' }}>{step.num}</p>
+                <p style={{ fontSize: '15px', fontWeight: 500, color: NAVY, marginBottom: '8px', lineHeight: 1.3 }}>{step.title}</p>
+                <p style={{ fontSize: '12.5px', color: MUTED, lineHeight: 1.65, margin: 0 }}>{step.desc}</p>
+                {step.link && (
+                  <Link href="/begin" style={{ display: 'inline-block', fontSize: '12px', color: BLUE, textDecoration: 'none', marginTop: '12px' }}>
+                    {step.link}
+                  </Link>
+                )}
+              </div>
+            ))}
           </div>
         </section>
 
-        {/* Final CTA */}
-        <section
-          className="py-24 px-4"
-          style={{ backgroundColor: '#FDFCFA', borderBottom: '1px solid rgba(0,0,0,0.08)' }}
-        >
-          <div className="max-w-xl mx-auto text-center">
-            <h2
-              className="font-bold tracking-tight mb-4 text-gray-900"
-              style={{ fontSize: 'clamp(28px, 4vw, 48px)' }}
-            >
-              Your Lone Star Lifestyle starts here.
-            </h2>
-            <p className="text-lg mb-8 text-gray-500">
-              Two paths into Texas. One guided experience. Begin when you&apos;re ready.
+        {/* Section E — Social Proof */}
+        {/* TODO: Replace sample reviews with real beta feedback */}
+        <section style={{ background: '#F3F5F8', borderBottom: '0.5px solid var(--color-border-tertiary)', padding: '52px 48px' }}>
+          {/* Header row */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px' }}>
+            <p style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: GOLD, margin: 0, whiteSpace: 'nowrap' }}>
+              WHAT PEOPLE ARE SAYING
             </p>
-            <p className="text-xs mb-6 mx-auto max-w-sm leading-relaxed text-gray-400">
-              No cost to you. HavenQuest is compensated through our Select Agent
-              network — only when you close.
+            <div style={{ flex: 1, height: '0.5px', background: 'var(--color-border-tertiary)' }} />
+          </div>
+          <h2 style={{ fontSize: '22px', fontWeight: 500, color: NAVY, marginBottom: '28px' }}>
+            Built for anyone ready to make Texas home.
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: '16px' }}>
+            {TESTIMONIALS.map((t) => (
+              <div
+                key={t.name}
+                style={{
+                  background: '#fff',
+                  border: '0.5px solid var(--color-border-tertiary)',
+                  borderTop: `2px solid ${GOLD}`,
+                  borderRadius: '8px',
+                  padding: '24px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  position: 'relative',
+                }}
+              >
+                <p style={{ fontSize: '13px', color: GOLD, letterSpacing: '3px', marginBottom: '14px' }}>★★★★★</p>
+                <p style={{ fontSize: '13px', color: MUTED, fontStyle: 'italic', lineHeight: 1.75, marginBottom: '18px', flex: 1 }}>
+                  &ldquo;{t.quote}&rdquo;
+                </p>
+                <div>
+                  <p style={{ fontSize: '13px', fontWeight: 500, color: NAVY, margin: 0 }}>{t.name}</p>
+                  <p style={{ fontSize: '11px', color: MUTED, marginTop: '2px' }}>{t.origin}</p>
+                </div>
+                <span style={{ position: 'absolute', bottom: '16px', right: '16px', fontSize: '10px', color: MUTED, opacity: 0.4 }}>
+                  Sample review
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Section F — Market Snapshot (soft cards) */}
+        <section style={{ background: '#fff', padding: '0 48px 40px' }}>
+          {/* Header row */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '36px 0 20px', borderBottom: '0.5px solid var(--color-border-tertiary)', marginBottom: '20px' }}>
+            <p style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: GOLD, margin: 0, whiteSpace: 'nowrap' }}>
+              TEXAS MARKET SNAPSHOT · Q2 2026
             </p>
-            <Link
-              href="/begin"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-sm tracking-tight transition-opacity hover:opacity-85"
-              style={{ backgroundColor: '#60B8FF', color: '#08101C', boxShadow: '0 0 0 1px rgba(96,184,255,0.3), 0 8px 24px rgba(96,184,255,0.25)' }}
-            >
-              Begin My Journey →
+            <div style={{ flex: 1, height: '0.5px', background: 'var(--color-border-tertiary)' }} />
+            <Link href="/texas/texas-insider" style={{ fontSize: '12px', color: BLUE, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+              Full Texas Insider →
             </Link>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: '16px' }}>
+            {SNAPSHOT_CITIES.map((metro) => (
+              <div
+                key={metro.city}
+                style={{
+                  padding: '20px',
+                  border: '0.5px solid var(--color-border-tertiary)',
+                  borderRadius: '8px',
+                  background: '#F3F5F8',
+                }}
+              >
+                <p style={{ fontSize: '13px', fontWeight: 500, color: NAVY, marginBottom: '6px' }}>{metro.city}</p>
+                <p style={{ fontSize: '24px', fontWeight: 500, color: NAVY, marginBottom: '4px' }}>{metro.price}</p>
+                <p style={{ fontSize: '12px', color: MUTED, lineHeight: 1.4, margin: 0 }}>{metro.sub}</p>
+                <span style={{
+                  display: 'inline-block',
+                  marginTop: '8px',
+                  fontSize: '10px',
+                  padding: '2px 8px',
+                  borderRadius: '4px',
+                  border: `0.5px solid ${metro.badgeColor}`,
+                  color: metro.badgeColor,
+                  background: metro.badgeBg,
+                }}>
+                  {metro.badge}
+                </span>
+              </div>
+            ))}
           </div>
         </section>
 
