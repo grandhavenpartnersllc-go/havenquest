@@ -31,7 +31,7 @@ const CONTAINER = { maxWidth: '1080px', margin: '0 auto', padding: '0 40px' } as
 
 const PROMISE_ITEMS = [
   { Icon: BarChart2, label: 'Matched to your life', desc: 'We score every Texas community across 12 lifestyle categories — schools, safety, walkability, weather, healthcare, and more — weighted by what matters most to you.' },
-  { Icon: UserCheck, label: 'A real guide at your side', desc: "At MileMarker 4, your personal Market Director steps in. They've already read your full profile and are ready to guide you — not sell you — the rest of the way." },
+  { Icon: UserCheck, label: 'A real guide at your side', desc: "Once you've explored your matches, your personal Market Director steps in. They've already reviewed your full profile and are ready to guide you — not sell you — the rest of the way." },
   { Icon: ShieldCheck, label: 'Vetted Select Agents', desc: "Every Select Agent in the HavenQuest network is hand-picked for your market. They're not leads — they're specialists who know your target communities inside and out." },
   { Icon: Lock, label: 'Your data stays yours', desc: 'Everything you share powers your personal experience. Nothing is sold. Nothing is shared without your consent. Your profile is private by default — always.' },
 ]
