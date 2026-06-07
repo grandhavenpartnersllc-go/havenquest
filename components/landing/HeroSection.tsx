@@ -24,8 +24,8 @@ export default function HeroSection() {
         priority
       />
 
-      {/* Dark overlay */}
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(10, 30, 61, 0.55)', zIndex: 1 }} />
+      {/* Left-to-right overlay — readable left, photo shows through on right */}
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(10,30,61,0.78) 0%, rgba(10,30,61,0.60) 35%, rgba(10,30,61,0.20) 65%, transparent 100%)', zIndex: 1 }} />
 
       {/* Content layer */}
       <div

@@ -128,8 +128,8 @@ export default function HomePage() {
               Texas is big. Finding your place{' '}
               in it shouldn&apos;t be a guessing game.
             </h2>
-            <p style={{ fontSize: '16px', color: MUTED, lineHeight: 1.8, maxWidth: '680px', marginBottom: '48px' }}>
-              You&apos;ve made the decision. Now the real question is: which Texas is yours? Whether you&apos;re drawn to the energy of a growing suburb, the charm of a historic small town, or the pulse of a major city — HavenQuest helps you find the community where your life actually fits. Not just the zip code with the right price tag.
+            <p style={{ fontSize: '16px', color: MUTED, lineHeight: 1.8, maxWidth: '100%', marginBottom: '48px' }}>
+              You&apos;ve made the decision. Now the real question is: which Texas is yours? Whether you&apos;re drawn to the energy of a growing suburb, the charm of a historic small town, or the pulse of a major city — HavenQuest helps you find the community where your life actually fits. Not just the zip code with the right price tag. HavenQuest gives you the data, the guidance, and the people to make one of life&apos;s biggest decisions with clarity and confidence.
             </p>
             {/* Promise blocks grid */}
             <div className="grid grid-cols-2 md:grid-cols-4" style={{ gap: '20px' }}>
