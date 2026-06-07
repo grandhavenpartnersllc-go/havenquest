@@ -27,6 +27,8 @@ const BLUE = '#0076B6'
 const GOLD = '#C5B783'
 const MUTED = '#6B7280'
 
+const CONTAINER = { maxWidth: '1080px', margin: '0 auto', padding: '0 40px' } as const
+
 const PROMISE_ITEMS = [
   { Icon: BarChart2, label: 'Matched to your life', desc: 'Verified data across 12 lifestyle categories — not just home prices.' },
   { Icon: UserCheck, label: 'A real guide at your side', desc: 'Your Market Director steps in personally at MileMarker 4.' },
@@ -114,187 +116,197 @@ export default function HomePage() {
 
         <HeroSection />
 
-        {/* Section A — Gold Strip */}
+        {/* Gold Strip */}
         <div style={{ height: '3px', background: GOLD, width: '100%' }} />
 
-        {/* Section B — Warm Statement */}
-        <section style={{ background: '#fff', borderBottom: '0.5px solid var(--color-border-tertiary)', padding: '52px 48px', textAlign: 'center' }}>
-          <div style={{ width: '40px', height: '2px', background: GOLD, margin: '0 auto 20px' }} />
-          <h2 style={{ fontSize: '26px', fontWeight: 500, color: NAVY, lineHeight: 1.35, maxWidth: '620px', margin: '0 auto 16px' }}>
-            Texas is big. Finding your place in it shouldn&apos;t be a guessing game.
-          </h2>
-          <p style={{ fontSize: '14px', color: MUTED, lineHeight: 1.8, maxWidth: '520px', margin: '0 auto' }}>
-            Whether you&apos;re drawn to a thriving suburb, a charming small town, or the energy of a major city — HavenQuest helps you find the community that fits the life you actually want to live.
-          </p>
-        </section>
-
-        {/* Section C — Promise Strip (softer) */}
-        <div
-          className="grid grid-cols-2 md:grid-cols-4"
-          style={{ background: '#F3F5F8', borderBottom: '0.5px solid var(--color-border-tertiary)' }}
-        >
-          {PROMISE_ITEMS.map((item, i) => (
-            <div
-              key={item.label}
-              style={{
-                padding: '22px 20px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '8px',
-                borderRight: i < 3 ? '0.5px solid var(--color-border-tertiary)' : 'none',
-              }}
-            >
-              <div style={{
-                width: '36px',
-                height: '36px',
-                borderRadius: '10px',
-                background: '#fff',
-                border: '0.5px solid var(--color-border-tertiary)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-              }}>
-                <item.Icon size={17} color={BLUE} />
+        {/* Statement — 2-col contained */}
+        <section style={{ background: '#fff', borderBottom: '0.5px solid var(--color-border-tertiary)' }}>
+          <div style={{ ...CONTAINER, padding: '56px 40px' }}>
+            <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: '60px', alignItems: 'start' }}>
+              {/* Left column */}
+              <div>
+                <div style={{ width: '36px', height: '2px', background: GOLD, marginBottom: '20px' }} />
+                <h2 style={{ fontSize: '28px', fontWeight: 700, color: NAVY, lineHeight: 1.3, margin: 0 }}>
+                  Texas is big.<br />
+                  Finding your place in it<br />
+                  shouldn&apos;t be a guessing game.
+                </h2>
               </div>
-              <p style={{ fontSize: '13px', fontWeight: 500, color: NAVY, margin: 0 }}>{item.label}</p>
-              <p style={{ fontSize: '12px', color: MUTED, lineHeight: 1.5, margin: 0 }}>{item.desc}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Section D — How It Works (editorial) */}
-        <section style={{ background: '#fff', borderBottom: '0.5px solid var(--color-border-tertiary)', padding: '52px 48px' }}>
-          {/* Header row */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '36px' }}>
-            <p style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: GOLD, margin: 0, whiteSpace: 'nowrap' }}>
-              HOW IT WORKS
-            </p>
-            <div style={{ flex: 1, height: '0.5px', background: 'var(--color-border-tertiary)' }} />
-          </div>
-          {/* Steps — desktop: 4-col flex; mobile: 2×2 grid */}
-          <div className="hidden md:flex">
-            {HOW_STEPS.map((step, i) => (
-              <div
-                key={step.num}
-                style={{
-                  flex: 1,
-                  paddingRight: i < 3 ? '28px' : '0',
-                  borderRight: i < 3 ? '0.5px solid var(--color-border-tertiary)' : 'none',
-                  marginRight: i < 3 ? '28px' : '0',
-                }}
-              >
-                <p style={{ fontSize: '36px', fontWeight: 700, color: '#F3F5F8', lineHeight: 1, marginBottom: '12px' }}>{step.num}</p>
-                <p style={{ fontSize: '15px', fontWeight: 500, color: NAVY, marginBottom: '8px', lineHeight: 1.3 }}>{step.title}</p>
-                <p style={{ fontSize: '12.5px', color: MUTED, lineHeight: 1.65, margin: 0 }}>{step.desc}</p>
-                {step.link && (
-                  <Link href="/begin" style={{ display: 'inline-block', fontSize: '12px', color: BLUE, textDecoration: 'none', marginTop: '12px' }}>
-                    {step.link}
-                  </Link>
-                )}
-              </div>
-            ))}
-          </div>
-          <div className="grid grid-cols-2 gap-6 md:hidden">
-            {HOW_STEPS.map((step) => (
-              <div key={step.num}>
-                <p style={{ fontSize: '36px', fontWeight: 700, color: '#F3F5F8', lineHeight: 1, marginBottom: '12px' }}>{step.num}</p>
-                <p style={{ fontSize: '15px', fontWeight: 500, color: NAVY, marginBottom: '8px', lineHeight: 1.3 }}>{step.title}</p>
-                <p style={{ fontSize: '12.5px', color: MUTED, lineHeight: 1.65, margin: 0 }}>{step.desc}</p>
-                {step.link && (
-                  <Link href="/begin" style={{ display: 'inline-block', fontSize: '12px', color: BLUE, textDecoration: 'none', marginTop: '12px' }}>
-                    {step.link}
-                  </Link>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Section E — Social Proof */}
-        {/* TODO: Replace sample reviews with real beta feedback */}
-        <section style={{ background: '#F3F5F8', borderBottom: '0.5px solid var(--color-border-tertiary)', padding: '52px 48px' }}>
-          {/* Header row */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px' }}>
-            <p style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: GOLD, margin: 0, whiteSpace: 'nowrap' }}>
-              WHAT PEOPLE ARE SAYING
-            </p>
-            <div style={{ flex: 1, height: '0.5px', background: 'var(--color-border-tertiary)' }} />
-          </div>
-          <h2 style={{ fontSize: '22px', fontWeight: 500, color: NAVY, marginBottom: '28px' }}>
-            Built for anyone ready to make Texas home.
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: '16px' }}>
-            {TESTIMONIALS.map((t) => (
-              <div
-                key={t.name}
-                style={{
-                  background: '#fff',
-                  border: '0.5px solid var(--color-border-tertiary)',
-                  borderTop: `2px solid ${GOLD}`,
-                  borderRadius: '8px',
-                  padding: '24px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  position: 'relative',
-                }}
-              >
-                <p style={{ fontSize: '13px', color: GOLD, letterSpacing: '3px', marginBottom: '14px' }}>★★★★★</p>
-                <p style={{ fontSize: '13px', color: MUTED, fontStyle: 'italic', lineHeight: 1.75, marginBottom: '18px', flex: 1 }}>
-                  &ldquo;{t.quote}&rdquo;
+              {/* Right column */}
+              <div>
+                <p style={{ fontSize: '14px', color: MUTED, lineHeight: 1.85, marginBottom: '24px' }}>
+                  You&apos;ve made the decision. Now the real question is: which Texas is yours?
+                  Whether you&apos;re drawn to the energy of a growing suburb, the charm of a historic small town,
+                  or the pulse of a major city — HavenQuest helps you find the community where your life
+                  actually fits. Not just the zip code with the right price tag.
                 </p>
-                <div>
-                  <p style={{ fontSize: '13px', fontWeight: 500, color: NAVY, margin: 0 }}>{t.name}</p>
-                  <p style={{ fontSize: '11px', color: MUTED, marginTop: '2px' }}>{t.origin}</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  {PROMISE_ITEMS.map((item) => (
+                    <div key={item.label} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                      <div style={{
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '8px',
+                        background: '#F3F5F8',
+                        border: '0.5px solid var(--color-border-tertiary)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                      }}>
+                        <item.Icon size={15} color={BLUE} />
+                      </div>
+                      <div>
+                        <p style={{ fontSize: '13px', fontWeight: 600, color: NAVY, margin: '0 0 2px' }}>{item.label}</p>
+                        <p style={{ fontSize: '12px', color: MUTED, margin: 0 }}>{item.desc}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <span style={{ position: 'absolute', bottom: '16px', right: '16px', fontSize: '10px', color: MUTED, opacity: 0.4 }}>
-                  Sample review
-                </span>
               </div>
-            ))}
+            </div>
           </div>
         </section>
 
-        {/* Section F — Market Snapshot (soft cards) */}
-        <section style={{ background: '#fff', padding: '0 48px 40px' }}>
-          {/* Header row */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '36px 0 20px', borderBottom: '0.5px solid var(--color-border-tertiary)', marginBottom: '20px' }}>
-            <p style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: GOLD, margin: 0, whiteSpace: 'nowrap' }}>
-              TEXAS MARKET SNAPSHOT · Q2 2026
-            </p>
-            <div style={{ flex: 1, height: '0.5px', background: 'var(--color-border-tertiary)' }} />
-            <Link href="/texas/texas-insider" style={{ fontSize: '12px', color: BLUE, textDecoration: 'none', whiteSpace: 'nowrap' }}>
-              Full Texas Insider →
-            </Link>
+        {/* How It Works — editorial, contained */}
+        <section style={{ background: '#fff', borderBottom: '0.5px solid var(--color-border-tertiary)' }}>
+          <div style={{ ...CONTAINER, padding: '52px 40px' }}>
+            {/* Header row */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '36px' }}>
+              <p style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: GOLD, margin: 0, whiteSpace: 'nowrap' }}>
+                HOW IT WORKS
+              </p>
+              <div style={{ flex: 1, height: '0.5px', background: 'var(--color-border-tertiary)' }} />
+            </div>
+            {/* Steps — desktop: 4-col open flex */}
+            <div className="hidden md:flex">
+              {HOW_STEPS.map((step, i) => (
+                <div
+                  key={step.num}
+                  style={{
+                    flex: 1,
+                    paddingRight: i < 3 ? '28px' : '0',
+                    borderRight: i < 3 ? '0.5px solid var(--color-border-tertiary)' : 'none',
+                    marginRight: i < 3 ? '28px' : '0',
+                  }}
+                >
+                  <p style={{ fontSize: '32px', fontWeight: 700, color: '#F3F5F8', lineHeight: 1, marginBottom: '10px' }}>{step.num}</p>
+                  <div style={{ width: '24px', height: '2px', background: BLUE, marginBottom: '12px' }} />
+                  <h3 style={{ fontSize: '15px', fontWeight: 600, color: NAVY, marginBottom: '8px', lineHeight: 1.3 }}>{step.title}</h3>
+                  <p style={{ fontSize: '12.5px', color: MUTED, lineHeight: 1.65, margin: 0 }}>{step.desc}</p>
+                  {step.link && (
+                    <Link href="/begin" style={{ display: 'inline-block', fontSize: '12px', color: BLUE, textDecoration: 'none', marginTop: '10px' }}>
+                      {step.link}
+                    </Link>
+                  )}
+                </div>
+              ))}
+            </div>
+            {/* Steps — mobile: 2×2 grid */}
+            <div className="grid grid-cols-2 gap-6 md:hidden">
+              {HOW_STEPS.map((step) => (
+                <div key={step.num}>
+                  <p style={{ fontSize: '32px', fontWeight: 700, color: '#F3F5F8', lineHeight: 1, marginBottom: '10px' }}>{step.num}</p>
+                  <div style={{ width: '24px', height: '2px', background: BLUE, marginBottom: '12px' }} />
+                  <h3 style={{ fontSize: '15px', fontWeight: 600, color: NAVY, marginBottom: '8px', lineHeight: 1.3 }}>{step.title}</h3>
+                  <p style={{ fontSize: '12.5px', color: MUTED, lineHeight: 1.65, margin: 0 }}>{step.desc}</p>
+                  {step.link && (
+                    <Link href="/begin" style={{ display: 'inline-block', fontSize: '12px', color: BLUE, textDecoration: 'none', marginTop: '10px' }}>
+                      {step.link}
+                    </Link>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: '16px' }}>
-            {SNAPSHOT_CITIES.map((metro) => (
-              <div
-                key={metro.city}
-                style={{
-                  padding: '20px',
-                  border: '0.5px solid var(--color-border-tertiary)',
-                  borderRadius: '8px',
-                  background: '#F3F5F8',
-                }}
-              >
-                <p style={{ fontSize: '13px', fontWeight: 500, color: NAVY, marginBottom: '6px' }}>{metro.city}</p>
-                <p style={{ fontSize: '24px', fontWeight: 500, color: NAVY, marginBottom: '4px' }}>{metro.price}</p>
-                <p style={{ fontSize: '12px', color: MUTED, lineHeight: 1.4, margin: 0 }}>{metro.sub}</p>
-                <span style={{
-                  display: 'inline-block',
-                  marginTop: '8px',
-                  fontSize: '10px',
-                  padding: '2px 8px',
-                  borderRadius: '4px',
-                  border: `0.5px solid ${metro.badgeColor}`,
-                  color: metro.badgeColor,
-                  background: metro.badgeBg,
-                }}>
-                  {metro.badge}
-                </span>
-              </div>
-            ))}
+        </section>
+
+        {/* Social Proof — contained */}
+        {/* TODO: Replace sample reviews with real beta feedback */}
+        <section style={{ background: '#F3F5F8', borderBottom: '0.5px solid var(--color-border-tertiary)' }}>
+          <div style={{ ...CONTAINER, padding: '52px 40px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px' }}>
+              <p style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: GOLD, margin: 0, whiteSpace: 'nowrap' }}>
+                WHAT PEOPLE ARE SAYING
+              </p>
+              <div style={{ flex: 1, height: '0.5px', background: 'var(--color-border-tertiary)' }} />
+            </div>
+            <h2 style={{ fontSize: '22px', fontWeight: 500, color: NAVY, marginBottom: '28px' }}>
+              Built for anyone ready to make Texas home.
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: '16px' }}>
+              {TESTIMONIALS.map((t) => (
+                <div
+                  key={t.name}
+                  style={{
+                    background: '#fff',
+                    border: '0.5px solid var(--color-border-tertiary)',
+                    borderTop: `2px solid ${GOLD}`,
+                    borderRadius: '8px',
+                    padding: '24px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    position: 'relative',
+                  }}
+                >
+                  <p style={{ fontSize: '13px', color: GOLD, letterSpacing: '3px', marginBottom: '14px' }}>★★★★★</p>
+                  <p style={{ fontSize: '13px', color: MUTED, fontStyle: 'italic', lineHeight: 1.75, marginBottom: '18px', flex: 1 }}>
+                    &ldquo;{t.quote}&rdquo;
+                  </p>
+                  <div>
+                    <p style={{ fontSize: '13px', fontWeight: 500, color: NAVY, margin: 0 }}>{t.name}</p>
+                    <p style={{ fontSize: '11px', color: MUTED, marginTop: '2px' }}>{t.origin}</p>
+                  </div>
+                  <span style={{ position: 'absolute', bottom: '16px', right: '16px', fontSize: '10px', color: MUTED, opacity: 0.4 }}>
+                    Sample review
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Market Snapshot — contained */}
+        <section style={{ background: '#fff' }}>
+          <div style={{ ...CONTAINER, padding: '0 40px 40px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '36px 0 20px', borderBottom: '0.5px solid var(--color-border-tertiary)', marginBottom: '20px' }}>
+              <p style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: GOLD, margin: 0, whiteSpace: 'nowrap' }}>
+                TEXAS MARKET SNAPSHOT · Q2 2026
+              </p>
+              <div style={{ flex: 1, height: '0.5px', background: 'var(--color-border-tertiary)' }} />
+              <Link href="/texas/texas-insider" style={{ fontSize: '12px', color: BLUE, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                Full Texas Insider →
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: '16px' }}>
+              {SNAPSHOT_CITIES.map((metro) => (
+                <div
+                  key={metro.city}
+                  style={{
+                    padding: '20px',
+                    border: '0.5px solid var(--color-border-tertiary)',
+                    borderRadius: '8px',
+                    background: '#F3F5F8',
+                  }}
+                >
+                  <p style={{ fontSize: '13px', fontWeight: 500, color: NAVY, marginBottom: '6px' }}>{metro.city}</p>
+                  <p style={{ fontSize: '24px', fontWeight: 500, color: NAVY, marginBottom: '4px' }}>{metro.price}</p>
+                  <p style={{ fontSize: '12px', color: MUTED, lineHeight: 1.4, margin: 0 }}>{metro.sub}</p>
+                  <span style={{
+                    display: 'inline-block',
+                    marginTop: '8px',
+                    fontSize: '10px',
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                    border: `0.5px solid ${metro.badgeColor}`,
+                    color: metro.badgeColor,
+                    background: metro.badgeBg,
+                  }}>
+                    {metro.badge}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 

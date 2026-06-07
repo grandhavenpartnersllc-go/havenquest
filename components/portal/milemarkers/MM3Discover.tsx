@@ -130,6 +130,13 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
   const [financialsLocked, setFinancialsLocked] = useState(false)
   const [worksheetDismissed, setWorksheetDismissed] = useState(false)
   const [financialCalcOpen, setFinancialCalcOpen] = useState(false)
+  const [incomeInputValue, setIncomeInputValue] = useState<string>(
+    formatCurrency(String(profile?.annualIncome ?? 100000))
+  )
+  const [incomeOverride, setIncomeOverride] = useState<number>(
+    profile?.annualIncome ?? 100000
+  )
+  const incomeDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const rankingsRef = useRef<HTMLDivElement>(null)
 
@@ -222,7 +229,7 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
   // Rankings are driven by lifestyle priority weights only — financial picture affects
   // affordabilityFlag display per city but does not reorder match scores.
   const sandboxProfile: UserProfile = {
-    annualIncome: profile?.annualIncome ?? 100000,
+    annualIncome: incomeOverride,
     householdSize: profile?.householdSize ?? '1',
     movingTimeline: profile?.movingTimeline ?? 'exploring',
     mustHaves,
@@ -282,7 +289,7 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
 
   const totalMonthlyHousing = monthlyMortgage + monthlyPropertyTax
 
-  const grossMonthlyIncome = (profile?.annualIncome ?? 100000) / 12
+  const grossMonthlyIncome = incomeOverride / 12
   const affordabilityPct = grossMonthlyIncome > 0
     ? (totalMonthlyHousing / grossMonthlyIncome) * 100
     : 0
@@ -292,7 +299,7 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
     : affordabilityPct <= 40 ? 'moderate'
     : 'stretched'
 
-  const annualIncome = profile?.annualIncome ?? 100000
+  const annualIncome = incomeOverride
   const priceToIncomeRatio = annualIncome > 0 ? topCityPrice / annualIncome : 0
   const estClosingCosts = Math.round(topCityPrice * 0.025)
   const totalCashToClose = (downMid + procMid) + estClosingCosts
@@ -305,7 +312,7 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
   }
 
   function getCityAffordabilityStatus(match: CityMatch): 'comfortable' | 'moderate' | 'stretched' {
-    const grossMonthlyIncome = (profile?.annualIncome ?? 100000) / 12
+    const grossMonthlyIncome = incomeOverride / 12
     const cityPrice = match.location.housing.medianHomePrice
     const taxRate = match.location.housing.propertyTaxRate ?? 0.018
     const totalFunds = downMid + procMid
@@ -323,6 +330,36 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
     if (pct <= 0.30) return 'comfortable'
     if (pct <= 0.40) return 'moderate'
     return 'stretched'
+  }
+
+  function handleIncomeChange(raw: string) {
+    const formatted = formatCurrency(raw)
+    setIncomeInputValue(formatted)
+    setSandboxTouched(true)
+    if (incomeDebounceRef.current) clearTimeout(incomeDebounceRef.current)
+    incomeDebounceRef.current = setTimeout(() => {
+      const parsed = parseCurrency(formatted)
+      if (parsed) setIncomeOverride(parsed)
+    }, 300)
+  }
+
+  async function handleLockFinancials() {
+    const newLocked = !financialsLocked
+    setFinancialsLocked(newLocked)
+    if (newLocked) {
+      try {
+        const supabase = createClient()
+        const { data: { session: s } } = await supabase.auth.getSession()
+        if (!s?.user?.email) return
+        // Requires annual_income_override column (nullable integer) on public.users
+        await supabase
+          .from('users')
+          .update({ annual_income_override: incomeOverride })
+          .eq('email', s.user.email.toLowerCase())
+      } catch (err) {
+        console.error('Failed to save income override:', err)
+      }
+    }
   }
 
   async function handleCommit() {
@@ -931,6 +968,32 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
               <div className="grid grid-cols-1 gap-4" style={{ paddingTop: '12px', opacity: financialsLocked ? 0.6 : 1, pointerEvents: financialsLocked ? 'none' : 'auto', transition: 'opacity 0.2s' }}>
                 <div>
                   <label className="block text-xs font-semibold mb-1" style={{ color: WARM_DARK }}>
+                    Annual household income
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. $150,000"
+                    value={incomeInputValue}
+                    onChange={e => handleIncomeChange(e.target.value)}
+                    onFocus={e => { e.target.style.border = '1px solid #B8912A' }}
+                    onBlur={e => { e.target.style.border = '1px solid rgba(184,145,42,0.4)' }}
+                    style={{
+                      width: '100%',
+                      fontSize: '13px',
+                      padding: '6px 10px',
+                      borderRadius: '6px',
+                      border: '1px solid rgba(184,145,42,0.4)',
+                      background: 'rgba(184,145,42,0.04)',
+                      color: 'var(--color-text-primary)',
+                    }}
+                  />
+                  <p style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', fontStyle: 'italic', marginTop: '4px' }}>
+                    Adjust if your income has changed since your initial assessment.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: WARM_DARK }}>
                     Down payment
                   </label>
                   <select
@@ -1125,7 +1188,7 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
                 </button>
               )}
               <button
-                onClick={() => setFinancialsLocked(f => !f)}
+                onClick={handleLockFinancials}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '6px',
                   fontSize: '12px', padding: '5px 12px', borderRadius: '8px',
