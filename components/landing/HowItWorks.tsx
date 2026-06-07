@@ -1,5 +1,5 @@
-const NAVY = '#002868'
-const RED = '#BF0A30'
+const NAVY = '#0A1E3D'
+const BLUE = '#0076B6'
 const MUTED = '#6B7280'
 const BORDER = 'rgba(0,0,0,0.08)'
 
@@ -25,13 +25,13 @@ export default function HowItWorks() {
             key={step.label}
             style={{
               border: `0.5px solid ${BORDER}`,
-              borderTop: `2px solid ${NAVY}`,
+              borderTop: `2px solid ${BLUE}`,
               borderRadius: '8px',
               padding: '14px',
               background: '#fff',
             }}
           >
-            <p style={{ fontSize: '11px', color: RED, fontWeight: 500, marginBottom: '6px' }}>{step.label}</p>
+            <p style={{ fontSize: '11px', color: BLUE, fontWeight: 500, marginBottom: '6px' }}>{step.label}</p>
             <p style={{ fontSize: '13px', fontWeight: 500, color: NAVY, marginBottom: '4px' }}>{step.title}</p>
             <p style={{ fontSize: '11px', color: MUTED, lineHeight: 1.5, margin: 0 }}>{step.desc}</p>
           </div>

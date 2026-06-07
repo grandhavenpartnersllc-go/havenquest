@@ -11,6 +11,11 @@
   --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
 }
 
+:root {
+  --color-text-secondary: #6B7280;
+  --color-border-tertiary: rgba(0, 0, 0, 0.08);
+}
+
 body {
   background: #FFFFFF;
   color: #1A1A1A;

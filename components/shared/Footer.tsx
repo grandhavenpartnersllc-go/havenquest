@@ -2,45 +2,46 @@ import Link from 'next/link'
 
 export default function Footer() {
   return (
-    <footer className="bg-[#08101C] text-white/40 mt-auto" style={{ borderTop: '1px solid rgba(255,255,255,0.12)' }}>
+    <footer style={{ background: '#0A1E3D', marginTop: 'auto', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
       <div className="max-w-6xl mx-auto px-4 pt-12 pb-8">
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-8 mb-10">
           <div className="col-span-2 md:col-span-1">
-            <p className="text-white font-bold text-[17px] tracking-tight mb-3">
-              Haven<span className="text-blue-400">Quest</span>
+            <p className="font-bold text-[17px] tracking-tight mb-3" style={{ color: '#fff' }}>
+              Haven<span style={{ color: '#C5B783' }}>Quest</span>
             </p>
-            <p className="text-sm leading-relaxed text-white/40">
+            <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.4)' }}>
               Clarity. Confidence. Peace of mind.<br />Your Lone Star Lifestyle™ awaits.
             </p>
           </div>
 
           <div>
-            <p className="text-white/70 text-xs font-bold uppercase tracking-widest mb-4">Product</p>
+            <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: 'rgba(255,255,255,0.5)' }}>Product</p>
             <ul className="space-y-2.5 text-sm">
-              <li><Link href="/#how-it-works" className="hover:text-white/80 transition-colors">How It Works</Link></li>
-              <li><Link href="/begin" className="hover:text-white/80 transition-colors">Begin My Journey</Link></li>
-              <li><Link href="/portal" className="hover:text-white/80 transition-colors">Your Portal</Link></li>
+              <li><Link href="/#how-it-works" className="hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.5)' }}>How It Works</Link></li>
+              <li><Link href="/begin" className="hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.5)' }}>Begin My Journey</Link></li>
+              <li><Link href="/portal" className="hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.5)' }}>Your Portal</Link></li>
             </ul>
           </div>
 
           <div>
-            <p className="text-white/70 text-xs font-bold uppercase tracking-widest mb-4">Company</p>
+            <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: 'rgba(255,255,255,0.5)' }}>Company</p>
             <ul className="space-y-2.5 text-sm">
-              <li><Link href="/about" className="hover:text-white/80 transition-colors">About</Link></li>
-              <li><Link href="/data-disclosure" className="hover:text-white/80 transition-colors">Data Disclosure</Link></li>
-              <li><Link href="/methodology" className="hover:text-white/80 transition-colors">Methodology</Link></li>
-              <li><Link href="/for-realtors" className="hover:text-white/80 transition-colors">For Realtors</Link></li>
+              <li><Link href="/about" className="hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.5)' }}>About</Link></li>
+              <li><Link href="/methodology" className="hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.5)' }}>Methodology</Link></li>
+              <li><Link href="/for-realtors" className="hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.5)' }}>For Realtors</Link></li>
             </ul>
           </div>
         </div>
 
-        <div className="border-t border-white/8 pt-6 flex flex-col md:flex-row justify-between items-center gap-3 text-xs text-white/25">
-          <p>© {new Date().getFullYear()} HavenQuest. All rights reserved.</p>
-          <p className="text-center">
-            Scores are directional lifestyle guidance — not financial, legal, or real estate advice.{' '}
-            <Link href="/methodology" className="text-blue-400/70 hover:text-blue-400 transition-colors">How scores work</Link>
-          </p>
+        <div className="pt-6 flex flex-col md:flex-row justify-between items-center gap-3" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+          <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>© 2026 HavenQuest</p>
+          <div className="flex items-center gap-6" style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>
+            <Link href="/data-disclosure" className="hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.5)' }}>Privacy</Link>
+            <Link href="/methodology" className="hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.5)' }}>Terms</Link>
+            <Link href="/texas/texas-insider" className="hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.5)' }}>Texas Insider</Link>
+            <Link href="/for-realtors" className="hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.5)' }}>For Realtors</Link>
+          </div>
         </div>
 
       </div>

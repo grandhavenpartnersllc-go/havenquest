@@ -2,16 +2,15 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { BarChart2, UserCheck, ShieldCheck, Lock, Map } from 'lucide-react'
 
-const NAVY = '#002868'
-const RED = '#BF0A30'
-const GOLD = '#C9A84C'
+const NAVY = '#0A1E3D'
+const BLUE = '#0076B6'
+const GOLD = '#C5B783'
 const MUTED = '#6B7280'
-const BORDER = 'rgba(0,0,0,0.08)'
 
 const PROOF_ITEMS = [
-  { Icon: BarChart2, label: 'Data-driven matching', desc: 'Verified data across 12 lifestyle categories' },
-  { Icon: UserCheck, label: 'A real person guides you', desc: 'Your Market Director steps in at MileMarker 4' },
-  { Icon: ShieldCheck, label: 'Vetted Select Agents', desc: 'Hand-picked realtors who know your market' },
+  { Icon: BarChart2, label: 'Matched to your life', desc: 'Verified data across 12 lifestyle categories' },
+  { Icon: UserCheck, label: 'A real guide at your side', desc: 'Your Market Director steps in at MileMarker 4' },
+  { Icon: ShieldCheck, label: 'Vetted local experts', desc: 'Hand-picked Select Agents who know your market' },
   { Icon: Lock, label: 'Your data stays yours', desc: 'Nothing sold, nothing shared without consent' },
 ]
 
@@ -28,50 +27,44 @@ export default function HeroSection() {
       {/* Hero — split layout */}
       <div
         className="flex flex-col-reverse md:grid"
-        style={{ gridTemplateColumns: '55% 45%', minHeight: '400px' }}
+        style={{ gridTemplateColumns: '54% 46%', minHeight: '420px' }}
       >
         {/* Left panel */}
         <div
           className="hero-left"
-          style={{ background: '#fff', padding: '52px 44px 52px 32px' }}
+          style={{ background: '#fff', padding: '52px 48px 52px 32px' }}
         >
-          {/* Eyebrow */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '18px' }}>
-            <div style={{ width: '28px', height: '1.5px', background: RED, flexShrink: 0 }} />
-            <p style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: RED, margin: 0 }}>
-              Texas Relocation Intelligence
-            </p>
-          </div>
+          {/* Italic intro */}
+          <p style={{ fontSize: '17px', color: 'var(--color-text-secondary)', fontStyle: 'italic', marginBottom: '4px' }}>
+            So, you&apos;re
+          </p>
 
           {/* Headline */}
           <h1 style={{
-            fontFamily: "'Playfair Display', Georgia, serif",
-            fontSize: '34px',
+            fontSize: '46px',
             fontWeight: 500,
-            lineHeight: 1.25,
+            lineHeight: 1.1,
             color: NAVY,
-            marginBottom: '16px',
+            marginBottom: '22px',
           }}>
-            Find your place<br />
-            in the <span style={{ color: RED }}>Lone Star State.</span>
+            Choosin&apos; <span style={{ color: BLUE }}>Texas.</span>
           </h1>
 
           {/* Subhead */}
-          <p style={{ fontSize: '13.5px', color: MUTED, lineHeight: 1.8, maxWidth: '400px', marginBottom: '28px' }}>
-            HavenQuest matches you to the right Texas community based on your income, priorities, and lifestyle — then guides you every step of the way to your front door.
+          <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', lineHeight: 1.85, maxWidth: '400px', marginBottom: '28px' }}>
+            Great choice. Now let&apos;s make sure you land in exactly the right community — the one that fits your life, your budget, and the way you want to live. That&apos;s what HavenQuest is here for.
           </p>
 
           {/* CTA row */}
-          <div className="flex flex-col md:flex-row md:items-center gap-4" style={{ marginBottom: '32px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px', flexWrap: 'wrap' }}>
             <Link
               href="/begin"
-              className="w-full md:w-auto text-center"
               style={{
-                background: NAVY,
+                background: BLUE,
                 color: '#fff',
                 fontSize: '13px',
                 fontWeight: 500,
-                padding: '12px 24px',
+                padding: '13px 28px',
                 borderRadius: '8px',
                 textDecoration: 'none',
                 display: 'inline-block',
@@ -81,15 +74,13 @@ export default function HeroSection() {
             </Link>
             <Link
               href="/texas/texas-insider"
-              className="text-center md:text-left"
               style={{
                 color: NAVY,
-                borderBottom: `1px solid ${NAVY}`,
+                opacity: 0.7,
                 fontSize: '13px',
                 textDecoration: 'none',
                 display: 'inline-flex',
                 alignItems: 'center',
-                justifyContent: 'center',
                 gap: '4px',
               }}
             >
@@ -101,7 +92,7 @@ export default function HeroSection() {
           {/* Trust stats */}
           <div
             className="grid grid-cols-2 md:flex"
-            style={{ paddingTop: '24px', borderTop: `0.5px solid ${BORDER}` }}
+            style={{ paddingTop: '22px', borderTop: '0.5px solid var(--color-border-tertiary)' }}
           >
             {TRUST_STATS.map((stat, i) => (
               <div
@@ -113,7 +104,7 @@ export default function HeroSection() {
                   paddingRight: '20px',
                   paddingTop: '8px',
                   paddingBottom: '8px',
-                  borderLeft: i > 0 ? `0.5px solid ${BORDER}` : 'none',
+                  borderLeft: i > 0 ? '0.5px solid var(--color-border-tertiary)' : 'none',
                 }}
               >
                 <span style={{ fontSize: '20px', fontWeight: 500, color: NAVY }}>{stat.num}</span>
@@ -126,11 +117,12 @@ export default function HeroSection() {
         {/* Right panel — image */}
         <div
           className="relative h-[220px] md:h-auto"
-          style={{ borderLeft: `0.5px solid ${BORDER}`, overflow: 'hidden' }}
+          style={{ borderLeft: '0.5px solid var(--color-border-tertiary)', overflow: 'hidden' }}
         >
+          {/* TODO: Replace with final relocation-couple.jpg asset */}
           <Image
-            src="/images/texas-intel/state-hero.jpg"
-            alt="Texas lifestyle — community life in the Lone Star State"
+            src="/images/relocation-couple.jpg"
+            alt="Couple with confident smiles surrounded by moving boxes — ready for their Texas move"
             fill
             className="object-cover"
             priority
@@ -141,59 +133,54 @@ export default function HeroSection() {
             bottom: 0,
             left: 0,
             right: 0,
-            height: '120px',
-            background: 'linear-gradient(transparent, rgba(0,40,104,0.55))',
+            height: '110px',
+            background: 'linear-gradient(transparent, rgba(10,30,61,0.55))',
             zIndex: 1,
           }} />
-          {/* Badge */}
+          {/* Pill badge */}
           <div style={{
             position: 'absolute',
             bottom: '16px',
             left: '16px',
             zIndex: 2,
-            background: 'rgba(0,40,104,0.15)',
-            border: '1px solid rgba(255,255,255,0.4)',
+            background: 'rgba(10,30,61,0.18)',
+            border: '1px solid rgba(255,255,255,0.35)',
             borderRadius: '20px',
             padding: '5px 12px',
             display: 'flex',
             alignItems: 'center',
             gap: '6px',
           }}>
-            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: RED, flexShrink: 0 }} />
+            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: GOLD, flexShrink: 0 }} />
             <span style={{ fontSize: '11px', color: '#fff' }}>4 metros · 101 cities · Updated June 2026</span>
           </div>
         </div>
       </div>
 
-      {/* Texas flag stripe */}
-      <div style={{ display: 'flex', height: '4px' }}>
-        <div style={{ flex: 1, background: RED }} />
-        <div style={{ flex: 1, background: '#FFFFFF', borderTop: `0.5px solid ${BORDER}`, borderBottom: `0.5px solid ${BORDER}` }} />
-        <div style={{ flex: 1, background: NAVY }} />
-      </div>
+      {/* Gold strip */}
+      <div style={{ height: '3px', background: GOLD }} />
 
-      {/* Proof strip */}
+      {/* Promise strip */}
       <div
         className="grid grid-cols-2 md:grid-cols-4"
-        style={{ background: NAVY }}
+        style={{ background: '#F3F5F8', borderBottom: '0.5px solid var(--color-border-tertiary)' }}
       >
         {PROOF_ITEMS.map((item, i) => (
           <div
             key={item.label}
             style={{
-              padding: '16px 20px',
+              padding: '16px 18px',
               display: 'flex',
               alignItems: 'flex-start',
               gap: '10px',
-              borderRight: i % 2 === 0 ? '0.5px solid rgba(255,255,255,0.1)' : 'none',
+              borderRight: i < 3 ? '0.5px solid var(--color-border-tertiary)' : 'none',
             }}
-            className="md:[&:not(:last-child)]:border-r md:border-r-[rgba(255,255,255,0.1)]"
           >
             <div style={{
               width: '30px',
               height: '30px',
               borderRadius: '6px',
-              background: 'rgba(255,255,255,0.1)',
+              background: NAVY,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -202,15 +189,15 @@ export default function HeroSection() {
               <item.Icon size={15} color={GOLD} />
             </div>
             <div>
-              <p style={{ fontSize: '12px', fontWeight: 500, color: '#fff', margin: '0 0 2px' }}>{item.label}</p>
-              <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.4, margin: 0 }}>{item.desc}</p>
+              <p style={{ fontSize: '12px', fontWeight: 500, color: NAVY, margin: '0 0 2px' }}>{item.label}</p>
+              <p style={{ fontSize: '11px', color: MUTED, lineHeight: 1.45, margin: 0 }}>{item.desc}</p>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Red rule */}
-      <div style={{ height: '2px', background: RED }} />
+      {/* Blue rule */}
+      <div style={{ height: '2px', background: BLUE }} />
     </>
   )
 }

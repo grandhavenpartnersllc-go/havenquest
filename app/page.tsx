@@ -40,8 +40,8 @@ const TESTIMONIALS = [
   },
 ]
 
-const NAVY = '#002868'
-const GOLD = '#C9A84C'
+const NAVY = '#0A1E3D'
+const GOLD = '#C5B783'
 const BORDER = 'rgba(0,0,0,0.08)'
 const MUTED = '#6B7280'
 
@@ -112,16 +112,17 @@ export default function HomePage() {
         </div>
 
         {/* Social Proof */}
+        {/* TODO: Replace sample reviews with real beta feedback */}
         <section className="py-20 px-4 bg-surface">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-12">
               <p
                 className="text-xs font-bold uppercase mb-4"
-                style={{ color: '#B8912A', letterSpacing: '0.18em' }}
+                style={{ color: '#C5B783', letterSpacing: '0.18em' }}
               >
                 Trusted by People Relocating to Texas
               </p>
-              <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
+              <h2 className="text-3xl font-bold tracking-tight" style={{ color: '#0A1E3D' }}>
                 Built for anyone ready to make Texas home.
               </h2>
             </div>
@@ -137,7 +138,7 @@ export default function HomePage() {
                 >
                   <div className="flex gap-0.5 mb-4" aria-label="5 stars">
                     {[1, 2, 3, 4, 5].map(s => (
-                      <span key={s} style={{ color: '#B8912A', fontSize: '14px' }}>★</span>
+                      <span key={s} style={{ color: '#C5B783', fontSize: '14px' }}>★</span>
                     ))}
                   </div>
                   <p className="text-gray-600 text-sm leading-relaxed flex-1 mb-5">

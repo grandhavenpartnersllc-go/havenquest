@@ -8,26 +8,27 @@ export default function Header() {
   const [open, setOpen] = useState(false)
 
   return (
-    <header className="bg-[#002868] border-b border-white/8 sticky top-0 z-50">
+    <header className="sticky top-0 z-50" style={{ background: '#0A1E3D', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
         <Link href="/" className="font-bold text-[17px] text-white tracking-tight">
-          Haven<span style={{ color: '#C9A84C' }}>Quest</span>
+          Haven<span style={{ color: '#C5B783' }}>Quest</span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-6 text-sm text-white/55">
-          <Link href="/portal" className="hover:text-white transition-colors">My Portal</Link>
-          <Link href="/texas/texas-insider" className="hover:text-white transition-colors">Texas Insider</Link>
+        <nav className="hidden md:flex items-center gap-6 text-sm" style={{ color: 'rgba(255,255,255,0.65)' }}>
+          <Link href="/portal" className="hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.65)' }}>My Portal</Link>
+          <Link href="/texas/texas-insider" className="hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.65)' }}>Texas Insider</Link>
           <Link
             href="/begin"
-            className="bg-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-gray-100 transition-colors"
-            style={{ color: '#002868', boxShadow: '0 0 0 1px rgba(255,255,255,0.12)' }}
+            className="hover:bg-gray-100 transition-colors"
+            style={{ background: '#fff', color: '#0A1E3D', borderRadius: '6px', padding: '8px 18px', fontSize: '14px', fontWeight: 500, textDecoration: 'none' }}
           >
             Begin My Journey
           </Link>
         </nav>
 
         <button
-          className="md:hidden p-2 text-white/60 hover:text-white transition-colors"
+          className="md:hidden p-2 hover:text-white transition-colors"
+          style={{ color: 'rgba(255,255,255,0.6)' }}
           onClick={() => setOpen(!open)}
           aria-label="Toggle menu"
         >
@@ -36,13 +37,13 @@ export default function Header() {
       </div>
 
       {open && (
-        <div className="md:hidden bg-[#002868] border-t border-white/8 px-4 py-4 flex flex-col gap-4 text-sm">
-          <Link href="/portal" className="text-white/60 hover:text-white transition-colors" onClick={() => setOpen(false)}>My Portal</Link>
-          <Link href="/texas/texas-insider" className="text-white/60 hover:text-white transition-colors" onClick={() => setOpen(false)}>Texas Insider</Link>
+        <div className="md:hidden px-4 py-4 flex flex-col gap-4 text-sm" style={{ background: '#0A1E3D', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+          <Link href="/portal" className="hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.65)' }} onClick={() => setOpen(false)}>My Portal</Link>
+          <Link href="/texas/texas-insider" className="hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.65)' }} onClick={() => setOpen(false)}>Texas Insider</Link>
           <Link
             href="/begin"
-            className="bg-white px-4 py-3 rounded-xl font-bold text-center"
-            style={{ color: '#002868' }}
+            className="px-4 py-3 rounded-xl font-bold text-center hover:bg-gray-100 transition-colors"
+            style={{ background: '#fff', color: '#0A1E3D', textDecoration: 'none' }}
             onClick={() => setOpen(false)}
           >
             Begin My Journey →
