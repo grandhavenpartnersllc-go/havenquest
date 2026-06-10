@@ -23,7 +23,7 @@ export default function Header() {
             borderLeft: '1px solid rgba(197,183,131,0.4)',
             lineHeight: 1,
           }}>
-            Texas
+            Texas Relo
           </span>
         </Link>
 
@@ -32,7 +32,7 @@ export default function Header() {
             href="/portal"
             className="transition-colors text-[#C5B783] hover:text-white"
           >
-            My Portal
+            My Navigator
           </Link>
           <Link
             href="/texas/texas-insider"
@@ -67,7 +67,7 @@ export default function Header() {
             className="transition-colors text-[#C5B783] hover:text-white"
             onClick={() => setOpen(false)}
           >
-            My Portal
+            My Navigator
           </Link>
           <Link
             href="/texas/texas-insider"
