@@ -4,8 +4,16 @@ import Header from '../../components/shared/Header'
 import Footer from '../../components/shared/Footer'
 
 export const metadata: Metadata = {
-  title: 'About HavenQuest — Texas Relocation Intelligence',
-  description: 'HavenQuest is a Texas relocation intelligence platform that matches people to the right Texas communities based on their life, budget, and priorities.',
+  title: 'About HavenQuest — Guided Texas Relocation',
+  description: 'HavenQuest is a Texas transition management company. We guide families from uncertainty about where to live through a successful relocation and integration into their new community.',
+  openGraph: {
+    title: 'About HavenQuest — Guided Texas Relocation',
+    description: 'HavenQuest guides families from uncertainty about where to live through a successful relocation and integration into their new Texas community.',
+  },
+  twitter: {
+    title: 'About HavenQuest — Guided Texas Relocation',
+    description: 'HavenQuest guides families from uncertainty about where to live through a successful Texas relocation.',
+  },
 }
 
 export default function AboutPage() {
@@ -23,7 +31,7 @@ export default function AboutPage() {
               What is HavenQuest?
             </h1>
             <p className="text-white/40 text-sm mt-2">
-              Texas Relocation Intelligence
+              Texas Transition Management
             </p>
           </div>
         </div>
@@ -37,13 +45,13 @@ export default function AboutPage() {
               <h2 className="text-lg font-bold text-gray-900 tracking-tight mb-4">Who we are</h2>
               <div className="space-y-3 text-sm text-gray-500 leading-relaxed">
                 <p>
-                  HavenQuest is a Texas relocation intelligence platform. We help people who are moving to Texas — or considering it — figure out where they actually belong. Not just which city is popular. The city where their income, household, lifestyle, and priorities genuinely fit.
+                  HavenQuest is a Texas transition management company. We help people who are moving to Texas — or seriously considering it — find where they actually belong and guide them all the way there.
                 </p>
                 <p>
                   More than 500,000 people move to Texas every year. Most of them guess. They browse Reddit threads, watch YouTube videos from realtors with an agenda, and ask a friend who moved there three years ago. Then they guess.
                 </p>
                 <p>
-                  HavenQuest does something different. We match people to Texas communities using real data — housing costs, school district ratings, safety scores, lifestyle indicators — weighted by what they actually care about. Then we connect them with a personal Market Director and a hand-selected local real estate agent who is ready to help from day one.
+                  HavenQuest does something different. We combine real data intelligence with dedicated human guidance — because finding the right community is only half the job. Getting there confidently, with a real plan and a real team, is the other half.
                 </p>
               </div>
             </section>
@@ -54,10 +62,10 @@ export default function AboutPage() {
               <h2 className="text-lg font-bold text-gray-900 tracking-tight mb-4">How it works</h2>
               <div className="space-y-3 text-sm text-gray-500 leading-relaxed">
                 <p>
-                  Users answer four questions — income, household, financial picture, and lifestyle priorities. HavenQuest matches them to Texas communities across 101 cities in 4 metros, scored across 13 lifestyle categories. Results include full city reports, affordability breakdowns, school data, and market conditions.
+                  Clients answer four questions — income, household, financial picture, and lifestyle priorities. HavenQuest matches them to Texas communities across 101 cities in 4 metros, scored across 13 lifestyle categories. Results include full Community Profiles, affordability breakdowns, school data, and market conditions.
                 </p>
                 <p>
-                  From there, users enter the HavenQuest Navigator — a private portal that guides them through a 10-step journey from first results to closing day. Each step is designed to prepare them for the next one. By the time a buyer meets their real estate agent, they already know their city, their budget, their priorities, and their plan.
+                  From there, clients enter the HavenQuest Navigator — a private portal that guides them through a 10-step journey from first results to closing day. Each step prepares them for the next one. A dedicated Market Director steps in to build their relocation plan, assemble their team, and guide them through every milestone. By the time a client is ready to search for a home, they know their community, their budget, their priorities, and their plan — and they have the right people around them to execute it.
                 </p>
                 <p>
                   <Link href="/begin" className="text-blue-600 hover:underline font-medium">
@@ -86,13 +94,13 @@ export default function AboutPage() {
               </div>
             </section>
 
-            {/* Our standards */}
+            {/* Our Select Agents */}
             <section className="bg-white rounded-2xl border border-gray-100 p-6"
                      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06)' }}>
-              <h2 className="text-lg font-bold text-gray-900 tracking-tight mb-4">Our agent standards</h2>
+              <h2 className="text-lg font-bold text-gray-900 tracking-tight mb-4">Our Select Agents</h2>
               <div className="space-y-3 text-sm text-gray-500 leading-relaxed">
                 <p>
-                  Every real estate agent in our network is a HavenQuest Select Agent — licensed in Texas, a member of the National Association of Realtors, and vetted against our production, rating, and experience standards. We don&apos;t list every agent. We list the right ones.
+                  Every real estate agent in our network is a HavenQuest Select Agent — licensed in Texas, a member of the National Association of Realtors, and vetted against our production, rating, and experience standards. Select Agents are introduced at the right moment in the guided journey — after the client&apos;s direction is confirmed, their financial picture is established, and their Market Director has prepared them to move forward. We don&apos;t list every agent. We select the right one for each client.
                 </p>
                 <p>
                   No agent pays to rank higher. No city pays to appear in results. Our matching algorithm is not influenced by commercial relationships.
@@ -101,20 +109,6 @@ export default function AboutPage() {
                   <Link href="/for-realtors" className="text-blue-600 hover:underline font-medium">
                     Learn about joining our network →
                   </Link>
-                </p>
-              </div>
-            </section>
-
-            {/* The team */}
-            <section className="bg-white rounded-2xl border border-gray-100 p-6"
-                     style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06)' }}>
-              <h2 className="text-lg font-bold text-gray-900 tracking-tight mb-4">The team</h2>
-              <div className="space-y-3 text-sm text-gray-500 leading-relaxed">
-                <p>
-                  HavenQuest is founded and led by Craig Asbach, based in Austin, Texas. HavenQuest operates under American Victory Alliance, LLC.
-                </p>
-                <p>
-                  We are an early-stage platform currently in beta. We are building deliberately — prioritizing data integrity, honest guidance, and a product experience worth trusting over growth at any cost.
                 </p>
               </div>
             </section>

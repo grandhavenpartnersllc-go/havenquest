@@ -31,8 +31,8 @@ const CONTAINER = { maxWidth: '1080px', margin: '0 auto', padding: '0 40px' } as
 
 const PROMISE_ITEMS = [
   { Icon: BarChart2, label: 'Matched to your life', desc: 'We score every Texas community across 12 lifestyle categories — schools, safety, walkability, weather, healthcare, and more — weighted by what matters most to you.' },
-  { Icon: UserCheck, label: 'A real guide at your side', desc: "Once you've explored your matches, your personal Market Director steps in. They've already reviewed your full profile and are ready to guide you — not sell you — the rest of the way." },
-  { Icon: ShieldCheck, label: 'Vetted Select Agents', desc: "Every Select Agent in the HavenQuest network is hand-picked for your market. They're not leads — they're specialists who know your target communities inside and out." },
+  { Icon: UserCheck, label: 'A real guide at your side', desc: "When you're ready to take the next step, your personal Market Director steps in — having already reviewed your full profile, your priorities, and your financial picture. They don't sell you. They guide you — from direction to closing day and beyond." },
+  { Icon: ShieldCheck, label: 'Guided all the way home', desc: "HavenQuest doesn't hand you off at the closing table. From your first quiz to your first night in your new Texas home — and beyond — your team is with you every step of the way." },
   { Icon: Lock, label: 'Your data stays yours', desc: 'Everything you share powers your personal experience. Nothing is sold. Nothing is shared without your consent. Your profile is private by default — always.' },
 ]
 
@@ -45,20 +45,20 @@ const HOW_STEPS = [
   },
   {
     num: '02',
-    title: 'Get your Texas matches',
-    desc: 'We rank 101 Texas communities against your priorities and budget. Your top matches are ready — with full reports waiting inside your private portal.',
+    title: 'Find your Texas communities',
+    desc: 'We rank 101 Texas communities against your priorities and budget. Your top matches are ready — with full Community Profiles and real affordability data waiting in your private portal.',
     link: null,
   },
   {
     num: '03',
-    title: 'Explore and refine',
-    desc: 'Adjust your financial picture, shift your priorities, and watch your rankings respond in real time. No pressure — just clarity about where you actually fit.',
+    title: 'Explore, refine, and commit',
+    desc: 'Adjust your financial picture, shift your priorities, and watch your rankings respond in real time. When something clicks — choose your communities and commit to your direction.',
     link: null,
   },
   {
     num: '04',
-    title: 'Meet your Market Director',
-    desc: 'A real person steps in — reviews your full profile, answers your questions, and introduces you to a vetted Select Agent who knows your market cold.',
+    title: 'Get guided all the way home',
+    desc: 'A dedicated Market Director steps in — reviews your full profile, builds your relocation plan, assembles your team, and guides you from direction to closing day. This is where the journey gets personal.',
     link: null,
   },
 ]
