@@ -108,19 +108,23 @@ export default function HeroSection() {
 
       {/* Pill badge — hidden on mobile, visible on desktop */}
       <div
-        className="hidden md:flex absolute md:bottom-6 md:right-8"
-        style={{
-          zIndex: 3,
-          background: 'rgba(10,30,61,0.3)',
-          border: '1px solid rgba(255,255,255,0.3)',
-          borderRadius: '20px',
-          padding: '6px 14px',
-          alignItems: 'center',
-          gap: '6px',
-        }}
+        className="hidden md:flex absolute bottom-6 left-0 right-0 max-w-[1080px] mx-auto px-10 justify-end"
+        style={{ zIndex: 3 }}
       >
-        <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: GOLD, flexShrink: 0 }} />
-        <span style={{ fontSize: '12px', color: '#fff' }}>4 metros · 101 cities · Updated June 2026</span>
+        <div
+          style={{
+            background: 'rgba(10,30,61,0.3)',
+            border: '1px solid rgba(255,255,255,0.3)',
+            borderRadius: '20px',
+            padding: '6px 14px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}
+        >
+          <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: GOLD, flexShrink: 0 }} />
+          <span style={{ fontSize: '12px', color: '#fff' }}>4 metros · 101 cities · Updated June 2026</span>
+        </div>
       </div>
     </div>
   )
