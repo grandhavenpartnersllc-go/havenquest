@@ -9,7 +9,7 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50" style={{ background: '#0A1E3D', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-      <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div className="max-w-[1080px] mx-auto px-6 md:px-10 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center font-bold text-[17px] text-white tracking-tight">
           Haven<span style={{ color: '#C5B783' }}>Quest</span>
           <span style={{

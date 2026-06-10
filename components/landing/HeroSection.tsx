@@ -31,9 +31,10 @@ export default function HeroSection() {
 
       {/* Content layer */}
       <div
-        className="absolute inset-0 flex flex-col justify-center px-6 pt-[56px] pb-[24px] md:px-16 md:py-20"
+        className="absolute inset-0 flex flex-col justify-center pt-[56px] pb-[24px] md:py-20"
         style={{ zIndex: 2 }}
       >
+        <div className="w-full max-w-[1080px] mx-auto px-6 md:px-10">
         <div style={{ maxWidth: '680px' }}>
           <p style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontStyle: 'italic', fontSize: '26px', fontWeight: 400, color: 'rgba(255,255,255,0.85)', marginBottom: '8px' }}>
             So, you&apos;re
@@ -101,6 +102,7 @@ export default function HeroSection() {
               </div>
             ))}
           </div>
+        </div>
         </div>
       </div>
 
