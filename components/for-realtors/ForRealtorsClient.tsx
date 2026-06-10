@@ -1,19 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, Clock, UserCheck, Shield, Heart, ShieldCheck, FileText, Star } from 'lucide-react'
+import { Check, Clock, UserCheck, Heart, ShieldCheck, FileText, Star } from 'lucide-react'
 
 const GOLD = '#B8912A'
 const DARK = '#08101C'
-
-const REFERRAL_SOURCE_OPTIONS = [
-  'Google search',
-  'Social media',
-  'Referral from another agent',
-  'HavenQuest outreach',
-  'Real estate association or event',
-  'Other',
-]
 
 function formatPhone(value: string): string {
   const digits = value.replace(/\D/g, '').slice(0, 10)
@@ -75,71 +66,73 @@ const MARKET_ZONES = [
   },
 ]
 
+const whatYouReceive = [
+  {
+    title: 'A prepared client.',
+    desc: 'They have already identified their target community, confirmed their financial picture, and committed to moving forward. You are not starting from scratch.',
+  },
+  {
+    title: 'A personal introduction.',
+    desc: 'Not a notification. Not a form submission. A warm, personal introduction — with context about who they are, what they need, and why they were matched to your market.',
+  },
+  {
+    title: 'A clean engagement.',
+    desc: 'One introduction. One agent. No competition, no auction, no pressure. Just the right professional at the right moment.',
+  },
+]
+
 const commitments = [
   {
     icon: Clock,
-    title: '24-Hour Response',
+    title: 'Respond within 24 hours.',
     desc: 'Every HavenQuest introduction is acknowledged within 24 hours. No exceptions.',
   },
   {
-    icon: UserCheck,
-    title: 'Personal Introduction',
-    desc: 'Every buyer is introduced personally — not delivered as a cold lead. You will know who they are and why they chose your market before the first conversation.',
-  },
-  {
-    icon: Shield,
-    title: 'One Partner Per Market',
-    desc: 'You are not competing with other agents for the same buyer. HavenQuest maintains exclusive placement per buyer pool per market.',
-  },
-  {
     icon: Heart,
-    title: 'People First Standard',
-    desc: 'Every interaction with a Future Texan reflects the standard they were promised. Their experience is always the priority.',
-  },
-]
-
-const introSteps = [
-  {
-    number: '01',
-    desc: 'The Future Texan confirms their city match and selects their realtor from a curated anonymous profile. They choose based on experience and fit — not a photo or a sales pitch.',
+    title: 'Honor the relationship.',
+    desc: 'Our clients have been guided through a process built on trust. Every interaction you have with a HavenQuest family reflects the standard they were promised.',
   },
   {
-    number: '02',
-    desc: 'HavenQuest makes a warm personal introduction. Both parties receive context before the first conversation.',
-  },
-  {
-    number: '03',
-    desc: 'You take it from there. They are prepared, qualified, and ready. Your job is to be the professional they were promised.',
-  },
-]
-
-const partnerTiers = [
-  {
-    name: 'Market Partner',
-    description: 'For realtors in primary Texas metros.',
-  },
-  {
-    name: 'Growth Partner',
-    description: 'For realtors in secondary and suburban markets.',
-  },
-  {
-    name: 'Community Partner',
-    description: 'For realtors in smaller and emerging markets.',
+    icon: UserCheck,
+    title: 'You are here because you earned it. Honor that.',
+    desc: 'You are selected because you are among the best in your market. Show up that way.',
   },
 ]
 
 const minQualifications = [
-  'Personally interviewed and approved by HavenQuest',
-  'Verified transaction history',
-  'Active Texas real estate license',
-  'Clean TREC disciplinary record',
-  '24-hour introduction response commitment',
+  'Active Texas real estate license — verified directly through TREC',
+  'Clean disciplinary record',
+  'Verified transaction history — top production in your market',
+  'Strong client satisfaction record — validated across third-party review platforms',
+  '24-hour response commitment',
+]
+
+const verifications = [
+  {
+    icon: ShieldCheck,
+    title: 'TREC License Verification',
+    desc: 'Every license verified directly through the Texas Real Estate Commission before approval. No self-reporting accepted.',
+  },
+  {
+    icon: FileText,
+    title: 'Transaction History Confirmed',
+    desc: 'Closed transaction records reviewed to confirm top production standards in your market.',
+  },
+  {
+    icon: Star,
+    title: 'Client Reviews Validated',
+    desc: 'Third-party reviews on Zillow, Google, and Realtor.com checked to confirm a strong client satisfaction record.',
+  },
+  {
+    icon: UserCheck,
+    title: 'Personal Interview',
+    desc: 'Every Select Agent is interviewed personally by our team. Standards are not just checked — they are confirmed.',
+  },
 ]
 
 export default function ForRealtorsClient() {
   const [formData, setFormData] = useState({
-    firstName: '', lastName: '', email: '', phone: '',
-    marketSpecialty: '', referralSource: '',
+    firstName: '', lastName: '', email: '', phone: '', brokerage: '', marketSpecialty: '',
   })
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -194,30 +187,21 @@ export default function ForRealtorsClient() {
 
   return (
     <div>
-      {/* Dark banner */}
+      {/* Hero — dark banner */}
       <div className="bg-[#08101C] border-b border-white/8 px-4 py-14">
         <div className="max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2 border border-white/10 bg-white/5 text-blue-300/70 text-[11px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-7">
             HavenQuest for Realtors
           </div>
           <h1 className="text-[42px] sm:text-5xl font-bold text-white leading-[1.06] tracking-tight mb-8">
-            The best realtors don&apos;t chase leads. They earn introductions.
+            We don&apos;t send leads.<br />We make introductions.
           </h1>
           <div className="space-y-5 text-white/55 text-[15px] leading-relaxed max-w-2xl">
             <p>
-              At HavenQuest, the people we serve come first. Always.
+              Every client HavenQuest introduces has already done serious work. They know their market. They know their budget. They know what matters most to their family. They have committed to a direction. By the time they meet a Select Agent, they are ready — not browsing.
             </p>
             <p>
-              Future Texans — the people who trust us to guide one of the biggest decisions of their lives — have done serious work to get to this moment. They have studied the cities. They have done the math on their budget. They have told us what matters most to them. They have confirmed where they want to build their next chapter.
-            </p>
-            <p>
-              When they are ready for a realtor, we do not send them a list. We make one introduction. One trusted professional, personally selected for their market, their price point, and their situation. No competition. No pressure. Just the right person at the right time.
-            </p>
-            <p>
-              That is the standard we hold our partners to — because that is the standard every Future Texan deserves.
-            </p>
-            <p>
-              We are building that partner network across Texas now. The bar is high because the trust placed in us is high. If you are among the best in your market and you believe every person relocating to Texas deserves a world class experience — we would like to hear from you.
+              That is a different kind of client. And it requires a different kind of realtor.
             </p>
           </div>
         </div>
@@ -226,10 +210,42 @@ export default function ForRealtorsClient() {
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 py-12 space-y-12">
 
-        {/* What Our Partners Commit To */}
+        {/* The HavenQuest Standard */}
         <section>
-          <h2 className="text-2xl font-bold text-gray-900 tracking-tight text-center mb-7">What Our Partners Commit To</h2>
-          <div className="grid sm:grid-cols-2 gap-4">
+          <h2 className="text-2xl font-bold text-gray-900 tracking-tight mb-6">The HavenQuest Standard</h2>
+          <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-4 text-[15px] text-gray-600 leading-relaxed" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06)' }}>
+            <p>
+              HavenQuest guides families through one of the most significant decisions of their lives. Our clients trust us with their financial picture, their priorities, their timeline, and their family&apos;s future. That trust does not end when we make an introduction.
+            </p>
+            <p>
+              Every Select Agent in the HavenQuest network has been personally vetted — not just verified on paper. We review transaction history, client satisfaction records, and market expertise. We conduct a personal interview. We check TREC licensing and disciplinary records directly.
+            </p>
+            <p>
+              The bar is high because the trust placed in us is high.
+            </p>
+          </div>
+        </section>
+
+        {/* What You Receive */}
+        <section>
+          <h2 className="text-2xl font-bold text-gray-900 tracking-tight mb-6">What You Receive</h2>
+          <div className="grid sm:grid-cols-3 gap-4">
+            {whatYouReceive.map(item => (
+              <div key={item.title} className="bg-white rounded-2xl border border-gray-100 p-5" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06)' }}>
+                <h3 className="font-bold text-gray-900 tracking-tight mb-2">{item.title}</h3>
+                <p className="text-sm text-gray-500 leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* What We Ask of You */}
+        <section>
+          <h2 className="text-2xl font-bold text-gray-900 tracking-tight mb-3">What We Ask of You</h2>
+          <p className="text-gray-500 text-[15px] leading-relaxed mb-6">
+            Joining the HavenQuest Select Agent network means committing to a standard — not just a transaction.
+          </p>
+          <div className="grid sm:grid-cols-3 gap-4">
             {commitments.map(item => (
               <div key={item.title} className="bg-white rounded-2xl border border-gray-100 p-5" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06)' }}>
                 <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center mb-3">
@@ -242,68 +258,14 @@ export default function ForRealtorsClient() {
           </div>
         </section>
 
-        {/* Partnership tiers */}
+        {/* Minimum Qualifications */}
         <section>
-          <h2 className="text-2xl font-bold text-gray-900 tracking-tight text-center mb-2">Partnership Tiers</h2>
-          <p className="text-gray-500 text-sm text-center max-w-lg mx-auto mb-8">
-            HavenQuest partners with realtors across three tiers based on market size and experience level. Partnership details and pricing are finalized during the personal interview process.
-          </p>
-          <div className="grid md:grid-cols-3 gap-4">
-            {partnerTiers.map(tier => (
-              <div
-                key={tier.name}
-                className="bg-white rounded-2xl border border-gray-100 p-6 flex flex-col"
-                style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06)' }}
-              >
-                <div className="inline-flex self-start items-center bg-gray-100 text-gray-400 text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full mb-4">
-                  Details discussed in interview
-                </div>
-                <h3 className="font-bold text-gray-900 tracking-tight text-lg mb-2">{tier.name}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed">{tier.description}</p>
-              </div>
-            ))}
-          </div>
-          <p className="text-sm text-gray-400 text-center mt-6 max-w-xl mx-auto leading-relaxed">
-            We are currently onboarding our founding partner class. Partnership structure details are provided during the personal interview. Apply below to start the conversation.
-          </p>
-        </section>
-
-        {/* How the Introduction Works */}
-        <section>
-          <h2 className="text-2xl font-bold text-gray-900 tracking-tight text-center mb-8">How the Introduction Works</h2>
-          <div className="space-y-4">
-            {introSteps.map(step => (
-              <div
-                key={step.number}
-                className="bg-white rounded-2xl p-6 flex gap-5"
-                style={{
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.05), 0 4px 20px rgba(0,0,0,0.07)',
-                  borderLeft: `3px solid ${GOLD}`,
-                }}
-              >
-                <div
-                  className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5"
-                  style={{ backgroundColor: DARK, color: GOLD }}
-                >
-                  {step.number}
-                </div>
-                <p className="text-sm text-gray-600 leading-relaxed self-center">{step.desc}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Trust statement + Minimum qualifications */}
-        <section>
-          <p className="text-gray-600 text-[15px] leading-relaxed text-center max-w-2xl mx-auto mb-10">
-            Every realtor in the HavenQuest network has been personally interviewed by our team — not just verified on paper. Every Future Texan deserves to know that the person guiding them home has been held to a standard, not just checked against a database.
-          </p>
-          <h2 className="text-2xl font-bold text-gray-900 tracking-tight text-center mb-6">Minimum Qualifications</h2>
+          <h2 className="text-2xl font-bold text-gray-900 tracking-tight mb-6">Minimum Qualifications</h2>
           <div className="bg-white rounded-2xl border border-gray-100 p-6" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06)' }}>
-            <p className="text-gray-400 text-sm mb-5">
-              HavenQuest only partners with agents who meet our quality bar. Every realtor in our network passes:
+            <p className="text-gray-500 text-sm mb-5">
+              HavenQuest only partners with agents who meet our production, experience, and character standards. Every Select Agent passes:
             </p>
-            <ul className="space-y-3">
+            <ul className="space-y-3 mb-5">
               {minQualifications.map(s => (
                 <li key={s} className="flex items-center gap-3">
                   <Check size={15} className="text-green-500 shrink-0" />
@@ -311,15 +273,26 @@ export default function ForRealtorsClient() {
                 </li>
               ))}
             </ul>
+            <p className="text-sm text-gray-400 italic">
+              Partnership details and zone availability are discussed during the personal interview process.
+            </p>
           </div>
         </section>
 
-        {/* Interest form */}
+        {/* How to Apply */}
         <section id="apply" className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06)' }}>
-          <h2 className="text-2xl font-bold text-gray-900 tracking-tight mb-1">Request to apply</h2>
-          <p className="text-gray-400 text-sm mb-7">
-            Tell us a little about yourself. If it looks like a good fit, we&apos;ll send you a private link to complete the full application.
-          </p>
+          <h2 className="text-2xl font-bold text-gray-900 tracking-tight mb-1">How to Apply</h2>
+          <div className="space-y-3 text-gray-500 text-sm leading-relaxed mb-7">
+            <p>
+              If you believe you meet our standard and you want to be part of something built differently — we would like to hear from you.
+            </p>
+            <p>
+              The process is simple. Submit your interest below. If your initial profile is a fit, we will send you a link to complete a full application. From there, qualified candidates are invited to a personal interview with our team.
+            </p>
+            <p>
+              We review every application personally. You will hear from us within 48 hours.
+            </p>
+          </div>
 
           {success ? (
             <div className="bg-green-50 border border-green-100 rounded-2xl p-6 text-center">
@@ -382,6 +355,20 @@ export default function ForRealtorsClient() {
                   value={phoneDisplay}
                   onChange={handlePhoneChange}
                   placeholder="(555) 000-0000"
+                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all"
+                />
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  Brokerage
+                </label>
+                <input
+                  type="text"
+                  name="brokerage"
+                  value={formData.brokerage}
+                  onChange={handleChange}
+                  placeholder="Keller Williams, Compass, etc."
                   className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all"
                 />
               </div>
@@ -475,23 +462,6 @@ export default function ForRealtorsClient() {
                 </select>
               </div>
 
-              <div className="sm:col-span-2">
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                  How did you hear about HavenQuest?
-                </label>
-                <select
-                  name="referralSource"
-                  value={formData.referralSource}
-                  onChange={handleChange}
-                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all bg-white"
-                >
-                  <option value="">Select…</option>
-                  {REFERRAL_SOURCE_OPTIONS.map(opt => (
-                    <option key={opt} value={opt}>{opt}</option>
-                  ))}
-                </select>
-              </div>
-
               {error && (
                 <div className="sm:col-span-2 bg-red-50 border border-red-100 rounded-xl px-3.5 py-2.5">
                   <p className="text-sm text-red-600">{error}</p>
@@ -505,37 +475,21 @@ export default function ForRealtorsClient() {
                   className="w-full bg-accent text-white py-3.5 rounded-xl font-bold text-sm hover:bg-[#154d8a] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                   style={{ boxShadow: '0 2px 10px rgba(26,95,168,0.25)' }}
                 >
-                  {loading ? 'Submitting…' : 'Request to Apply →'}
+                  {loading ? 'Submitting…' : 'Submit My Interest'}
                 </button>
                 <p className="text-center text-xs text-gray-400 mt-3 italic">
-                  We review every application personally. Submitting this form does not guarantee acceptance.
+                  Applications are reviewed personally. We will follow up within 48 hours.
                 </p>
               </div>
             </form>
           )}
         </section>
 
-        {/* How we verify every partner */}
+        {/* How We Verify Every Partner */}
         <section>
-          <h2 className="text-2xl font-bold text-gray-900 tracking-tight text-center mb-6">How we verify every partner</h2>
-          <div className="grid sm:grid-cols-3 gap-4">
-            {[
-              {
-                icon: ShieldCheck,
-                title: 'TREC License Verification',
-                desc: 'We verify every license directly through the Texas Real Estate Commission (TREC) database before approval — no self-reporting accepted.',
-              },
-              {
-                icon: FileText,
-                title: 'Transaction History Confirmed',
-                desc: 'We review closed transaction records to ensure partners meet our minimum production standards.',
-              },
-              {
-                icon: Star,
-                title: 'Client Reviews Validated',
-                desc: 'Third-party reviews on Zillow, Google, and Realtor.com are checked to confirm a strong client satisfaction record.',
-              },
-            ].map(item => (
+          <h2 className="text-2xl font-bold text-gray-900 tracking-tight text-center mb-6">How We Verify Every Partner</h2>
+          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
+            {verifications.map(item => (
               <div
                 key={item.title}
                 className="bg-white rounded-2xl border border-gray-100 p-6 text-center"

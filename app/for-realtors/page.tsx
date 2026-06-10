@@ -4,19 +4,19 @@ import Footer from '../../components/shared/Footer'
 import ForRealtorsClient from '../../components/for-realtors/ForRealtorsClient'
 
 export const metadata: Metadata = {
-  title: 'For Texas Realtors — Join HavenQuest | Earn Introductions',
-  description: 'HavenQuest partners with the best realtors in Texas to serve Future Texans — people making one of the biggest decisions of their lives. No lead chasing. One introduction. One trusted partner per market.',
+  title: 'For Texas Realtors — HavenQuest Select Agent Network',
+  description: 'HavenQuest Select Agents are the most prepared real estate professionals in Texas. We don\'t send leads. We make introductions — to clients who are ready, guided, and committed.',
   openGraph: {
-    title: 'HavenQuest for Texas Realtors',
-    description: 'The best realtors don\'t chase leads. They earn introductions. Join the HavenQuest partner network in Texas.',
+    title: 'For Texas Realtors — HavenQuest Select Agent Network',
+    description: 'HavenQuest Select Agents are the most prepared real estate professionals in Texas. We don\'t send leads. We make introductions.',
     url: 'https://havenquest.co/for-realtors',
     siteName: 'HavenQuest',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'HavenQuest for Texas Realtors',
-    description: 'The best realtors don\'t chase leads. They earn introductions. Join the HavenQuest partner network in Texas.',
+    title: 'For Texas Realtors — HavenQuest Select Agent Network',
+    description: 'HavenQuest Select Agents receive prepared, committed clients — not cold leads.',
   },
 }
 
