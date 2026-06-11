@@ -1,0 +1,46 @@
+/* Light theme — default */
+[data-theme="light"],
+:root {
+  --portal-bg: #f4f6f9;
+  --panel-bg: #ffffff;
+  --panel-border: #e2e6ea;
+  --topbar-bg: #0A1E3D;
+  --text-primary: #0A1E3D;
+  --text-secondary: #8a93a0;
+  --text-muted: #b0b8c1;
+  --accent-blue: #0076B6;
+  --accent-navy: #0A1E3D;
+  --accent-gold: #C5B783;
+  --accent-blue-light: #EBF5FB;
+  --card-bg: #ffffff;
+  --card-border: #e2e6ea;
+  --active-row-bg: #EBF5FB;
+  --active-row-border: #0076B6;
+  --success-color: #2e7d32;
+  --warning-color: #BA7517;
+  --warning-bg: #FAEEDA;
+  --warning-text: #633806;
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+  --portal-bg: #0f1117;
+  --panel-bg: #1a1d27;
+  --panel-border: #2a2d3a;
+  --topbar-bg: #0A1E3D;
+  --text-primary: #e8eaf0;
+  --text-secondary: #8a93a0;
+  --text-muted: #4a5060;
+  --accent-blue: #0076B6;
+  --accent-navy: #0A1E3D;
+  --accent-gold: #C5B783;
+  --accent-blue-light: #0d2035;
+  --card-bg: #1a1d27;
+  --card-border: #2a2d3a;
+  --active-row-bg: #0d2035;
+  --active-row-border: #0076B6;
+  --success-color: #4caf50;
+  --warning-color: #EF9F27;
+  --warning-bg: #2a1f0a;
+  --warning-text: #FAC775;
+}
