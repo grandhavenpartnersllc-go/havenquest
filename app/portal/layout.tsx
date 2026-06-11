@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import ThemeProvider from './providers/ThemeProvider'
+import PortalDataProvider from './providers/PortalDataProvider'
 import TopCommandBar from './components/TopCommandBar'
 import JourneyRail from './components/JourneyRail'
 import WorkspacePanel from './components/WorkspacePanel'
@@ -14,30 +15,32 @@ export default async function PortalLayout({ children }: { children: ReactNode }
 
   return (
     <ThemeProvider>
-      <div
-        style={{
-          width: '100vw',
-          height: '100vh',
-          display: 'flex',
-          flexDirection: 'column',
-          backgroundColor: 'var(--portal-bg)',
-          overflow: 'hidden',
-        }}
-      >
-        <TopCommandBar />
+      <PortalDataProvider>
         <div
           style={{
-            flex: 1,
+            width: '100vw',
+            height: '100vh',
             display: 'flex',
-            flexDirection: 'row',
+            flexDirection: 'column',
+            backgroundColor: 'var(--portal-bg)',
             overflow: 'hidden',
           }}
         >
-          <JourneyRail />
-          <WorkspacePanel>{children}</WorkspacePanel>
-          <CommandCenter />
+          <TopCommandBar />
+          <div
+            style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'row',
+              overflow: 'hidden',
+            }}
+          >
+            <JourneyRail />
+            <WorkspacePanel>{children}</WorkspacePanel>
+            <CommandCenter />
+          </div>
         </div>
-      </div>
+      </PortalDataProvider>
     </ThemeProvider>
   )
 }
