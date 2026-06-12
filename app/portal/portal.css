@@ -2,6 +2,51 @@
   to { transform: rotate(360deg); }
 }
 
+@keyframes shimmer {
+  0%, 100% { opacity: 0.45; }
+  50%       { opacity: 0.9;  }
+}
+
+@keyframes workspaceFadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+.skeleton {
+  background-color: var(--panel-border);
+  border-radius: 4px;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+/* ── Responsive guard ── */
+.portal-shell {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.portal-mobile-fallback {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  .portal-shell {
+    display: none !important;
+  }
+  .portal-mobile-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100vw;
+    height: 100vh;
+    background-color: var(--portal-bg);
+    padding: 32px 24px;
+    text-align: center;
+  }
+}
+
 /* Light theme — default */
 [data-theme="light"],
 :root {

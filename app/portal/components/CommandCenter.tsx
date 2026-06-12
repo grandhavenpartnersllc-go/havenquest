@@ -40,9 +40,28 @@ function getNextAction(mm: number): string {
   return NEXT_ACTIONS[mm] ?? 'Awaiting Market Director — your team will be in touch'
 }
 
+function SkeletonLine({ width, height = 10 }: { width: number | string; height?: number }) {
+  return (
+    <div
+      className="skeleton"
+      style={{ width, height, borderRadius: '4px' }}
+    />
+  )
+}
+
+function SkeletonCircle({ size }: { size: number }) {
+  return (
+    <div
+      className="skeleton"
+      style={{ width: size, height: size, borderRadius: '50%', flexShrink: 0 }}
+    />
+  )
+}
+
 export default function CommandCenter() {
   const { currentMM, ready } = usePortalData()
   const [team, setTeam] = useState<TeamData>({ marketDirector: null, selectAgent: null, lender: null })
+  const [teamLoading, setTeamLoading] = useState(true)
   const [unreadCount, setUnreadCount] = useState(0)
 
   const percent = Math.round((currentMM / 10) * 100)
@@ -59,7 +78,12 @@ export default function CommandCenter() {
     const load = async (): Promise<void> => {
       const supabase = createClient()
       const { data: { session: supaSession } } = await supabase.auth.getSession()
-      if (!supaSession?.user?.email) return
+
+      if (!supaSession?.user?.email) {
+        setTeamLoading(false)
+        return
+      }
+
       const email = supaSession.user.email.toLowerCase()
 
       const { data: teamData, error: teamError } = await supabase
@@ -78,6 +102,7 @@ export default function CommandCenter() {
           })
         }
       }
+      setTeamLoading(false)
 
       const { count, error: msgError } = await supabase
         .from('messages')
@@ -93,8 +118,8 @@ export default function CommandCenter() {
 
   const teamRows: Array<{ role: string; name: string | null }> = [
     { role: 'Market Director', name: team.marketDirector },
-    { role: 'Select Agent', name: team.selectAgent },
-    { role: 'Lender', name: team.lender },
+    { role: 'Select Agent',    name: team.selectAgent    },
+    { role: 'Lender',          name: team.lender         },
   ]
 
   return (
@@ -127,113 +152,71 @@ export default function CommandCenter() {
           Command Center
         </p>
 
-        {/* Journey Status */}
-        <div
-          style={{
-            backgroundColor: 'var(--portal-bg)',
-            borderRadius: '10px',
-            padding: '12px',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '14px' }}>
-            <div
-              style={{
-                width: '8px',
-                height: '8px',
-                borderRadius: '50%',
-                backgroundColor: 'var(--success-color)',
-                flexShrink: 0,
-              }}
-            />
-            <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-primary)' }}>
-              On track
-            </span>
-          </div>
+        {/* ── Journey Status ── */}
+        <div style={{ backgroundColor: 'var(--portal-bg)', borderRadius: '10px', padding: '12px' }}>
+          {!ready ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                <SkeletonCircle size={8} />
+                <SkeletonLine width={52} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <SkeletonCircle size={60} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <SkeletonLine width={90} />
+              </div>
+            </div>
+          ) : (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '14px' }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--success-color)', flexShrink: 0 }} />
+                <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-primary)' }}>On track</span>
+              </div>
 
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '4px',
-              marginBottom: '10px',
-            }}
-          >
-            <svg width="60" height="60" viewBox="0 0 60 60">
-              <circle
-                cx="30"
-                cy="30"
-                r={radius}
-                fill="none"
-                stroke="var(--card-border)"
-                strokeWidth="4"
-              />
-              <circle
-                cx="30"
-                cy="30"
-                r={radius}
-                fill="none"
-                stroke="var(--accent-blue)"
-                strokeWidth="4"
-                strokeDasharray={String(circumference)}
-                strokeDashoffset={String(strokeOffset)}
-                strokeLinecap="round"
-                transform="rotate(-90 30 30)"
-              />
-              <text
-                x="30"
-                y="30"
-                textAnchor="middle"
-                dominantBaseline="middle"
-                fontSize={11}
-                fontWeight={700}
-                fill="var(--text-primary)"
-              >
-                {percent}%
-              </text>
-            </svg>
-            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-              {percent}% complete
-            </span>
-          </div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', marginBottom: '10px' }}>
+                <svg width="60" height="60" viewBox="0 0 60 60">
+                  <circle cx="30" cy="30" r={radius} fill="none" stroke="var(--card-border)" strokeWidth="4" />
+                  <circle
+                    cx="30" cy="30" r={radius}
+                    fill="none"
+                    stroke="var(--accent-blue)"
+                    strokeWidth="4"
+                    strokeDasharray={String(circumference)}
+                    strokeDashoffset={String(strokeOffset)}
+                    strokeLinecap="round"
+                    transform="rotate(-90 30 30)"
+                  />
+                  <text
+                    x="30" y="30"
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fontSize={11}
+                    fontWeight={700}
+                    fill="var(--text-primary)"
+                  >
+                    {percent}%
+                  </text>
+                </svg>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{percent}% complete</span>
+              </div>
 
-          <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0, textAlign: 'center' }}>
-            Current:{' '}
-            <span style={{ color: 'var(--accent-blue)', fontWeight: 500 }}>
-              MM{currentMM} {mmName}
-            </span>
-          </p>
+              <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0, textAlign: 'center' }}>
+                Current:{' '}
+                <span style={{ color: 'var(--accent-blue)', fontWeight: 500 }}>
+                  MM{currentMM} {mmName}
+                </span>
+              </p>
+            </>
+          )}
         </div>
 
-        {/* Next Action */}
-        <div
-          style={{
-            backgroundColor: 'var(--accent-blue-light)',
-            borderRadius: '10px',
-            padding: '12px',
-          }}
-        >
-          <p
-            style={{
-              fontSize: '10px',
-              fontWeight: 600,
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              color: 'var(--accent-blue)',
-              margin: '0 0 6px',
-            }}
-          >
+        {/* ── Next Action ── */}
+        <div style={{ backgroundColor: 'var(--accent-blue-light)', borderRadius: '10px', padding: '12px' }}>
+          <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--accent-blue)', margin: '0 0 6px' }}>
             Next Action
           </p>
-          <p
-            style={{
-              fontSize: '13px',
-              fontWeight: 500,
-              color: 'var(--text-primary)',
-              lineHeight: 1.4,
-              margin: '0 0 10px',
-            }}
-          >
+          <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.4, margin: '0 0 10px' }}>
             {nextAction}
           </p>
           <button
@@ -254,46 +237,20 @@ export default function CommandCenter() {
           </button>
         </div>
 
-        {/* Upcoming Events */}
+        {/* ── Upcoming Events ── */}
         <div>
-          <p
-            style={{
-              fontSize: '10px',
-              fontWeight: 600,
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              color: 'var(--text-secondary)',
-              margin: '0 0 10px',
-            }}
-          >
+          <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-secondary)', margin: '0 0 10px' }}>
             Upcoming
           </p>
 
           <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', marginBottom: '10px' }}>
             <div style={{ textAlign: 'center', minWidth: '30px' }}>
-              <div
-                style={{
-                  fontSize: '9px',
-                  fontWeight: 600,
-                  color: 'var(--accent-blue)',
-                  letterSpacing: '0.06em',
-                  lineHeight: 1,
-                  marginBottom: '2px',
-                }}
-              >
-                JUL
-              </div>
-              <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>
-                15
-              </div>
+              <div style={{ fontSize: '9px', fontWeight: 600, color: 'var(--accent-blue)', letterSpacing: '0.06em', lineHeight: 1, marginBottom: '2px' }}>JUL</div>
+              <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>15</div>
             </div>
             <div>
-              <p style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-primary)', margin: '0 0 2px' }}>
-                Strategy Session
-              </p>
-              <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
-                with your Market Director
-              </p>
+              <p style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-primary)', margin: '0 0 2px' }}>Strategy Session</p>
+              <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>with your Market Director</p>
             </div>
           </div>
 
@@ -301,126 +258,62 @@ export default function CommandCenter() {
 
           <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
             <div style={{ textAlign: 'center', minWidth: '30px' }}>
-              <div
-                style={{
-                  fontSize: '9px',
-                  fontWeight: 600,
-                  color: 'var(--accent-blue)',
-                  letterSpacing: '0.06em',
-                  lineHeight: 1,
-                  marginBottom: '2px',
-                }}
-              >
-                JUL
-              </div>
-              <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>
-                22
-              </div>
+              <div style={{ fontSize: '9px', fontWeight: 600, color: 'var(--accent-blue)', letterSpacing: '0.06em', lineHeight: 1, marginBottom: '2px' }}>JUL</div>
+              <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>22</div>
             </div>
             <div>
-              <p style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-primary)', margin: '0 0 2px' }}>
-                Community Review
-              </p>
-              <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
-                Follow-up call
-              </p>
+              <p style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-primary)', margin: '0 0 2px' }}>Community Review</p>
+              <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>Follow-up call</p>
             </div>
           </div>
         </div>
 
-        {/* Your Team */}
+        {/* ── Your Team ── */}
         <div>
-          <p
-            style={{
-              fontSize: '10px',
-              fontWeight: 600,
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              color: 'var(--text-secondary)',
-              margin: '0 0 10px',
-            }}
-          >
+          <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-secondary)', margin: '0 0 10px' }}>
             Your Team
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {teamRows.map(({ role, name }) => (
-              <div key={role} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                {name ? (
-                  <div
-                    style={{
-                      width: '28px',
-                      height: '28px',
-                      borderRadius: '50%',
-                      backgroundColor: '#0076B6',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}
-                  >
-                    <span style={{ fontSize: '10px', fontWeight: 700, color: '#ffffff' }}>
-                      {getInitials(name)}
-                    </span>
+            {teamLoading ? (
+              [0, 1, 2].map(i => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <SkeletonCircle size={28} />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
+                    <SkeletonLine width={48} height={8} />
+                    <SkeletonLine width={80} height={10} />
                   </div>
-                ) : (
-                  <div
-                    style={{
-                      width: '28px',
-                      height: '28px',
-                      borderRadius: '50%',
-                      backgroundColor: 'var(--portal-bg)',
-                      border: '1px solid var(--card-border)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}
-                  >
-                    <UserCircle size={16} style={{ color: 'var(--text-muted)' }} />
-                  </div>
-                )}
-                <div>
-                  <p
-                    style={{
-                      fontSize: '9px',
-                      fontWeight: 600,
-                      letterSpacing: '0.07em',
-                      textTransform: 'uppercase',
-                      color: 'var(--text-muted)',
-                      margin: '0 0 1px',
-                    }}
-                  >
-                    {role}
-                  </p>
-                  <p
-                    style={{
-                      fontSize: '11px',
-                      color: name ? 'var(--text-primary)' : 'var(--text-muted)',
-                      margin: 0,
-                      fontStyle: name ? 'normal' : 'italic',
-                    }}
-                  >
-                    {name ?? 'Pending assignment'}
-                  </p>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              teamRows.map(({ role, name }) => (
+                <div key={role} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  {name ? (
+                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: '#0076B6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <span style={{ fontSize: '10px', fontWeight: 700, color: '#ffffff' }}>{getInitials(name)}</span>
+                    </div>
+                  ) : (
+                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: 'var(--portal-bg)', border: '1px solid var(--card-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <UserCircle size={16} style={{ color: 'var(--text-muted)' }} />
+                    </div>
+                  )}
+                  <div>
+                    <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--text-muted)', margin: '0 0 1px' }}>
+                      {role}
+                    </p>
+                    <p style={{ fontSize: '11px', color: name ? 'var(--text-primary)' : 'var(--text-muted)', margin: 0, fontStyle: name ? 'normal' : 'italic' }}>
+                      {name ?? 'Pending assignment'}
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
-        {/* Messages */}
+        {/* ── Messages ── */}
         <div>
-          <p
-            style={{
-              fontSize: '10px',
-              fontWeight: 600,
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              color: 'var(--text-secondary)',
-              margin: '0 0 10px',
-            }}
-          >
+          <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-secondary)', margin: '0 0 10px' }}>
             Messages
           </p>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -444,17 +337,7 @@ export default function CommandCenter() {
                 {unreadCount === 1 ? 'unread message' : 'unread messages'}
               </span>
             </div>
-            <button
-              type="button"
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '11px',
-                color: 'var(--accent-blue)',
-                padding: 0,
-              }}
-            >
+            <button type="button" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '11px', color: 'var(--accent-blue)', padding: 0 }}>
               View all
             </button>
           </div>
