@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import Image from 'next/image'
-import { Home, Search, Map, Handshake, ClipboardList, Building2, Key, FileText, Calendar, Star, Lock } from 'lucide-react'
+import { Home, Search, Map, Handshake, ClipboardList, Building2, Key, FileText, Calendar, Star, CheckCircle, Circle, PlayCircle } from 'lucide-react'
 import { CityMatch, UserProfile, UserSession } from '../../../types'
 
 const WARM_DARK = '#16120D'
@@ -235,116 +235,191 @@ export default function MM1Explore({
           </p>
         </div>
 
-        {/* Mock Portal */}
-        <div style={{ borderRadius: '14px', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 4px 28px rgba(0,0,0,0.14)' }}>
+        {/* Mock Portal — Three-Panel Navigator */}
+        <div style={{ borderRadius: '14px', overflow: 'hidden', border: '1px solid var(--panel-border)', boxShadow: '0 4px 28px rgba(0,0,0,0.14)' }}>
 
-          {/* Mock Nav Bar */}
-          <div style={{ backgroundColor: '#16120D', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontWeight: 700, fontSize: '14px', color: '#E8E2D9', letterSpacing: '-0.01em' }}>Haven</span>
-            <span style={{ fontWeight: 700, fontSize: '14px', color: '#B8912A', letterSpacing: '-0.01em' }}>Quest</span>
-            <span style={{ fontSize: '9px', fontWeight: 700, color: '#B8912A', letterSpacing: '0.2em', textTransform: 'uppercase', marginLeft: '3px' }}>Navigator</span>
+          {/* Top Command Bar */}
+          <div style={{ backgroundColor: 'var(--topbar-bg)', height: '36px', padding: '0 14px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <span style={{ fontWeight: 700, fontSize: '13px', color: '#ffffff' }}>Haven</span>
+            <span style={{ fontWeight: 700, fontSize: '13px', color: 'var(--accent-blue)' }}>Quest</span>
+            <span style={{ width: '1px', height: '13px', backgroundColor: 'rgba(255,255,255,0.2)', margin: '0 5px', flexShrink: 0 }} />
+            <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.45)', letterSpacing: '0.03em' }}>Navigator Portal</span>
           </div>
 
-          {/* Tab Bar */}
-          <div style={{ backgroundColor: '#1C1814', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-          <div style={{ display: 'flex', alignItems: 'stretch', overflowX: 'auto' }}>
+          {/* Three-Panel Body */}
+          <div style={{ display: 'flex', height: '288px', backgroundColor: 'var(--portal-bg)' }}>
 
-            {/* MM1–MM5 (unlocked) */}
-            {MOCK_TABS.slice(0, 5).map((tab, i) => {
-              const isActive = activeTab === i
-              return (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setActiveTab(i)}
-                  style={{
-                    padding: '10px 11px',
-                    fontSize: '11px',
-                    fontWeight: isActive ? 700 : 500,
-                    color: isActive ? '#B8912A' : '#9A8E82',
-                    borderBottom: isActive ? '2px solid #B8912A' : '2px solid transparent',
-                    background: i === 2 && !isActive ? 'rgba(184,145,42,0.06)' : 'transparent',
-                    whiteSpace: 'nowrap',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    flexShrink: 0,
-                  }}
-                >
-                  <tab.Icon size={14} style={{ verticalAlign: 'middle' }} />
-                  <span>{tab.name}</span>
-                  {i === 2 && !isActive && (
-                    <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#B8912A', display: 'inline-block', marginLeft: '2px', opacity: 0.6, flexShrink: 0 }} />
-                  )}
-                </button>
-              )
-            })}
-
-            {/* Phase divider — vertical line only, non-interactive */}
-            <div style={{ width: '1px', alignSelf: 'stretch', margin: '6px 4px', flexShrink: 0, backgroundColor: 'rgba(255,255,255,0.12)', pointerEvents: 'none' }} />
-
-            {/* MM6–MM10 (locked) */}
-            {MOCK_TABS.slice(5).map((tab, i) => {
-              const tabIndex = i + 5
-              const isActive = activeTab === tabIndex
-              return (
-                <button
-                  key={tabIndex}
-                  type="button"
-                  onClick={() => setActiveTab(tabIndex)}
-                  style={{
-                    padding: '10px 11px',
-                    fontSize: '11px',
-                    fontWeight: isActive ? 700 : 500,
-                    color: isActive ? '#B8912A' : '#6B6560',
-                    borderBottom: isActive ? '2px solid #B8912A' : '2px solid transparent',
-                    background: 'transparent',
-                    whiteSpace: 'nowrap',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    flexShrink: 0,
-                  }}
-                >
-                  <Lock size={12} style={{ opacity: 0.5, verticalAlign: 'middle' }} />
-                  <tab.Icon size={14} style={{ verticalAlign: 'middle' }} />
-                  <span>{tab.name}</span>
-                </button>
-              )
-            })}
-          </div>
-          </div>
-
-          {/* Content Area */}
-          <div style={{ backgroundColor: CARD_BG, padding: '20px 20px 24px', minHeight: '180px' }}>
-            {(() => {
-              const tab = TAB_CONTENT[activeTab]
-              const pills = ROLE_CONFIG[tab.role] ?? []
-              const TabIcon = MOCK_TABS[activeTab].Icon
-              return (
-                <>
-                  <div style={{ marginBottom: '8px' }}><TabIcon size={24} /></div>
-                  <h3 style={{ fontSize: '17px', fontWeight: 700, color: WARM_DARK, marginBottom: '10px', letterSpacing: '-0.01em', lineHeight: 1.3 }}>
-                    {tab.headline}
-                  </h3>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' }}>
-                    {pills.map((pill, pi) => (
-                      <span key={pi} style={{
-                        fontSize: '11px', fontWeight: 600, padding: '3px 10px', borderRadius: '20px',
-                        backgroundColor: pill.bg, color: pill.color,
+            {/* Journey Rail */}
+            <div style={{ width: '128px', flexShrink: 0, backgroundColor: 'var(--panel-bg)', borderRight: '0.5px solid var(--panel-border)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+              <p style={{ fontSize: '7px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-secondary)', padding: '8px 10px 5px', margin: 0, flexShrink: 0 }}>
+                Your Journey
+              </p>
+              <div style={{ flex: 1, overflowY: 'auto' }}>
+                {MOCK_TABS.map((tab, i) => {
+                  const isActive = activeTab === i
+                  const isComplete = i < activeTab
+                  const isHome = i === 9
+                  const stateIcon = isHome ? (
+                    <Home size={10} style={{ color: 'var(--accent-gold)', flexShrink: 0 }} />
+                  ) : isComplete ? (
+                    <CheckCircle size={10} style={{ color: 'var(--success-color)', flexShrink: 0 }} />
+                  ) : isActive ? (
+                    <PlayCircle size={10} style={{ color: 'var(--accent-blue)', flexShrink: 0 }} />
+                  ) : (
+                    <Circle size={10} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+                  )
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setActiveTab(i)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        width: '100%',
+                        paddingTop: '5px',
+                        paddingBottom: '5px',
+                        paddingRight: '8px',
+                        paddingLeft: isActive ? '7px' : '10px',
+                        border: 'none',
+                        borderLeft: isActive ? '3px solid var(--active-row-border)' : '3px solid transparent',
+                        backgroundColor: isActive ? 'var(--active-row-bg)' : 'transparent',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        transition: 'background-color 0.15s',
+                      }}
+                    >
+                      {stateIcon}
+                      <span style={{
+                        fontSize: '9px',
+                        fontWeight: isActive ? 600 : isComplete ? 500 : 400,
+                        color: isHome ? 'var(--accent-gold)' : isActive ? 'var(--accent-blue)' : isComplete ? 'var(--text-primary)' : 'var(--text-muted)',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
                       }}>
-                        {pill.label}
+                        {tab.name}
                       </span>
-                    ))}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Workspace */}
+            <div style={{ flex: 1, minWidth: 0, backgroundColor: 'var(--portal-bg)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+              {/* Workspace header */}
+              <div style={{ padding: '8px 12px', borderBottom: '0.5px solid var(--panel-border)', backgroundColor: 'var(--panel-bg)', flexShrink: 0 }}>
+                <p style={{ fontSize: '7px', color: 'var(--text-muted)', margin: '0 0 3px', lineHeight: 1 }}>
+                  Your journey › <span style={{ color: 'var(--text-secondary)' }}>MM{activeTab + 1} — {MOCK_TABS[activeTab].name}</span>
+                </p>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2 }}>
+                    {MOCK_TABS[activeTab].name}
+                  </span>
+                  {activeTab < 4 && (
+                    <span style={{ fontSize: '7px', fontWeight: 500, color: 'var(--accent-blue)', backgroundColor: 'var(--accent-blue-light)', padding: '2px 6px', borderRadius: '20px', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                      {(['Journey Introduction', 'Community Profile', 'Committed Direction Package', 'Relocation Roadmap'] as const)[activeTab]}
+                    </span>
+                  )}
+                </div>
+              </div>
+              {/* Workspace content */}
+              <div style={{ flex: 1, padding: '10px 12px', overflowY: 'auto' }}>
+                {(() => {
+                  const entry = TAB_CONTENT[activeTab]
+                  const pills = ROLE_CONFIG[entry.role] ?? []
+                  return (
+                    <>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '8px' }}>
+                        {pills.map((pill, pi) => (
+                          <span key={pi} style={{ fontSize: '8px', fontWeight: 600, padding: '2px 7px', borderRadius: '20px', backgroundColor: pill.bg, color: pill.color }}>
+                            {pill.label}
+                          </span>
+                        ))}
+                      </div>
+                      <p style={{ fontSize: '10px', lineHeight: 1.6, color: 'var(--text-secondary)', margin: 0 }}>
+                        {entry.body}
+                      </p>
+                    </>
+                  )
+                })()}
+              </div>
+            </div>
+
+            {/* Command Center */}
+            <div style={{ width: '128px', flexShrink: 0, backgroundColor: 'var(--panel-bg)', borderLeft: '0.5px solid var(--panel-border)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+              <p style={{ fontSize: '7px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-secondary)', padding: '8px 10px 5px', margin: 0, flexShrink: 0 }}>
+                Command Center
+              </p>
+              <div style={{ padding: '0 8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+
+                {/* Journey Status */}
+                <div style={{ backgroundColor: 'var(--portal-bg)', borderRadius: '6px', padding: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px' }}>
+                    <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--success-color)', flexShrink: 0 }} />
+                    <span style={{ fontSize: '8px', fontWeight: 500, color: 'var(--text-primary)' }}>On track</span>
                   </div>
-                  <p style={{ fontSize: '13px', lineHeight: 1.65, color: '#4B5563', margin: 0 }}>
-                    {tab.body}
+                  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '4px' }}>
+                    {(() => {
+                      const pct = Math.round(((activeTab + 1) / 10) * 100)
+                      const r = 14
+                      const circ = 2 * Math.PI * r
+                      const dash = circ - (pct / 100) * circ
+                      return (
+                        <svg width="38" height="38" viewBox="0 0 38 38">
+                          <circle cx="19" cy="19" r={r} fill="none" stroke="var(--card-border)" strokeWidth="3" />
+                          <circle
+                            cx="19" cy="19" r={r}
+                            fill="none"
+                            stroke="var(--accent-blue)"
+                            strokeWidth="3"
+                            strokeDasharray={String(circ)}
+                            strokeDashoffset={String(dash)}
+                            strokeLinecap="round"
+                            transform="rotate(-90 19 19)"
+                          />
+                          <text x="19" y="19" textAnchor="middle" dominantBaseline="middle" fontSize={7} fontWeight={700} fill="var(--text-primary)">{pct}%</text>
+                        </svg>
+                      )
+                    })()}
+                  </div>
+                  <p style={{ fontSize: '7px', color: 'var(--text-muted)', textAlign: 'center', margin: 0 }}>
+                    <span style={{ color: 'var(--accent-blue)' }}>MM{activeTab + 1} {MOCK_TABS[activeTab].name}</span>
                   </p>
-                </>
-              )
-            })()}
+                </div>
+
+                {/* Next Action */}
+                <div style={{ backgroundColor: 'var(--accent-blue-light)', borderRadius: '6px', padding: '7px 8px' }}>
+                  <p style={{ fontSize: '7px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--accent-blue)', margin: '0 0 3px' }}>
+                    Next Action
+                  </p>
+                  <p style={{ fontSize: '8px', color: 'var(--text-primary)', lineHeight: 1.4, margin: 0 }}>
+                    {activeTab === 0 ? 'Begin your Navigator journey' :
+                     activeTab === 1 ? 'Explore your matched communities' :
+                     activeTab === 2 ? 'Select your target community' :
+                     activeTab === 3 ? 'Complete your family profile' :
+                     'Awaiting your Market Director'}
+                  </p>
+                </div>
+
+                {/* Your Team */}
+                <div>
+                  <p style={{ fontSize: '7px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-secondary)', margin: '0 0 5px' }}>
+                    Your Team
+                  </p>
+                  {['Market Director', 'Select Agent', 'Lender'].map(role => (
+                    <div key={role} style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '4px' }}>
+                      <div style={{ width: '16px', height: '16px', borderRadius: '50%', backgroundColor: 'var(--portal-bg)', border: '1px solid var(--card-border)', flexShrink: 0 }} />
+                      <span style={{ fontSize: '7px', color: 'var(--text-muted)', fontStyle: 'italic' }}>Pending</span>
+                    </div>
+                  ))}
+                </div>
+
+              </div>
+            </div>
+
           </div>
 
         </div>
