@@ -1,13 +1,50 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import WorkspaceHeader from '../components/WorkspaceHeader'
 import { usePortalData } from '../providers/PortalDataProvider'
-import MM4Connect from '../../../components/portal/milemarkers/MM4Connect'
+import { createClient } from '../../../lib/supabase/client'
+import MM4IntakeForm from './components/MM4IntakeForm'
+import MM4Confirmation from './components/MM4Confirmation'
+import type { MM4Profile } from '../../../types'
+
+type PageState = 'loading' | 'form' | 'confirmation'
 
 export default function MM4Page() {
   const { session, ready, error } = usePortalData()
+  const [pageState, setPageState] = useState<PageState>('loading')
+  const [submittedData, setSubmittedData] = useState<MM4Profile | null>(null)
 
-  if (!ready) {
+  useEffect(() => {
+    if (!ready || !session?.email) return
+    const check = async () => {
+      try {
+        const supabase = createClient()
+        const { data: existing } = await supabase
+          .from('mm4_profiles')
+          .select('submitted, primary_first_name, email')
+          .eq('email', session.email.toLowerCase())
+          .maybeSingle()
+
+        if (existing?.submitted) {
+          setSubmittedData(existing as MM4Profile)
+          setPageState('confirmation')
+        } else {
+          setPageState('form')
+        }
+      } catch {
+        setPageState('form')
+      }
+    }
+    void check()
+  }, [ready, session?.email])
+
+  function handleSubmitted(data: MM4Profile) {
+    setSubmittedData(data)
+    setPageState('confirmation')
+  }
+
+  if (!ready || pageState === 'loading') {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
         <div
@@ -40,8 +77,15 @@ export default function MM4Page() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
       <WorkspaceHeader mmNumber={4} name="Connect" deliverable="Relocation Roadmap" />
-      <div style={{ padding: '24px', flex: 1 }}>
-        <MM4Connect session={session} />
+      <div style={{ padding: '32px 28px', flex: 1, maxWidth: '760px' }}>
+        {pageState === 'confirmation' ? (
+          <MM4Confirmation
+            data={submittedData ?? { email: session.email }}
+            email={session.email}
+          />
+        ) : (
+          <MM4IntakeForm onSubmitted={handleSubmitted} />
+        )}
       </div>
     </div>
   )

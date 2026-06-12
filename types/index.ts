@@ -197,3 +197,58 @@ export interface QuizSessionData {
   email?: string
   completed?: boolean
 }
+
+export interface MM4Profile {
+  id?: string
+  user_id?: string
+  email: string
+
+  // Section 1 — Identity and Household
+  primary_first_name?: string
+  primary_last_name?: string
+  partner_first_name?: string
+  partner_last_name?: string
+  current_address?: string
+  current_city?: string
+  current_state?: string
+  current_zip?: string
+  phone?: string
+  preferred_contact?: 'phone' | 'text' | 'email'
+  best_time_to_reach?: 'morning' | 'afternoon' | 'evening' | 'anytime'
+  num_adults?: number
+  num_children?: number
+  children_ages?: string
+  has_pets?: boolean
+  pet_details?: string
+
+  // Section 2 — The Move
+  why_texas?: string
+  why_now?: string
+  target_move_date?: string
+  timeline_flexibility?: 'hard_deadline' | 'flexible_few_months' | 'very_flexible'
+  origin_situation?: 'selling' | 'renting' | 'own_no_sale' | 'other'
+  home_listed?: boolean
+  approximate_equity?: string
+  purchase_contingent?: 'yes' | 'no' | 'possibly' | 'na'
+
+  // Section 3 — Employment and Financial Context
+  employment_status?: 'employed_w2' | 'self_employed' | 'retired' | 'employer_relocation' | 'other'
+  relocation_package?: boolean
+  work_arrangement?: 'fully_remote' | 'hybrid' | 'in_person' | 'na'
+  income_range_confirmed?: string
+
+  // Section 4 — Texas Direction
+  confirmed_target_city?: string
+  ruled_out_cities?: string
+  areas_researched?: string
+  additional_must_haves?: string
+  deal_breakers?: string
+
+  // Section 5 — Anything Else
+  special_notes?: string
+
+  // Meta
+  last_completed_section?: number
+  submitted?: boolean
+  submitted_at?: string
+}
