@@ -79,10 +79,10 @@ function MMRow({ mm, status, isActive, isCurrentMM }: MMRowProps) {
 
   const icon: React.ReactNode = isHome ? (
     <Home size={15} style={{ color: '#C5B783', flexShrink: 0 }} />
-  ) : isActive || isCurrentMM ? (
-    <PlayCircle size={15} style={{ color: '#0076B6', flexShrink: 0 }} />
   ) : status === 'complete' ? (
     <CheckCircle size={15} style={{ color: 'var(--success-color)', flexShrink: 0 }} />
+  ) : isCurrentMM ? (
+    <PlayCircle size={15} style={{ color: '#0076B6', flexShrink: 0 }} />
   ) : (
     <Circle size={15} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
   )
