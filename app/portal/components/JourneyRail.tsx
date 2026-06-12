@@ -70,18 +70,19 @@ interface MMRowProps {
   mm: MMEntry
   status: MMStatus
   isActive: boolean
+  isCurrentMM: boolean
 }
 
-function MMRow({ mm, status, isActive }: MMRowProps) {
+function MMRow({ mm, status, isActive, isCurrentMM }: MMRowProps) {
   const [hovered, setHovered] = useState(false)
   const isHome = mm.number === 10
 
   const icon: React.ReactNode = isHome ? (
     <Home size={15} style={{ color: '#C5B783', flexShrink: 0 }} />
+  ) : isActive || isCurrentMM ? (
+    <PlayCircle size={15} style={{ color: '#0076B6', flexShrink: 0 }} />
   ) : status === 'complete' ? (
     <CheckCircle size={15} style={{ color: 'var(--success-color)', flexShrink: 0 }} />
-  ) : isActive ? (
-    <PlayCircle size={15} style={{ color: '#0076B6', flexShrink: 0 }} />
   ) : (
     <Circle size={15} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
   )
@@ -90,7 +91,7 @@ function MMRow({ mm, status, isActive }: MMRowProps) {
     ? '#C5B783'
     : isActive
     ? '#0076B6'
-    : status === 'complete'
+    : status === 'complete' || isCurrentMM
     ? 'var(--text-primary)'
     : 'var(--text-muted)'
 
@@ -123,7 +124,7 @@ function MMRow({ mm, status, isActive }: MMRowProps) {
         style={{
           flex: 1,
           fontSize: '12px',
-          fontWeight: isActive ? 600 : status === 'complete' ? 500 : 400,
+          fontWeight: isActive ? 600 : status === 'complete' || isCurrentMM ? 500 : 400,
           color: textColor,
           whiteSpace: 'nowrap',
           overflow: 'hidden',
@@ -231,6 +232,7 @@ export default function JourneyRail() {
                 mm={mm}
                 status={getStatus(mm.number, currentMM)}
                 isActive={mm.number === (activeMMFromPath ?? currentMM)}
+                isCurrentMM={mm.number === currentMM}
               />
             ))}
       </div>
