@@ -17,7 +17,6 @@ import AffordabilityBreakdown from './AffordabilityBreakdown'
 import StrengthWeaknessGrid from './StrengthWeaknessGrid'
 import MarketSnapshot from './MarketSnapshot'
 import SchoolSnapshot from './SchoolSnapshot'
-import ListingsButton from './ListingsButton'
 
 function getScoreLabel(score: number): { label: string; color: string; bg: string } {
   if (score >= 88) return { label: 'Exceptional Match', color: '#2D7D4E', bg: '#E8F5EE' }
@@ -171,9 +170,6 @@ export default function FullReport({ match, profile, rank }: FullReportProps) {
 
         <SchoolSnapshot city={location} />
 
-        <hr className="border-gray-100" />
-
-        <ListingsButton match={match} />
       </div>
     </article>
   )
