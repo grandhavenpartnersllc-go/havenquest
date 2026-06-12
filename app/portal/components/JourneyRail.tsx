@@ -107,10 +107,10 @@ function MMRow({ mm, status, isActive, isCurrentMM }: MMRowProps) {
     backgroundColor:
       isActive
         ? 'var(--active-row-bg)'
-        : status !== 'locked' && hovered
+        : hovered
         ? 'var(--accent-blue-light)'
         : 'transparent',
-    cursor: status === 'locked' ? 'default' : 'pointer',
+    cursor: 'pointer',
     textDecoration: 'none',
     userSelect: 'none',
     minHeight: '38px',
@@ -143,10 +143,6 @@ function MMRow({ mm, status, isActive, isCurrentMM }: MMRowProps) {
       )}
     </>
   )
-
-  if (status === 'locked') {
-    return <div style={rowBase}>{label}</div>
-  }
 
   return (
     <Link

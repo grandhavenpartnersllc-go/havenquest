@@ -61,6 +61,38 @@ export default function LockedWorkspace({
             padding: '40px 36px',
           }}
         >
+          {/* Locked banner */}
+          <div
+            style={{
+              backgroundColor: '#0A1E3D',
+              borderRadius: '10px',
+              padding: '12px 16px',
+              marginBottom: '28px',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '12px',
+            }}
+          >
+            <div
+              style={{
+                width: '30px',
+                height: '30px',
+                borderRadius: '50%',
+                backgroundColor: 'rgba(197,183,131,0.15)',
+                border: '1.5px solid #C5B783',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}
+            >
+              <Lock size={14} style={{ color: '#C5B783' }} />
+            </div>
+            <p style={{ fontSize: '13px', color: '#E8E2D9', lineHeight: 1.6, margin: 0 }}>
+              This stage unlocks when your Market Director activates it after your Navigator Activation is complete.
+            </p>
+          </div>
+
           <div
             style={{
               display: 'flex',
