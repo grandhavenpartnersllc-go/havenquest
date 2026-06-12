@@ -11,7 +11,8 @@ import './portal.css'
 
 export default async function PortalLayout({ children }: { children: ReactNode }) {
   const cookieStore = await cookies()
-  if (!cookieStore.get('hq_auth')) redirect('/login')
+  const authToken = cookieStore.get('hq_auth')?.value
+  if (!authToken) redirect('/login')
 
   return (
     <ThemeProvider>
