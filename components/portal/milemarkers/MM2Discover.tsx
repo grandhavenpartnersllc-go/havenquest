@@ -226,6 +226,15 @@ export default function MM2Discover({ matches, profile, initialChecklist, initia
         </section>
       )}
 
+      {/* Divider + section label */}
+      {matches.length > 0 && (
+        <div style={{ margin: '8px 0 0', paddingTop: '24px', borderTop: '1px solid var(--panel-border)' }}>
+          <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>
+            Select a city below to view its full community report — schools, housing, cost of living, lifestyle scores, and neighborhood character.
+          </p>
+        </div>
+      )}
+
       {/* Tabbed city reports */}
       {matches.length > 0 && (
         <div style={{ marginTop: '8px', marginBottom: '0' }}>
