@@ -226,12 +226,18 @@ export default function MM2Discover({ matches, profile, initialChecklist, initia
         </section>
       )}
 
-      {/* Divider + section label */}
+      {/* Community Reports section break */}
       {matches.length > 0 && (
-        <div style={{ margin: '8px 0 0', paddingTop: '24px', borderTop: '1px solid var(--panel-border)' }}>
-          <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>
-            Select a city below to view its full community report — schools, housing, cost of living, lifestyle scores, and neighborhood character.
-          </p>
+        <div style={{ marginTop: '32px', marginBottom: '24px' }}>
+          <hr style={{ border: 'none', borderTop: '1px solid var(--panel-border)', marginBottom: '24px' }} />
+          <div style={{ borderLeft: '3px solid var(--accent-gold)', paddingLeft: '16px' }}>
+            <h2 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 8px', lineHeight: 1.2 }}>
+              Your Community Reports
+            </h2>
+            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.65, margin: 0 }}>
+              Below are your full intelligence reports for each matched city. Select a tab to explore schools, housing costs, cost of living, lifestyle scores, and neighborhood character. These are the places the HavenQuest algorithm identified as your strongest matches — take your time and get to know them.
+            </p>
+          </div>
         </div>
       )}
 
