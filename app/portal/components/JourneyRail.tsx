@@ -2,10 +2,11 @@
 
 import { useEffect, useState, type CSSProperties } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { PlayCircle, CheckCircle, Circle, Home, FileText } from 'lucide-react'
 import { createClient } from '../../../lib/supabase/client'
 
-type MMStatus = 'complete' | 'active' | 'locked'
+type MMStatus = 'complete' | 'locked' | 'unlocked'
 
 interface MMEntry {
   number: number
@@ -28,7 +29,7 @@ const MILEMARKERS: MMEntry[] = [
 
 function getStatus(mmNumber: number, currentMM: number): MMStatus {
   if (mmNumber < currentMM) return 'complete'
-  if (mmNumber === currentMM) return 'active'
+  if (mmNumber <= currentMM) return 'unlocked'
   return 'locked'
 }
 
@@ -68,9 +69,10 @@ function SkeletonRow() {
 interface MMRowProps {
   mm: MMEntry
   status: MMStatus
+  isActive: boolean
 }
 
-function MMRow({ mm, status }: MMRowProps) {
+function MMRow({ mm, status, isActive }: MMRowProps) {
   const [hovered, setHovered] = useState(false)
   const isHome = mm.number === 10
 
@@ -78,7 +80,7 @@ function MMRow({ mm, status }: MMRowProps) {
     <Home size={15} style={{ color: '#C5B783', flexShrink: 0 }} />
   ) : status === 'complete' ? (
     <CheckCircle size={15} style={{ color: 'var(--success-color)', flexShrink: 0 }} />
-  ) : status === 'active' ? (
+  ) : isActive ? (
     <PlayCircle size={15} style={{ color: '#0076B6', flexShrink: 0 }} />
   ) : (
     <Circle size={15} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
@@ -86,7 +88,7 @@ function MMRow({ mm, status }: MMRowProps) {
 
   const textColor: string = isHome
     ? '#C5B783'
-    : status === 'active'
+    : isActive
     ? '#0076B6'
     : status === 'complete'
     ? 'var(--text-primary)'
@@ -99,12 +101,12 @@ function MMRow({ mm, status }: MMRowProps) {
     paddingTop: '10px',
     paddingBottom: '10px',
     paddingRight: '12px',
-    paddingLeft: status === 'active' ? '13px' : '16px',
-    borderLeft: status === 'active' ? '3px solid #0076B6' : '3px solid transparent',
+    paddingLeft: isActive ? '13px' : '16px',
+    borderLeft: isActive ? '3px solid #0076B6' : '3px solid transparent',
     backgroundColor:
-      status === 'active'
+      isActive
         ? 'var(--active-row-bg)'
-        : status === 'complete' && hovered
+        : status !== 'locked' && hovered
         ? 'var(--accent-blue-light)'
         : 'transparent',
     cursor: status === 'locked' ? 'default' : 'pointer',
@@ -121,7 +123,7 @@ function MMRow({ mm, status }: MMRowProps) {
         style={{
           flex: 1,
           fontSize: '12px',
-          fontWeight: status === 'active' ? 600 : status === 'complete' ? 500 : 400,
+          fontWeight: isActive ? 600 : status === 'complete' ? 500 : 400,
           color: textColor,
           whiteSpace: 'nowrap',
           overflow: 'hidden',
@@ -160,6 +162,11 @@ function MMRow({ mm, status }: MMRowProps) {
 export default function JourneyRail() {
   const [currentMM, setCurrentMM] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
+  const pathname = usePathname()
+  const activeMMFromPath = (() => {
+    const m = pathname.match(/\/portal\/mm(\d+)/)
+    return m ? parseInt(m[1], 10) : null
+  })()
 
   useEffect(() => {
     ;(async () => {
@@ -219,7 +226,12 @@ export default function JourneyRail() {
         {loading || currentMM === null
           ? Array.from({ length: 10 }, (_, i) => <SkeletonRow key={i} />)
           : MILEMARKERS.map(mm => (
-              <MMRow key={mm.number} mm={mm} status={getStatus(mm.number, currentMM)} />
+              <MMRow
+                key={mm.number}
+                mm={mm}
+                status={getStatus(mm.number, currentMM)}
+                isActive={mm.number === (activeMMFromPath ?? currentMM)}
+              />
             ))}
       </div>
     </aside>
