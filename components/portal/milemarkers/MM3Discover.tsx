@@ -1336,10 +1336,19 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
                   <div className="flex items-center gap-2 flex-wrap justify-end">
                     <button
                       onClick={() => setCityPopup(match)}
-                      className="text-[10px] font-semibold underline underline-offset-2"
-                      style={{ color: GOLD }}
+                      style={{
+                        fontSize: '11px',
+                        fontWeight: 500,
+                        color: GOLD,
+                        background: 'transparent',
+                        border: '1px solid rgba(184,145,42,0.45)',
+                        borderRadius: '6px',
+                        padding: '3px 8px',
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                      }}
                     >
-                      Learn more →
+                      Learn more about {match.location.name}
                     </button>
                     <button
                       onClick={() => {
@@ -1350,11 +1359,11 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
                           setChosenCities(prev => [...prev, cityId])
                         }
                       }}
-                      className="font-bold transition-all"
+                      className="transition-all"
                       style={{
                         fontSize: '11px',
-                        padding: '6px 14px',
-                        minHeight: '44px',
+                        fontWeight: 500,
+                        padding: '4px 10px',
                         borderRadius: '8px',
                         whiteSpace: 'nowrap',
                         backgroundColor: chosenCities.includes(match.location.id) ? '#FBF3E3' : '#C9A84C',
