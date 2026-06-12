@@ -1,7 +1,7 @@
 interface WorkspaceHeaderProps {
   mmNumber: number
   name: string
-  deliverable: string
+  deliverable?: string
 }
 
 export default function WorkspaceHeader({ mmNumber, name, deliverable }: WorkspaceHeaderProps) {
@@ -31,20 +31,22 @@ export default function WorkspaceHeader({ mmNumber, name, deliverable }: Workspa
         >
           {name}
         </h1>
-        <span
-          style={{
-            fontSize: '11px',
-            fontWeight: 500,
-            color: 'var(--accent-blue)',
-            backgroundColor: 'var(--accent-blue-light)',
-            padding: '3px 10px',
-            borderRadius: '20px',
-            flexShrink: 0,
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {deliverable}
-        </span>
+        {deliverable && (
+          <span
+            style={{
+              fontSize: '11px',
+              fontWeight: 500,
+              color: 'var(--accent-blue)',
+              backgroundColor: 'var(--accent-blue-light)',
+              padding: '3px 10px',
+              borderRadius: '20px',
+              flexShrink: 0,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {deliverable}
+          </span>
+        )}
       </div>
     </div>
   )
