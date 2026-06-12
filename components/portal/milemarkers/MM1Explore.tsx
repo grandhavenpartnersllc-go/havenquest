@@ -31,7 +31,7 @@ const TAB_CONTENT = [
   },
   {
     headline: 'Discover your top Texas matches.',
-    body: 'Answer four quick questions about your income, household, financial picture, and priorities. The HavenQuest intelligence platform scores all 101 Texas communities and surfaces your top matches — the places where your life genuinely fits.',
+    body: 'Your matched Texas communities are ready to explore. Review your top city matches with detailed Community Profiles — school ratings, housing costs, cost of living, lifestyle scores, and neighborhood character. Save favorites and compare communities side by side as you narrow your direction.',
     role: 'You + the platform',
   },
   {
