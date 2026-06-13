@@ -1651,19 +1651,28 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           const canAdvance = financialsLocked && citiesLocked && confirmed
           return (
             <button
-              onClick={canAdvance && !committing ? handleCommit : undefined}
-              disabled={committing || !canAdvance}
+              onClick={canAdvance ? async () => {
+                const supabase = createClient()
+                const { data: { session } } = await supabase.auth.getSession()
+                if (session?.user?.email) {
+                  await supabase.from('users')
+                    .update({ current_milemarker: 4, sandbox_committed: true })
+                    .eq('email', session.user.email.toLowerCase())
+                }
+                window.location.href = '/portal/mm4'
+              } : undefined}
+              disabled={!canAdvance}
               className="w-full py-4 rounded-xl font-bold text-base"
               style={{
                 backgroundColor: canAdvance ? '#C5B783' : '#9A8E82',
                 color: canAdvance ? NAVY : '#ffffff',
-                opacity: (!canAdvance || committing) ? 0.4 : 1,
-                cursor: (!canAdvance || committing) ? 'not-allowed' : 'pointer',
+                opacity: !canAdvance ? 0.4 : 1,
+                cursor: !canAdvance ? 'not-allowed' : 'pointer',
                 transition: 'all 300ms ease',
                 border: 'none',
               }}
             >
-              {committing ? 'Locking in your plan...' : 'I\'m ready to build my relocation plan →'}
+              I&apos;m ready to build my relocation plan →
             </button>
           )
         })()}
