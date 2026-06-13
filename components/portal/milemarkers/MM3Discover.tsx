@@ -232,10 +232,8 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   }, [])
 
   useEffect(() => {
-    console.log('[MM3] useEffect fired, committed:', committed, 'justCommittedRef:', justCommittedRef.current)
     if (committed && justCommittedRef.current) {
       justCommittedRef.current = false
-      console.log('[MM3] onAdvanceToConnect called')
       onAdvanceToConnect()
     }
   }, [committed, onAdvanceToConnect])
@@ -404,7 +402,6 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   }
 
   async function handleCommit() {
-    console.log('[MM3] handleCommit fired')
     setCommitting(true)
     try {
       const supabase = createClient()
@@ -437,15 +434,12 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         })
         .eq('email', email)
         .select('current_milemarker')
-      console.log('[MM3] Supabase write complete:', { data, error })
       if (error) throw error
       if (!data || data.length === 0) {
         console.warn('[MM3→4] write affected 0 rows — RLS UPDATE policy missing or JWT email mismatch for', email)
       }
 
-      console.log('[MM3] justCommittedRef set to true')
       justCommittedRef.current = true
-      console.log('[MM3] setCommitted true')
       setCommitted(true)
     } catch (err) {
       console.error('MM3 handleCommit write failed:', err)
@@ -531,7 +525,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         <button
           onClick={handleSendEmail}
           disabled={emailSent || sendingEmail}
-          className="w-full py-3 rounded-xl font-bold text-sm mb-6"
+          className="w-full py-3 rounded-xl font-bold text-sm mb-3"
           style={{
             backgroundColor: emailSent ? '#F0FAF4' : GOLD,
             color: emailSent ? '#2D7D4E' : '#16120D',
@@ -541,6 +535,14 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           {emailSent ? '✓ Plan summary sent to your email'
            : sendingEmail ? 'Sending...'
            : 'Email Me My Plan Summary'}
+        </button>
+
+        <button
+          onClick={onAdvanceToConnect}
+          className="w-full py-3 rounded-xl font-bold text-sm mb-6"
+          style={{ backgroundColor: NAVY, color: '#ffffff' }}
+        >
+          Continue to MM4 →
         </button>
 
         {/* Post-commit Section 2 — Committed Direction Summary */}

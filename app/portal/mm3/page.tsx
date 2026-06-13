@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import WorkspaceHeader from '../components/WorkspaceHeader'
 import { usePortalData } from '../providers/PortalDataProvider'
 import MM3Discover from '../../../components/portal/milemarkers/MM3Discover'
+import { createClient } from '../../../lib/supabase/client'
 
 export default function MM3Page() {
   const router = useRouter()
@@ -60,7 +61,19 @@ export default function MM3Page() {
           matches={matches}
           profile={profile}
           session={session}
-          onAdvanceToConnect={() => { console.log('[MM3] router.push to mm4 called'); router.push('/portal/mm4') }}
+          onAdvanceToConnect={async () => {
+              try {
+                const supabase = createClient()
+                const { data: { session: s } } = await supabase.auth.getSession()
+                if (s?.user?.email) {
+                  await supabase
+                    .from('users')
+                    .update({ current_milemarker: 4 })
+                    .eq('email', s.user.email.toLowerCase())
+                }
+              } catch {}
+              router.push('/portal/mm4')
+            }}
           initialMetro={initialMetro}
           initialCityIndex={0}
         />
