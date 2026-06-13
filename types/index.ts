@@ -253,3 +253,34 @@ export interface MM4Profile {
   submitted?: boolean
   submitted_at?: string
 }
+
+export interface MDClient {
+  id?: string
+  md_email: string
+  client_email: string
+  assigned_at?: string
+  status: 'active' | 'closed' | 'paused'
+  journey_health: 'on_track' | 'needs_attention' | 'at_risk'
+  internal_notes?: string
+  shared_notes?: string
+}
+
+export interface Message {
+  id?: string
+  client_email: string
+  md_email: string
+  sender_role: 'md' | 'client' | 'system'
+  subject?: string
+  body: string
+  read: boolean
+  notification_sent: boolean
+  created_at?: string
+}
+
+export interface MDClientWithProfile {
+  assignment: MDClient
+  profile: UserProfile
+  mm4Profile?: MM4Profile
+  currentMM: number
+  unreadMessages: number
+}
