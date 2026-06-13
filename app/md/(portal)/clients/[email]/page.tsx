@@ -1,8 +1,8 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { createServerClient } from '../../../../lib/supabase/server'
-import ClientWorkspace from '../../components/ClientWorkspace'
-import type { MDClientWithProfile, Message } from '../../../../types'
+import { createServerClient } from '../../../../../lib/supabase/server'
+import ClientWorkspace from '../../../components/ClientWorkspace'
+import type { MDClientWithProfile, Message } from '../../../../../types'
 
 interface Props {
   params: Promise<{ email: string }>
