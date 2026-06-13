@@ -211,6 +211,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
             setUnassigned(sp.unassigned)
             if (sp.citiesLocked) setCitiesLocked(true)
             setCommitted(true)
+            onAdvanceToConnect()
           }
           if (Array.isArray(data?.chosen_communities)) {
             setChosenCities(data.chosen_communities)
