@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { UserCircle } from 'lucide-react'
 import { usePortalData } from '../providers/PortalDataProvider'
 import { createClient } from '../../../lib/supabase/client'
@@ -60,9 +61,11 @@ function SkeletonCircle({ size }: { size: number }) {
 
 export default function CommandCenter() {
   const { currentMM, ready } = usePortalData()
+  const router = useRouter()
   const [team, setTeam] = useState<TeamData>({ marketDirector: null, selectAgent: null, lender: null })
   const [teamLoading, setTeamLoading] = useState(true)
   const [unreadCount, setUnreadCount] = useState(0)
+  const [userEmail, setUserEmail] = useState<string | null>(null)
 
   const percent = Math.round((currentMM / 10) * 100)
   const mmName = MM_NAMES[currentMM] ?? 'Stage'
@@ -85,6 +88,7 @@ export default function CommandCenter() {
       }
 
       const email = supaSession.user.email.toLowerCase()
+      setUserEmail(email)
 
       const { data: teamData, error: teamError } = await supabase
         .from('users')
@@ -106,8 +110,8 @@ export default function CommandCenter() {
 
       const { count, error: msgError } = await supabase
         .from('messages')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_email', email)
+        .select('id', { count: 'exact', head: true })
+        .eq('client_email', email)
         .eq('read', false)
 
       if (!msgError) setUnreadCount(count ?? 0)
@@ -115,6 +119,37 @@ export default function CommandCenter() {
 
     void load()
   }, [ready])
+
+  // Realtime subscription — updates unread count without a page refresh
+  useEffect(() => {
+    if (!userEmail) return
+    const supabase = createClient()
+
+    async function refetchCount() {
+      const { count } = await supabase
+        .from('messages')
+        .select('id', { count: 'exact', head: true })
+        .eq('client_email', userEmail!)
+        .eq('read', false)
+      setUnreadCount(count ?? 0)
+    }
+
+    const channel = supabase
+      .channel(`messages:${userEmail}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages', filter: `client_email=eq.${userEmail}` },
+        () => { void refetchCount() }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'messages', filter: `client_email=eq.${userEmail}` },
+        () => { void refetchCount() }
+      )
+      .subscribe()
+
+    return () => { void supabase.removeChannel(channel) }
+  }, [userEmail])
 
   const teamRows: Array<{ role: string; name: string | null }> = [
     { role: 'Market Director', name: team.marketDirector },
@@ -337,7 +372,11 @@ export default function CommandCenter() {
                 {unreadCount === 1 ? 'unread message' : 'unread messages'}
               </span>
             </div>
-            <button type="button" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '11px', color: 'var(--accent-blue)', padding: 0 }}>
+            <button
+              type="button"
+              onClick={() => router.push(`/portal/mm${currentMM}#messages`)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '11px', color: 'var(--accent-blue)', padding: 0 }}
+            >
               View all
             </button>
           </div>
