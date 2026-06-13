@@ -876,7 +876,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
       )}
 
       {/* Section 2 — Split Dashboard Panel */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3 items-stretch">
 
         {/* LEFT — Financial Summary */}
         <div className="rounded-xl p-4"
@@ -1031,80 +1031,82 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                   </p>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold mb-1" style={{ color: WARM_DARK }}>
-                    Down payment
-                  </label>
-                  <select
-                    value={downPayment}
-                    onChange={e => { setSandboxTouched(true); setDownPayment(e.target.value) }}
-                    className="w-full rounded-xl border px-3 py-2 text-xs appearance-none"
-                    style={{ borderColor: '#E5E7EB', color: WARM_DARK }}
-                  >
-                    {DOWN_PAYMENT_OPTIONS.map(opt => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </select>
-                  <div style={{ marginTop: '6px' }}>
-                    <label style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', display: 'block', marginBottom: '4px' }}>
-                      Or enter exact amount (optional)
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold mb-1" style={{ color: WARM_DARK }}>
+                      Down payment
                     </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. $47,500"
-                      value={exactDownPayment}
-                      onChange={e => { setSandboxTouched(true); setExactDownPayment(formatCurrency(e.target.value)) }}
-                      onFocus={e => { e.target.style.border = '1px solid #B8912A' }}
-                      onBlur={e => { e.target.style.border = '1px solid rgba(184,145,42,0.4)' }}
-                      style={{
-                        width: '100%',
-                        fontSize: '13px',
-                        padding: '6px 10px',
-                        borderRadius: '6px',
-                        border: '1px solid rgba(184,145,42,0.4)',
-                        background: 'rgba(184,145,42,0.04)',
-                        color: 'var(--color-text-primary)',
-                      }}
-                    />
+                    <select
+                      value={downPayment}
+                      onChange={e => { setSandboxTouched(true); setDownPayment(e.target.value) }}
+                      className="w-full rounded-xl border px-3 py-2 text-xs appearance-none"
+                      style={{ borderColor: '#E5E7EB', color: WARM_DARK }}
+                    >
+                      {DOWN_PAYMENT_OPTIONS.map(opt => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                    <div style={{ marginTop: '6px' }}>
+                      <label style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', display: 'block', marginBottom: '4px' }}>
+                        Or enter exact amount (optional)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. $47,500"
+                        value={exactDownPayment}
+                        onChange={e => { setSandboxTouched(true); setExactDownPayment(formatCurrency(e.target.value)) }}
+                        onFocus={e => { e.target.style.border = '1px solid #B8912A' }}
+                        onBlur={e => { e.target.style.border = '1px solid rgba(184,145,42,0.4)' }}
+                        style={{
+                          width: '100%',
+                          fontSize: '13px',
+                          padding: '6px 10px',
+                          borderRadius: '6px',
+                          border: '1px solid rgba(184,145,42,0.4)',
+                          background: 'rgba(184,145,42,0.04)',
+                          color: 'var(--color-text-primary)',
+                        }}
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <div>
-                  <label className="block text-xs font-semibold mb-1" style={{ color: WARM_DARK }}>
-                    Home sale proceeds
-                  </label>
-                  <select
-                    value={proceeds ?? 'None'}
-                    onChange={e => { setSandboxTouched(true); setProceeds(e.target.value === 'None' ? null : e.target.value) }}
-                    className="w-full rounded-xl border px-3 py-2 text-xs appearance-none"
-                    style={{ borderColor: '#E5E7EB', color: WARM_DARK }}
-                  >
-                    <option value="None">None</option>
-                    {PROCEEDS_OPTIONS.map(opt => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </select>
-                  <div style={{ marginTop: '6px' }}>
-                    <label style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', display: 'block', marginBottom: '4px' }}>
-                      Or enter exact amount (optional)
+                  <div>
+                    <label className="block text-xs font-semibold mb-1" style={{ color: WARM_DARK }}>
+                      Home sale proceeds
                     </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. $120,000"
-                      value={exactHomeProceeds}
-                      onChange={e => { setSandboxTouched(true); setExactHomeProceeds(formatCurrency(e.target.value)) }}
-                      onFocus={e => { e.target.style.border = '1px solid #B8912A' }}
-                      onBlur={e => { e.target.style.border = '1px solid rgba(184,145,42,0.4)' }}
-                      style={{
-                        width: '100%',
-                        fontSize: '13px',
-                        padding: '6px 10px',
-                        borderRadius: '6px',
-                        border: '1px solid rgba(184,145,42,0.4)',
-                        background: 'rgba(184,145,42,0.04)',
-                        color: 'var(--color-text-primary)',
-                      }}
-                    />
+                    <select
+                      value={proceeds ?? 'None'}
+                      onChange={e => { setSandboxTouched(true); setProceeds(e.target.value === 'None' ? null : e.target.value) }}
+                      className="w-full rounded-xl border px-3 py-2 text-xs appearance-none"
+                      style={{ borderColor: '#E5E7EB', color: WARM_DARK }}
+                    >
+                      <option value="None">None</option>
+                      {PROCEEDS_OPTIONS.map(opt => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                    <div style={{ marginTop: '6px' }}>
+                      <label style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', display: 'block', marginBottom: '4px' }}>
+                        Or enter exact amount (optional)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. $120,000"
+                        value={exactHomeProceeds}
+                        onChange={e => { setSandboxTouched(true); setExactHomeProceeds(formatCurrency(e.target.value)) }}
+                        onFocus={e => { e.target.style.border = '1px solid #B8912A' }}
+                        onBlur={e => { e.target.style.border = '1px solid rgba(184,145,42,0.4)' }}
+                        style={{
+                          width: '100%',
+                          fontSize: '13px',
+                          padding: '6px 10px',
+                          borderRadius: '6px',
+                          border: '1px solid rgba(184,145,42,0.4)',
+                          background: 'rgba(184,145,42,0.04)',
+                          color: 'var(--color-text-primary)',
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -1450,6 +1452,39 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
               {renderPriorityZone(UNASSIGNED_BUCKET)}
             </div>
           </div>
+
+          {/* Lock cities */}
+          <div style={{ marginTop: '12px', borderTop: '1px solid #F0EDE6', paddingTop: '10px' }}>
+            <p style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', marginBottom: '8px' }}>
+              Lock your city choices when you&apos;re ready. Your Market Director will focus your search on these communities.
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '8px' }}>
+              {citiesLocked && (
+                <button
+                  onClick={() => setCitiesLocked(false)}
+                  style={{ fontSize: '11px', color: GOLD, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                >
+                  Edit
+                </button>
+              )}
+              <button
+                onClick={handleLockCities}
+                disabled={chosenCities.length === 0}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '6px',
+                  fontSize: '12px', padding: '5px 12px', borderRadius: '8px',
+                  border: citiesLocked ? '0.5px solid #1D9E75' : '0.5px solid var(--color-border-tertiary)',
+                  backgroundColor: citiesLocked ? 'rgba(29,158,117,0.06)' : 'transparent',
+                  color: citiesLocked ? '#1D9E75' : 'var(--color-text-secondary)',
+                  cursor: chosenCities.length === 0 ? 'not-allowed' : 'pointer',
+                  opacity: chosenCities.length === 0 ? 0.4 : 1,
+                }}
+              >
+                <span>{citiesLocked ? '✓' : <Lock size={14} style={{ verticalAlign: 'middle' }} />}</span>
+                <span>{citiesLocked ? 'Cities locked' : 'Lock my city choices'}</span>
+              </button>
+            </div>
+          </div>
         </div>
 
       </div>
@@ -1459,7 +1494,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: GOLD, marginBottom: '8px' }}>
           Your Relocation Plan
         </p>
-        <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: 1.6, marginBottom: '20px', maxWidth: '680px' }}>
+        <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: 1.6, marginBottom: '20px' }}>
           This is your starting point — the direction you&apos;ve set based on everything you&apos;ve explored. Your financials and community choices give your Market Director a clear picture of where you&apos;re headed. Keep in mind that after your first conversation, things may shift. Your target city could change, your budget may get refined, and new communities might come into focus. That&apos;s exactly how this process works. What matters right now is that you have a direction — and that&apos;s enough to take the next step.
         </p>
 
@@ -1561,23 +1596,6 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                   ) : null
                 })}
               </div>
-            )}
-            {!citiesLocked && chosenCities.length > 0 && (
-              <button
-                onClick={handleLockCities}
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: '5px',
-                  fontSize: '11px', padding: '5px 12px', borderRadius: '7px',
-                  border: 'none',
-                  backgroundColor: NAVY,
-                  color: '#ffffff',
-                  cursor: 'pointer',
-                  marginTop: '2px',
-                }}
-              >
-                <Lock size={11} />
-                Lock in my city choices
-              </button>
             )}
           </div>
         </div>

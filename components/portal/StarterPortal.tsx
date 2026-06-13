@@ -356,7 +356,7 @@ export default function StarterPortal() {
               onAcknowledge={handleAcknowledge}
               onAdvanceToDiscover={() => setActiveMileMarker(2)}
               onAdvanceFromMM2={() => { setCurrentMileMarker(3); setActiveMileMarker(3) }}
-              onAdvanceToConnect={() => setActiveMileMarker(4)}
+              onAdvanceToConnect={() => { setCurrentMileMarker(4); setActiveMileMarker(4) }}
               initialChecklist={initialChecklist}
               initialNotes={initialNotes}
             />
