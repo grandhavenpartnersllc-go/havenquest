@@ -77,6 +77,21 @@ function Field({ label, required, error, hint, children }: {
   )
 }
 
+function MiniLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p style={{
+      fontSize: '10px',
+      fontWeight: 700,
+      letterSpacing: '0.1em',
+      textTransform: 'uppercase',
+      color: 'var(--text-muted)',
+      margin: '0 0 8px',
+    }}>
+      {children}
+    </p>
+  )
+}
+
 const isEmployed = (status: EmploymentStatus | undefined) =>
   status === 'employed_w2' || status === 'self_employed' || status === 'employer_relocation'
 
@@ -92,7 +107,7 @@ export default function Section3Employment({ data, onChange, errors }: Props) {
   }, [data.income_range_confirmed])
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <div>
         <h2 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 6px' }}>
           Employment &amp; Finances
@@ -102,12 +117,10 @@ export default function Section3Employment({ data, onChange, errors }: Props) {
         </p>
       </div>
 
-      {/* Employment */}
+      {/* Employment status (left) / Work arrangement (right) */}
       <div>
-        <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-          Employment
-        </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <MiniLabel>Employment</MiniLabel>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
           <Field label="Employment status" required error={errors.employment_status}>
             <PillGroup
               options={[
@@ -129,23 +142,7 @@ export default function Section3Employment({ data, onChange, errors }: Props) {
             />
           </Field>
 
-          {showRelocation && (
-            <Field
-              label="Employer relocation package?"
-              hint="This may affect your budget and timeline planning."
-            >
-              <PillGroup
-                options={[
-                  { label: 'Yes, included', value: 'true' },
-                  { label: 'No / Not sure', value: 'false' },
-                ]}
-                value={data.relocation_package === undefined ? undefined : String(data.relocation_package) as 'true' | 'false'}
-                onSelect={v => onChange({ relocation_package: v === 'true' })}
-              />
-            </Field>
-          )}
-
-          {showWorkArrangement && (
+          {showWorkArrangement ? (
             <Field label="Work arrangement" required error={errors.work_arrangement}>
               <PillGroup
                 options={[
@@ -157,15 +154,30 @@ export default function Section3Employment({ data, onChange, errors }: Props) {
                 onSelect={v => onChange({ work_arrangement: v as WorkArrangement })}
               />
             </Field>
-          )}
+          ) : <div />}
         </div>
       </div>
 
-      {/* Financial context */}
+      {/* Relocation package — full width, conditional */}
+      {showRelocation && (
+        <Field
+          label="Employer relocation package?"
+          hint="This may affect your budget and timeline planning."
+        >
+          <PillGroup
+            options={[
+              { label: 'Yes, included', value: 'true' },
+              { label: 'No / Not sure', value: 'false' },
+            ]}
+            value={data.relocation_package === undefined ? undefined : String(data.relocation_package) as 'true' | 'false'}
+            onSelect={v => onChange({ relocation_package: v === 'true' })}
+          />
+        </Field>
+      )}
+
+      {/* Income — full width */}
       <div>
-        <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-          Financial Context
-        </p>
+        <MiniLabel>Financial Context</MiniLabel>
         <Field
           label="Annual household income"
           hint="Pre-filled from your HavenQuest profile — update if anything has changed."

@@ -325,7 +325,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
 
       {/* Inset centered panel */}
       <div style={{
-        maxWidth: '860px',
+        maxWidth: '1100px',
         margin: '0 auto',
         width: '100%',
         backgroundColor: 'var(--card-bg)',
@@ -374,7 +374,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
           padding: '16px 0',
         }}>
           <div style={{
-            maxWidth: '860px',
+            maxWidth: '1100px',
             margin: '0 auto',
             width: '100%',
             display: 'flex',
@@ -430,7 +430,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
 
       {currentSection === 4 && (
         <div style={{
-          maxWidth: '860px',
+          maxWidth: '1100px',
           margin: '24px auto 0',
           width: '100%',
         }}>

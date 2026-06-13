@@ -9,7 +9,6 @@ interface Props {
   errors: Record<string, string>
 }
 
-type PreferredContact = MM4Profile['preferred_contact']
 type TimelineFlexibility = MM4Profile['timeline_flexibility']
 type OriginSituation = MM4Profile['origin_situation']
 type PurchaseContingent = MM4Profile['purchase_contingent']
@@ -75,6 +74,21 @@ function Field({ label, required, error, hint, children }: {
   )
 }
 
+function MiniLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p style={{
+      fontSize: '10px',
+      fontWeight: 700,
+      letterSpacing: '0.1em',
+      textTransform: 'uppercase',
+      color: 'var(--text-muted)',
+      margin: '0 0 8px',
+    }}>
+      {children}
+    </p>
+  )
+}
+
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December',
@@ -105,7 +119,7 @@ export default function Section2TheMove({ data, onChange, errors }: Props) {
   }, [])
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <div>
         <h2 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 6px' }}>
           The Move
@@ -115,12 +129,10 @@ export default function Section2TheMove({ data, onChange, errors }: Props) {
         </p>
       </div>
 
-      {/* Motivation */}
+      {/* Motivation — Why Texas / Why now side by side */}
       <div>
-        <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-          Motivation
-        </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <MiniLabel>Motivation</MiniLabel>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
           <Field
             label="Why Texas?"
             required
@@ -144,18 +156,16 @@ export default function Section2TheMove({ data, onChange, errors }: Props) {
               value={data.why_now ?? ''}
               onChange={e => onChange({ why_now: e.target.value })}
               placeholder="Job change, life event, kids leaving home, retiring..."
-              rows={2}
+              rows={3}
             />
           </Field>
         </div>
       </div>
 
-      {/* Timing */}
+      {/* Timing — Target date / Timeline flexibility side by side */}
       <div>
-        <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-          Timing
-        </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <MiniLabel>Timing</MiniLabel>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
           <Field label="Target move date">
             <select
               className="mm4-select"
@@ -168,7 +178,6 @@ export default function Section2TheMove({ data, onChange, errors }: Props) {
               ))}
             </select>
           </Field>
-
           <Field label="How flexible is your timeline?" required error={errors.timeline_flexibility}>
             <PillGroup
               options={[
@@ -185,10 +194,8 @@ export default function Section2TheMove({ data, onChange, errors }: Props) {
 
       {/* Current housing situation */}
       <div>
-        <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-          Current Housing Situation
-        </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <MiniLabel>Current Housing Situation</MiniLabel>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <Field label="What's your current housing situation?" required error={errors.origin_situation}>
             <PillGroup
               options={[
@@ -212,29 +219,31 @@ export default function Section2TheMove({ data, onChange, errors }: Props) {
 
           {isSelling && (
             <>
-              <Field label="Have you listed your home?">
-                <PillGroup
-                  options={[
-                    { label: 'Not yet listed', value: 'false' },
-                    { label: 'Listed and active', value: 'true' },
-                  ]}
-                  value={data.home_listed === undefined ? undefined : String(data.home_listed) as 'true' | 'false'}
-                  onSelect={v => onChange({ home_listed: v === 'true' })}
-                />
-              </Field>
-
-              <Field label="Approximate equity or expected proceeds">
-                <select
-                  className="mm4-select"
-                  value={data.approximate_equity ?? ''}
-                  onChange={e => onChange({ approximate_equity: e.target.value })}
-                >
-                  <option value="">Select a range</option>
-                  {EQUITY_OPTIONS.map(opt => (
-                    <option key={opt} value={opt}>{opt}</option>
-                  ))}
-                </select>
-              </Field>
+              {/* Have you listed? / Equity side by side */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <Field label="Have you listed your home?">
+                  <PillGroup
+                    options={[
+                      { label: 'Not yet listed', value: 'false' },
+                      { label: 'Listed and active', value: 'true' },
+                    ]}
+                    value={data.home_listed === undefined ? undefined : String(data.home_listed) as 'true' | 'false'}
+                    onSelect={v => onChange({ home_listed: v === 'true' })}
+                  />
+                </Field>
+                <Field label="Approximate equity or expected proceeds">
+                  <select
+                    className="mm4-select"
+                    value={data.approximate_equity ?? ''}
+                    onChange={e => onChange({ approximate_equity: e.target.value })}
+                  >
+                    <option value="">Select a range</option>
+                    {EQUITY_OPTIONS.map(opt => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                </Field>
+              </div>
 
               <Field label="Will your Texas purchase be contingent on selling?">
                 <PillGroup
