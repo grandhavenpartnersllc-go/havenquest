@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '../../../../lib/supabase/client'
-import { getAllCities } from '../../../../services/locationService'
 import { usePortalData } from '../../providers/PortalDataProvider'
 import type { MM4Profile } from '../../../../types'
 import Section1Identity from './sections/Section1Identity'
@@ -96,7 +95,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
             .from('users')
             .select('chosen_communities')
             .eq('email', email)
-            .single(),
+            .maybeSingle(),
         ])
 
         if (existing && !existing.submitted) {
@@ -113,14 +112,6 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
 
         if (Array.isArray(userData?.chosen_communities) && userData.chosen_communities.length > 0) {
           setChosenCommunities(userData.chosen_communities)
-          // Auto-set confirmed_target_city from first locked community if not already set
-          const firstCity = getAllCities().find(c => c.id === userData.chosen_communities[0])
-          if (firstCity) {
-            setFormData(prev => ({
-              ...prev,
-              confirmed_target_city: prev.confirmed_target_city || firstCity.name,
-            }))
-          }
         }
       } catch (err) {
         console.error('[MM4] load failed:', err)
