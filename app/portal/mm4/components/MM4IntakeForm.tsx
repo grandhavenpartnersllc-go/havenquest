@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from '../../../../lib/supabase/client'
+import { getAllCities } from '../../../../services/locationService'
 import { usePortalData } from '../../providers/PortalDataProvider'
 import type { MM4Profile } from '../../../../types'
 import Section1Identity from './sections/Section1Identity'
@@ -18,6 +19,13 @@ const SECTION_LABELS = [
   'Notes',
 ]
 
+function parseHouseholdSize(hs: string | undefined): number {
+  if (!hs) return 1
+  if (hs === '5+') return 5
+  const m = hs.match(/\d+/)
+  return m ? Math.min(10, Math.max(1, parseInt(m[0], 10))) : 1
+}
+
 interface Props {
   onSubmitted: (data: MM4Profile) => void
 }
@@ -31,11 +39,14 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
   const [saving, setSaving] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [chosenCommunities, setChosenCommunities] = useState<string[]>([])
+
+  const profileSeedApplied = useRef(false)
 
   const [formData, setFormData] = useState<MM4Profile>(() => ({
     email: session?.email ?? '',
     primary_first_name: session?.firstName ?? '',
-    num_adults: 1,
+    num_adults: parseHouseholdSize(profile?.householdSize),
     num_children: 0,
     has_pets: false,
     confirmed_target_city: matches[0]?.location?.name ?? '',
@@ -44,27 +55,71 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
       : '',
   }))
 
-  // Load existing partial record on mount
+  // Seed num_adults and income from profile when it loads asynchronously
+  useEffect(() => {
+    if (!profile || profileSeedApplied.current) return
+    profileSeedApplied.current = true
+    setFormData(prev => ({
+      ...prev,
+      num_adults: prev.num_adults !== 1
+        ? prev.num_adults
+        : parseHouseholdSize(profile.householdSize),
+      income_range_confirmed: prev.income_range_confirmed
+        ? prev.income_range_confirmed
+        : (profile.annualIncome ? `$${profile.annualIncome.toLocaleString('en-US')}` : ''),
+    }))
+  }, [profile])
+
+  // Pre-populate current_zip from sessionStorage origin ZIP
+  useEffect(() => {
+    const zip = sessionStorage.getItem('hq_origin_zip')
+    if (zip) {
+      setFormData(prev => ({ ...prev, current_zip: prev.current_zip || zip }))
+    }
+  }, [])
+
+  // Load existing partial record + chosen_communities on mount
   useEffect(() => {
     if (!session?.email) return
     const email = session.email.toLowerCase()
     const load = async () => {
       try {
         const supabase = createClient()
-        const { data: existing } = await supabase
-          .from('mm4_profiles')
-          .select('*')
-          .eq('email', email)
-          .maybeSingle()
+
+        const [{ data: existing }, { data: userData }] = await Promise.all([
+          supabase
+            .from('mm4_profiles')
+            .select('*')
+            .eq('email', email)
+            .maybeSingle(),
+          supabase
+            .from('users')
+            .select('chosen_communities')
+            .eq('email', email)
+            .single(),
+        ])
 
         if (existing && !existing.submitted) {
           setFormData(prev => ({ ...prev, ...existing }))
+          profileSeedApplied.current = true
           const resumed = typeof existing.last_completed_section === 'number'
             ? Math.min(existing.last_completed_section, 4)
             : 0
           if (resumed > 0) {
             setCurrentSection(resumed)
             setAnimKey(k => k + 1)
+          }
+        }
+
+        if (Array.isArray(userData?.chosen_communities) && userData.chosen_communities.length > 0) {
+          setChosenCommunities(userData.chosen_communities)
+          // Auto-set confirmed_target_city from first locked community if not already set
+          const firstCity = getAllCities().find(c => c.id === userData.chosen_communities[0])
+          if (firstCity) {
+            setFormData(prev => ({
+              ...prev,
+              confirmed_target_city: prev.confirmed_target_city || firstCity.name,
+            }))
           }
         }
       } catch (err) {
@@ -101,7 +156,11 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
         e.work_arrangement = 'Please select one'
       }
     } else if (sectionIndex === 3) {
-      if (!formData.confirmed_target_city?.trim()) e.confirmed_target_city = 'Required'
+      // When city cards are shown, confirmed_target_city is auto-populated — no validation needed.
+      // When fallback text field is used (no chosen_communities), require it.
+      if (chosenCommunities.length === 0 && !formData.confirmed_target_city?.trim()) {
+        e.confirmed_target_city = 'Required'
+      }
     }
     return e
   }
@@ -134,7 +193,6 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
     const errs = validate(currentSection)
     if (Object.keys(errs).length > 0) {
       setErrors(errs)
-      // Scroll to top of content so user sees first error
       window.scrollTo({ top: 0, behavior: 'smooth' })
       return
     }
@@ -203,9 +261,9 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
-      {/* Progress bar */}
-      <div style={{ marginBottom: '32px' }}>
-        {/* Step indicator row */}
+
+      {/* Progress bar — full workspace width, above the inset card */}
+      <div style={{ marginBottom: '28px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0', marginBottom: '16px' }}>
           {SECTION_LABELS.map((label, i) => {
             const done = i < currentSection
@@ -257,7 +315,6 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
           })}
         </div>
 
-        {/* Progress bar track */}
         <div style={{ height: '3px', backgroundColor: 'var(--card-border)', borderRadius: '2px', overflow: 'hidden' }}>
           <div style={{
             width: `${pct}%`,
@@ -268,7 +325,6 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
           }} />
         </div>
 
-        {/* Autosave indicator */}
         {saving && (
           <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '6px', textAlign: 'right' }}>
             Saving…
@@ -276,93 +332,116 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
         )}
       </div>
 
-      {/* Section content */}
-      <div key={animKey} style={animStyle}>
-        {currentSection === 0 && (
-          <Section1Identity data={formData} onChange={handleChange} errors={errors} />
-        )}
-        {currentSection === 1 && (
-          <Section2TheMove data={formData} onChange={handleChange} errors={errors} />
-        )}
-        {currentSection === 2 && (
-          <Section3Employment data={formData} onChange={handleChange} errors={errors} />
-        )}
-        {currentSection === 3 && (
-          <Section4TexasDirection data={formData} onChange={handleChange} errors={errors} />
-        )}
-        {currentSection === 4 && (
-          <Section5Notes
-            data={formData}
-            onChange={handleChange}
-            onSubmit={handleSubmit}
-            submitting={submitting}
-          />
-        )}
+      {/* Inset centered panel */}
+      <div style={{
+        maxWidth: '860px',
+        margin: '0 auto',
+        width: '100%',
+        backgroundColor: 'var(--card-bg)',
+        border: '0.5px solid var(--card-border)',
+        borderRadius: '16px',
+        padding: '32px',
+      }}>
+        <div key={animKey} style={animStyle}>
+          {currentSection === 0 && (
+            <Section1Identity data={formData} onChange={handleChange} errors={errors} />
+          )}
+          {currentSection === 1 && (
+            <Section2TheMove data={formData} onChange={handleChange} errors={errors} />
+          )}
+          {currentSection === 2 && (
+            <Section3Employment data={formData} onChange={handleChange} errors={errors} />
+          )}
+          {currentSection === 3 && (
+            <Section4TexasDirection
+              data={formData}
+              onChange={handleChange}
+              errors={errors}
+              chosenCommunities={chosenCommunities}
+            />
+          )}
+          {currentSection === 4 && (
+            <Section5Notes
+              data={formData}
+              onChange={handleChange}
+              onSubmit={handleSubmit}
+              submitting={submitting}
+            />
+          )}
+        </div>
       </div>
 
-      {/* Navigation buttons (sections 0–3 only; section 4 has its own submit) */}
+      {/* Navigation buttons — below the inset panel, sticky at bottom */}
       {currentSection < 4 && (
         <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginTop: '36px',
-          paddingTop: '20px',
+          position: 'sticky',
+          bottom: 0,
+          zIndex: 10,
+          backgroundColor: 'var(--portal-bg)',
           borderTop: '1px solid var(--card-border)',
+          marginTop: '24px',
+          padding: '16px 0',
         }}>
-          <button
-            type="button"
-            onClick={handleBack}
-            disabled={currentSection === 0}
-            style={{
-              padding: '10px 20px',
-              borderRadius: '8px',
-              fontSize: '14px',
-              fontWeight: 500,
-              color: currentSection === 0 ? 'var(--text-muted)' : 'var(--text-secondary)',
-              backgroundColor: 'transparent',
-              border: `1.5px solid ${currentSection === 0 ? 'var(--card-border)' : 'var(--card-border)'}`,
-              cursor: currentSection === 0 ? 'not-allowed' : 'pointer',
-              transition: 'all 0.15s',
-            }}
-          >
-            ← Back
-          </button>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-              Step {currentSection + 1} of 5
-            </span>
+          <div style={{
+            maxWidth: '860px',
+            margin: '0 auto',
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}>
             <button
               type="button"
-              onClick={handleContinue}
-              disabled={saving}
+              onClick={handleBack}
+              disabled={currentSection === 0}
               style={{
-                padding: '10px 28px',
+                padding: '10px 20px',
                 borderRadius: '8px',
                 fontSize: '14px',
-                fontWeight: 600,
-                color: '#ffffff',
-                backgroundColor: saving ? '#5BA8D0' : '#0076B6',
-                border: 'none',
-                cursor: saving ? 'not-allowed' : 'pointer',
-                transition: 'background-color 0.15s',
-                letterSpacing: '0.01em',
+                fontWeight: 500,
+                color: currentSection === 0 ? 'var(--text-muted)' : 'var(--text-secondary)',
+                backgroundColor: 'transparent',
+                border: '1.5px solid var(--card-border)',
+                cursor: currentSection === 0 ? 'not-allowed' : 'pointer',
+                transition: 'all 0.15s',
               }}
             >
-              {saving ? 'Saving…' : 'Continue →'}
+              ← Back
             </button>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                Step {currentSection + 1} of 5
+              </span>
+              <button
+                type="button"
+                onClick={handleContinue}
+                disabled={saving}
+                style={{
+                  padding: '10px 28px',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  color: '#ffffff',
+                  backgroundColor: saving ? '#5BA8D0' : '#0076B6',
+                  border: 'none',
+                  cursor: saving ? 'not-allowed' : 'pointer',
+                  transition: 'background-color 0.15s',
+                  letterSpacing: '0.01em',
+                }}
+              >
+                {saving ? 'Saving…' : 'Continue →'}
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {currentSection === 4 && (
         <div style={{
-          display: 'flex',
-          justifyContent: 'flex-start',
-          marginTop: '36px',
-          paddingTop: '20px',
-          borderTop: '1px solid var(--card-border)',
+          maxWidth: '860px',
+          margin: '24px auto 0',
+          width: '100%',
         }}>
           <button
             type="button"
@@ -382,6 +461,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
           </button>
         </div>
       )}
+
     </div>
   )
 }

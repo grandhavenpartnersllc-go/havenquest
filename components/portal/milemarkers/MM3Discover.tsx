@@ -1056,7 +1056,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                     </select>
                     <div style={{ marginTop: '6px' }}>
                       <label style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', display: 'block', marginBottom: '4px' }}>
-                        Or enter exact amount (optional)
+                        Or enter exact Down Payment amount
                       </label>
                       <input
                         type="text"
@@ -1095,7 +1095,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                     </select>
                     <div style={{ marginTop: '6px' }}>
                       <label style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', display: 'block', marginBottom: '4px' }}>
-                        Or enter exact amount (optional)
+                        Or enter exact Home Sale Proceeds amount
                       </label>
                       <input
                         type="text"
@@ -1240,14 +1240,14 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                 onClick={handleLockFinancials}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '6px',
-                  fontSize: '12px', padding: '5px 12px', borderRadius: '8px',
-                  border: financialsLocked ? '0.5px solid #1D9E75' : '0.5px solid var(--color-border-tertiary)',
-                  backgroundColor: financialsLocked ? 'rgba(29,158,117,0.06)' : 'transparent',
-                  color: financialsLocked ? '#1D9E75' : 'var(--color-text-secondary)',
+                  fontSize: '12px', padding: '6px 14px', borderRadius: '8px',
+                  border: financialsLocked ? '0.5px solid #1D9E75' : 'none',
+                  backgroundColor: financialsLocked ? 'rgba(29,158,117,0.08)' : NAVY,
+                  color: financialsLocked ? '#1D9E75' : '#ffffff',
                   cursor: 'pointer',
                 }}
               >
-                <span>{financialsLocked ? '✓' : <Lock size={14} style={{ verticalAlign: 'middle' }} />}</span>
+                <Lock size={13} style={{ verticalAlign: 'middle', flexShrink: 0 }} />
                 <span>{financialsLocked ? 'Financials locked' : 'Lock my financials'}</span>
               </button>
             </div>
@@ -1480,15 +1480,15 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                 disabled={chosenCities.length === 0}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '6px',
-                  fontSize: '12px', padding: '5px 12px', borderRadius: '8px',
-                  border: citiesLocked ? '0.5px solid #1D9E75' : '0.5px solid var(--color-border-tertiary)',
-                  backgroundColor: citiesLocked ? 'rgba(29,158,117,0.06)' : 'transparent',
-                  color: citiesLocked ? '#1D9E75' : 'var(--color-text-secondary)',
+                  fontSize: '12px', padding: '6px 14px', borderRadius: '8px',
+                  border: citiesLocked ? '0.5px solid #1D9E75' : 'none',
+                  backgroundColor: citiesLocked ? 'rgba(29,158,117,0.08)' : NAVY,
+                  color: citiesLocked ? '#1D9E75' : '#ffffff',
                   cursor: chosenCities.length === 0 ? 'not-allowed' : 'pointer',
                   opacity: chosenCities.length === 0 ? 0.4 : 1,
                 }}
               >
-                <span>{citiesLocked ? '✓' : <Lock size={14} style={{ verticalAlign: 'middle' }} />}</span>
+                <Lock size={13} style={{ verticalAlign: 'middle', flexShrink: 0 }} />
                 <span>{citiesLocked ? 'Cities locked' : 'Lock my city choices'}</span>
               </button>
             </div>

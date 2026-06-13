@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 import type { MM4Profile } from '../../../../types'
+
+function getSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !key) throw new Error('Supabase not configured')
+  return createClient(url, key, { auth: { persistSession: false } })
+}
 
 const MD_EMAIL = 'craig.asbach@havenquest.co'
 const BOOKINGS_URL =
@@ -288,6 +296,19 @@ export async function POST(request: NextRequest) {
       })
     } catch (err) {
       console.error('[MM4/submit] MD notification error:', err)
+    }
+
+    // Persist origin_zip to public.users so it's available for future queries
+    if (profile.current_zip && profile.email) {
+      try {
+        const supabase = getSupabase()
+        await supabase
+          .from('users')
+          .update({ origin_zip: profile.current_zip })
+          .eq('email', profile.email.toLowerCase())
+      } catch (err) {
+        console.error('[MM4/submit] origin_zip save error:', err)
+      }
     }
 
     return NextResponse.json({ ok: true })

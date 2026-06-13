@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import type { MM4Profile } from '../../../../../types'
 
 interface Props {
@@ -10,6 +11,12 @@ interface Props {
 
 type EmploymentStatus = MM4Profile['employment_status']
 type WorkArrangement = MM4Profile['work_arrangement']
+
+function formatIncome(raw: string): string {
+  const digits = raw.replace(/[^0-9]/g, '')
+  if (!digits) return ''
+  return '$' + parseInt(digits, 10).toLocaleString('en-US')
+}
 
 function PillGroup<T extends string>({
   options,
@@ -76,6 +83,13 @@ const isEmployed = (status: EmploymentStatus | undefined) =>
 export default function Section3Employment({ data, onChange, errors }: Props) {
   const showRelocation = data.employment_status === 'employer_relocation'
   const showWorkArrangement = isEmployed(data.employment_status)
+
+  const [incomeDisplay, setIncomeDisplay] = useState(data.income_range_confirmed ?? '')
+
+  // Sync if parent updates income (e.g. from DB load)
+  useEffect(() => {
+    setIncomeDisplay(data.income_range_confirmed ?? '')
+  }, [data.income_range_confirmed])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
@@ -159,8 +173,14 @@ export default function Section3Employment({ data, onChange, errors }: Props) {
           <input
             className="mm4-input"
             type="text"
-            value={data.income_range_confirmed ?? ''}
-            onChange={e => onChange({ income_range_confirmed: e.target.value })}
+            value={incomeDisplay}
+            onChange={e => setIncomeDisplay(e.target.value)}
+            onFocus={() => setIncomeDisplay(incomeDisplay.replace(/[^0-9]/g, ''))}
+            onBlur={() => {
+              const formatted = formatIncome(incomeDisplay)
+              setIncomeDisplay(formatted)
+              onChange({ income_range_confirmed: formatted })
+            }}
             placeholder="e.g. $125,000"
           />
         </Field>

@@ -77,7 +77,7 @@ export default function MM4Page() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
       <WorkspaceHeader mmNumber={4} name="Connect" deliverable="Relocation Roadmap" />
-      <div style={{ padding: '32px 28px', flex: 1, maxWidth: '760px' }}>
+      <div style={{ padding: '32px 28px', flex: 1 }}>
         {pageState === 'confirmation' ? (
           <MM4Confirmation
             data={submittedData ?? { email: session.email }}

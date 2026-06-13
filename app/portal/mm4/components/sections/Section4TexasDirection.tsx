@@ -1,11 +1,13 @@
 'use client'
 
 import type { MM4Profile } from '../../../../../types'
+import { getAllCities } from '../../../../../services/locationService'
 
 interface Props {
   data: MM4Profile
   onChange: (updates: Partial<MM4Profile>) => void
   errors: Record<string, string>
+  chosenCommunities?: string[]
 }
 
 function Field({ label, required, error, hint, children }: {
@@ -28,7 +30,17 @@ function Field({ label, required, error, hint, children }: {
   )
 }
 
-export default function Section4TexasDirection({ data, onChange, errors }: Props) {
+const REASONING_KEYS = ['city1_reasoning', 'city2_reasoning', 'city3_reasoning'] as const
+
+export default function Section4TexasDirection({ data, onChange, errors, chosenCommunities }: Props) {
+  const allCities = getAllCities()
+  const resolvedCities = (chosenCommunities ?? [])
+    .slice(0, 3)
+    .map(id => allCities.find(c => c.id === id))
+    .filter((c): c is NonNullable<typeof c> => c !== null && c !== undefined)
+
+  const hasCityCards = resolvedCities.length > 0
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
       <div>
@@ -40,25 +52,76 @@ export default function Section4TexasDirection({ data, onChange, errors }: Props
         </p>
       </div>
 
-      {/* Target city */}
+      {/* Top Choice */}
       <div>
         <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
           Top Choice
         </p>
-        <Field
-          label="Confirmed target city / community"
-          required
-          error={errors.confirmed_target_city}
-          hint="Pre-filled from your top match — update if you've shifted focus."
-        >
-          <input
-            className="mm4-input"
-            type="text"
-            value={data.confirmed_target_city ?? ''}
-            onChange={e => onChange({ confirmed_target_city: e.target.value })}
-            placeholder="e.g. Southlake, Frisco, The Woodlands"
-          />
-        </Field>
+
+        {hasCityCards ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 4px' }}>
+              These are the communities you locked in during Discover. Tell us what draws you to each one.
+            </p>
+            {resolvedCities.map((city, index) => {
+              const key = REASONING_KEYS[index]
+              return (
+                <div
+                  key={city.id}
+                  style={{
+                    border: '1px solid var(--card-border)',
+                    borderRadius: '12px',
+                    padding: '16px 20px',
+                    backgroundColor: 'var(--card-bg)',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '12px' }}>
+                    <span style={{
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      color: '#0076B6',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.08em',
+                    }}>
+                      #{index + 1}
+                    </span>
+                    <div>
+                      <span style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                        {city.name}
+                      </span>
+                      <span style={{ fontSize: '13px', color: 'var(--text-muted)', marginLeft: '8px' }}>
+                        {city.metroUsed}
+                      </span>
+                    </div>
+                  </div>
+                  <textarea
+                    className="mm4-textarea"
+                    value={data[key] ?? ''}
+                    onChange={e => onChange({ [key]: e.target.value })}
+                    placeholder={`What draws you to ${city.name}?`}
+                    rows={2}
+                    style={{ minHeight: '72px' }}
+                  />
+                </div>
+              )
+            })}
+          </div>
+        ) : (
+          <Field
+            label="Confirmed target city / community"
+            required
+            error={errors.confirmed_target_city}
+            hint="Pre-filled from your top match — update if you've shifted focus."
+          >
+            <input
+              className="mm4-input"
+              type="text"
+              value={data.confirmed_target_city ?? ''}
+              onChange={e => onChange({ confirmed_target_city: e.target.value })}
+              placeholder="e.g. Southlake, Frisco, The Woodlands"
+            />
+          </Field>
+        )}
       </div>
 
       {/* Research */}

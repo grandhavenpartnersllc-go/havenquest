@@ -244,6 +244,9 @@ export interface MM4Profile {
   areas_researched?: string
   additional_must_haves?: string
   deal_breakers?: string
+  city1_reasoning?: string
+  city2_reasoning?: string
+  city3_reasoning?: string
 
   // Section 5 — Anything Else
   special_notes?: string
