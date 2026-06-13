@@ -93,7 +93,7 @@ interface MM3DiscoverProps {
   initialCityIndex?: number
 }
 
-export default function MM3Discover({ matches, profile, session, initialMetro, initialCityIndex }: MM3DiscoverProps) {
+export default function MM3Discover({ matches, profile, session, onAdvanceToConnect, initialMetro, initialCityIndex }: MM3DiscoverProps) {
   const [downPayment, setDownPayment] = useState<string>(
     profile?.financial_picture?.down_payment_available ?? '$20,000 – $50,000'
   )
@@ -402,6 +402,7 @@ export default function MM3Discover({ matches, profile, session, initialMetro, i
       }
 
       setCommitted(true)
+      onAdvanceToConnect()
     } catch (err) {
       console.error('MM3 handleCommit write failed:', err)
     }
