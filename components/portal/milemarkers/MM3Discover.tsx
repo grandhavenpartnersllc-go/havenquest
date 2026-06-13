@@ -1455,9 +1455,12 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
       </div>
 
       {/* Section 5 — Commitment Panel */}
-      <div className="mt-8 pt-6" style={{ borderTop: '1px solid #E5E7EB' }}>
-        <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: GOLD, marginBottom: '20px' }}>
+      <div style={{ marginTop: '32px', border: '1px solid rgba(197,183,131,0.4)', borderTop: '4px solid #0A1E3D', borderRadius: '16px', backgroundColor: '#FAFAF8', padding: '24px' }}>
+        <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: GOLD, marginBottom: '8px' }}>
           Your Relocation Plan
+        </p>
+        <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: 1.6, marginBottom: '20px', maxWidth: '680px' }}>
+          This is your starting point — the direction you&apos;ve set based on everything you&apos;ve explored. Your financials and community choices give your Market Director a clear picture of where you&apos;re headed. Keep in mind that after your first conversation, things may shift. Your target city could change, your budget may get refined, and new communities might come into focus. That&apos;s exactly how this process works. What matters right now is that you have a direction — and that&apos;s enough to take the next step.
         </p>
 
         {/* Two-column summary */}
@@ -1514,7 +1517,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
             borderRadius: '12px',
             border: '1px solid var(--color-border-tertiary)',
             padding: '14px 16px',
-            opacity: citiesLocked ? 1 : (chosenCities.length > 0 ? 0.7 : 0.35),
+            opacity: citiesLocked ? 1 : (chosenCities.length > 0 ? 1 : 0.35),
             transition: 'opacity 300ms ease',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '10px' }}>
@@ -1528,22 +1531,33 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
             {chosenCities.length === 0 ? (
               <p style={{ fontSize: '12px', color: '#9A8E82', fontStyle: 'italic', margin: 0 }}>Select communities above</p>
             ) : (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginBottom: citiesLocked ? 0 : '10px' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: citiesLocked ? 0 : '10px' }}>
                 {chosenCities.map(cityId => {
                   const city = getAllCities().find(c => c.id === cityId)
                   return city ? (
-                    <span key={cityId} style={{
-                      background: citiesLocked ? '#C5B783' : 'var(--card-bg)',
-                      border: citiesLocked ? 'none' : '1.5px solid var(--color-border-tertiary)',
-                      color: citiesLocked ? NAVY : 'var(--color-text-secondary)',
-                      borderRadius: '20px',
-                      padding: '3px 12px',
-                      fontSize: '12px',
-                      fontWeight: citiesLocked ? 500 : 400,
+                    <div key={cityId} style={{
+                      width: '160px',
+                      borderRadius: '8px',
+                      overflow: 'hidden',
+                      border: citiesLocked ? '1.5px solid #C5B783' : '1px solid var(--color-border-tertiary)',
+                      filter: citiesLocked ? 'none' : 'grayscale(100%)',
+                      opacity: citiesLocked ? 1 : 0.35,
                       transition: 'all 300ms ease',
+                      backgroundColor: 'var(--color-background-primary)',
                     }}>
-                      {city.name}
-                    </span>
+                      <div style={{ position: 'relative', width: '100%', height: '90px', background: 'var(--color-background-tertiary)' }}>
+                        <Image
+                          src={`/images/cities/${cityId}.jpg`}
+                          alt={city.name}
+                          fill
+                          className="object-cover"
+                          onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('default-tx')) { t.src = '/images/cities/default-tx.jpg' } }}
+                        />
+                      </div>
+                      <p style={{ fontSize: '13px', textAlign: 'center', padding: '6px 4px', margin: 0, fontWeight: 500, color: WARM_DARK }}>
+                        {city.name}
+                      </p>
+                    </div>
                   ) : null
                 })}
               </div>
