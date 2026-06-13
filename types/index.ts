@@ -121,6 +121,7 @@ export interface SandboxProfile {
   niceToHaves: (keyof LifestyleScores)[]
   notPriorities: (keyof LifestyleScores)[]
   unassigned: (keyof LifestyleScores)[]
+  citiesLocked?: boolean
 }
 
 export interface FamilyProfile {

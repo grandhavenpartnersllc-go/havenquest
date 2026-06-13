@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
-import { Lock, ChevronDown, ChevronRight } from 'lucide-react'
+import { Lock, ChevronDown, ChevronRight, CheckCircle } from 'lucide-react'
 import { CityMatch, UserProfile, UserSession, SandboxProfile, LifestyleScores } from '../../../types'
 import FullReport from '../../results/FullReport'
 import { LIFESTYLE_CATEGORIES } from '../../../utils/constants'
@@ -16,6 +16,7 @@ void calculateMonthlyPayment
 
 const WARM_DARK = '#16120D'
 const GOLD = '#B8912A'
+const NAVY = '#0A1E3D'
 const CARD_BG = '#FDFCFA'
 const CARD_SHADOW = '0 1px 3px rgba(0,0,0,0.05), 0 4px 20px rgba(0,0,0,0.07)'
 
@@ -128,6 +129,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const [chosenCities, setChosenCities] = useState<string[]>([])
   const [confirmed, setConfirmed] = useState(false)
   const [financialsLocked, setFinancialsLocked] = useState(false)
+  const [citiesLocked, setCitiesLocked] = useState(false)
   const [worksheetDismissed, setWorksheetDismissed] = useState(false)
   const [financialCalcOpen, setFinancialCalcOpen] = useState(false)
   const [incomeInputValue, setIncomeInputValue] = useState<string>(
@@ -139,6 +141,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const incomeDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const rankingsRef = useRef<HTMLDivElement>(null)
+  const justCommittedRef = useRef(false)
 
   const [committed, setCommitted] = useState(false)
   const [committing, setCommitting] = useState(false)
@@ -193,7 +196,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
       if (!s?.user?.email) return
       supabase
         .from('users')
-        .select('sandbox_committed, sandbox_profile, chosen_communities')
+        .select('sandbox_committed, sandbox_profile, chosen_communities, financials_locked')
         .eq('email', s.user.email.toLowerCase())
         .single()
         .then(({ data }) => {
@@ -206,11 +209,13 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
             setNiceToHaves(sp.niceToHaves)
             setNotPriorities(sp.notPriorities)
             setUnassigned(sp.unassigned)
+            if (sp.citiesLocked) setCitiesLocked(true)
             setCommitted(true)
           }
           if (Array.isArray(data?.chosen_communities)) {
             setChosenCities(data.chosen_communities)
           }
+          if (data?.financials_locked) setFinancialsLocked(true)
         })
     })
   }, [])
@@ -224,6 +229,13 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   useEffect(() => {
     setFinancialCalcOpen(window.innerWidth >= 768)
   }, [])
+
+  useEffect(() => {
+    if (committed && justCommittedRef.current) {
+      justCommittedRef.current = false
+      onAdvanceToConnect()
+    }
+  }, [committed, onAdvanceToConnect])
 
   // Build sandbox profile from current slider/priority state.
   // Rankings are driven by lifestyle priority weights only — financial picture affects
@@ -362,6 +374,32 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     }
   }
 
+  async function handleLockCities() {
+    setCitiesLocked(true)
+    try {
+      const supabase = createClient()
+      const { data: { session: s } } = await supabase.auth.getSession()
+      if (!s?.user?.email) return
+      await supabase
+        .from('users')
+        .update({
+          sandbox_profile: {
+            downPaymentOverride: downPayment,
+            proceedsOverride: proceeds,
+            interestRateOverride: interestRate,
+            mustHaves,
+            niceToHaves,
+            notPriorities,
+            unassigned,
+            citiesLocked: true,
+          },
+        })
+        .eq('email', s.user.email.toLowerCase())
+    } catch (err) {
+      console.error('Failed to save cities locked:', err)
+    }
+  }
+
   async function handleCommit() {
     setCommitting(true)
     try {
@@ -401,8 +439,8 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         console.warn('[MM3→4] write affected 0 rows — RLS UPDATE policy missing or JWT email mismatch for', email)
       }
 
+      justCommittedRef.current = true
       setCommitted(true)
-      onAdvanceToConnect()
     } catch (err) {
       console.error('MM3 handleCommit write failed:', err)
     }
@@ -1416,92 +1454,177 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
 
       </div>
 
-      {/* Section 5 — Confirmation + Commit */}
+      {/* Section 5 — Commitment Panel */}
       <div className="mt-8 pt-6" style={{ borderTop: '1px solid #E5E7EB' }}>
-        <p className="text-sm font-medium mb-2" style={{ color: '#4B5563' }}>
-          Found your direction? Lock it in and your Market Director steps in as your copilot.
-        </p>
-        <p className="text-xs mb-4" style={{ color: '#9A8E82' }}>
-          Your original profile is always preserved. This becomes your new starting point —
-          not a contract, not a cage.
+        <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: GOLD, marginBottom: '20px' }}>
+          Your Relocation Plan
         </p>
 
-        {/* Confirmation checkbox — appears after at least 1 city chosen */}
-        {chosenCities.length > 0 && (
+        {/* Two-column summary */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+
+          {/* Left — Financial Summary */}
           <div style={{
-            marginTop: '2rem',
-            padding: '1.25rem',
             borderRadius: '12px',
-            border: '0.5px solid rgba(184,145,42,0.3)',
-            background: '#FAEEDA',
+            border: '1px solid var(--color-border-tertiary)',
+            padding: '14px 16px',
+            opacity: financialsLocked ? 1 : 0.35,
+            transition: 'opacity 300ms ease',
           }}>
-            <p style={{ fontSize: '13px', color: '#633806', marginBottom: '12px', fontWeight: 500 }}>
-              Your selected {chosenCities.length === 1 ? 'community' : 'communities'} for your Market Director:
-            </p>
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
-              {chosenCities.map(cityId => {
-                const city = getAllCities().find(c => c.id === cityId)
-                return city ? (
-                  <span key={cityId} style={{
-                    background: '#B8912A', color: '#fff',
-                    padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 500,
-                  }}>
-                    {city.name}
-                  </span>
-                ) : null
-              })}
-            </div>
-            <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer' }}>
-              <input
-                type="checkbox"
-                checked={confirmed}
-                onChange={e => setConfirmed(e.target.checked)}
-                style={{ marginTop: '2px', accentColor: '#B8912A', width: '16px', height: '16px', flexShrink: 0 }}
-              />
-              <span style={{ fontSize: '13px', color: '#633806', lineHeight: 1.5 }}>
-                I&apos;m ready to connect with a Market Director and take the next step toward my Lone Star Lifestyle.
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '10px' }}>
+              {financialsLocked
+                ? <CheckCircle size={12} style={{ color: '#1D9E75', flexShrink: 0 }} />
+                : <Lock size={12} style={{ color: '#9A8E82', flexShrink: 0 }} />}
+              <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: financialsLocked ? '#1D9E75' : '#9A8E82' }}>
+                {financialsLocked ? 'Financials locked' : 'Financial Summary'}
               </span>
-            </label>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <span style={{ fontSize: '11px', color: '#9A8E82' }}>Annual Income</span>
+                <span style={{ fontSize: '12px', fontWeight: 600, color: WARM_DARK }}>${incomeOverride.toLocaleString('en-US')}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <span style={{ fontSize: '11px', color: '#9A8E82' }}>Monthly Budget</span>
+                <span style={{ fontSize: '12px', fontWeight: 600, color: WARM_DARK }}>${Math.round(grossMonthlyIncome * 0.28).toLocaleString('en-US')}/mo</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <span style={{ fontSize: '11px', color: '#9A8E82' }}>Down Payment</span>
+                <span style={{ fontSize: '12px', fontWeight: 600, color: WARM_DARK }}>${totalFunds.toLocaleString('en-US')}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <span style={{ fontSize: '11px', color: '#9A8E82' }}>Est. Monthly</span>
+                <span style={{ fontSize: '12px', fontWeight: 600, color: WARM_DARK }}>${totalMonthlyHousing.toLocaleString('en-US')}/mo</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '2px' }}>
+                <span style={{ fontSize: '11px', color: '#9A8E82' }}>Affordability</span>
+                <span style={{
+                  fontSize: '10px', fontWeight: 600, padding: '2px 7px', borderRadius: '5px',
+                  backgroundColor: affordabilityStatus === 'comfortable' ? 'rgba(34,197,94,0.12)' : affordabilityStatus === 'moderate' ? 'rgba(245,158,11,0.12)' : 'rgba(239,68,68,0.12)',
+                  color: affordabilityStatus === 'comfortable' ? '#16A34A' : affordabilityStatus === 'moderate' ? '#D97706' : '#DC2626',
+                }}>
+                  {affordabilityStatus === 'comfortable' ? 'Comfortable' : affordabilityStatus === 'moderate' ? 'Moderate' : 'Stretched'}
+                </span>
+              </div>
+            </div>
           </div>
-        )}
 
-        {(() => {
-          const canAdvance = chosenCities.length >= 1 && confirmed
-          return (
-            <>
+          {/* Right — City Summary */}
+          <div style={{
+            borderRadius: '12px',
+            border: '1px solid var(--color-border-tertiary)',
+            padding: '14px 16px',
+            opacity: citiesLocked ? 1 : (chosenCities.length > 0 ? 0.7 : 0.35),
+            transition: 'opacity 300ms ease',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '10px' }}>
+              {citiesLocked
+                ? <CheckCircle size={12} style={{ color: '#1D9E75', flexShrink: 0 }} />
+                : <Lock size={12} style={{ color: '#9A8E82', flexShrink: 0 }} />}
+              <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: citiesLocked ? '#1D9E75' : '#9A8E82' }}>
+                {citiesLocked ? 'Cities locked' : 'Your Communities'}
+              </span>
+            </div>
+            {chosenCities.length === 0 ? (
+              <p style={{ fontSize: '12px', color: '#9A8E82', fontStyle: 'italic', margin: 0 }}>Select communities above</p>
+            ) : (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginBottom: citiesLocked ? 0 : '10px' }}>
+                {chosenCities.map(cityId => {
+                  const city = getAllCities().find(c => c.id === cityId)
+                  return city ? (
+                    <span key={cityId} style={{
+                      background: citiesLocked ? '#C5B783' : 'var(--card-bg)',
+                      border: citiesLocked ? 'none' : '1.5px solid var(--color-border-tertiary)',
+                      color: citiesLocked ? NAVY : 'var(--color-text-secondary)',
+                      borderRadius: '20px',
+                      padding: '3px 12px',
+                      fontSize: '12px',
+                      fontWeight: citiesLocked ? 500 : 400,
+                      transition: 'all 300ms ease',
+                    }}>
+                      {city.name}
+                    </span>
+                  ) : null
+                })}
+              </div>
+            )}
+            {!citiesLocked && chosenCities.length > 0 && (
               <button
-                onClick={canAdvance ? handleCommit : undefined}
-                disabled={committing}
-                className="w-full py-4 rounded-xl font-bold text-base transition-opacity hover:opacity-90 mt-4"
+                onClick={handleLockCities}
                 style={{
-                  backgroundColor: GOLD,
-                  color: '#16120D',
-                  opacity: !canAdvance || committing ? 0.4 : 1,
-                  cursor: !canAdvance || committing ? 'not-allowed' : 'pointer',
+                  display: 'inline-flex', alignItems: 'center', gap: '5px',
+                  fontSize: '11px', padding: '5px 12px', borderRadius: '7px',
+                  border: 'none',
+                  backgroundColor: NAVY,
+                  color: '#ffffff',
+                  cursor: 'pointer',
+                  marginTop: '2px',
                 }}
               >
-                {committing ? 'Locking in your plan...' : 'This is my plan — connect me with my Market Director →'}
+                <Lock size={11} />
+                Lock in my city choices
               </button>
-              {!canAdvance && (
-                <>
-                  <p style={{ fontSize: '12px', color: 'var(--color-text-tertiary)', textAlign: 'center', marginTop: '8px' }}>
-                    {chosenCities.length === 0
-                      ? 'Select at least one community from the Live City Rankings to continue.'
-                      : 'Check the box above to continue.'}
-                  </p>
-                  {chosenCities.length === 0 && (
-                    <p style={{ textAlign: 'center', marginTop: '4px' }}>
-                      <button
-                        onClick={() => rankingsRef.current?.scrollIntoView({ behavior: 'smooth' })}
-                        style={{ color: GOLD, background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}
-                      >
-                        ↑ Go to Live City Rankings
-                      </button>
-                    </p>
-                  )}
-                </>
-              )}
-            </>
+            )}
+          </div>
+        </div>
+
+        {/* Status message */}
+        <p style={{
+          fontSize: '12px',
+          color: (financialsLocked && citiesLocked) ? WARM_DARK : '#9A8E82',
+          textAlign: 'center',
+          marginBottom: '14px',
+          fontWeight: (financialsLocked && citiesLocked) ? 500 : 400,
+          transition: 'color 300ms ease',
+        }}>
+          {!financialsLocked && !citiesLocked
+            ? 'Lock in your financials and cities above to confirm your plan'
+            : financialsLocked && !citiesLocked
+            ? 'Lock in your city choices above to continue'
+            : !financialsLocked && citiesLocked
+            ? 'Lock in your financials above to continue'
+            : 'Your plan is set. Confirm below to continue.'}
+        </p>
+
+        {/* Confirmation checkbox */}
+        <label style={{
+          display: 'flex', alignItems: 'flex-start', gap: '10px',
+          cursor: (financialsLocked && citiesLocked) ? 'pointer' : 'not-allowed',
+          opacity: (financialsLocked && citiesLocked) ? 1 : 0.4,
+          marginBottom: '16px',
+          transition: 'opacity 300ms ease',
+        }}>
+          <input
+            type="checkbox"
+            checked={confirmed}
+            onChange={e => { if (financialsLocked && citiesLocked) setConfirmed(e.target.checked) }}
+            disabled={!(financialsLocked && citiesLocked)}
+            style={{ marginTop: '2px', accentColor: GOLD, width: '16px', height: '16px', flexShrink: 0 }}
+          />
+          <span style={{ fontSize: '13px', color: '#4B5563', lineHeight: 1.5 }}>
+            I&apos;ve reviewed my plan and I&apos;m ready to take the next step.
+          </span>
+        </label>
+
+        {/* Submit button */}
+        {(() => {
+          const canAdvance = financialsLocked && citiesLocked && confirmed
+          return (
+            <button
+              onClick={canAdvance && !committing ? handleCommit : undefined}
+              disabled={committing || !canAdvance}
+              className="w-full py-4 rounded-xl font-bold text-base"
+              style={{
+                backgroundColor: canAdvance ? '#C5B783' : '#9A8E82',
+                color: canAdvance ? NAVY : '#ffffff',
+                opacity: (!canAdvance || committing) ? 0.4 : 1,
+                cursor: (!canAdvance || committing) ? 'not-allowed' : 'pointer',
+                transition: 'all 300ms ease',
+                border: 'none',
+              }}
+            >
+              {committing ? 'Locking in your plan...' : 'I\'m ready to build my relocation plan →'}
+            </button>
           )
         })()}
       </div>
