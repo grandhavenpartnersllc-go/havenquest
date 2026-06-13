@@ -4,7 +4,7 @@ import type { MM4Profile } from '../../../../types'
 
 const MD_EMAIL = 'craig.asbach@havenquest.co'
 const BOOKINGS_URL =
-  'https://outlook.office.com/bookwithme/user/9a412f58e59e46ae9bf9f54031af467f@havenquest.co/meetingtype/w8HhBk-yU0GuOyM2a_QZrw2?bookingcode=53a8c306-a5c8-47b0-8989-bed4a6495e44&anonymous&ismsaljsauthenabled'
+  'https://calendly.com/craig-asbach-havenquest/havenquest-consulation'
 
 // ─── Label helpers ────────────────────────────────────────────────────────────
 
