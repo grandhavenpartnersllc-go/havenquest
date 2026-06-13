@@ -180,6 +180,13 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
         .eq('email', session.email.toLowerCase())
         .lt('current_milemarker', 4)
 
+      // Send confirmation + MD notification emails — fire and forget
+      void fetch('/api/mm4/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ profile: submitData }),
+      }).catch(err => console.error('[MM4] email route failed:', err))
+
       onSubmitted(submitData)
     } catch (err) {
       console.error('[MM4] submit failed:', err)
