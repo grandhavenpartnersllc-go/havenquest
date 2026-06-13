@@ -60,7 +60,7 @@ export default function MM3Page() {
           matches={matches}
           profile={profile}
           session={session}
-          onAdvanceToConnect={() => router.push('/portal/mm4')}
+          onAdvanceToConnect={() => { console.log('[MM3] router.push to mm4 called'); router.push('/portal/mm4') }}
           initialMetro={initialMetro}
           initialCityIndex={0}
         />
