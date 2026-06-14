@@ -2,9 +2,9 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { createClient } from '../../../lib/supabase/client'
+import { createClient } from '../../../../lib/supabase/client'
 import JourneyHealthBadge from './JourneyHealthBadge'
-import type { MDClientWithProfile } from '../../../types'
+import type { MDClientWithProfile } from '../../../../types'
 
 const MM_LABELS: Record<number, string> = {
   1: 'MM1 — Welcome',

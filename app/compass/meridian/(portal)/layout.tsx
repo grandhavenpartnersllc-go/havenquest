@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { createServerClient } from '../../../lib/supabase/server'
+import { createServerClient } from '../../../../lib/supabase/server'
 import MDTopBar from '../components/MDTopBar'
 
 export default async function MDPortalLayout({ children }: { children: ReactNode }) {

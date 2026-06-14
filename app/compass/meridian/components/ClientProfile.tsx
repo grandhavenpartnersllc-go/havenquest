@@ -1,6 +1,6 @@
 'use client'
 
-import type { MM4Profile } from '../../../types'
+import type { MM4Profile } from '../../../../types'
 
 interface Props {
   mm4: MM4Profile

@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '../../../lib/supabase/client'
+import { createClient } from '../../../../lib/supabase/client'
 import MessageComposer from './MessageComposer'
-import type { Message } from '../../../types'
+import type { Message } from '../../../../types'
 
 interface Props {
   messages: Message[]

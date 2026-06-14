@@ -7,8 +7,8 @@ import ClientProfile from './ClientProfile'
 import MDNotes from './MDNotes'
 import MessageThread from './MessageThread'
 import MilemarkerAdvance from './MilemarkerAdvance'
-import { createClient } from '../../../lib/supabase/client'
-import type { MDClientWithProfile, Message } from '../../../types'
+import { createClient } from '../../../../lib/supabase/client'
+import type { MDClientWithProfile, Message } from '../../../../types'
 
 const MM_LABELS: Record<number, string> = {
   1: 'MM1 — Welcome',

@@ -1,8 +1,8 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { createServerClient } from '../../../../lib/supabase/server'
+import { createServerClient } from '../../../../../lib/supabase/server'
 import ClientRoster from '../../components/ClientRoster'
-import type { MDClientWithProfile } from '../../../../types'
+import type { MDClientWithProfile } from '../../../../../types'
 
 export default async function ClientsPage() {
   const cookieStore = await cookies()
