@@ -63,11 +63,8 @@ export default function MileMarkerContent({
 }: MileMarkerContentProps) {
   switch (selectedMileMarker) {
     case 1:
-      if (!profile) return null
       return (
         <MM1Explore
-          matches={matches}
-          profile={profile}
           session={session}
           currentMileMarker={currentMileMarker}
           onAdvanceToDiscover={onAdvanceToDiscover}
