@@ -188,7 +188,7 @@ export default function CommandCenter() {
         </p>
 
         {/* ── Journey Status ── */}
-        <div style={{ backgroundColor: 'var(--card-bg)', borderRadius: '10px', padding: '12px' }}>
+        <div style={{ backgroundColor: 'var(--card-bg)', borderRadius: '10px', padding: '12px', border: '1.5px solid var(--brand-blue, #0076B6)' }}>
           {!ready ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
@@ -209,7 +209,7 @@ export default function CommandCenter() {
                 <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-primary)' }}>On track</span>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', marginBottom: '10px', border: '1.5px solid var(--brand-blue, #0076B6)', borderRadius: '50%', padding: '8px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', marginBottom: '10px' }}>
                 <svg width="60" height="60" viewBox="0 0 60 60">
                   <circle cx="30" cy="30" r={radius} fill="none" stroke="#e5e7eb" strokeWidth="4" />
                   <circle
