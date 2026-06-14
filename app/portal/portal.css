@@ -120,7 +120,7 @@
 /* Light theme — default */
 [data-theme="light"],
 :root {
-  --portal-bg: #f4f6f9;
+  --portal-bg: #F5F4F1;
   --panel-bg: #ffffff;
   --panel-border: #e2e6ea;
   --topbar-bg: #0A1E3D;

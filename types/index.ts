@@ -221,6 +221,7 @@ export interface MM4Profile {
   children_ages?: string
   has_pets?: boolean
   pet_details?: string
+  household_members?: Array<{ first_name: string; age: number; relationship: string }>
 
   // Section 2 — The Move
   why_texas?: string

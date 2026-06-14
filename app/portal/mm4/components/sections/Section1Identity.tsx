@@ -90,7 +90,7 @@ export default function Section1Identity({ data, onChange, errors }: Props) {
         <h2 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 4px' }}>
           Your Information
         </h2>
-        <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
+        <p style={{ fontSize: '13px', color: 'var(--text-primary)', margin: 0, lineHeight: 1.5 }}>
           Tell us who's making this move so your Market Director can reach you.
         </p>
       </div>
@@ -201,28 +201,45 @@ export default function Section1Identity({ data, onChange, errors }: Props) {
       {/* Row 5: Phone / Preferred contact */}
       <div>
         <MiniLabel>Contact</MiniLabel>
-        <div style={col2}>
-          <Field label="Phone number" required error={errors.phone}>
-            <input
-              className="mm4-input"
-              type="tel"
-              value={data.phone ?? ''}
-              onChange={e => onChange({ phone: e.target.value })}
-              placeholder="(555) 000-0000"
-              autoComplete="tel"
-            />
-          </Field>
-          <Field label="Preferred contact method" required error={errors.preferred_contact}>
-            <PillGroup
-              options={[
-                { label: 'Phone call', value: 'phone' },
-                { label: 'Text', value: 'text' },
-                { label: 'Email', value: 'email' },
-              ]}
-              value={data.preferred_contact}
-              onSelect={v => onChange({ preferred_contact: v as MM4Profile['preferred_contact'] })}
-            />
-          </Field>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div style={col2}>
+            <Field label="Phone number" required error={errors.phone}>
+              <input
+                className="mm4-input"
+                type="tel"
+                value={data.phone ?? ''}
+                onChange={e => onChange({ phone: e.target.value })}
+                placeholder="(555) 000-0000"
+                autoComplete="tel"
+              />
+            </Field>
+            <Field label="Preferred contact method" required error={errors.preferred_contact}>
+              <PillGroup
+                options={[
+                  { label: 'Phone call', value: 'phone' },
+                  { label: 'Text', value: 'text' },
+                  { label: 'Email', value: 'email' },
+                ]}
+                value={data.preferred_contact}
+                onSelect={v => onChange({ preferred_contact: v as MM4Profile['preferred_contact'] })}
+              />
+            </Field>
+          </div>
+          <div style={col2}>
+            <Field label="Best time to reach you">
+              <PillGroup
+                options={[
+                  { label: 'Morning', value: 'morning' },
+                  { label: 'Afternoon', value: 'afternoon' },
+                  { label: 'Evening', value: 'evening' },
+                  { label: 'Anytime', value: 'anytime' },
+                ]}
+                value={data.best_time_to_reach}
+                onSelect={v => onChange({ best_time_to_reach: v as MM4Profile['best_time_to_reach'] })}
+              />
+            </Field>
+            <div />
+          </div>
         </div>
       </div>
 

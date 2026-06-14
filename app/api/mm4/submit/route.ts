@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 import type { MM4Profile } from '../../../../types'
+import { getAllCities } from '../../../../services/locationService'
 
 function getSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -66,9 +67,18 @@ function fmtContingent(val?: string) {
 
 // ─── Client confirmation email ────────────────────────────────────────────────
 
-function buildClientHtml(profile: MM4Profile): string {
+function buildCityRef(cityNames: string[]): string {
+  if (cityNames.length === 0) return 'Texas'
+  if (cityNames.length === 1) return cityNames[0]
+  const last = cityNames[cityNames.length - 1]
+  const others = cityNames.slice(0, -1)
+  return others.join(', ') + ', and ' + last
+}
+
+function buildClientHtml(profile: MM4Profile, cityNames: string[]): string {
   const firstName = profile.primary_first_name ?? 'there'
-  const targetCity = profile.confirmed_target_city ?? 'Texas'
+  const cityRef = buildCityRef(cityNames)
+  const multiCity = cityNames.length >= 2
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -91,19 +101,22 @@ function buildClientHtml(profile: MM4Profile): string {
           <td style="background:#ffffff;padding:36px 36px 28px;">
             <p style="margin:0 0 20px;font-size:15px;color:#1a1a2e;line-height:1.65;">${firstName},</p>
             <p style="margin:0 0 20px;font-size:15px;color:#1a1a2e;line-height:1.65;">
-              Your Navigator profile is complete — and I've already started reviewing it.
+              Your Navigator profile has been submitted and sent to your Market Director. We're looking forward to reviewing it with you and can't wait to meet you.
             </p>
             <p style="margin:0 0 28px;font-size:15px;color:#1a1a2e;line-height:1.65;">
-              I'm looking forward to our conversation. Based on what you've shared, I have a lot to discuss with you about <strong>${targetCity}</strong> and what your move is going to look like.
+              Based on what you've shared, I'm looking forward to discussing ${multiCity ? `your top communities — <strong>${cityRef}</strong> —` : `<strong>${cityRef}</strong>`} and what ${multiCity ? 'each one could mean' : 'your move is going to mean'} for you and your family.
             </p>
 
             <!-- CTA -->
+            <p style="margin:0 0 16px;font-size:15px;color:#1a1a2e;line-height:1.65;">
+              If you haven't scheduled your initial consultation yet, click below to find a time that works:
+            </p>
             <table cellpadding="0" cellspacing="0" style="margin:0 0 28px;">
               <tr>
                 <td style="border-radius:8px;background:#0076B6;">
                   <a href="${BOOKINGS_URL}" target="_blank"
                      style="display:inline-block;padding:14px 28px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;letter-spacing:0.01em;">
-                    Book My Consultation →
+                    Book My Consultation
                   </a>
                 </td>
               </tr>
@@ -112,8 +125,20 @@ function buildClientHtml(profile: MM4Profile): string {
             <p style="margin:0 0 8px;font-size:13px;color:#8a93a0;line-height:1.5;">
               Or copy this link: <a href="${BOOKINGS_URL}" style="color:#0076B6;word-break:break-all;">${BOOKINGS_URL}</a>
             </p>
-            <p style="margin:24px 0 0;font-size:15px;color:#1a1a2e;line-height:1.65;">
-              It's a 60-minute Teams call. Come ready to talk about the life you're building in Texas — the more we dig in, the better I can guide you.
+
+            <!-- Consultation expectations -->
+            <p style="margin:28px 0 12px;font-size:15px;font-weight:600;color:#1a1a2e;line-height:1.65;">
+              What we'll cover in your consultation:
+            </p>
+            <ul style="margin:0 0 20px;padding:0 0 0 20px;">
+              <li style="font-size:14px;color:#1a1a2e;line-height:1.75;margin-bottom:6px;">Your target communities and what makes each one right — or wrong — for your family</li>
+              <li style="font-size:14px;color:#1a1a2e;line-height:1.75;margin-bottom:6px;">Your financial picture and what it means for your Texas search</li>
+              <li style="font-size:14px;color:#1a1a2e;line-height:1.75;margin-bottom:6px;">The full Navigator journey — all 10 stages and what to expect at each one</li>
+              <li style="font-size:14px;color:#1a1a2e;line-height:1.75;margin-bottom:6px;">Your timeline, your concerns, and anything else on your mind</li>
+              <li style="font-size:14px;color:#1a1a2e;line-height:1.75;margin-bottom:6px;">The Navigator Activation — what it unlocks and what your journey looks like from here</li>
+            </ul>
+            <p style="margin:0;font-size:15px;color:#1a1a2e;line-height:1.65;">
+              Come ready to talk about the life you're building in Texas. The more you share, the better I can guide you.
             </p>
           </td>
         </tr>
@@ -264,6 +289,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing email' }, { status: 400 })
     }
 
+    // Resolve city names for the client email
+    let cityNames: string[] = []
+    try {
+      const supabase = getSupabase()
+      const { data: userData } = await supabase
+        .from('users')
+        .select('chosen_communities')
+        .eq('email', profile.email.toLowerCase())
+        .maybeSingle()
+
+      if (Array.isArray(userData?.chosen_communities) && userData.chosen_communities.length > 0) {
+        const allCities = getAllCities()
+        cityNames = (userData.chosen_communities as string[])
+          .slice(0, 3)
+          .map(id => allCities.find(c => c.id === id)?.name)
+          .filter((n): n is string => typeof n === 'string')
+      }
+    } catch (err) {
+      console.error('[MM4/submit] city lookup error:', err)
+    }
+
+    if (cityNames.length === 0 && profile.confirmed_target_city) {
+      cityNames = [profile.confirmed_target_city]
+    }
+
     const key = process.env.RESEND_API_KEY
     if (!key) {
       console.error('[MM4/submit] RESEND_API_KEY not configured — emails skipped')
@@ -280,7 +330,7 @@ export async function POST(request: NextRequest) {
         replyTo: MD_EMAIL,
         to: profile.email,
         subject: 'Your HavenQuest profile is complete — let\'s connect',
-        html: buildClientHtml(profile),
+        html: buildClientHtml(profile, cityNames),
       })
     } catch (err) {
       console.error('[MM4/submit] client email error:', err)

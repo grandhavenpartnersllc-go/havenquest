@@ -16,7 +16,7 @@ export default function Section5Notes({ data, onChange, onSubmit, submitting }: 
         <h2 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 6px' }}>
           Anything Else?
         </h2>
-        <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
+        <p style={{ fontSize: '14px', color: 'var(--text-primary)', margin: 0, lineHeight: 1.5 }}>
           This is your open field. Share anything that didn't fit the earlier sections — circumstances, concerns,
           context, or anything you want your Market Director to know before your consultation.
         </p>

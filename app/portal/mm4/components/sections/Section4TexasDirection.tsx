@@ -47,8 +47,8 @@ export default function Section4TexasDirection({ data, onChange, errors, chosenC
         <h2 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 6px' }}>
           Your Texas Direction
         </h2>
-        <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
-          Share what you've already researched and where you're leaning — your MD will use this to sharpen your roadmap.
+        <p style={{ fontSize: '14px', color: 'var(--text-primary)', margin: 0, lineHeight: 1.5 }}>
+          Share what you&apos;ve already researched and where you&apos;re leaning — your MD will use this to sharpen your roadmap.
         </p>
       </div>
 
@@ -59,52 +59,62 @@ export default function Section4TexasDirection({ data, onChange, errors, chosenC
         </p>
 
         {hasCityCards ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 4px' }}>
+          <div>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 12px' }}>
               These are the communities you locked in during Discover. Tell us what draws you to each one.
             </p>
-            {resolvedCities.map((city, index) => {
-              const key = REASONING_KEYS[index]
-              return (
-                <div
-                  key={city.id}
-                  style={{
-                    border: '1px solid var(--card-border)',
-                    borderRadius: '12px',
-                    padding: '16px 20px',
-                    backgroundColor: 'var(--card-bg)',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '12px' }}>
-                    <span style={{
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      color: '#0076B6',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.08em',
-                    }}>
-                      #{index + 1}
-                    </span>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+              {resolvedCities.map((city, index) => {
+                const key = REASONING_KEYS[index]
+                return (
+                  <div
+                    key={city.id}
+                    style={{
+                      border: '1px solid var(--card-border)',
+                      borderRadius: '12px',
+                      padding: '16px',
+                      backgroundColor: 'var(--card-bg)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '10px',
+                    }}
+                  >
                     <div>
-                      <span style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                        {city.name}
-                      </span>
-                      <span style={{ fontSize: '13px', color: 'var(--text-muted)', marginLeft: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '2px' }}>
+                        <span style={{
+                          fontSize: '10px',
+                          fontWeight: 700,
+                          color: '#0076B6',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.08em',
+                        }}>
+                          #{index + 1}
+                        </span>
+                        <span style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                          {city.name}
+                        </span>
+                      </div>
+                      <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)' }}>
                         {city.metroUsed}
-                      </span>
+                      </p>
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px' }}>
+                        Why does {city.name} appeal to you?
+                      </label>
+                      <textarea
+                        className="mm4-textarea"
+                        value={data[key] ?? ''}
+                        onChange={e => onChange({ [key]: e.target.value })}
+                        placeholder={`What draws you to ${city.name}?`}
+                        rows={3}
+                        style={{ minHeight: '80px' }}
+                      />
                     </div>
                   </div>
-                  <textarea
-                    className="mm4-textarea"
-                    value={data[key] ?? ''}
-                    onChange={e => onChange({ [key]: e.target.value })}
-                    placeholder={`What draws you to ${city.name}?`}
-                    rows={2}
-                    style={{ minHeight: '72px' }}
-                  />
-                </div>
-              )
-            })}
+                )
+              })}
+            </div>
           </div>
         ) : (
           <Field
@@ -129,7 +139,7 @@ export default function Section4TexasDirection({ data, onChange, errors, chosenC
         <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
           Research &amp; Criteria
         </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
           <Field
             label="Cities or communities you've ruled out"
             hint="Optional — helps us understand what you've already discarded and why."
