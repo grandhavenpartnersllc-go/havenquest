@@ -4,12 +4,16 @@ import { useState } from 'react'
 import { createClient } from '../../../../lib/supabase/client'
 
 export default function AdminLoginPage() {
+  const [step, setStep] = useState<'credentials' | 'code'>('credentials')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [sessionToken, setSessionToken] = useState('')
+  const [codeInput, setCodeInput] = useState('')
+  const [codeAttempts, setCodeAttempts] = useState(0)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  async function handleLogin(e: React.FormEvent) {
+  async function handleCredentials(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError('')
@@ -37,19 +41,77 @@ export default function AdminLoginPage() {
         return
       }
 
-      await fetch('/api/auth/session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ access_token: data.session.access_token }),
-      })
+      const requiredCode = process.env.NEXT_PUBLIC_ADMIN_ACCESS_CODE
+      if (!requiredCode) {
+        console.warn('Access code env var not set — code gate bypassed')
+        await fetch('/api/auth/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ access_token: data.session.access_token }),
+        })
+        sessionStorage.setItem('hq_admin_verified', 'true')
+        window.location.assign('/compass/admin')
+        return
+      }
 
-      window.location.assign('/compass/admin')
+      setSessionToken(data.session.access_token)
+      setStep('code')
     } catch (err) {
       console.error('[compass/admin/login]', err)
       setError('An unexpected error occurred. Please try again.')
     } finally {
       setLoading(false)
     }
+  }
+
+  async function handleCode(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+
+    const requiredCode = process.env.NEXT_PUBLIC_ADMIN_ACCESS_CODE ?? ''
+
+    if (codeInput.trim() !== requiredCode.trim()) {
+      const newAttempts = codeAttempts + 1
+      setCodeAttempts(newAttempts)
+
+      if (newAttempts >= 3) {
+        await createClient().auth.signOut()
+        setStep('credentials')
+        setCodeInput('')
+        setCodeAttempts(0)
+        setSessionToken('')
+        setError('Too many incorrect attempts. Please sign in again.')
+      } else {
+        setCodeInput('')
+        setError('Incorrect access code.')
+      }
+      setLoading(false)
+      return
+    }
+
+    try {
+      await fetch('/api/auth/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ access_token: sessionToken }),
+      })
+      sessionStorage.setItem('hq_admin_verified', 'true')
+      window.location.assign('/compass/admin')
+    } catch (err) {
+      console.error('[compass/admin/login/code]', err)
+      setError('An unexpected error occurred. Please try again.')
+      setLoading(false)
+    }
+  }
+
+  async function handleSignOut() {
+    await createClient().auth.signOut()
+    setStep('credentials')
+    setCodeInput('')
+    setCodeAttempts(0)
+    setSessionToken('')
+    setError('')
   }
 
   return (
@@ -63,64 +125,132 @@ export default function AdminLoginPage() {
         </p>
 
         <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', padding: '32px', boxShadow: '0 4px 32px rgba(0,0,0,0.4)' }}>
-          <h1 style={{ fontSize: '18px', fontWeight: 700, color: '#0A1E3D', margin: '0 0 4px' }}>
-            Admin Portal
-          </h1>
-          <p style={{ fontSize: '13px', color: '#9A8E82', margin: '0 0 24px' }}>
-            Authorized personnel only
-          </p>
+          {step === 'credentials' ? (
+            <>
+              <h1 style={{ fontSize: '18px', fontWeight: 700, color: '#0A1E3D', margin: '0 0 4px' }}>
+                Admin Portal
+              </h1>
+              <p style={{ fontSize: '13px', color: '#9A8E82', margin: '0 0 24px' }}>
+                Authorized personnel only
+              </p>
 
-          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#4B5563', marginBottom: '6px', letterSpacing: '0.04em' }}>
-                EMAIL
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="you@havenquest.co"
-                required
-                style={{ width: '100%', border: '1px solid #E5E7EB', borderRadius: '10px', padding: '10px 14px', fontSize: '14px', color: '#0A1E3D', outline: 'none', boxSizing: 'border-box' }}
-              />
-            </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#4B5563', marginBottom: '6px', letterSpacing: '0.04em' }}>
-                PASSWORD
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                style={{ width: '100%', border: '1px solid #E5E7EB', borderRadius: '10px', padding: '10px 14px', fontSize: '14px', color: '#0A1E3D', outline: 'none', boxSizing: 'border-box' }}
-              />
-            </div>
+              <form onSubmit={handleCredentials} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#4B5563', marginBottom: '6px', letterSpacing: '0.04em' }}>
+                    EMAIL
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="you@havenquest.co"
+                    required
+                    style={{ width: '100%', border: '1px solid #E5E7EB', borderRadius: '10px', padding: '10px 14px', fontSize: '14px', color: '#0A1E3D', outline: 'none', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#4B5563', marginBottom: '6px', letterSpacing: '0.04em' }}>
+                    PASSWORD
+                  </label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    style={{ width: '100%', border: '1px solid #E5E7EB', borderRadius: '10px', padding: '10px 14px', fontSize: '14px', color: '#0A1E3D', outline: 'none', boxSizing: 'border-box' }}
+                  />
+                </div>
 
-            {error && (
-              <p style={{ fontSize: '13px', color: '#DC2626', margin: 0, lineHeight: 1.5 }}>{error}</p>
-            )}
+                {error && (
+                  <p style={{ fontSize: '13px', color: '#DC2626', margin: 0, lineHeight: 1.5 }}>{error}</p>
+                )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                width: '100%',
-                padding: '11px',
-                borderRadius: '10px',
-                border: 'none',
-                backgroundColor: loading ? '#5B7EA6' : '#0A1E3D',
-                color: '#ffffff',
-                fontSize: '14px',
-                fontWeight: 600,
-                cursor: loading ? 'not-allowed' : 'pointer',
-                marginTop: '4px',
-              }}
-            >
-              {loading ? 'Signing in…' : 'Sign In →'}
-            </button>
-          </form>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  style={{
+                    width: '100%',
+                    padding: '11px',
+                    borderRadius: '10px',
+                    border: 'none',
+                    backgroundColor: loading ? '#5B7EA6' : '#0A1E3D',
+                    color: '#ffffff',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    cursor: loading ? 'not-allowed' : 'pointer',
+                    marginTop: '4px',
+                  }}
+                >
+                  {loading ? 'Signing in…' : 'Sign In →'}
+                </button>
+              </form>
+            </>
+          ) : (
+            <>
+              <h1 style={{ fontSize: '18px', fontWeight: 700, color: '#0A1E3D', margin: '0 0 4px' }}>
+                Access Code Required
+              </h1>
+              <p style={{ fontSize: '13px', color: '#9A8E82', margin: '0 0 28px' }}>
+                Enter your 4-digit COMPASS Admin access code
+              </p>
+
+              <form onSubmit={handleCode} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                <input
+                  type="password"
+                  value={codeInput}
+                  onChange={e => setCodeInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                  placeholder="••••"
+                  maxLength={4}
+                  autoFocus
+                  style={{
+                    width: '140px',
+                    border: '2px solid #E5E7EB',
+                    borderRadius: '10px',
+                    padding: '14px',
+                    fontSize: '28px',
+                    fontWeight: 700,
+                    color: '#0A1E3D',
+                    outline: 'none',
+                    textAlign: 'center',
+                    letterSpacing: '0.2em',
+                    boxSizing: 'border-box',
+                  }}
+                />
+
+                {error && (
+                  <p style={{ fontSize: '13px', color: '#DC2626', margin: 0, textAlign: 'center' }}>{error}</p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={loading || codeInput.length !== 4}
+                  style={{
+                    width: '100%',
+                    padding: '11px',
+                    borderRadius: '10px',
+                    border: 'none',
+                    backgroundColor: (loading || codeInput.length !== 4) ? '#5B7EA6' : '#0A1E3D',
+                    color: '#ffffff',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    cursor: (loading || codeInput.length !== 4) ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  {loading ? 'Verifying…' : 'Verify →'}
+                </button>
+              </form>
+
+              <p style={{ textAlign: 'center', marginTop: '20px', marginBottom: 0 }}>
+                <button
+                  onClick={handleSignOut}
+                  style={{ background: 'none', border: 'none', color: '#9A8E82', fontSize: '12px', cursor: 'pointer', textDecoration: 'underline' }}
+                >
+                  Sign out
+                </button>
+              </p>
+            </>
+          )}
         </div>
       </div>
     </div>

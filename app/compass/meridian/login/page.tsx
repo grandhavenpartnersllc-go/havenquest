@@ -4,13 +4,16 @@ import { useState } from 'react'
 import { createClient } from '../../../../lib/supabase/client'
 
 export default function MDLoginPage() {
+  const [step, setStep] = useState<'credentials' | 'code'>('credentials')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [accessCode, setAccessCode] = useState('')
+  const [sessionToken, setSessionToken] = useState('')
+  const [codeInput, setCodeInput] = useState('')
+  const [codeAttempts, setCodeAttempts] = useState(0)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  async function handleLogin(e: React.FormEvent) {
+  async function handleCredentials(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError('')
@@ -26,7 +29,6 @@ export default function MDLoginPage() {
         return
       }
 
-      // Check role
       const { data: userRecord } = await supabase
         .from('users')
         .select('user_role')
@@ -39,22 +41,21 @@ export default function MDLoginPage() {
         return
       }
 
-      // Optional access code gate
       const requiredCode = process.env.NEXT_PUBLIC_MD_ACCESS_CODE
-      if (requiredCode && accessCode.trim().toLowerCase() !== requiredCode.toLowerCase()) {
-        await supabase.auth.signOut()
-        setError('Invalid access code.')
+      if (!requiredCode) {
+        console.warn('Access code env var not set — code gate bypassed')
+        await fetch('/api/auth/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ access_token: data.session.access_token }),
+        })
+        sessionStorage.setItem('hq_portal_verified', 'true')
+        window.location.assign('/compass/meridian/clients')
         return
       }
 
-      // Set hq_auth cookie
-      await fetch('/api/auth/session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ access_token: data.session.access_token }),
-      })
-
-      window.location.assign('/compass/meridian/clients')
+      setSessionToken(data.session.access_token)
+      setStep('code')
     } catch (err) {
       console.error('[md/login]', err)
       setError('An unexpected error occurred. Please try again.')
@@ -63,10 +64,59 @@ export default function MDLoginPage() {
     }
   }
 
+  async function handleCode(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+
+    const requiredCode = process.env.NEXT_PUBLIC_MD_ACCESS_CODE ?? ''
+
+    if (codeInput.trim() !== requiredCode.trim()) {
+      const newAttempts = codeAttempts + 1
+      setCodeAttempts(newAttempts)
+
+      if (newAttempts >= 3) {
+        await createClient().auth.signOut()
+        setStep('credentials')
+        setCodeInput('')
+        setCodeAttempts(0)
+        setSessionToken('')
+        setError('Too many incorrect attempts. Please sign in again.')
+      } else {
+        setCodeInput('')
+        setError('Incorrect access code.')
+      }
+      setLoading(false)
+      return
+    }
+
+    try {
+      await fetch('/api/auth/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ access_token: sessionToken }),
+      })
+      sessionStorage.setItem('hq_portal_verified', 'true')
+      window.location.assign('/compass/meridian/clients')
+    } catch (err) {
+      console.error('[md/login/code]', err)
+      setError('An unexpected error occurred. Please try again.')
+      setLoading(false)
+    }
+  }
+
+  async function handleSignOut() {
+    await createClient().auth.signOut()
+    setStep('credentials')
+    setCodeInput('')
+    setCodeAttempts(0)
+    setSessionToken('')
+    setError('')
+  }
+
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#08101C', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
       <div style={{ width: '100%', maxWidth: '380px' }}>
-        {/* Wordmark */}
         <p style={{ textAlign: 'center', fontSize: '18px', fontWeight: 700, color: '#ffffff', marginBottom: '4px', letterSpacing: '-0.01em' }}>
           <span>Haven</span><span style={{ color: '#0076B6' }}>Quest</span>
         </p>
@@ -75,84 +125,139 @@ export default function MDLoginPage() {
         </p>
 
         <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', padding: '32px', boxShadow: '0 4px 32px rgba(0,0,0,0.4)' }}>
-          <h1 style={{ fontSize: '18px', fontWeight: 700, color: '#0A1E3D', margin: '0 0 4px' }}>
-            Market Director Portal
-          </h1>
-          <p style={{ fontSize: '13px', color: '#9A8E82', margin: '0 0 24px' }}>
-            COMPASS — HavenQuest Operating System
-          </p>
+          {step === 'credentials' ? (
+            <>
+              <h1 style={{ fontSize: '18px', fontWeight: 700, color: '#0A1E3D', margin: '0 0 4px' }}>
+                Market Director Portal
+              </h1>
+              <p style={{ fontSize: '13px', color: '#9A8E82', margin: '0 0 24px' }}>
+                COMPASS — HavenQuest Operating System
+              </p>
 
-          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#4B5563', marginBottom: '6px', letterSpacing: '0.04em' }}>
-                EMAIL
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="you@havenquest.co"
-                required
-                style={{ width: '100%', border: '1px solid #E5E7EB', borderRadius: '10px', padding: '10px 14px', fontSize: '14px', color: '#0A1E3D', outline: 'none', boxSizing: 'border-box' }}
-              />
-            </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#4B5563', marginBottom: '6px', letterSpacing: '0.04em' }}>
-                PASSWORD
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                style={{ width: '100%', border: '1px solid #E5E7EB', borderRadius: '10px', padding: '10px 14px', fontSize: '14px', color: '#0A1E3D', outline: 'none', boxSizing: 'border-box' }}
-              />
-            </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#4B5563', marginBottom: '6px', letterSpacing: '0.04em' }}>
-                ACCESS CODE
-              </label>
-              <input
-                type="text"
-                value={accessCode}
-                onChange={e => setAccessCode(e.target.value)}
-                placeholder="6-character code"
-                maxLength={6}
-                style={{ width: '100%', border: '1px solid #E5E7EB', borderRadius: '10px', padding: '10px 14px', fontSize: '14px', color: '#0A1E3D', outline: 'none', boxSizing: 'border-box', letterSpacing: '0.12em' }}
-              />
-            </div>
+              <form onSubmit={handleCredentials} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#4B5563', marginBottom: '6px', letterSpacing: '0.04em' }}>
+                    EMAIL
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="you@havenquest.co"
+                    required
+                    style={{ width: '100%', border: '1px solid #E5E7EB', borderRadius: '10px', padding: '10px 14px', fontSize: '14px', color: '#0A1E3D', outline: 'none', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#4B5563', marginBottom: '6px', letterSpacing: '0.04em' }}>
+                    PASSWORD
+                  </label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    style={{ width: '100%', border: '1px solid #E5E7EB', borderRadius: '10px', padding: '10px 14px', fontSize: '14px', color: '#0A1E3D', outline: 'none', boxSizing: 'border-box' }}
+                  />
+                </div>
 
-            {error && (
-              <p style={{ fontSize: '13px', color: '#DC2626', margin: 0, lineHeight: 1.5 }}>{error}</p>
-            )}
+                {error && (
+                  <p style={{ fontSize: '13px', color: '#DC2626', margin: 0, lineHeight: 1.5 }}>{error}</p>
+                )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                width: '100%',
-                padding: '11px',
-                borderRadius: '10px',
-                border: 'none',
-                backgroundColor: loading ? '#5B7EA6' : '#0A1E3D',
-                color: '#ffffff',
-                fontSize: '14px',
-                fontWeight: 600,
-                cursor: loading ? 'not-allowed' : 'pointer',
-                marginTop: '4px',
-              }}
-            >
-              {loading ? 'Signing in…' : 'Sign In →'}
-            </button>
-          </form>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  style={{
+                    width: '100%',
+                    padding: '11px',
+                    borderRadius: '10px',
+                    border: 'none',
+                    backgroundColor: loading ? '#5B7EA6' : '#0A1E3D',
+                    color: '#ffffff',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    cursor: loading ? 'not-allowed' : 'pointer',
+                    marginTop: '4px',
+                  }}
+                >
+                  {loading ? 'Signing in…' : 'Sign In →'}
+                </button>
+              </form>
 
-          <p style={{ fontSize: '12px', color: '#9A8E82', textAlign: 'center', marginTop: '20px', marginBottom: 0 }}>
-            Need access?{' '}
-            <a href="mailto:craig.asbach@havenquest.co" style={{ color: '#0076B6', textDecoration: 'none' }}>
-              craig.asbach@havenquest.co
-            </a>
-          </p>
+              <p style={{ fontSize: '12px', color: '#9A8E82', textAlign: 'center', marginTop: '20px', marginBottom: 0 }}>
+                Need access?{' '}
+                <a href="mailto:craig.asbach@havenquest.co" style={{ color: '#0076B6', textDecoration: 'none' }}>
+                  craig.asbach@havenquest.co
+                </a>
+              </p>
+            </>
+          ) : (
+            <>
+              <h1 style={{ fontSize: '18px', fontWeight: 700, color: '#0A1E3D', margin: '0 0 4px' }}>
+                Access Code Required
+              </h1>
+              <p style={{ fontSize: '13px', color: '#9A8E82', margin: '0 0 28px' }}>
+                Enter your 4-digit Meridian access code
+              </p>
+
+              <form onSubmit={handleCode} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                <input
+                  type="password"
+                  value={codeInput}
+                  onChange={e => setCodeInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                  placeholder="••••"
+                  maxLength={4}
+                  autoFocus
+                  style={{
+                    width: '140px',
+                    border: '2px solid #E5E7EB',
+                    borderRadius: '10px',
+                    padding: '14px',
+                    fontSize: '28px',
+                    fontWeight: 700,
+                    color: '#0A1E3D',
+                    outline: 'none',
+                    textAlign: 'center',
+                    letterSpacing: '0.2em',
+                    boxSizing: 'border-box',
+                  }}
+                />
+
+                {error && (
+                  <p style={{ fontSize: '13px', color: '#DC2626', margin: 0, textAlign: 'center' }}>{error}</p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={loading || codeInput.length !== 4}
+                  style={{
+                    width: '100%',
+                    padding: '11px',
+                    borderRadius: '10px',
+                    border: 'none',
+                    backgroundColor: (loading || codeInput.length !== 4) ? '#5B7EA6' : '#0A1E3D',
+                    color: '#ffffff',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    cursor: (loading || codeInput.length !== 4) ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  {loading ? 'Verifying…' : 'Verify →'}
+                </button>
+              </form>
+
+              <p style={{ textAlign: 'center', marginTop: '20px', marginBottom: 0 }}>
+                <button
+                  onClick={handleSignOut}
+                  style={{ background: 'none', border: 'none', color: '#9A8E82', fontSize: '12px', cursor: 'pointer', textDecoration: 'underline' }}
+                >
+                  Sign out
+                </button>
+              </p>
+            </>
+          )}
         </div>
       </div>
     </div>

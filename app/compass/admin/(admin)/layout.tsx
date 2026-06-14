@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { createServerClient } from '../../../../lib/supabase/server'
 import AdminTopBar from '../components/AdminTopBar'
 import AdminSidebar from '../components/AdminSidebar'
+import AdminAccessGate from '../components/AdminAccessGate'
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const cookieStore = await cookies()
@@ -19,14 +20,16 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   if (user?.user_role !== 'admin') redirect('/compass/admin/login')
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#F5F5F5', display: 'flex', flexDirection: 'column' }}>
-      <AdminTopBar email={user.email ?? ''} />
-      <div style={{ display: 'flex', flex: 1 }}>
-        <AdminSidebar />
-        <main style={{ flex: 1, overflow: 'auto' }}>
-          {children}
-        </main>
+    <AdminAccessGate>
+      <div style={{ minHeight: '100vh', backgroundColor: '#F5F5F5', display: 'flex', flexDirection: 'column' }}>
+        <AdminTopBar email={user.email ?? ''} />
+        <div style={{ display: 'flex', flex: 1 }}>
+          <AdminSidebar />
+          <main style={{ flex: 1, overflow: 'auto' }}>
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </AdminAccessGate>
   )
 }
