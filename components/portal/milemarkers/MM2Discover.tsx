@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { Download, Mail, Map } from 'lucide-react'
 import { CityMatch, UserProfile } from '../../../types'
@@ -46,16 +46,16 @@ interface MM2DiscoverProps {
   initialChecklist: Record<string, boolean>
   initialNotes: string
   onAdvanceToDiscover: () => void
+  email?: string
 }
 
-export default function MM2Discover({ matches, profile, initialChecklist, initialNotes, onAdvanceToDiscover }: MM2DiscoverProps) {
+export default function MM2Discover({ matches, profile, initialChecklist, initialNotes, onAdvanceToDiscover, email }: MM2DiscoverProps) {
   const [dlState, setDlState] = useState<BtnState>('idle')
   const [emailState, setEmailState] = useState<BtnState>('idle')
   const [scorePopupOpen, setScorePopupOpen] = useState(false)
   const [activeReportIndex, setActiveReportIndex] = useState(0)
 
   const topCity = matches[0]?.location ?? null
-  const userEmailRef = useRef<string>('')
 
   function getCityAffordabilityStatus(cityMedianPrice: number, cityTaxRate: number): 'comfortable' | 'moderate' | 'stretched' {
     const grossMonthlyIncome = (profile?.annualIncome ?? 100000) / 12
@@ -79,15 +79,6 @@ export default function MM2Discover({ matches, profile, initialChecklist, initia
     if (pct <= 0.40) return 'moderate'
     return 'stretched'
   }
-
-  useEffect(() => {
-    const supabase = createClient()
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user?.email) {
-        userEmailRef.current = session.user.email.toLowerCase()
-      }
-    })
-  }, [])
 
   async function handleDownload() {
     setDlState('loading')
@@ -389,26 +380,16 @@ export default function MM2Discover({ matches, profile, initialChecklist, initia
         </p>
         <button
           onClick={async () => {
-            try {
-              const supabase = createClient()
-              const { data: { session: supaSession } } = await supabase.auth.getSession()
-              if (!supaSession?.user?.email) {
-                console.error('MM2 advance: no session')
-                onAdvanceToDiscover()
-                return
+            if (email) {
+              try {
+                const supabase = createClient()
+                await supabase
+                  .from('users')
+                  .update({ current_milemarker: 3 })
+                  .eq('email', email.toLowerCase())
+              } catch (err) {
+                console.error('[MM2→3] write failed:', err)
               }
-              const email = supaSession.user.email.toLowerCase()
-              const { data, error } = await supabase
-                .from('users')
-                .update({ current_milemarker: 3 })
-                .eq('email', email)
-                .select('current_milemarker')
-              console.log('[MM2→3] current_milemarker write result:', { data, error })
-              if (!error && (!data || data.length === 0)) {
-                console.warn('[MM2→3] write affected 0 rows — RLS UPDATE policy missing or JWT email mismatch for', email)
-              }
-            } catch (err) {
-              console.error('MM2 advance write failed:', err)
             }
             onAdvanceToDiscover()
           }}

@@ -7,7 +7,7 @@ import MM2Discover from '../../../components/portal/milemarkers/MM2Discover'
 
 export default function MM2Page() {
   const router = useRouter()
-  const { matches, profile, initialChecklist, initialNotes, ready, error } = usePortalData()
+  const { session, matches, profile, initialChecklist, initialNotes, ready, error } = usePortalData()
 
   if (!ready) {
     return (
@@ -47,6 +47,7 @@ export default function MM2Page() {
           initialChecklist={initialChecklist}
           initialNotes={initialNotes}
           onAdvanceToDiscover={() => router.push('/portal/mm3')}
+          email={session?.email}
         />
       </div>
     </div>

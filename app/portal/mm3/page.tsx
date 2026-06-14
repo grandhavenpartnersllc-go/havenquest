@@ -62,16 +62,15 @@ export default function MM3Page() {
           profile={profile}
           session={session}
           onAdvanceToConnect={async () => {
-              try {
-                const supabase = createClient()
-                const { data: { session: s } } = await supabase.auth.getSession()
-                if (s?.user?.email) {
+              if (session?.email) {
+                try {
+                  const supabase = createClient()
                   await supabase
                     .from('users')
                     .update({ current_milemarker: 4 })
-                    .eq('email', s.user.email.toLowerCase())
-                }
-              } catch {}
+                    .eq('email', session.email.toLowerCase())
+                } catch {}
+              }
               router.push('/portal/mm4')
             }}
           initialMetro={initialMetro}

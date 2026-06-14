@@ -96,17 +96,12 @@ export default function PortalDataProvider({ children }: { children: ReactNode }
     ;(async () => {
       try {
         const supabase = createClient()
-        const { data: { session: supaSession } } = await supabase.auth.getSession()
-        if (!supaSession?.user?.email) {
-          if (!profileWasLoaded) setError('Session expired. Please log in again.')
-          setReady(true)
-          return
-        }
+        const email = sess.email.toLowerCase()
 
         const { data } = await supabase
           .from('users')
           .select('first_name, top_city_matches, annual_income, household_size, moving_timeline, must_haves, nice_to_haves, not_priorities, current_milemarker, onboarding_acknowledged, mm2_checklist, portal_notes')
-          .eq('email', supaSession.user.email.toLowerCase())
+          .eq('email', email)
           .single()
 
         const ud = data as UserRow | null

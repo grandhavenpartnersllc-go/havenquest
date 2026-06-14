@@ -80,6 +80,7 @@ export default function MileMarkerContent({
           initialChecklist={initialChecklist}
           initialNotes={initialNotes}
           onAdvanceToDiscover={onAdvanceFromMM2}
+          email={session.email}
         />
       )
     case 3:
