@@ -888,7 +888,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
 
         {/* LEFT — Financial Summary */}
         <div className="rounded-xl p-4"
-             style={{ backgroundColor: CARD_BG, boxShadow: CARD_SHADOW }}>
+             style={{ backgroundColor: CARD_BG, boxShadow: CARD_SHADOW, display: 'flex', flexDirection: 'column' }}>
           <div className="mb-3">
             <p className="text-[10px] font-bold uppercase"
                style={{ color: GOLD, letterSpacing: '0.18em' }}>
@@ -1223,7 +1223,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           </div>
 
           {/* Lock financials */}
-          <div style={{ marginTop: '12px', borderTop: '1px solid #F0EDE6', paddingTop: '10px' }}>
+          <div style={{ marginTop: 'auto', paddingTop: '12px', borderTop: '1px solid #F0EDE6' }}>
             <p style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', marginBottom: '8px' }}>
               Lock your financial picture when you&apos;re ready. Your Market Director will use these numbers to guide your search.
             </p>
