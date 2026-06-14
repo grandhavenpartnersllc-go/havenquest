@@ -12,7 +12,7 @@ export default function MDTopBar({ firstName, email }: Props) {
     const supabase = createClient()
     await supabase.auth.signOut()
     await fetch('/api/auth/signout', { method: 'POST' }).catch(() => {})
-    window.location.assign('/md/login')
+    window.location.assign('/compass/meridian/login')
   }
 
   return (

@@ -52,7 +52,7 @@ export default function ClientWorkspace({ client: initialClient, mdEmail, mdFirs
   return (
     <div style={{ padding: '28px 40px', maxWidth: '1400px' }}>
       {/* Back link + header */}
-      <Link href="/md/clients" style={{ fontSize: '13px', color: '#0076B6', textDecoration: 'none', display: 'inline-block', marginBottom: '16px' }}>
+      <Link href="/compass/meridian/clients" style={{ fontSize: '13px', color: '#0076B6', textDecoration: 'none', display: 'inline-block', marginBottom: '16px' }}>
         ← Back to Roster
       </Link>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '28px' }}>

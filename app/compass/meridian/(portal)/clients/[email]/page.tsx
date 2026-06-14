@@ -14,7 +14,7 @@ export default async function ClientWorkspacePage({ params }: Props) {
 
   const cookieStore = await cookies()
   const accessToken = cookieStore.get('hq_auth')?.value
-  if (!accessToken) redirect('/md/login')
+  if (!accessToken) redirect('/compass/meridian/login')
 
   const supabase = createServerClient(accessToken)
 
@@ -23,7 +23,7 @@ export default async function ClientWorkspacePage({ params }: Props) {
     .select('email, first_name')
     .single()
 
-  if (!mdUser?.email) redirect('/md/login')
+  if (!mdUser?.email) redirect('/compass/meridian/login')
 
   const { data: assignment } = await supabase
     .from('md_clients')
@@ -32,7 +32,7 @@ export default async function ClientWorkspacePage({ params }: Props) {
     .eq('client_email', clientEmail)
     .single()
 
-  if (!assignment) redirect('/md/clients')
+  if (!assignment) redirect('/compass/meridian/clients')
 
   const { data: userRow } = await supabase
     .from('users')

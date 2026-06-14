@@ -14,6 +14,21 @@ const nextConfig: NextConfig = {
         destination: '/texas/texas-insider/:path*',
         permanent: true,
       },
+      {
+        source: '/md',
+        destination: '/compass/meridian',
+        permanent: true,
+      },
+      {
+        source: '/md/login',
+        destination: '/compass/meridian/login',
+        permanent: true,
+      },
+      {
+        source: '/md/:path*',
+        destination: '/compass/meridian/:path*',
+        permanent: true,
+      },
     ]
   },
 };

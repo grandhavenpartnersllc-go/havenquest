@@ -54,7 +54,7 @@ export default function MDLoginPage() {
         body: JSON.stringify({ access_token: data.session.access_token }),
       })
 
-      window.location.assign('/md/clients')
+      window.location.assign('/compass/meridian/clients')
     } catch (err) {
       console.error('[md/login]', err)
       setError('An unexpected error occurred. Please try again.')

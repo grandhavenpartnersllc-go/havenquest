@@ -115,7 +115,7 @@ export default function ClientRoster({ clients: initial, mdEmail }: Props) {
                 {c.unreadMessages > 0 ? `${c.unreadMessages} new` : '—'}
               </span>
               <Link
-                href={`/md/clients/${encodedEmail}`}
+                href={`/compass/meridian/clients/${encodedEmail}`}
                 style={{
                   display: 'inline-block',
                   padding: '6px 14px',

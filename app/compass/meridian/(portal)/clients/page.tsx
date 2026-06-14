@@ -7,7 +7,7 @@ import type { MDClientWithProfile } from '../../../../types'
 export default async function ClientsPage() {
   const cookieStore = await cookies()
   const accessToken = cookieStore.get('hq_auth')?.value
-  if (!accessToken) redirect('/md/login')
+  if (!accessToken) redirect('/compass/meridian/login')
 
   const supabase = createServerClient(accessToken)
 
@@ -16,7 +16,7 @@ export default async function ClientsPage() {
     .select('email')
     .single()
 
-  if (!mdUser?.email) redirect('/md/login')
+  if (!mdUser?.email) redirect('/compass/meridian/login')
 
   const { data: assignments } = await supabase
     .from('md_clients')
