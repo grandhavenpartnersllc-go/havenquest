@@ -7,7 +7,7 @@ import { getAllCities } from '../../../../services/locationService'
 import type { MM4Profile } from '../../../../types'
 
 const BOOKINGS_URL =
-  'https://calendly.com/craig-asbach-havenquest/havenquest-consulation'
+  'https://calendly.com/craig-asbach-havenquest/havenquest-consultation'
 
 interface Props {
   data: MM4Profile

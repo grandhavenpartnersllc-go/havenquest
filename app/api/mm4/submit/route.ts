@@ -13,7 +13,7 @@ function getSupabase() {
 
 const MD_EMAIL = 'craig.asbach@havenquest.co'
 const BOOKINGS_URL =
-  'https://calendly.com/craig-asbach-havenquest/havenquest-consulation'
+  'https://calendly.com/craig-asbach-havenquest/havenquest-consultation'
 
 // ─── Label helpers ────────────────────────────────────────────────────────────
 
