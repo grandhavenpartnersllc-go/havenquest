@@ -2,8 +2,8 @@
 
 import { useEffect, useState, type CSSProperties } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { PlayCircle, CheckCircle, Circle, Home, FileText } from 'lucide-react'
+import { usePathname, useRouter } from 'next/navigation'
+import { PlayCircle, CheckCircle, Circle, Home, FileText, HelpCircle, User, LogOut } from 'lucide-react'
 import { createClient } from '../../../lib/supabase/client'
 
 type MMStatus = 'complete' | 'locked' | 'unlocked'
@@ -156,14 +156,88 @@ function MMRow({ mm, status, isActive, isCurrentMM }: MMRowProps) {
   )
 }
 
+function BottomItem({
+  icon,
+  label,
+  href,
+  onClick,
+}: {
+  icon: React.ReactNode
+  label: string
+  href?: string
+  onClick?: () => void
+}) {
+  const [hovered, setHovered] = useState(false)
+
+  const sharedStyle: CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    paddingTop: '10px',
+    paddingBottom: '10px',
+    paddingRight: '12px',
+    paddingLeft: '16px',
+    borderLeft: '3px solid transparent',
+    backgroundColor: hovered ? 'var(--accent-blue-light)' : 'transparent',
+    cursor: 'pointer',
+    textDecoration: 'none',
+    userSelect: 'none',
+    minHeight: '38px',
+    transition: 'background-color 0.15s',
+    width: '100%',
+    boxSizing: 'border-box',
+  }
+
+  const content = (
+    <>
+      <span style={{ color: 'var(--text-secondary)', display: 'flex', flexShrink: 0 }}>{icon}</span>
+      <span style={{ fontSize: '12px', fontWeight: 400, color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
+        {label}
+      </span>
+    </>
+  )
+
+  if (href) {
+    return (
+      <a
+        href={href}
+        style={sharedStyle}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      >
+        {content}
+      </a>
+    )
+  }
+
+  return (
+    <button
+      type="button"
+      style={{ ...sharedStyle, border: 'none', textAlign: 'left' }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onClick={onClick}
+    >
+      {content}
+    </button>
+  )
+}
+
 export default function JourneyRail() {
   const [currentMM, setCurrentMM] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const pathname = usePathname()
+  const router = useRouter()
   const activeMMFromPath = (() => {
     const m = pathname.match(/\/portal\/mm(\d+)/)
     return m ? parseInt(m[1], 10) : null
   })()
+
+  async function handleSignOut() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/')
+  }
 
   useEffect(() => {
     ;(async () => {
@@ -231,6 +305,26 @@ export default function JourneyRail() {
                 isCurrentMM={mm.number === currentMM}
               />
             ))}
+      </div>
+
+      {/* Bottom utility items */}
+      <div style={{ flexShrink: 0 }}>
+        <div style={{ height: '1px', backgroundColor: 'var(--panel-border)', margin: '4px 0' }} />
+        <BottomItem
+          icon={<HelpCircle size={15} />}
+          label="Help"
+          href="mailto:craig.asbach@havenquest.co"
+        />
+        <BottomItem
+          icon={<User size={15} />}
+          label="My Profile"
+          href="/portal/profile"
+        />
+        <BottomItem
+          icon={<LogOut size={15} />}
+          label="Sign Out"
+          onClick={() => { void handleSignOut() }}
+        />
       </div>
     </aside>
   )
