@@ -330,7 +330,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
         margin: '0 auto',
         width: '100%',
         backgroundColor: 'var(--card-bg)',
-        border: '0.5px solid var(--card-border)',
+        border: '1.5px solid #0076B6',
         borderRadius: '16px',
         padding: '32px',
       }}>
