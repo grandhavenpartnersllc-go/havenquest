@@ -83,17 +83,15 @@ function MiniLabel({ children }: { children: React.ReactNode }) {
 const col2: React.CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }
 
 export default function Section1Identity({ data, onChange, errors }: Props) {
-  const hasChildren = (data.num_children ?? 0) > 0
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
       <div style={{ marginBottom: '4px' }}>
-        <h2 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 6px' }}>
-          Identity &amp; Household
+        <h2 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 4px' }}>
+          Your Information
         </h2>
-        <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
-          Tell us who's making this move so your Market Director can personalize your roadmap.
+        <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
+          Tell us who's making this move so your Market Director can reach you.
         </p>
       </div>
 
@@ -163,7 +161,7 @@ export default function Section1Identity({ data, onChange, errors }: Props) {
               autoComplete="street-address"
             />
           </Field>
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 80px 110px', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 120px', gap: '12px' }}>
             <Field label="City">
               <input
                 className="mm4-input"
@@ -200,112 +198,31 @@ export default function Section1Identity({ data, onChange, errors }: Props) {
         </div>
       </div>
 
-      {/* Rows 5–8: Contact & Household */}
+      {/* Row 5: Phone / Preferred contact */}
       <div>
-        <MiniLabel>Contact &amp; Household</MiniLabel>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-
-          {/* Row 5: Phone / Preferred contact */}
-          <div style={col2}>
-            <Field label="Phone number" required error={errors.phone}>
-              <input
-                className="mm4-input"
-                type="tel"
-                value={data.phone ?? ''}
-                onChange={e => onChange({ phone: e.target.value })}
-                placeholder="(555) 000-0000"
-                autoComplete="tel"
-              />
-            </Field>
-            <Field label="Preferred contact method" required error={errors.preferred_contact}>
-              <PillGroup
-                options={[
-                  { label: 'Phone call', value: 'phone' },
-                  { label: 'Text', value: 'text' },
-                  { label: 'Email', value: 'email' },
-                ]}
-                value={data.preferred_contact}
-                onSelect={v => onChange({ preferred_contact: v as MM4Profile['preferred_contact'] })}
-              />
-            </Field>
-          </div>
-
-          {/* Row 6: Best time / Adults */}
-          <div style={col2}>
-            <Field label="Best time to reach you">
-              <PillGroup
-                options={[
-                  { label: 'Morning', value: 'morning' },
-                  { label: 'Afternoon', value: 'afternoon' },
-                  { label: 'Evening', value: 'evening' },
-                  { label: 'Anytime', value: 'anytime' },
-                ]}
-                value={data.best_time_to_reach}
-                onSelect={v => onChange({ best_time_to_reach: v as MM4Profile['best_time_to_reach'] })}
-              />
-            </Field>
-            <Field label="Adults in household" required error={errors.num_adults}>
-              <input
-                className="mm4-input"
-                type="number"
-                min={1}
-                max={10}
-                value={data.num_adults ?? 1}
-                onChange={e => onChange({ num_adults: Math.max(1, parseInt(e.target.value) || 1) })}
-              />
-            </Field>
-          </div>
-
-          {/* Row 7: Children / Children ages */}
-          <div style={col2}>
-            <Field label="Children in household">
-              <input
-                className="mm4-input"
-                type="number"
-                min={0}
-                max={12}
-                value={data.num_children ?? 0}
-                onChange={e => onChange({ num_children: Math.max(0, parseInt(e.target.value) || 0) })}
-              />
-            </Field>
-            {hasChildren ? (
-              <Field label="Children's ages">
-                <input
-                  className="mm4-input"
-                  type="text"
-                  value={data.children_ages ?? ''}
-                  onChange={e => onChange({ children_ages: e.target.value })}
-                  placeholder="e.g. 3, 7, 12"
-                />
-              </Field>
-            ) : <div />}
-          </div>
-
-          {/* Row 8: Pets / Pet details */}
-          <div style={col2}>
-            <Field label="Pets?">
-              <PillGroup
-                options={[
-                  { label: 'No pets', value: 'false' },
-                  { label: 'Yes, we have pets', value: 'true' },
-                ]}
-                value={data.has_pets === undefined ? undefined : String(data.has_pets) as 'true' | 'false'}
-                onSelect={v => onChange({ has_pets: v === 'true', pet_details: v === 'false' ? '' : data.pet_details })}
-              />
-            </Field>
-            {data.has_pets ? (
-              <Field label="Pet details (type, size, number)">
-                <input
-                  className="mm4-input"
-                  type="text"
-                  value={data.pet_details ?? ''}
-                  onChange={e => onChange({ pet_details: e.target.value })}
-                  placeholder="e.g. Two medium dogs"
-                />
-              </Field>
-            ) : <div />}
-          </div>
-
+        <MiniLabel>Contact</MiniLabel>
+        <div style={col2}>
+          <Field label="Phone number" required error={errors.phone}>
+            <input
+              className="mm4-input"
+              type="tel"
+              value={data.phone ?? ''}
+              onChange={e => onChange({ phone: e.target.value })}
+              placeholder="(555) 000-0000"
+              autoComplete="tel"
+            />
+          </Field>
+          <Field label="Preferred contact method" required error={errors.preferred_contact}>
+            <PillGroup
+              options={[
+                { label: 'Phone call', value: 'phone' },
+                { label: 'Text', value: 'text' },
+                { label: 'Email', value: 'email' },
+              ]}
+              value={data.preferred_contact}
+              onSelect={v => onChange({ preferred_contact: v as MM4Profile['preferred_contact'] })}
+            />
+          </Field>
         </div>
       </div>
 

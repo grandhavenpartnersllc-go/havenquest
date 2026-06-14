@@ -5,6 +5,7 @@ import { createClient } from '../../../../lib/supabase/client'
 import { usePortalData } from '../../providers/PortalDataProvider'
 import type { MM4Profile } from '../../../../types'
 import Section1Identity from './sections/Section1Identity'
+import Section2Household from './sections/Section2Household'
 import Section2TheMove from './sections/Section2TheMove'
 import Section3Employment from './sections/Section3Employment'
 import Section4TexasDirection from './sections/Section4TexasDirection'
@@ -12,6 +13,7 @@ import Section5Notes from './sections/Section5Notes'
 
 const SECTION_LABELS = [
   'Identity',
+  'Household',
   'The Move',
   'Employment',
   'Direction',
@@ -102,7 +104,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
           setFormData(prev => ({ ...prev, ...existing }))
           profileSeedApplied.current = true
           const resumed = typeof existing.last_completed_section === 'number'
-            ? Math.min(existing.last_completed_section, 4)
+            ? Math.min(existing.last_completed_section, 5)
             : 0
           if (resumed > 0) {
             setCurrentSection(resumed)
@@ -136,19 +138,18 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
       if (!formData.primary_last_name?.trim()) e.primary_last_name = 'Required'
       if (!formData.phone?.trim()) e.phone = 'Required'
       if (!formData.preferred_contact) e.preferred_contact = 'Please select one'
-      if (!formData.num_adults || formData.num_adults < 1) e.num_adults = 'Required'
     } else if (sectionIndex === 1) {
+      if (!formData.num_adults || formData.num_adults < 1) e.num_adults = 'Required'
+    } else if (sectionIndex === 2) {
       if (!formData.why_texas?.trim()) e.why_texas = 'Required'
       if (!formData.origin_situation) e.origin_situation = 'Please select one'
       if (!formData.timeline_flexibility) e.timeline_flexibility = 'Please select one'
-    } else if (sectionIndex === 2) {
+    } else if (sectionIndex === 3) {
       if (!formData.employment_status) e.employment_status = 'Please select one'
       if (!formData.work_arrangement && formData.employment_status !== 'retired' && formData.employment_status !== 'other') {
         e.work_arrangement = 'Please select one'
       }
-    } else if (sectionIndex === 3) {
-      // When city cards are shown, confirmed_target_city is auto-populated — no validation needed.
-      // When fallback text field is used (no chosen_communities), require it.
+    } else if (sectionIndex === 4) {
       if (chosenCommunities.length === 0 && !formData.confirmed_target_city?.trim()) {
         e.confirmed_target_city = 'Required'
       }
@@ -217,7 +218,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
         user_id: supaSession.user.id,
         submitted: true,
         submitted_at: now,
-        last_completed_section: 5,
+        last_completed_section: 6,
       }
 
       await supabase.from('mm4_profiles').upsert(submitData, { onConflict: 'email' })
@@ -248,7 +249,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
     animation: `${direction === 'forward' ? 'mm4SlideInRight' : 'mm4SlideInLeft'} 280ms ease-out`,
   }
 
-  const pct = ((currentSection) / 5) * 100
+  const pct = ((currentSection) / 6) * 100
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
@@ -260,7 +261,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
             const done = i < currentSection
             const active = i === currentSection
             return (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', flex: i < 4 ? 1 : 'none' }}>
+              <div key={i} style={{ display: 'flex', alignItems: 'center', flex: i < 5 ? 1 : 'none' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
                   <div style={{
                     width: '28px',
@@ -290,7 +291,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
                     {label}
                   </span>
                 </div>
-                {i < 4 && (
+                {i < 5 && (
                   <div style={{
                     flex: 1,
                     height: '2px',
@@ -338,12 +339,15 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
             <Section1Identity data={formData} onChange={handleChange} errors={errors} />
           )}
           {currentSection === 1 && (
-            <Section2TheMove data={formData} onChange={handleChange} errors={errors} />
+            <Section2Household data={formData} onChange={handleChange} errors={errors} />
           )}
           {currentSection === 2 && (
-            <Section3Employment data={formData} onChange={handleChange} errors={errors} />
+            <Section2TheMove data={formData} onChange={handleChange} errors={errors} />
           )}
           {currentSection === 3 && (
+            <Section3Employment data={formData} onChange={handleChange} errors={errors} />
+          )}
+          {currentSection === 4 && (
             <Section4TexasDirection
               data={formData}
               onChange={handleChange}
@@ -351,7 +355,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
               chosenCommunities={chosenCommunities}
             />
           )}
-          {currentSection === 4 && (
+          {currentSection === 5 && (
             <Section5Notes
               data={formData}
               onChange={handleChange}
@@ -363,7 +367,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
       </div>
 
       {/* Navigation buttons — below the inset panel, sticky at bottom */}
-      {currentSection < 4 && (
+      {currentSection < 5 && (
         <div style={{
           position: 'sticky',
           bottom: 0,
@@ -402,7 +406,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                Step {currentSection + 1} of 5
+                Step {currentSection + 1} of 6
               </span>
               <button
                 type="button"
@@ -428,7 +432,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
         </div>
       )}
 
-      {currentSection === 4 && (
+      {currentSection === 5 && (
         <div style={{
           maxWidth: '1100px',
           margin: '24px auto 0',
