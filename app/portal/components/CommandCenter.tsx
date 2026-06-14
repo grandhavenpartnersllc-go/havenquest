@@ -188,7 +188,7 @@ export default function CommandCenter() {
         </p>
 
         {/* ── Journey Status ── */}
-        <div style={{ backgroundColor: 'var(--portal-bg)', borderRadius: '10px', padding: '12px' }}>
+        <div style={{ backgroundColor: 'var(--card-bg)', borderRadius: '10px', padding: '12px' }}>
           {!ready ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
@@ -211,7 +211,7 @@ export default function CommandCenter() {
 
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', marginBottom: '10px' }}>
                 <svg width="60" height="60" viewBox="0 0 60 60">
-                  <circle cx="30" cy="30" r={radius} fill="none" stroke="var(--card-border)" strokeWidth="4" />
+                  <circle cx="30" cy="30" r={radius} fill="none" stroke="#e5e7eb" strokeWidth="4" />
                   <circle
                     cx="30" cy="30" r={radius}
                     fill="none"
@@ -227,8 +227,8 @@ export default function CommandCenter() {
                     textAnchor="middle"
                     dominantBaseline="middle"
                     fontSize={11}
-                    fontWeight={700}
-                    fill="var(--text-primary)"
+                    fontWeight={600}
+                    fill="#0A1E3D"
                   >
                     {percent}%
                   </text>
