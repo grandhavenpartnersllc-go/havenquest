@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useState, type CSSProperties } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { PlayCircle, CheckCircle, Circle, Home, FileText, HelpCircle, User, LogOut } from 'lucide-react'
 import { createClient } from '../../../lib/supabase/client'
+import { usePortalData } from '../providers/PortalDataProvider'
 
 type MMStatus = 'complete' | 'locked' | 'unlocked'
 
@@ -224,8 +225,7 @@ function BottomItem({
 }
 
 export default function JourneyRail() {
-  const [currentMM, setCurrentMM] = useState<number | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { currentMM, ready } = usePortalData()
   const pathname = usePathname()
   const router = useRouter()
   const activeMMFromPath = (() => {
@@ -238,31 +238,6 @@ export default function JourneyRail() {
     await supabase.auth.signOut()
     router.push('/')
   }
-
-  useEffect(() => {
-    ;(async () => {
-      try {
-        const supabase = createClient()
-        const { data: { session } } = await supabase.auth.getSession()
-        if (!session?.user?.email) {
-          setCurrentMM(2)
-          return
-        }
-        const { data } = await supabase
-          .from('users')
-          .select('current_milemarker')
-          .eq('email', session.user.email.toLowerCase())
-          .single()
-        const raw = (data as Record<string, unknown> | null)?.current_milemarker
-        setCurrentMM(typeof raw === 'number' ? raw : 2)
-      } catch (err) {
-        console.error('[JourneyRail] failed to load MM state:', err)
-        setCurrentMM(2)
-      } finally {
-        setLoading(false)
-      }
-    })()
-  }, [])
 
   return (
     <aside
@@ -294,7 +269,7 @@ export default function JourneyRail() {
       </p>
 
       <div style={{ flex: 1 }}>
-        {loading || currentMM === null
+        {!ready
           ? Array.from({ length: 10 }, (_, i) => <SkeletonRow key={i} />)
           : MILEMARKERS.map(mm => (
               <MMRow
