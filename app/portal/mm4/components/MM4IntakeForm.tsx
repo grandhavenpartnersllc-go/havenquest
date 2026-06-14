@@ -283,7 +283,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
                   <span style={{
                     fontSize: '10px',
                     fontWeight: active ? 600 : 400,
-                    color: active ? '#0076B6' : done ? 'var(--text-secondary)' : 'var(--text-muted)',
+                    color: active ? '#ffffff' : done ? 'rgba(255,255,255,0.65)' : 'rgba(255,255,255,0.4)',
                     whiteSpace: 'nowrap',
                     letterSpacing: '0.02em',
                     transition: 'color 0.25s',
@@ -295,7 +295,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
                   <div style={{
                     flex: 1,
                     height: '2px',
-                    backgroundColor: done ? '#0076B6' : 'var(--card-border)',
+                    backgroundColor: done ? '#0076B6' : 'rgba(255,255,255,0.2)',
                     marginBottom: '22px',
                     marginLeft: '6px',
                     marginRight: '6px',
@@ -307,7 +307,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
           })}
         </div>
 
-        <div style={{ height: '3px', backgroundColor: 'var(--card-border)', borderRadius: '2px', overflow: 'hidden' }}>
+        <div style={{ height: '3px', backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: '2px', overflow: 'hidden' }}>
           <div style={{
             width: `${pct}%`,
             height: '100%',
@@ -318,7 +318,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
         </div>
 
         {saving && (
-          <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '6px', textAlign: 'right' }}>
+          <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginTop: '6px', textAlign: 'right' }}>
             Saving…
           </p>
         )}
@@ -326,7 +326,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
 
       {/* Inset centered panel */}
       <div style={{
-        maxWidth: '1100px',
+        maxWidth: '1200px',
         margin: '0 auto',
         width: '100%',
         backgroundColor: 'var(--card-bg)',
@@ -373,12 +373,12 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
           bottom: 0,
           zIndex: 10,
           backgroundColor: 'var(--portal-bg)',
-          borderTop: '1px solid var(--card-border)',
+          borderTop: '1px solid rgba(255,255,255,0.12)',
           marginTop: '24px',
           padding: '16px 0',
         }}>
           <div style={{
-            maxWidth: '1100px',
+            maxWidth: '1200px',
             margin: '0 auto',
             width: '100%',
             display: 'flex',
@@ -394,9 +394,9 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
                 borderRadius: '8px',
                 fontSize: '14px',
                 fontWeight: 500,
-                color: currentSection === 0 ? 'var(--text-muted)' : 'var(--text-secondary)',
+                color: currentSection === 0 ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.75)',
                 backgroundColor: 'transparent',
-                border: '1.5px solid var(--card-border)',
+                border: '1.5px solid rgba(255,255,255,0.25)',
                 cursor: currentSection === 0 ? 'not-allowed' : 'pointer',
                 transition: 'all 0.15s',
               }}
@@ -405,7 +405,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
             </button>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+              <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.55)' }}>
                 Step {currentSection + 1} of 6
               </span>
               <button
@@ -434,7 +434,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
 
       {currentSection === 5 && (
         <div style={{
-          maxWidth: '1100px',
+          maxWidth: '1200px',
           margin: '24px auto 0',
           width: '100%',
         }}>
@@ -446,9 +446,9 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
               borderRadius: '8px',
               fontSize: '14px',
               fontWeight: 500,
-              color: 'var(--text-secondary)',
+              color: 'rgba(255,255,255,0.75)',
               backgroundColor: 'transparent',
-              border: '1.5px solid var(--card-border)',
+              border: '1.5px solid rgba(255,255,255,0.25)',
               cursor: 'pointer',
             }}
           >

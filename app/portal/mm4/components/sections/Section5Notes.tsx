@@ -13,11 +13,11 @@ export default function Section5Notes({ data, onChange, onSubmit, submitting }: 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
       <div>
-        <h2 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 6px' }}>
+        <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#0A1E3D', margin: '0 0 6px' }}>
           Anything Else?
         </h2>
-        <p style={{ fontSize: '14px', color: 'var(--text-primary)', margin: 0, lineHeight: 1.5 }}>
-          This is your open field. Share anything that didn't fit the earlier sections — circumstances, concerns,
+        <p style={{ fontSize: '13px', color: '#4a5568', margin: 0, lineHeight: 1.5 }}>
+          This is your open field. Share anything that didn&apos;t fit the earlier sections — circumstances, concerns,
           context, or anything you want your Market Director to know before your consultation.
         </p>
       </div>

@@ -18,7 +18,7 @@ function PillGroup<T extends string>({
   onSelect: (v: T) => void
 }) {
   return (
-    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
       {options.map(opt => {
         const selected = value === opt.value
         return (
@@ -27,7 +27,7 @@ function PillGroup<T extends string>({
             type="button"
             onClick={() => onSelect(opt.value)}
             style={{
-              padding: '8px 16px',
+              padding: '7px 13px',
               borderRadius: '20px',
               fontSize: '13px',
               fontWeight: selected ? 500 : 400,
@@ -87,11 +87,11 @@ export default function Section1Identity({ data, onChange, errors }: Props) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
       <div style={{ marginBottom: '4px' }}>
-        <h2 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 4px' }}>
+        <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#0A1E3D', margin: '0 0 4px' }}>
           Your Information
         </h2>
-        <p style={{ fontSize: '13px', color: 'var(--text-primary)', margin: 0, lineHeight: 1.5 }}>
-          Tell us who's making this move so your Market Director can reach you.
+        <p style={{ fontSize: '13px', color: '#4a5568', margin: 0, lineHeight: 1.5 }}>
+          Tell us who&apos;s making this move so your Market Director can reach you.
         </p>
       </div>
 
@@ -147,10 +147,10 @@ export default function Section1Identity({ data, onChange, errors }: Props) {
         </div>
       </div>
 
-      {/* Rows 3–4: Location */}
+      {/* Row 3: Full address on one line */}
       <div>
         <MiniLabel>Current Location</MiniLabel>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.5fr 60px 100px', gap: '10px' }}>
           <Field label="Street address">
             <input
               className="mm4-input"
@@ -161,85 +161,78 @@ export default function Section1Identity({ data, onChange, errors }: Props) {
               autoComplete="street-address"
             />
           </Field>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 120px', gap: '12px' }}>
-            <Field label="City">
-              <input
-                className="mm4-input"
-                type="text"
-                value={data.current_city ?? ''}
-                onChange={e => onChange({ current_city: e.target.value })}
-                placeholder="City"
-                autoComplete="address-level2"
-              />
-            </Field>
-            <Field label="State">
-              <input
-                className="mm4-input"
-                type="text"
-                value={data.current_state ?? ''}
-                onChange={e => onChange({ current_state: e.target.value })}
-                placeholder="CA"
-                maxLength={2}
-                autoComplete="address-level1"
-              />
-            </Field>
-            <Field label="ZIP">
-              <input
-                className="mm4-input"
-                type="text"
-                value={data.current_zip ?? ''}
-                onChange={e => onChange({ current_zip: e.target.value })}
-                placeholder="90210"
-                maxLength={5}
-                autoComplete="postal-code"
-              />
-            </Field>
-          </div>
+          <Field label="City">
+            <input
+              className="mm4-input"
+              type="text"
+              value={data.current_city ?? ''}
+              onChange={e => onChange({ current_city: e.target.value })}
+              placeholder="City"
+              autoComplete="address-level2"
+            />
+          </Field>
+          <Field label="St">
+            <input
+              className="mm4-input"
+              type="text"
+              value={data.current_state ?? ''}
+              onChange={e => onChange({ current_state: e.target.value })}
+              placeholder="CA"
+              maxLength={2}
+              autoComplete="address-level1"
+            />
+          </Field>
+          <Field label="ZIP">
+            <input
+              className="mm4-input"
+              type="text"
+              value={data.current_zip ?? ''}
+              onChange={e => onChange({ current_zip: e.target.value })}
+              placeholder="90210"
+              maxLength={5}
+              autoComplete="postal-code"
+            />
+          </Field>
         </div>
       </div>
 
-      {/* Row 5: Phone / Preferred contact */}
+      {/* Row 4: Phone + preferred contact + best time — all one line */}
       <div>
         <MiniLabel>Contact</MiniLabel>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <div style={col2}>
-            <Field label="Phone number" required error={errors.phone}>
-              <input
-                className="mm4-input"
-                type="tel"
-                value={data.phone ?? ''}
-                onChange={e => onChange({ phone: e.target.value })}
-                placeholder="(555) 000-0000"
-                autoComplete="tel"
-              />
-            </Field>
-            <Field label="Preferred contact method" required error={errors.preferred_contact}>
-              <PillGroup
-                options={[
-                  { label: 'Phone call', value: 'phone' },
-                  { label: 'Text', value: 'text' },
-                  { label: 'Email', value: 'email' },
-                ]}
-                value={data.preferred_contact}
-                onSelect={v => onChange({ preferred_contact: v as MM4Profile['preferred_contact'] })}
-              />
-            </Field>
-          </div>
-          <div style={col2}>
-            <Field label="Best time to reach you">
-              <PillGroup
-                options={[
-                  { label: 'Morning', value: 'morning' },
-                  { label: 'Afternoon', value: 'afternoon' },
-                  { label: 'Evening', value: 'evening' },
-                  { label: 'Anytime', value: 'anytime' },
-                ]}
-                value={data.best_time_to_reach}
-                onSelect={v => onChange({ best_time_to_reach: v as MM4Profile['best_time_to_reach'] })}
-              />
-            </Field>
-            <div />
-          </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr 1fr', gap: '16px' }}>
+          <Field label="Phone number" required error={errors.phone}>
+            <input
+              className="mm4-input"
+              type="tel"
+              value={data.phone ?? ''}
+              onChange={e => onChange({ phone: e.target.value })}
+              placeholder="(555) 000-0000"
+              autoComplete="tel"
+            />
+          </Field>
+          <Field label="Preferred contact method" required error={errors.preferred_contact}>
+            <PillGroup
+              options={[
+                { label: 'Phone call', value: 'phone' },
+                { label: 'Text', value: 'text' },
+                { label: 'Email', value: 'email' },
+              ]}
+              value={data.preferred_contact}
+              onSelect={v => onChange({ preferred_contact: v as MM4Profile['preferred_contact'] })}
+            />
+          </Field>
+          <Field label="Best time to reach you">
+            <PillGroup
+              options={[
+                { label: 'Morning', value: 'morning' },
+                { label: 'Afternoon', value: 'afternoon' },
+                { label: 'Evening', value: 'evening' },
+                { label: 'Anytime', value: 'anytime' },
+              ]}
+              value={data.best_time_to_reach}
+              onSelect={v => onChange({ best_time_to_reach: v as MM4Profile['best_time_to_reach'] })}
+            />
+          </Field>
         </div>
       </div>
 

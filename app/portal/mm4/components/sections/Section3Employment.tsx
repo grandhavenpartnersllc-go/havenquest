@@ -109,10 +109,10 @@ export default function Section3Employment({ data, onChange, errors }: Props) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <div>
-        <h2 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 6px' }}>
+        <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#0A1E3D', margin: '0 0 6px' }}>
           Employment &amp; Finances
         </h2>
-        <p style={{ fontSize: '14px', color: 'var(--text-primary)', margin: 0, lineHeight: 1.5 }}>
+        <p style={{ fontSize: '13px', color: '#4a5568', margin: 0, lineHeight: 1.5 }}>
           This helps your Market Director understand your budget ceiling and workplace flexibility.
         </p>
       </div>

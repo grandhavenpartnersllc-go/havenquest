@@ -44,10 +44,10 @@ export default function Section4TexasDirection({ data, onChange, errors, chosenC
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
       <div>
-        <h2 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 6px' }}>
+        <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#0A1E3D', margin: '0 0 6px' }}>
           Your Texas Direction
         </h2>
-        <p style={{ fontSize: '14px', color: 'var(--text-primary)', margin: 0, lineHeight: 1.5 }}>
+        <p style={{ fontSize: '13px', color: '#4a5568', margin: 0, lineHeight: 1.5 }}>
           Share what you&apos;ve already researched and where you&apos;re leaning — your MD will use this to sharpen your roadmap.
         </p>
       </div>

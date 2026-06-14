@@ -14,7 +14,7 @@
 
 .mm4-input {
   width: 100%;
-  height: 42px;
+  height: 40px;
   padding: 0 12px;
   font-size: 14px;
   color: var(--text-primary);
@@ -54,7 +54,7 @@
 
 .mm4-select {
   width: 100%;
-  height: 42px;
+  height: 40px;
   padding: 0 12px;
   font-size: 14px;
   color: var(--text-primary);
@@ -120,7 +120,7 @@
 /* Light theme — default */
 [data-theme="light"],
 :root {
-  --portal-bg: #F5F4F1;
+  --portal-bg: #0A1E3D;
   --panel-bg: #ffffff;
   --panel-border: #e2e6ea;
   --topbar-bg: #0A1E3D;

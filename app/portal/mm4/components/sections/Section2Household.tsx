@@ -114,10 +114,10 @@ export default function Section2Household({ data, onChange, errors }: Props) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
       <div style={{ marginBottom: '4px' }}>
-        <h2 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 4px' }}>
+        <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#0A1E3D', margin: '0 0 4px' }}>
           Your Household
         </h2>
-        <p style={{ fontSize: '13px', color: 'var(--text-primary)', margin: 0, lineHeight: 1.5 }}>
+        <p style={{ fontSize: '13px', color: '#4a5568', margin: 0, lineHeight: 1.5 }}>
           Help your Market Director understand who&apos;s coming along on this move.
         </p>
       </div>
