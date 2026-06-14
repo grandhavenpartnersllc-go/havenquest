@@ -9,8 +9,6 @@ export default function MM1Page() {
   const router = useRouter()
   const {
     session,
-    profile,
-    matches,
     currentMM,
     onboardingAcknowledged,
     handleAcknowledge,
@@ -46,15 +44,13 @@ export default function MM1Page() {
     )
   }
 
-  if (!session || !profile) return null
+  if (!session) return null
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
       <WorkspaceHeader mmNumber={1} name="Welcome" deliverable="Journey Introduction" />
       <div style={{ padding: '24px', flex: 1 }}>
         <MM1Explore
-          matches={matches}
-          profile={profile}
           session={session}
           currentMileMarker={currentMM}
           onboardingAcknowledged={onboardingAcknowledged}
