@@ -7,9 +7,10 @@ interface Props {
   onChange: (updates: Partial<MM4Profile>) => void
   onSubmit: () => Promise<void>
   submitting: boolean
+  submitError?: string | null
 }
 
-export default function Section5Notes({ data, onChange, onSubmit, submitting }: Props) {
+export default function Section5Notes({ data, onChange, onSubmit, submitting, submitError }: Props) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
       <div>
@@ -49,6 +50,19 @@ export default function Section5Notes({ data, onChange, onSubmit, submitting }: 
           next steps.
         </p>
       </div>
+
+      {submitError && (
+        <div style={{
+          backgroundColor: 'rgba(220, 38, 38, 0.08)',
+          border: '1px solid rgba(220, 38, 38, 0.3)',
+          borderRadius: '8px',
+          padding: '12px 16px',
+        }}>
+          <p style={{ fontSize: '13px', color: '#DC2626', margin: 0, lineHeight: 1.5 }}>
+            {submitError}
+          </p>
+        </div>
+      )}
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '4px' }}>
         <button

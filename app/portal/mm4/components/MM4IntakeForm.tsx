@@ -39,6 +39,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
   const [animKey, setAnimKey] = useState(0)
   const [saving, setSaving] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [chosenCommunities, setChosenCommunities] = useState<string[]>([])
 
@@ -205,25 +206,31 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
   }
 
   async function handleSubmit() {
+    if (!session?.email) return
     setSubmitting(true)
+    setSubmitError(null)
     try {
       const supabase = createClient()
+
+      // Attempt to get user_id from Supabase session — include it if available,
+      // but do not block submission if the client-side session has expired.
       const { data: { session: supaSession } } = await supabase.auth.getSession()
-      if (!supaSession?.user?.id || !session?.email) return
 
       const now = new Date().toISOString()
       const submitData: MM4Profile = {
         ...formData,
         email: session.email.toLowerCase(),
-        user_id: supaSession.user.id,
         submitted: true,
         submitted_at: now,
         last_completed_section: 6,
+        ...(supaSession?.user?.id ? { user_id: supaSession.user.id } : {}),
       }
 
-      await supabase.from('mm4_profiles').upsert(submitData, { onConflict: 'email' })
+      const { error: upsertError } = await supabase
+        .from('mm4_profiles')
+        .upsert(submitData, { onConflict: 'email' })
+      if (upsertError) throw upsertError
 
-      // Advance milemarker if not already past MM4
       await supabase
         .from('users')
         .update({ current_milemarker: 4 })
@@ -240,6 +247,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
       onSubmitted(submitData)
     } catch (err) {
       console.error('[MM4] submit failed:', err)
+      setSubmitError('Something went wrong submitting your profile. Please try again — your progress is saved.')
     } finally {
       setSubmitting(false)
     }
@@ -361,6 +369,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
               onChange={handleChange}
               onSubmit={handleSubmit}
               submitting={submitting}
+              submitError={submitError}
             />
           )}
         </div>
