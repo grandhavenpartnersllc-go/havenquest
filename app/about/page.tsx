@@ -100,10 +100,13 @@ export default function AboutPage() {
               <h2 className="text-lg font-bold text-gray-900 tracking-tight mb-4">Our Select Agents</h2>
               <div className="space-y-3 text-sm text-gray-500 leading-relaxed">
                 <p>
-                  Every real estate agent in our network is a HavenQuest Select Agent — licensed in Texas, a member of the National Association of Realtors, and vetted against our production, rating, and experience standards. Select Agents are introduced at the right moment in the guided journey — after the client&apos;s direction is confirmed, their financial picture is established, and their Market Director has prepared them to move forward. We don&apos;t list every agent. We select the right one for each client.
+                  Every agent in the HavenQuest network is a HavenQuest Select Agent — licensed in Texas, vetted against our production, rating, and experience standards, and specialized in your target communities.
                 </p>
                 <p>
-                  No agent pays to rank higher. No city pays to appear in results. Our matching algorithm is not influenced by commercial relationships.
+                  When you reach the agent introduction stage, your Market Director presents three Select Agent profiles — real names, real photos, real track records — each matched specifically to your submarket and your needs. You review their experience and their approach, then you choose the one who feels right. Only then does HavenQuest make the introduction.
+                </p>
+                <p>
+                  No agent pays to rank higher. No city pays to appear in results. Your selection is based entirely on fit.
                 </p>
                 <p>
                   <Link href="/for-realtors" className="text-blue-600 hover:underline font-medium">
