@@ -99,6 +99,7 @@ export default function PortalDataProvider({ children }: { children: ReactNode }
         const { data: { session: supaSession } } = await supabase.auth.getSession()
         if (!supaSession?.user?.email) {
           if (!profileWasLoaded) setError('Session expired. Please log in again.')
+          setReady(true)
           return
         }
 
@@ -111,6 +112,7 @@ export default function PortalDataProvider({ children }: { children: ReactNode }
         const ud = data as UserRow | null
         if (!ud) {
           if (!profileWasLoaded) setError('Unable to load your profile. Please refresh or log in again.')
+          setReady(true)
           return
         }
 
