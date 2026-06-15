@@ -31,6 +31,9 @@ export default function StaffRosterPage() {
   const [saving, setSaving] = useState(false)
   const [editStatus, setEditStatus] = useState('')
   const [editMetro, setEditMetro] = useState('')
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
 
   useEffect(() => {
     void loadStaff()
@@ -50,6 +53,33 @@ export default function StaffRosterPage() {
     setEditing(s)
     setEditStatus(s.status)
     setEditMetro(s.metro ?? '')
+    setShowDeleteConfirm(false)
+    setDeleteError('')
+  }
+
+  async function handleDelete() {
+    if (!editing) return
+    setDeleting(true)
+    setDeleteError('')
+    try {
+      const res = await fetch('/api/admin/delete-staff', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: editing.email, userId: editing.auth_user_id }),
+      })
+      if (!res.ok) {
+        const data = await res.json() as { error?: string }
+        setDeleteError(data.error ?? 'Failed to delete staff member.')
+        setDeleting(false)
+        return
+      }
+      setEditing(null)
+      setShowDeleteConfirm(false)
+      void loadStaff()
+    } catch {
+      setDeleteError('An unexpected error occurred.')
+      setDeleting(false)
+    }
   }
 
   async function saveEdit() {
@@ -150,45 +180,81 @@ export default function StaffRosterPage() {
           display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50,
         }}>
           <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', padding: '32px', width: '400px', boxShadow: '0 8px 48px rgba(0,0,0,0.2)' }}>
-            <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#0A1E3D', margin: '0 0 4px' }}>Edit Staff</h2>
-            <p style={{ fontSize: '13px', color: '#9A8E82', margin: '0 0 24px' }}>{editing.full_name}</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#4B5563', marginBottom: '6px', letterSpacing: '0.04em' }}>STATUS</label>
-                <select value={editStatus} onChange={e => setEditStatus(e.target.value)}
-                  style={{ width: '100%', border: '1px solid #E5E7EB', borderRadius: '8px', padding: '9px 12px', fontSize: '14px', color: '#0A1E3D' }}>
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                  <option value="suspended">Suspended</option>
-                </select>
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#4B5563', marginBottom: '6px', letterSpacing: '0.04em' }}>METRO</label>
-                <select value={editMetro} onChange={e => setEditMetro(e.target.value)}
-                  style={{ width: '100%', border: '1px solid #E5E7EB', borderRadius: '8px', padding: '9px 12px', fontSize: '14px', color: '#0A1E3D' }}>
-                  <option value="">— None —</option>
-                  <option value="austin">Austin</option>
-                  <option value="dfw">DFW</option>
-                  <option value="houston">Houston</option>
-                  <option value="san_antonio">San Antonio</option>
-                  <option value="all">All Metros</option>
-                </select>
-              </div>
-            </div>
-            <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
-              <button onClick={saveEdit} disabled={saving}
-                style={{ flex: 1, padding: '10px', borderRadius: '8px', backgroundColor: '#0A1E3D', color: '#ffffff', fontSize: '14px', fontWeight: 600, border: 'none', cursor: saving ? 'not-allowed' : 'pointer' }}>
-                {saving ? 'Saving…' : 'Save Changes'}
-              </button>
-              <button onClick={() => setEditing(null)}
-                style={{ padding: '10px 20px', borderRadius: '8px', backgroundColor: '#F3F4F6', color: '#374151', fontSize: '14px', fontWeight: 500, border: 'none', cursor: 'pointer' }}>
-                Cancel
-              </button>
-            </div>
-            <button onClick={() => resetPassword(editing.email)}
-              style={{ marginTop: '12px', width: '100%', padding: '9px', borderRadius: '8px', backgroundColor: 'transparent', color: '#0076B6', fontSize: '13px', fontWeight: 500, border: '1px solid #0076B6', cursor: 'pointer' }}>
-              Send Password Reset Email
-            </button>
+            {showDeleteConfirm ? (
+              <>
+                <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#dc2626', margin: '0 0 12px' }}>Confirm Deletion</h2>
+                <p style={{ fontSize: '14px', color: '#374151', lineHeight: 1.6, margin: '0 0 24px' }}>
+                  Are you sure you want to permanently delete <strong>{editing.full_name}</strong>? This cannot be undone.
+                </p>
+                {deleteError && (
+                  <p style={{ fontSize: '13px', color: '#dc2626', marginBottom: '16px' }}>{deleteError}</p>
+                )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <button
+                    onClick={() => { void handleDelete() }}
+                    disabled={deleting}
+                    style={{ width: '100%', padding: '11px', borderRadius: '8px', backgroundColor: deleting ? '#f87171' : '#dc2626', color: '#ffffff', fontSize: '14px', fontWeight: 600, border: 'none', cursor: deleting ? 'not-allowed' : 'pointer' }}
+                  >
+                    {deleting ? 'Deleting…' : 'Yes, Delete Permanently'}
+                  </button>
+                  <button
+                    onClick={() => { setShowDeleteConfirm(false); setDeleteError('') }}
+                    disabled={deleting}
+                    style={{ width: '100%', padding: '10px', borderRadius: '8px', backgroundColor: 'transparent', color: '#374151', fontSize: '14px', fontWeight: 500, border: '1.5px solid #E5E7EB', cursor: 'pointer' }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#0A1E3D', margin: '0 0 4px' }}>Edit Staff</h2>
+                <p style={{ fontSize: '13px', color: '#9A8E82', margin: '0 0 24px' }}>{editing.full_name}</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#4B5563', marginBottom: '6px', letterSpacing: '0.04em' }}>STATUS</label>
+                    <select value={editStatus} onChange={e => setEditStatus(e.target.value)}
+                      style={{ width: '100%', border: '1px solid #E5E7EB', borderRadius: '8px', padding: '9px 12px', fontSize: '14px', color: '#0A1E3D' }}>
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                      <option value="suspended">Suspended</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#4B5563', marginBottom: '6px', letterSpacing: '0.04em' }}>METRO</label>
+                    <select value={editMetro} onChange={e => setEditMetro(e.target.value)}
+                      style={{ width: '100%', border: '1px solid #E5E7EB', borderRadius: '8px', padding: '9px 12px', fontSize: '14px', color: '#0A1E3D' }}>
+                      <option value="">— None —</option>
+                      <option value="austin">Austin</option>
+                      <option value="dfw">DFW</option>
+                      <option value="houston">Houston</option>
+                      <option value="san_antonio">San Antonio</option>
+                      <option value="all">All Metros</option>
+                    </select>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+                  <button onClick={saveEdit} disabled={saving}
+                    style={{ flex: 1, padding: '10px', borderRadius: '8px', backgroundColor: '#0A1E3D', color: '#ffffff', fontSize: '14px', fontWeight: 600, border: 'none', cursor: saving ? 'not-allowed' : 'pointer' }}>
+                    {saving ? 'Saving…' : 'Save Changes'}
+                  </button>
+                  <button onClick={() => setEditing(null)}
+                    style={{ padding: '10px 20px', borderRadius: '8px', backgroundColor: '#F3F4F6', color: '#374151', fontSize: '14px', fontWeight: 500, border: 'none', cursor: 'pointer' }}>
+                    Cancel
+                  </button>
+                </div>
+                <button onClick={() => resetPassword(editing.email)}
+                  style={{ marginTop: '12px', width: '100%', padding: '9px', borderRadius: '8px', backgroundColor: 'transparent', color: '#0076B6', fontSize: '13px', fontWeight: 500, border: '1px solid #0076B6', cursor: 'pointer' }}>
+                  Send Password Reset Email
+                </button>
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  style={{ width: '100%', padding: '10px', backgroundColor: 'transparent', border: '1.5px solid #dc2626', borderRadius: '6px', color: '#dc2626', cursor: 'pointer', marginTop: '8px', fontSize: '14px' }}
+                >
+                  Delete Staff Member
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}

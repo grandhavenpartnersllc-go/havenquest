@@ -31,7 +31,20 @@ export async function GET(_request: NextRequest) {
       .select('*')
       .order('created_at', { ascending: false })
 
-    return NextResponse.json({ staff: staff ?? [] })
+    const emails = (staff ?? []).map((s: { email: string }) => s.email)
+    const { data: userRows } = emails.length
+      ? await supabase.from('users').select('email, id').in('email', emails)
+      : { data: [] }
+
+    const userIdMap = Object.fromEntries(
+      (userRows ?? []).map((u: { email: string; id: string }) => [u.email, u.id])
+    )
+    const staffWithAuthIds = (staff ?? []).map((s: Record<string, unknown>) => ({
+      ...s,
+      auth_user_id: userIdMap[s.email as string] ?? null,
+    }))
+
+    return NextResponse.json({ staff: staffWithAuthIds })
   } catch (err) {
     console.error('[update-staff GET] error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

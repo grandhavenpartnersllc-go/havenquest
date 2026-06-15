@@ -8,6 +8,7 @@ export interface StaffAccount {
   created_at: string
   microsoft_365_provisioned: boolean
   compass_walkthrough_complete: boolean
+  auth_user_id?: string | null
 }
 
 interface Props {
