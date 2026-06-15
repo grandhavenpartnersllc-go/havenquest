@@ -164,14 +164,12 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
     try {
       const supabase = createClient()
       const { data: { session: supaSession } } = await supabase.auth.getSession()
-      if (!supaSession?.user?.id) return
-
       await supabase.from('mm4_profiles').upsert(
         {
           ...formData,
           email: session.email.toLowerCase(),
-          user_id: supaSession.user.id,
           last_completed_section: completedSection,
+          ...(supaSession?.user?.id ? { user_id: supaSession.user.id } : {}),
         },
         { onConflict: 'email' }
       )
