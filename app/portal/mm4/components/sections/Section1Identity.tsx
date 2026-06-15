@@ -80,6 +80,13 @@ function MiniLabel({ children }: { children: React.ReactNode }) {
   )
 }
 
+function formatPhone(value: string): string {
+  const digits = value.replace(/\D/g, '').slice(0, 10)
+  if (digits.length <= 3) return digits
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`
+}
+
 const col2: React.CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }
 
 export default function Section1Identity({ data, onChange, errors }: Props) {
@@ -205,7 +212,7 @@ export default function Section1Identity({ data, onChange, errors }: Props) {
               className="mm4-input"
               type="tel"
               value={data.phone ?? ''}
-              onChange={e => onChange({ phone: e.target.value })}
+              onChange={e => onChange({ phone: formatPhone(e.target.value) })}
               placeholder="(555) 000-0000"
               autoComplete="tel"
             />

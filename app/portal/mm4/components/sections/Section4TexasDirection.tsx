@@ -139,55 +139,62 @@ export default function Section4TexasDirection({ data, onChange, errors, chosenC
         <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
           Research &amp; Criteria
         </p>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-          <Field
-            label="Cities or communities you've ruled out"
-            hint="Optional — helps us understand what you've already discarded and why."
-          >
-            <textarea
-              className="mm4-textarea"
-              value={data.ruled_out_cities ?? ''}
-              onChange={e => onChange({ ruled_out_cities: e.target.value })}
-              placeholder="e.g. Houston — too big; Lubbock — too far from family..."
-              rows={2}
-            />
-          </Field>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <Field
+              label="Cities or communities you've ruled out"
+              hint="Optional — helps us understand what you've already discarded and why."
+            >
+              <textarea
+                className="mm4-textarea"
+                value={data.ruled_out_cities ?? ''}
+                onChange={e => onChange({ ruled_out_cities: e.target.value })}
+                placeholder="e.g. Houston — too big; Lubbock — too far from family..."
+                rows={2}
+              />
+            </Field>
 
-          <Field
-            label="Areas or neighborhoods you've already researched"
-            hint="Online, in-person visits, Zillow searches, etc."
-          >
-            <textarea
-              className="mm4-textarea"
-              value={data.areas_researched ?? ''}
-              onChange={e => onChange({ areas_researched: e.target.value })}
-              placeholder="e.g. Visited Keller in April, toured Southlake neighborhoods online..."
-              rows={2}
-            />
-          </Field>
+            <Field
+              label="Areas or neighborhoods you've already researched"
+              hint="Online, in-person visits, Zillow searches, etc."
+            >
+              <textarea
+                className="mm4-textarea"
+                value={data.areas_researched ?? ''}
+                onChange={e => onChange({ areas_researched: e.target.value })}
+                placeholder="e.g. Visited Keller in April, toured Southlake neighborhoods online..."
+                rows={2}
+              />
+            </Field>
+          </div>
 
-          <Field
-            label="Additional must-haves not covered by your quiz"
-            hint="Specific school districts, proximity to highways, community amenities, etc."
-          >
-            <textarea
-              className="mm4-textarea"
-              value={data.additional_must_haves ?? ''}
-              onChange={e => onChange({ additional_must_haves: e.target.value })}
-              placeholder="e.g. Must be in Carroll ISD; within 30 min of DFW airport..."
-              rows={2}
-            />
-          </Field>
-
-          <Field label="Deal breakers">
-            <textarea
-              className="mm4-textarea"
-              value={data.deal_breakers ?? ''}
-              onChange={e => onChange({ deal_breakers: e.target.value })}
-              placeholder="e.g. No HOA; not in a flood zone; must have walkable retail..."
-              rows={2}
-            />
-          </Field>
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+            <div style={{ flex: 1 }}>
+              <Field
+                label="Additional must-haves not covered by your quiz"
+                hint="Specific school districts, proximity to highways, community amenities, etc."
+              >
+                <textarea
+                  className="mm4-textarea"
+                  value={data.additional_must_haves ?? ''}
+                  onChange={e => onChange({ additional_must_haves: e.target.value })}
+                  placeholder="e.g. Must be in Carroll ISD; within 30 min of DFW airport..."
+                  rows={2}
+                />
+              </Field>
+            </div>
+            <div style={{ flex: 1 }}>
+              <Field label="Deal breakers">
+                <textarea
+                  className="mm4-textarea"
+                  value={data.deal_breakers ?? ''}
+                  onChange={e => onChange({ deal_breakers: e.target.value })}
+                  placeholder="e.g. No HOA; not in a flood zone; must have walkable retail..."
+                  rows={2}
+                />
+              </Field>
+            </div>
+          </div>
         </div>
       </div>
     </div>
