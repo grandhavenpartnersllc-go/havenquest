@@ -1,7 +1,6 @@
 import { CityMatch, UserProfile, UserSession } from '../../types'
 import MM1Explore from './milemarkers/MM1Explore'
 import MM2Discover from './milemarkers/MM2Discover'
-import MM3Decide from './milemarkers/MM3Decide'
 import MM3Discover from './milemarkers/MM3Discover'
 import MM4Connect from './milemarkers/MM4Connect'
 import MM4to10 from './milemarkers/MM4to10'
