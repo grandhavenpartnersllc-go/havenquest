@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
 
     const { data: signedData, error: signErr } = await supabase.storage
       .from('profile-photos')
-      .createSignedUrl(path, 3600)
+      .createSignedUrl(path, 31536000) // 1 year
 
     if (signErr || !signedData?.signedUrl) {
       console.error('[upload-photo] signed URL error:', signErr)
@@ -63,10 +63,10 @@ export async function POST(req: NextRequest) {
 
     await supabase
       .from('users')
-      .update({ profile_photo_url: path })
+      .update({ profile_photo_url: signedData.signedUrl })
       .eq('email', email.toLowerCase())
 
-    return NextResponse.json({ path, signedUrl: signedData.signedUrl })
+    return NextResponse.json({ signedUrl: signedData.signedUrl })
   } catch (err) {
     console.error('[upload-photo] error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

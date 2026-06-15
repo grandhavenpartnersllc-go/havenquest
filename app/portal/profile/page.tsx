@@ -198,10 +198,9 @@ export default function ProfilePage() {
       setExtended(ext)
 
       if (data.profile_photo_url) {
-        const { data: signedData } = await supabase.storage
-          .from('profile-photos')
-          .createSignedUrl(data.profile_photo_url as string, 3600)
-        if (signedData?.signedUrl) setPhotoSignedUrl(signedData.signedUrl)
+        const stored = data.profile_photo_url as string
+        // New uploads store the full signed URL; old records may store a path — display whatever is there
+        setPhotoSignedUrl(stored)
       }
 
       setPersonal({
@@ -329,9 +328,9 @@ export default function ProfilePage() {
         throw new Error(j.error ?? 'Upload failed')
       }
 
-      const { path, signedUrl } = await res.json() as { path: string; signedUrl: string }
+      const { signedUrl } = await res.json() as { signedUrl: string }
       setPhotoSignedUrl(signedUrl)
-      setExtended(prev => ({ ...prev, profile_photo_url: path }))
+      setExtended(prev => ({ ...prev, profile_photo_url: signedUrl }))
     } catch (err) {
       console.error('[ProfilePage] photo upload error:', err)
       setUploadError(err instanceof Error ? err.message : 'Upload failed. Please try again.')
