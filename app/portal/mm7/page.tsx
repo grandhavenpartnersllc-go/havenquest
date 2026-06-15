@@ -7,9 +7,9 @@ export default function MM7Page() {
       mmNumber={7}
       name="Match"
       StageIcon={Users}
-      description="The right agent for the right buyer in the right market. You'll be presented with three anonymous HavenQuest Select Agent profiles matched to your target submarket. You choose one — we make the warm introduction. Active home search begins inside SARAH, your search hub, with MLS listings, showing notes, lifestyle match scoring, and a shortlist builder."
+      description="The right agent for the right buyer in the right market. You'll be presented with three named HavenQuest Select Agent profiles — real names, photos, and verified track records — matched to your specific submarket. You review them, choose one, and HavenQuest makes the warm introduction. Active home search then begins inside SARAH, your search hub, with MLS listings, showing notes, lifestyle match scoring, and a shortlist builder."
       features={[
-        'Three anonymous Select Agent profiles matched to your submarket',
+        'Three named Select Agent profiles — real names, photos, and track records — matched to your submarket',
         'You select your agent — HavenQuest makes the introduction',
         'Active MLS search hub with lifestyle match scoring',
         'Showing activity tracking and notes',
