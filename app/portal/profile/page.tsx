@@ -94,8 +94,8 @@ function mmBadgeLabel(mm: number): string {
 }
 
 function formatDate(iso: string | null): string {
-  if (!iso) return '—'
-  return new Date(iso).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+  if (!iso) return 'Member'
+  return new Date(iso).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
 }
 
 export default function ProfilePage() {
@@ -133,11 +133,20 @@ export default function ProfilePage() {
       const supabase = createClient()
       const { data } = await supabase
         .from('users')
-        .select('last_name, phone, origin_city, origin_state, partner_name, profile_photo_url, md_email, created_at')
+        .select('first_name, household_size, annual_income, created_at, last_name, phone, origin_city, origin_state, partner_name, profile_photo_url, md_email')
         .eq('email', session.email.toLowerCase())
         .single()
 
-      if (!data) return
+      if (!data) {
+        // Fallback: populate from session/profile even if DB query fails
+        setPersonal(p => ({ ...p, first_name: session.firstName ?? '' }))
+        setMove(p => ({
+          ...p,
+          household_size: profile?.householdSize ?? '',
+          annual_income: profile?.annualIncome ? String(profile.annualIncome) : '',
+        }))
+        return
+      }
 
       let mdName: string | null = null
       if (data.md_email) {
@@ -170,9 +179,9 @@ export default function ProfilePage() {
         if (signedData?.signedUrl) setPhotoSignedUrl(signedData.signedUrl)
       }
 
-      // Pre-populate editable fields
+      // Pre-populate editable fields from DB (authoritative source)
       setPersonal({
-        first_name: session.firstName ?? '',
+        first_name: (data.first_name as string | null) ?? session.firstName ?? '',
         last_name: data.last_name ?? '',
         phone: data.phone ?? '',
         partner_name: data.partner_name ?? '',
@@ -180,8 +189,8 @@ export default function ProfilePage() {
       setMove({
         origin_city: data.origin_city ?? '',
         origin_state: data.origin_state ?? '',
-        household_size: profile?.householdSize ?? '',
-        annual_income: profile?.annualIncome ? String(profile.annualIncome) : '',
+        household_size: (data.household_size as string | null) ?? profile?.householdSize ?? '',
+        annual_income: data.annual_income ? String(data.annual_income as number) : (profile?.annualIncome ? String(profile.annualIncome) : ''),
       })
     } catch (err) {
       console.error('[ProfilePage] load error:', err)
