@@ -320,32 +320,21 @@ export default function ProfilePage() {
 
     setUploading(true)
     try {
-      const supabase = createClient()
-      const path = `${session.email.toLowerCase()}/avatar.jpg`
+      const fd = new FormData()
+      fd.append('file', file)
 
-      const { error: uploadErr } = await supabase.storage
-        .from('profile-photos')
-        .upload(path, file, { upsert: true, contentType: file.type })
+      const res = await fetch('/api/portal/upload-photo', { method: 'POST', body: fd })
+      if (!res.ok) {
+        const j = await res.json() as { error?: string }
+        throw new Error(j.error ?? 'Upload failed')
+      }
 
-      if (uploadErr) throw uploadErr
-
-      const { data: signedData } = await supabase.storage
-        .from('profile-photos')
-        .createSignedUrl(path, 3600)
-
-      if (signedData?.signedUrl) setPhotoSignedUrl(signedData.signedUrl)
-
-      // Save path to DB
-      await fetch('/api/portal/update-profile', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ profile_photo_url: path }),
-      })
-
+      const { path, signedUrl } = await res.json() as { path: string; signedUrl: string }
+      setPhotoSignedUrl(signedUrl)
       setExtended(prev => ({ ...prev, profile_photo_url: path }))
     } catch (err) {
       console.error('[ProfilePage] photo upload error:', err)
-      setUploadError('Upload failed. Please try again.')
+      setUploadError(err instanceof Error ? err.message : 'Upload failed. Please try again.')
     } finally {
       setUploading(false)
       if (fileInputRef.current) fileInputRef.current.value = ''
