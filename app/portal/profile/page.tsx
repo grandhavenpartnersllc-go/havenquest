@@ -94,7 +94,7 @@ function mmBadgeLabel(mm: number): string {
 }
 
 function formatDate(iso: string | null): string {
-  if (!iso) return 'Member'
+  if (!iso) return 'June 2026'
   return new Date(iso).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
 }
 
@@ -131,14 +131,22 @@ export default function ProfilePage() {
     if (!session?.email) return
     try {
       const supabase = createClient()
-      const { data } = await supabase
-        .from('users')
-        .select('first_name, household_size, annual_income, created_at, last_name, phone, origin_city, origin_state, partner_name, profile_photo_url, md_email')
-        .eq('email', session.email.toLowerCase())
-        .single()
+      const email = session.email.toLowerCase()
+
+      const [{ data }, { data: mm4 }] = await Promise.all([
+        supabase
+          .from('users')
+          .select('first_name, household_size, annual_income, created_at, last_name, phone, origin_city, origin_state, partner_name, profile_photo_url, md_email')
+          .eq('email', email)
+          .single(),
+        supabase
+          .from('mm4_profiles')
+          .select('primary_first_name, primary_last_name, phone, partner_first_name, partner_last_name, current_city, current_state')
+          .eq('email', email)
+          .single(),
+      ])
 
       if (!data) {
-        // Fallback: populate from session/profile even if DB query fails
         setPersonal(p => ({ ...p, first_name: session.firstName ?? '' }))
         setMove(p => ({
           ...p,
@@ -148,47 +156,61 @@ export default function ProfilePage() {
         return
       }
 
+      // Merge: MM4 data takes precedence over users data where both exist
+      const mm4FirstName = (mm4?.primary_first_name as string | null | undefined) || null
+      const mm4LastName = (mm4?.primary_last_name as string | null | undefined) || null
+      const mm4Phone = (mm4?.phone as string | null | undefined) || null
+      const mm4PartnerName = mm4
+        ? [mm4.partner_first_name, mm4.partner_last_name].filter(Boolean).join(' ') || null
+        : null
+      const mm4City = (mm4?.current_city as string | null | undefined) || null
+      const mm4State = (mm4?.current_state as string | null | undefined) || null
+
       let mdName: string | null = null
       if (data.md_email) {
         const { data: staffRow } = await supabase
           .from('staff_accounts')
           .select('full_name')
-          .eq('email', data.md_email.toLowerCase())
+          .eq('email', (data.md_email as string).toLowerCase())
           .single()
-        mdName = staffRow?.full_name ?? null
+        mdName = (staffRow?.full_name as string | null) ?? null
       }
 
+      const mergedLastName = mm4LastName ?? (data.last_name as string | null) ?? null
+      const mergedPhone = mm4Phone ?? (data.phone as string | null) ?? null
+      const mergedPartnerName = mm4PartnerName ?? (data.partner_name as string | null) ?? null
+      const mergedCity = mm4City ?? (data.origin_city as string | null) ?? null
+      const mergedState = mm4State ?? (data.origin_state as string | null) ?? null
+
       const ext: ExtendedUserData = {
-        last_name: data.last_name ?? null,
-        phone: data.phone ?? null,
-        origin_city: data.origin_city ?? null,
-        origin_state: data.origin_state ?? null,
-        partner_name: data.partner_name ?? null,
-        profile_photo_url: data.profile_photo_url ?? null,
-        md_email: data.md_email ?? null,
+        last_name: mergedLastName,
+        phone: mergedPhone,
+        origin_city: mergedCity,
+        origin_state: mergedState,
+        partner_name: mergedPartnerName,
+        profile_photo_url: (data.profile_photo_url as string | null) ?? null,
+        md_email: (data.md_email as string | null) ?? null,
         md_name: mdName,
-        created_at: data.created_at ?? null,
+        created_at: (data.created_at as string | null) ?? null,
       }
       setExtended(ext)
 
-      // Generate signed URL if photo path exists
       if (data.profile_photo_url) {
         const { data: signedData } = await supabase.storage
           .from('profile-photos')
-          .createSignedUrl(data.profile_photo_url, 3600)
+          .createSignedUrl(data.profile_photo_url as string, 3600)
         if (signedData?.signedUrl) setPhotoSignedUrl(signedData.signedUrl)
       }
 
-      // Pre-populate editable fields from DB (authoritative source)
       setPersonal({
-        first_name: (data.first_name as string | null) ?? session.firstName ?? '',
-        last_name: data.last_name ?? '',
-        phone: data.phone ?? '',
-        partner_name: data.partner_name ?? '',
+        first_name: mm4FirstName ?? (data.first_name as string | null) ?? session.firstName ?? '',
+        last_name: mergedLastName ?? '',
+        phone: mergedPhone ?? '',
+        partner_name: mergedPartnerName ?? '',
       })
       setMove({
-        origin_city: data.origin_city ?? '',
-        origin_state: data.origin_state ?? '',
+        origin_city: mergedCity ?? '',
+        origin_state: mergedState ?? '',
         household_size: (data.household_size as string | null) ?? profile?.householdSize ?? '',
         annual_income: data.annual_income ? String(data.annual_income as number) : (profile?.annualIncome ? String(profile.annualIncome) : ''),
       })
@@ -595,13 +617,13 @@ export default function ProfilePage() {
                         ...inputStyle(moveDirty && move.annual_income !== (profile?.annualIncome ? String(profile.annualIncome) : '')),
                         paddingLeft: '22px',
                       }}
-                      value={move.annual_income}
+                      value={move.annual_income ? Number(move.annual_income).toLocaleString('en-US') : ''}
                       onChange={e => {
                         const digits = e.target.value.replace(/\D/g, '')
                         setMove(p => ({ ...p, annual_income: digits }))
                         setMoveDirty(true)
                       }}
-                      placeholder="e.g. 125000"
+                      placeholder="e.g. 125,000"
                       inputMode="numeric"
                     />
                   </div>
