@@ -133,7 +133,8 @@ export default function ProfilePage() {
       const supabase = createClient()
       const email = session.email.toLowerCase()
 
-      const [{ data }, { data: mm4 }] = await Promise.all([
+      console.log('[Profile] querying mm4_profiles for:', email)
+      const [{ data }, { data: mm4, error: mm4Error }] = await Promise.all([
         supabase
           .from('users')
           .select('first_name, household_size, annual_income, created_at, last_name, phone, origin_city, origin_state, partner_name, profile_photo_url, md_email')
@@ -145,6 +146,7 @@ export default function ProfilePage() {
           .eq('email', email)
           .single(),
       ])
+      if (mm4Error) console.error('[Profile] mm4 query error:', mm4Error)
 
       if (!data) {
         setPersonal(p => ({ ...p, first_name: session.firstName ?? '' }))
