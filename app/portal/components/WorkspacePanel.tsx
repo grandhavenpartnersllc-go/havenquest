@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import type { ReactNode } from 'react'
+import TexasFunFact from '../../../components/portal/TexasFunFact'
 
 export default function WorkspacePanel({ children }: { children: ReactNode }) {
   const pathname = usePathname()
@@ -13,6 +14,7 @@ export default function WorkspacePanel({ children }: { children: ReactNode }) {
         minWidth: 0,
         overflowY: 'auto',
         backgroundColor: 'var(--portal-bg)',
+        position: 'relative',
       }}
     >
       <div
@@ -24,6 +26,7 @@ export default function WorkspacePanel({ children }: { children: ReactNode }) {
       >
         {children}
       </div>
+      <TexasFunFact />
     </main>
   )
 }
