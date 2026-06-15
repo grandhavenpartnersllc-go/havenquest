@@ -227,7 +227,12 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
       const { error: upsertError } = await supabase
         .from('mm4_profiles')
         .upsert(submitData, { onConflict: 'email' })
-      if (upsertError) throw upsertError
+      if (upsertError) {
+        console.error('[MM4] upsert error object:', upsertError)
+        console.error('[MM4] upsert error — message:', upsertError.message, '| code:', upsertError.code, '| details:', upsertError.details, '| hint:', upsertError.hint)
+        console.error('[MM4] submitData at time of failure:', JSON.stringify(submitData, null, 2))
+        throw upsertError
+      }
 
       await supabase
         .from('users')
@@ -244,7 +249,12 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
 
       onSubmitted(submitData)
     } catch (err) {
-      console.error('[MM4] submit failed:', err)
+      console.error('[MM4] submit failed — raw error:', err)
+      if (err && typeof err === 'object') {
+        const e = err as Record<string, unknown>
+        console.error('[MM4] submit failed — message:', e.message, '| code:', e.code, '| details:', e.details, '| hint:', e.hint, '| status:', e.status)
+        console.error('[MM4] submit failed — full JSON:', JSON.stringify(err, null, 2))
+      }
       setSubmitError('Something went wrong submitting your profile. Please try again — your progress is saved.')
     } finally {
       setSubmitting(false)
