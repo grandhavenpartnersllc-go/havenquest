@@ -239,7 +239,7 @@ export default function CommandCenter() {
               <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0, textAlign: 'center' }}>
                 Current:{' '}
                 <span style={{ color: 'var(--accent-blue)', fontWeight: 500 }}>
-                  MM{currentMM} {mmName}
+                  {mmName}
                 </span>
               </p>
             </>

@@ -76,6 +76,14 @@ export default function MetroPage() {
     sessionStorage.removeItem(SESSION_MATCHES_KEY)
     const sessionId = crypto.randomUUID()
     sessionStorage.setItem(SESSION_ID_KEY, sessionId)
+    const savedZip = sessionStorage.getItem('hq_quiz_zip')
+    if (savedZip) {
+      fetch('/api/quiz-sessions', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ originZip: savedZip, completed: true }),
+      }).catch(() => {})
+    }
     router.push(`/results/${sessionId}`)
   }
 

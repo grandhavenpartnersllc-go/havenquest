@@ -14,7 +14,7 @@ const MILEMARKERS = [
   { number: 6, name: 'Prepare' },
   { number: 7, name: 'Match' },
   { number: 8, name: 'Engage' },
-  { number: 9, name: 'Contract' },
+  { number: 9, name: 'Transition' },
   { number: 10, name: 'Home' },
 ] as const
 

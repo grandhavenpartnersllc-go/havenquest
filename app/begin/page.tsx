@@ -38,6 +38,13 @@ export default function BeginPage() {
   const [zip, setZip] = useState('')
   const [zipError, setZipError] = useState('')
 
+  useEffect(() => {
+    const savedFirstName = sessionStorage.getItem('hq_quiz_firstname')
+    const savedZip = sessionStorage.getItem('hq_quiz_zip')
+    if (savedFirstName) setFirstName(savedFirstName)
+    if (savedZip) setZip(savedZip)
+  }, [])
+
   // Animation flags — set via useEffect so transitions fire after DOM paint
   const [step2Animate, setStep2Animate] = useState(false)
   const [step3Animate, setStep3Animate] = useState(false)
@@ -104,17 +111,27 @@ export default function BeginPage() {
       return
     }
     setZipError('')
-    sessionStorage.setItem('hq_first_name', firstName.trim())
-    sessionStorage.setItem('hq_origin_zip', zip.trim())
+    const trimmedName = firstName.trim()
+    const trimmedZip = zip.trim()
+    sessionStorage.setItem('hq_first_name', trimmedName)
+    sessionStorage.setItem('hq_origin_zip', trimmedZip)
     sessionStorage.setItem('hq_origin_type', originType!)
     sessionStorage.setItem('hq_path', selectedPath === '/explore' ? 'explore' : 'metro')
+    sessionStorage.setItem('hq_quiz_firstname', trimmedName)
+    sessionStorage.setItem('hq_quiz_zip', trimmedZip)
+    sessionStorage.setItem('hq_quiz_step', '1')
     const rawSession = localStorage.getItem(LOCAL_SESSION_KEY)
     if (rawSession) {
       try {
         const sess = JSON.parse(rawSession)
-        localStorage.setItem(LOCAL_SESSION_KEY, JSON.stringify({ ...sess, firstName: firstName.trim() }))
+        localStorage.setItem(LOCAL_SESSION_KEY, JSON.stringify({ ...sess, firstName: trimmedName }))
       } catch {}
     }
+    fetch('/api/quiz-sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ firstName: trimmedName, originZip: trimmedZip }),
+    }).catch(() => {})
     router.push(selectedPath!)
   }
 
@@ -387,7 +404,10 @@ export default function BeginPage() {
                       <input
                         type="text"
                         value={firstName}
-                        onChange={e => setFirstName(e.target.value)}
+                        onChange={e => {
+                          setFirstName(e.target.value)
+                          sessionStorage.setItem('hq_quiz_firstname', e.target.value)
+                        }}
                         placeholder="Craig"
                         required
                         autoFocus
@@ -401,7 +421,11 @@ export default function BeginPage() {
                       <input
                         type="text"
                         value={zip}
-                        onChange={e => { setZip(e.target.value); setZipError('') }}
+                        onChange={e => {
+                          setZip(e.target.value)
+                          setZipError('')
+                          sessionStorage.setItem('hq_quiz_zip', e.target.value)
+                        }}
                         placeholder="60631"
                         required
                         maxLength={5}

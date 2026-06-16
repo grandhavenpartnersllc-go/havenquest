@@ -8,13 +8,13 @@ const GOLD = '#B8912A'
 const MILEMARKERS = [
   { mm: 1,  name: 'Welcome',  what: "You're here — get oriented" },
   { mm: 2,  name: 'Explore',  what: 'Review your matched Texas communities' },
-  { mm: 3,  name: 'Decide',   what: 'Commit to your target city' },
+  { mm: 3,  name: 'Discover', what: 'Commit to your target city' },
   { mm: 4,  name: 'Connect',  what: 'Meet your Market Director' },
   { mm: 5,  name: 'Plan',     what: 'Build your relocation strategy' },
   { mm: 6,  name: 'Prepare',  what: 'Get financially and logistically ready' },
   { mm: 7,  name: 'Match',    what: 'Meet your HavenQuest Select Agent' },
   { mm: 8,  name: 'Engage',   what: 'Start your home search' },
-  { mm: 9,  name: 'Contract', what: 'Go under contract' },
+  { mm: 9,  name: 'Transition', what: 'Go under contract' },
   { mm: 10, name: 'Home',     what: 'Close and celebrate' },
 ]
 
@@ -128,7 +128,7 @@ export default function MM1Explore({
           What's Waiting for You
         </p>
         <p style={{ fontSize: '15px', color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: '16px' }}>
-          Your city matches are ready in MM2. They were built from everything you told us — your income, your household, your priorities. Take your time reviewing them. There&apos;s no rush.
+          Your city matches are ready in your next step — Explore. They were built from everything you told us — your income, your household, your priorities. Take your time reviewing them. There&apos;s no rush.
         </p>
         <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.7 }}>
           When you&apos;re ready, click{' '}
@@ -157,10 +157,10 @@ export default function MM1Explore({
               />
               <div>
                 <p style={{ fontSize: '14px', fontWeight: 500, color: '#1C1814', margin: '0 0 4px' }}>
-                  I&apos;ve reviewed my matches and understand how the HavenQuest Navigator works.
+                  I&apos;ve read through the Navigator overview and I&apos;m ready to explore my Texas communities.
                 </p>
                 <p style={{ fontSize: '12px', color: '#9A8E82', margin: 0 }}>
-                  Check this to unlock the button below and begin exploring your full reports.
+                  Check this to continue to Explore — MileMarker 2 — where your city matches are waiting.
                 </p>
               </div>
             </label>

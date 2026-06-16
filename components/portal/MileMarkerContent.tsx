@@ -42,7 +42,7 @@ const MM_NAMES: Record<number, string> = {
   6: 'Prepare',
   7: 'Match',
   8: 'Engage',
-  9: 'Contract',
+  9: 'Transition',
   10: 'Home',
 }
 

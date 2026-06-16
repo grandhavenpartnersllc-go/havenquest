@@ -83,8 +83,16 @@ export default function ExplorePage() {
     }
     sessionStorage.setItem(SESSION_PROFILE_KEY, JSON.stringify(finalProfile))
     sessionStorage.removeItem('hq_metro')
-  sessionStorage.removeItem(SESSION_MATCHES_KEY)
+    sessionStorage.removeItem(SESSION_MATCHES_KEY)
     updateSessionStep(sessionId, 4, { mustHaves, niceToHaves, notPriorities })
+    const savedZip = sessionStorage.getItem('hq_quiz_zip')
+    if (savedZip) {
+      fetch('/api/quiz-sessions', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ originZip: savedZip, completed: true }),
+      }).catch(() => {})
+    }
     router.push(`/results/${sessionId}`)
   }
 

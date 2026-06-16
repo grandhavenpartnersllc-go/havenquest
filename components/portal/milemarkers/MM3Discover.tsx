@@ -107,6 +107,8 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const [loanTerm, setLoanTerm] = useState<30 | 15>(30)
   const [exactDownPayment, setExactDownPayment] = useState<string>('')
   const [exactHomeProceeds, setExactHomeProceeds] = useState<string>('')
+  const [calcExactDownPayment, setCalcExactDownPayment] = useState<string>('')
+  const [calcExactHomeProceeds, setCalcExactHomeProceeds] = useState<string>('')
   const [reportCity, setReportCity] = useState<CityMatch | null>(null)
 
   const [mustHaves, setMustHaves] = useState<(keyof LifestyleScores)[]>(
@@ -139,6 +141,8 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     profile?.annualIncome ?? 100000
   )
   const incomeDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const exactDownDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const exactProceedsDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const rankingsRef = useRef<HTMLDivElement>(null)
   const justCommittedRef = useRef(false)
@@ -282,8 +286,8 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const topCity = displayedMatches[selectedCityIndex]?.location ?? displayedMatches[0]?.location
   const topCityPrice = topCity?.housing?.medianHomePrice ?? 341800
 
-  const downMid = parseExactAmount(exactDownPayment) ?? getDownPaymentMidpoint(downPayment)
-  const procMid = parseExactAmount(exactHomeProceeds) ?? (proceeds ? getProceedsMidpoint(proceeds) : 0)
+  const downMid = parseExactAmount(calcExactDownPayment) ?? getDownPaymentMidpoint(downPayment)
+  const procMid = parseExactAmount(calcExactHomeProceeds) ?? (proceeds ? getProceedsMidpoint(proceeds) : 0)
   const totalFunds = downMid + procMid
   const mortgageBalance = Math.max(0, topCityPrice - totalFunds)
 
@@ -542,7 +546,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           className="w-full py-3 rounded-xl font-bold text-sm mb-6"
           style={{ backgroundColor: NAVY, color: '#ffffff' }}
         >
-          Continue to MM4 →
+          Continue to Connect →
         </button>
 
         {/* Post-commit Section 2 — Committed Direction Summary */}
@@ -625,7 +629,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           <div className="rounded-xl p-4"
                style={{ backgroundColor: 'rgba(184,145,42,0.08)', border: `1px solid ${GOLD}33` }}>
             <p className="text-sm font-medium" style={{ color: '#7A5A1A' }}>
-              <Lock size={13} style={{ verticalAlign: 'middle', marginRight: 4 }} /> Connect (MM4) will unlock when your Market Director initiates contact.
+              <Lock size={13} style={{ verticalAlign: 'middle', marginRight: 4 }} /> Connect will unlock when your Market Director initiates contact.
             </p>
           </div>
         </div>
@@ -1062,7 +1066,17 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                         type="text"
                         placeholder="e.g. $47,500"
                         value={exactDownPayment}
-                        onChange={e => { setSandboxTouched(true); setExactDownPayment(formatCurrency(e.target.value)) }}
+                        onChange={e => {
+                          setSandboxTouched(true)
+                          const formatted = formatCurrency(e.target.value)
+                          setExactDownPayment(formatted)
+                          if (exactDownDebounceRef.current) clearTimeout(exactDownDebounceRef.current)
+                          exactDownDebounceRef.current = setTimeout(() => {
+                            const parsed = parseCurrency(formatted)
+                            if (parsed && parsed >= 1000) setCalcExactDownPayment(formatted)
+                            else if (!parsed) setCalcExactDownPayment('')
+                          }, 1000)
+                        }}
                         onFocus={e => { e.target.style.border = '1px solid #B8912A' }}
                         onBlur={e => { e.target.style.border = '1px solid rgba(184,145,42,0.4)' }}
                         style={{
@@ -1101,7 +1115,17 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                         type="text"
                         placeholder="e.g. $120,000"
                         value={exactHomeProceeds}
-                        onChange={e => { setSandboxTouched(true); setExactHomeProceeds(formatCurrency(e.target.value)) }}
+                        onChange={e => {
+                          setSandboxTouched(true)
+                          const formatted = formatCurrency(e.target.value)
+                          setExactHomeProceeds(formatted)
+                          if (exactProceedsDebounceRef.current) clearTimeout(exactProceedsDebounceRef.current)
+                          exactProceedsDebounceRef.current = setTimeout(() => {
+                            const parsed = parseCurrency(formatted)
+                            if (parsed && parsed >= 1000) setCalcExactHomeProceeds(formatted)
+                            else if (!parsed) setCalcExactHomeProceeds('')
+                          }, 1000)
+                        }}
                         onFocus={e => { e.target.style.border = '1px solid #B8912A' }}
                         onBlur={e => { e.target.style.border = '1px solid rgba(184,145,42,0.4)' }}
                         style={{

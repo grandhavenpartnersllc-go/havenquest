@@ -54,6 +54,7 @@ export default function MM2Discover({ matches, profile, initialChecklist, initia
   const [emailState, setEmailState] = useState<BtnState>('idle')
   const [scorePopupOpen, setScorePopupOpen] = useState(false)
   const [activeReportIndex, setActiveReportIndex] = useState(0)
+  const [mm2ReadyChecked, setMm2ReadyChecked] = useState(false)
 
   const topCity = matches[0]?.location ?? null
 
@@ -375,11 +376,23 @@ export default function MM2Discover({ matches, profile, initialChecklist, initia
       {/* Advance to Discover */}
       <div className="mt-10 pt-6" style={{ borderTop: '1px solid #E5E7EB' }}>
         <p className="text-sm mb-4" style={{ color: '#6B7280' }}>
-          Taken a look at your matches? When you&apos;re ready to dial in your
-          direction, Discover is waiting.
+          When you&apos;re ready to take the next step, Discover — MileMarker 3 — is where you&apos;ll dig deeper into your top communities, refine your financial picture, and zero in on where you want to plant your flag.
         </p>
+        <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', marginBottom: '16px' }}>
+          <input
+            type="checkbox"
+            checked={mm2ReadyChecked}
+            onChange={e => setMm2ReadyChecked(e.target.checked)}
+            style={{ marginTop: '3px', accentColor: GOLD, width: '16px', height: '16px', flexShrink: 0 }}
+          />
+          <span style={{ fontSize: '14px', color: '#4B5563', lineHeight: 1.5 }}>
+            I&apos;ve reviewed my city matches and I&apos;m ready to move forward.
+          </span>
+        </label>
         <button
+          disabled={!mm2ReadyChecked}
           onClick={async () => {
+            if (!mm2ReadyChecked) return
             if (email) {
               try {
                 const supabase = createClient()
@@ -394,9 +407,14 @@ export default function MM2Discover({ matches, profile, initialChecklist, initia
             onAdvanceToDiscover()
           }}
           className="w-full py-3 rounded-xl font-bold text-sm transition-opacity hover:opacity-90"
-          style={{ backgroundColor: GOLD, color: '#16120D' }}
+          style={{
+            backgroundColor: mm2ReadyChecked ? GOLD : '#9A8E82',
+            color: '#16120D',
+            opacity: mm2ReadyChecked ? 1 : 0.5,
+            cursor: mm2ReadyChecked ? 'pointer' : 'not-allowed',
+          }}
         >
-          I&apos;m ready to go deeper →
+          Continue to Discover →
         </button>
       </div>
 
