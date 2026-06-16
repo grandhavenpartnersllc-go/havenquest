@@ -161,7 +161,7 @@ Below button: `Applications are reviewed personally. We will follow up within 48
 
 ## Footer Tagline
 Find the footer tagline that reads: `Texas relocation intelligence. Find where your income and lifestyle actually fit.`
-Replace with: `We don't help you pick a house. We help you find a home.`
+Replace with: `We don't help you pick a house. We help you find your home.`
 
 ---
 

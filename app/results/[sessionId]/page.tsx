@@ -50,7 +50,29 @@ export default function SessionResultsPage({ params }: { params: Promise<{ sessi
     const topMatches: CityMatch[] = cachedMatches
       ? JSON.parse(cachedMatches)
       : getTopMatches(prof, cities, 4)
-    if (!cachedMatches) sessionStorage.setItem(SESSION_MATCHES_KEY, JSON.stringify(topMatches))
+    if (!cachedMatches) {
+      sessionStorage.setItem(SESSION_MATCHES_KEY, JSON.stringify(topMatches))
+      try {
+        const sessRaw = localStorage.getItem(LOCAL_SESSION_KEY)
+        if (sessRaw) {
+          const { email } = JSON.parse(sessRaw) as { email: string }
+          if (email) {
+            fetch('/api/users', {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                email,
+                topCityMatches: topMatches.slice(0, 4).map(m => ({
+                  cityId: m.location.id,
+                  cityName: m.location.name,
+                  matchScore: m.matchScore,
+                })),
+              }),
+            }).catch(() => {})
+          }
+        }
+      } catch {}
+    }
     setMatches(topMatches)
 
     const sessionRaw = localStorage.getItem(LOCAL_SESSION_KEY)

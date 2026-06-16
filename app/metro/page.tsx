@@ -11,7 +11,7 @@ import HouseholdForm from '../../components/form/HouseholdForm'
 import FinancialPictureStep from '../../components/quiz/FinancialPictureStep'
 import PrioritySelector from '../../components/form/PrioritySelector'
 import { UserProfile, BuyerProfile, LifestyleScores, FinancialPicture } from '../../types'
-import { SESSION_PROFILE_KEY, SESSION_METRO_KEY, SESSION_ID_KEY } from '../../utils/constants'
+import { SESSION_PROFILE_KEY, SESSION_METRO_KEY, SESSION_MATCHES_KEY, SESSION_ID_KEY } from '../../utils/constants'
 
 const STEPS = ['Metro', 'Income', 'Household & Dream Home', 'Financial Picture', 'Priorities']
 
@@ -73,6 +73,7 @@ export default function MetroPage() {
     }
     sessionStorage.setItem(SESSION_PROFILE_KEY, JSON.stringify(finalProfile))
     sessionStorage.setItem(SESSION_METRO_KEY, metro)
+    sessionStorage.removeItem(SESSION_MATCHES_KEY)
     const sessionId = crypto.randomUUID()
     sessionStorage.setItem(SESSION_ID_KEY, sessionId)
     router.push(`/results/${sessionId}`)

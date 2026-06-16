@@ -21,7 +21,7 @@ The current eyebrow reads: `WELCOME TO THE LONE STAR STATE`
 Keep that eyebrow label exactly as-is. Directly below it, add the official HavenQuest tagline as a second line:
 
 ```
-We don't help you pick a house. We help you find a home.
+We don't help you pick a house. We help you find your home.
 ```
 
 Style:
@@ -35,7 +35,7 @@ Style:
 The two lines together read as:
 ```
 WELCOME TO THE LONE STAR STATE
-We don't help you pick a house. We help you find a home.
+We don't help you pick a house. We help you find your home.
 ```
 
 ---

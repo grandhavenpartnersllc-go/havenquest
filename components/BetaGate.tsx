@@ -68,7 +68,7 @@ export default function BetaGate() {
 
         {/* Tagline */}
         <p style={{ fontSize: '13px', color: '#9A8E82', textAlign: 'center', margin: '0 0 20px', lineHeight: 1.5 }}>
-          We don&apos;t help you pick a house. We help you find a home.
+          We don&apos;t help you pick a house. We help you find your home.
         </p>
 
         {/* Divider */}

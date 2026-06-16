@@ -39,6 +39,24 @@ async function sendWelcomeAndRespond(
   return NextResponse.json({ success: true, userId, setupLink, isReturningUser })
 }
 
+export async function PATCH(request: NextRequest) {
+  try {
+    const { email, topCityMatches } = await request.json()
+    if (!email || !Array.isArray(topCityMatches)) {
+      return NextResponse.json({ error: 'email and topCityMatches required' }, { status: 400 })
+    }
+    const supabase = getSupabase()
+    await supabase
+      .from('users')
+      .update({ top_city_matches: topCityMatches })
+      .eq('email', (email as string).toLowerCase())
+    return NextResponse.json({ ok: true })
+  } catch (err) {
+    console.error('[users PATCH] error:', err)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
