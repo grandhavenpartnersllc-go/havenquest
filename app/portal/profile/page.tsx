@@ -90,7 +90,7 @@ function mmBadgeLabel(mm: number): string {
     1: 'Welcome', 2: 'Explore', 3: 'Discover', 4: 'Connect',
     5: 'Plan', 6: 'Prepare', 7: 'Match', 8: 'Engage', 9: 'Transition', 10: 'Home'
   }
-  return `MM${mm} — ${names[mm] ?? 'In Progress'}`
+  return names[mm] ?? 'In Progress'
 }
 
 function formatDate(iso: string | null): string {
@@ -131,10 +131,10 @@ export default function ProfilePage() {
     if (!session?.email) return
     try {
       const supabase = createClient()
+      await supabase.auth.getSession()
       const email = session.email.toLowerCase()
 
-      console.log('[Profile] querying mm4_profiles for:', email)
-      const [{ data }, { data: mm4, error: mm4Error }] = await Promise.all([
+      const [{ data }, { data: mm4 }] = await Promise.all([
         supabase
           .from('users')
           .select('first_name, household_size, annual_income, created_at, last_name, phone, origin_city, origin_state, partner_name, profile_photo_url, md_email')
@@ -144,9 +144,8 @@ export default function ProfilePage() {
           .from('mm4_profiles')
           .select('primary_first_name, primary_last_name, phone, partner_first_name, partner_last_name, current_city, current_state')
           .eq('email', email)
-          .single(),
+          .maybeSingle(),
       ])
-      if (mm4Error) console.error('[Profile] mm4 query error:', mm4Error)
 
       if (!data) {
         setPersonal(p => ({ ...p, first_name: session.firstName ?? '' }))
