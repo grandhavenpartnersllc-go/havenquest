@@ -1067,7 +1067,6 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                         placeholder="e.g. $47,500"
                         value={exactDownPayment}
                         onChange={e => {
-                          setSandboxTouched(true)
                           const formatted = formatCurrency(e.target.value)
                           setExactDownPayment(formatted)
                           if (exactDownDebounceRef.current) clearTimeout(exactDownDebounceRef.current)
@@ -1116,7 +1115,6 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                         placeholder="e.g. $120,000"
                         value={exactHomeProceeds}
                         onChange={e => {
-                          setSandboxTouched(true)
                           const formatted = formatCurrency(e.target.value)
                           setExactHomeProceeds(formatted)
                           if (exactProceedsDebounceRef.current) clearTimeout(exactProceedsDebounceRef.current)
