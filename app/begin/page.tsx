@@ -195,9 +195,13 @@ export default function BeginPage() {
 
   function handleMetroComplete(metro: MetroCaptureValue) {
     const metroId = METRO_TO_ID[metro]
-    setAnswers(prev => ({ ...prev, targetMetro: metro }))
+    const updatedAnswers = { ...answers, targetMetro: metro }
+    setAnswers(updatedAnswers)
     sessionStorage.setItem('hq_target_metro', metro)
     updateSessionStep(sessionId, 1, { targetMetro: metroId ?? metro })
+    if (entryPath) {
+      persistProgress({ entryPath, cardIndex: 0, answers: updatedAnswers })
+    }
     setPhase('cards')
     setCardIndex(0)
   }
