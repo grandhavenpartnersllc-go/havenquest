@@ -49,6 +49,7 @@ export default function SessionResultsPage({ params }: { params: Promise<{ sessi
 
     const metro = sessionStorage.getItem(SESSION_METRO_KEY)
     const cities = metro ? getCitiesByMetro(metro) : getAllCities()
+    console.log('[DEBUG] metro value:', metro, '| cities count:', cities.length, '| first city:', cities[0]?.name)
     const cachedMatches = sessionStorage.getItem(SESSION_MATCHES_KEY)
     const topMatches: CityMatch[] = cachedMatches
       ? JSON.parse(cachedMatches)
