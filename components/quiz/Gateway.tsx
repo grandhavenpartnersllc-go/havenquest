@@ -56,9 +56,24 @@ export default function Gateway({ onSelect, onContinue }: GatewayProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [origin, progress])
 
+  // Mirrors PROGRESS_KEY ('hq_quiz_progress') from app/begin/page.tsx — cleared
+  // on every gateway selection, same as the original flat-gateway fix, so a
+  // stale resume snapshot from an earlier abandoned attempt can never survive
+  // into a fresh choice here (the two-stage flow only calls the parent's
+  // onSelect, where PROGRESS_KEY used to be cleared, once both stages are set).
+  function clearStaleProgress() {
+    sessionStorage.removeItem('hq_quiz_progress')
+  }
+
   function handleOriginSelect(value: Origin) {
+    clearStaleProgress()
     if (origin !== value) setProgress(null)
     setOrigin(value)
+  }
+
+  function handleProgressSelect(value: Progress) {
+    clearStaleProgress()
+    setProgress(value)
   }
 
   return (
@@ -99,7 +114,7 @@ export default function Gateway({ onSelect, onContinue }: GatewayProps) {
                 title={opt.title}
                 subtitle={opt.subtitle}
                 selected={progress === opt.value}
-                onClick={() => setProgress(opt.value)}
+                onClick={() => handleProgressSelect(opt.value)}
               />
             ))}
           </div>
