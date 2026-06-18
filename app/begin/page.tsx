@@ -188,6 +188,11 @@ export default function BeginPage() {
 
   function handleGatewayContinue() {
     if (!entryPath) return
+    console.log('[DEBUG gateway]', {
+      entryPath,
+      sessionStorageEntryPath: sessionStorage.getItem('hq_entry_path'),
+      nextPhase: entryPath === 'directed' ? 'metro' : 'cards',
+    })
     trackEvent('gateway_selected', { sessionId, entry_path: entryPath })
     setPhase(entryPath === 'directed' ? 'metro' : 'cards')
     setCardIndex(0)
