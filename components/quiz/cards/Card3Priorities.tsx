@@ -1,0 +1,120 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import PrioritySelector from '../../form/PrioritySelector'
+import MobilePriorityBuckets, { type PriorityBucket } from '../MobilePriorityBuckets'
+import { LIFESTYLE_CATEGORIES, MUST_HAVE_MAX, NICE_TO_HAVE_MAX } from '../../../utils/constants'
+import { CATEGORY_ICONS } from '../../../utils/categoryIcons'
+import { NAVY, BLUE } from '../quizTheme'
+import type { LifestyleScores } from '../../../types'
+import type { PriorityWeight } from '../../../types'
+
+// Brief's Card 3 lists 12 categories — drops "transit" from the 13 used
+// elsewhere in the app (city detail pages, PDF reports, methodology page still
+// need all 13 for displaying city scores).
+const QUIZ_CATEGORIES = LIFESTYLE_CATEGORIES.filter(c => c.key !== 'transit')
+
+export interface Card3Result {
+  priorities: Record<string, PriorityWeight>
+  mustHaves: (keyof LifestyleScores)[]
+  niceToHaves: (keyof LifestyleScores)[]
+  notPriorities: (keyof LifestyleScores)[]
+}
+
+interface Card3PrioritiesProps {
+  onComplete: (result: Card3Result) => void
+}
+
+function buildPriorities(
+  mustHaves: (keyof LifestyleScores)[],
+  important: (keyof LifestyleScores)[],
+  wouldBeNice: (keyof LifestyleScores)[]
+): Record<string, PriorityWeight> {
+  const priorities: Record<string, PriorityWeight> = {}
+  QUIZ_CATEGORIES.forEach(({ key }) => {
+    if (mustHaves.includes(key)) priorities[key] = { bucket: 'must_have', weight: 3 }
+    else if (important.includes(key)) priorities[key] = { bucket: 'important', weight: 2 }
+    else if (wouldBeNice.includes(key)) priorities[key] = { bucket: 'would_be_nice', weight: 1 }
+    else priorities[key] = { bucket: 'unassigned', weight: 0.5 }
+  })
+  return priorities
+}
+
+export default function Card3Priorities({ onComplete }: Card3PrioritiesProps) {
+  const [isTouch, setIsTouch] = useState<boolean | null>(null)
+  const [bucketOf, setBucketOf] = useState<Record<string, PriorityBucket>>(() => {
+    const initial: Record<string, PriorityBucket> = {}
+    QUIZ_CATEGORIES.forEach(c => { initial[c.key] = 'unassigned' })
+    return initial
+  })
+
+  useEffect(() => {
+    setIsTouch(window.matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0)
+  }, [])
+
+  const handleDesktopComplete = (
+    mustHaves: (keyof LifestyleScores)[],
+    niceToHaves: (keyof LifestyleScores)[],
+    notPriorities: (keyof LifestyleScores)[]
+  ) => {
+    const assigned = new Set([...mustHaves, ...niceToHaves, ...notPriorities])
+    const unassigned = QUIZ_CATEGORIES.map(c => c.key).filter(k => !assigned.has(k))
+    onComplete({
+      priorities: buildPriorities(mustHaves, niceToHaves, notPriorities),
+      mustHaves,
+      niceToHaves,
+      notPriorities: [...notPriorities, ...unassigned],
+    })
+  }
+
+  const handleMobileContinue = () => {
+    const mustHaves = QUIZ_CATEGORIES.filter(c => bucketOf[c.key] === 'must_have').map(c => c.key)
+    const niceToHaves = QUIZ_CATEGORIES.filter(c => bucketOf[c.key] === 'important').map(c => c.key)
+    const wouldBeNice = QUIZ_CATEGORIES.filter(c => bucketOf[c.key] === 'would_be_nice').map(c => c.key)
+    const unassigned = QUIZ_CATEGORIES.filter(c => bucketOf[c.key] === 'unassigned').map(c => c.key)
+    onComplete({
+      priorities: buildPriorities(mustHaves, niceToHaves, wouldBeNice),
+      mustHaves,
+      niceToHaves,
+      notPriorities: [...wouldBeNice, ...unassigned],
+    })
+  }
+
+  const mustHaveCount = Object.values(bucketOf).filter(b => b === 'must_have').length
+
+  if (isTouch === null) return null
+
+  return (
+    <div className="max-w-2xl mx-auto px-4 py-10">
+      <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2" style={{ color: NAVY }}>
+        What matters most to you in a community?
+      </h1>
+      <p className="text-gray-500 mb-8">
+        Sort these into what matters most — we&apos;ll build your matches around them.
+      </p>
+
+      {isTouch ? (
+        <>
+          <MobilePriorityBuckets
+            categories={QUIZ_CATEGORIES.map(c => ({ key: c.key, label: c.label, icon: CATEGORY_ICONS[c.key] }))}
+            bucketOf={bucketOf}
+            onAssign={(key, bucket) => setBucketOf(prev => ({ ...prev, [key]: bucket }))}
+            mustHaveMax={MUST_HAVE_MAX}
+            importantMax={NICE_TO_HAVE_MAX}
+          />
+          <button
+            type="button"
+            disabled={mustHaveCount < 1}
+            onClick={handleMobileContinue}
+            className="w-full mt-6 py-3.5 rounded-xl font-bold text-sm transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{ backgroundColor: BLUE, color: '#FFFFFF' }}
+          >
+            {mustHaveCount >= 1 ? 'Continue' : 'Select at least 1 Must Have to continue'}
+          </button>
+        </>
+      ) : (
+        <PrioritySelector categories={QUIZ_CATEGORIES} onComplete={handleDesktopComplete} />
+      )}
+    </div>
+  )
+}

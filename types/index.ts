@@ -185,6 +185,17 @@ export interface UserSession {
   createdAt: string
 }
 
+export interface PriorityWeight {
+  bucket: 'must_have' | 'important' | 'would_be_nice' | 'unassigned'
+  weight: 3 | 2 | 1 | 0.5
+}
+
+export interface QuizFinancialData {
+  income_range: string
+  home_proceeds: string | null
+  available_funds: string
+}
+
 export interface QuizSessionData {
   sessionId: string
   currentStep: number
@@ -197,6 +208,18 @@ export interface QuizSessionData {
   buyerProfile?: BuyerProfile
   email?: string
   completed?: boolean
+  // Navigator Quiz v2.1 — gateway + entry path fields (Brief 1)
+  entryPath?: 'explorer' | 'directed' | 'instate' | 'exploring'
+  archetype?: string
+  priorities?: Record<string, PriorityWeight>
+  communityFeel?: string
+  growthProfile?: number
+  lifestyleOrientation?: number
+  homeStatus?: string
+  workSituation?: string
+  financialData?: QuizFinancialData
+  metroPreference?: string[]
+  targetMetro?: string
 }
 
 export interface MM4Profile {

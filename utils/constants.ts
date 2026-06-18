@@ -41,7 +41,7 @@ export const HOUSEHOLD_OPTIONS: { value: UserProfile['householdSize']; label: st
   { value: '5+', label: 'Family of 5+', description: 'Larger family' },
 ]
 
-export const MUST_HAVE_MAX = 4
+export const MUST_HAVE_MAX = 3
 export const NICE_TO_HAVE_MAX = 5
 
 export const SESSION_PROFILE_KEY = 'hq_profile'

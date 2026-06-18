@@ -8,6 +8,7 @@ import Header from '../../../components/shared/Header'
 import Footer from '../../../components/shared/Footer'
 import EmailGate from '../../../components/results/EmailGate'
 import PasswordCreation from '../../../components/results/PasswordCreation'
+import DiscoveryEmailCapture from '../../../components/quiz/DiscoveryEmailCapture'
 import { CityMatch, UserProfile, UserSession } from '../../../types'
 import {
   SESSION_PROFILE_KEY,
@@ -33,6 +34,7 @@ export default function SessionResultsPage({ params }: { params: Promise<{ sessi
   const [gateSession, setGateSession] = useState<{ userId: string; firstName: string; email: string } | null>(null)
   const [storedSession, setStoredSession] = useState<UserSession | null>(null)
   const [pendingNotice, setPendingNotice] = useState(false)
+  const [isExploring, setIsExploring] = useState(false)
 
   useEffect(() => {
     const raw = sessionStorage.getItem(SESSION_PROFILE_KEY)
@@ -43,6 +45,7 @@ export default function SessionResultsPage({ params }: { params: Promise<{ sessi
 
     const prof: UserProfile = JSON.parse(raw)
     setProfile(prof)
+    setIsExploring(sessionStorage.getItem('hq_entry_path') === 'exploring')
 
     const metro = sessionStorage.getItem(SESSION_METRO_KEY)
     const cities = metro ? getCitiesByMetro(metro) : getAllCities()
@@ -118,9 +121,19 @@ export default function SessionResultsPage({ params }: { params: Promise<{ sessi
       <main className="flex-1 bg-surface">
         <div className="bg-surface border-b border-black/5 px-4 py-12">
           <div className="max-w-3xl mx-auto text-left">
-            <p style={{ fontSize: '11px', fontWeight: 700, color: '#B8912A', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '12px' }}>Your Results</p>
-            <h1 style={{ fontSize: '2.25rem', fontWeight: 700, color: 'var(--color-text-primary)', letterSpacing: '-0.02em', lineHeight: 1.12 }}>Here are your top Texas matches.</h1>
-            <p style={{ fontSize: '15px', color: 'var(--color-text-secondary)', marginTop: '12px', lineHeight: 1.6, maxWidth: '620px' }}>Based on your income, household, and priorities — this is where your life fits in Texas right now. Your full Navigator report goes much deeper.</p>
+            <p style={{ fontSize: '11px', fontWeight: 700, color: '#B8912A', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '12px' }}>
+              {isExploring ? 'Early Discovery Matches' : 'Your Top Matches'}
+            </p>
+            <h1 style={{ fontSize: '2.25rem', fontWeight: 700, color: 'var(--color-text-primary)', letterSpacing: '-0.02em', lineHeight: 1.12 }}>
+              {isExploring
+                ? "Here's a first look at where you might belong in Texas."
+                : 'Here are your top Texas matches.'}
+            </h1>
+            <p style={{ fontSize: '15px', color: 'var(--color-text-secondary)', marginTop: '12px', lineHeight: 1.6, maxWidth: '620px' }}>
+              {isExploring
+                ? 'These are early discovery matches based on your priorities and personality. Complete your full profile to unlock detailed reports.'
+                : 'Based on your income, household, and priorities — this is where your life fits in Texas right now. Your full Navigator report goes much deeper.'}
+            </p>
           </div>
         </div>
 
@@ -193,7 +206,9 @@ export default function SessionResultsPage({ params }: { params: Promise<{ sessi
                         </p>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span style={{ fontSize: '22px', fontWeight: 700, color: '#B8912A' }}>{match.matchScore}%</span>
-                          <span style={{ fontSize: '11px', color: 'var(--color-text-tertiary)' }}>match</span>
+                          <span style={{ fontSize: '11px', color: 'var(--color-text-tertiary)' }}>
+                            {isExploring ? 'Discovery Match' : 'match'}
+                          </span>
                         </div>
                       </div>
                       {/* Lock overlay */}
@@ -213,18 +228,22 @@ export default function SessionResultsPage({ params }: { params: Promise<{ sessi
               </div>
 
               {/* Unlock CTA — appears immediately below cards */}
-              <div style={{ textAlign: 'center', maxWidth: '900px', margin: '0 auto' }}>
-                <button
-                  onClick={() => setShowGate(true)}
-                  className="bg-accent text-white px-10 py-4 rounded-xl font-bold text-sm hover:bg-[#154d8a] transition-colors"
-                  style={{ boxShadow: '0 2px 10px rgba(26,95,168,0.28)' }}
-                >
-                  Create my free portal — see all my matches →
-                </button>
-                <p style={{ fontSize: '12px', color: '#9A8E82', marginTop: '10px' }}>
-                  Free. No credit card. Your full results are waiting.
-                </p>
-              </div>
+              {isExploring ? (
+                <DiscoveryEmailCapture onUnlock={() => setShowGate(true)} />
+              ) : (
+                <div style={{ textAlign: 'center', maxWidth: '900px', margin: '0 auto' }}>
+                  <button
+                    onClick={() => setShowGate(true)}
+                    className="bg-accent text-white px-10 py-4 rounded-xl font-bold text-sm hover:bg-[#154d8a] transition-colors"
+                    style={{ boxShadow: '0 2px 10px rgba(26,95,168,0.28)' }}
+                  >
+                    Create my free portal — see all my matches →
+                  </button>
+                  <p style={{ fontSize: '12px', color: '#9A8E82', marginTop: '10px' }}>
+                    Free. No credit card. Your full results are waiting.
+                  </p>
+                </div>
+              )}
             </>
           )}
 

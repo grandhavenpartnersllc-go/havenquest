@@ -78,11 +78,12 @@ interface PrioritySelectorProps {
     niceToHaves: (keyof LifestyleScores)[],
     notPriorities: (keyof LifestyleScores)[]
   ) => void
+  categories?: typeof LIFESTYLE_CATEGORIES
 }
 
-export default function PrioritySelector({ onComplete }: PrioritySelectorProps) {
+export default function PrioritySelector({ onComplete, categories = LIFESTYLE_CATEGORIES }: PrioritySelectorProps) {
   const [items, setItems] = useState<CategoryItem[]>(
-    LIFESTYLE_CATEGORIES.map(c => ({ key: c.key, bucket: 'unassigned' }))
+    categories.map(c => ({ key: c.key, bucket: 'unassigned' }))
   )
   const [dragging, setDragging] = useState<keyof LifestyleScores | null>(null)
   const [activeCard, setActiveCard] = useState<keyof LifestyleScores | null>(null)
@@ -135,7 +136,7 @@ export default function PrioritySelector({ onComplete }: PrioritySelectorProps) 
   }
 
   const getCat = (key: keyof LifestyleScores) =>
-    LIFESTYLE_CATEGORIES.find(c => c.key === key)!
+    categories.find(c => c.key === key)!
 
   const canSubmit = mustHaves.length >= 1
 
