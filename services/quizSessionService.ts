@@ -11,7 +11,7 @@ import { QuizSessionData } from '../types'
 
 const SESSION_KEY = 'hq_session_id'
 
-export async function initSession(opts?: { firstName?: string; originZip?: string }): Promise<string> {
+export async function initSession(opts?: { firstName?: string; originZip?: string; email?: string }): Promise<string> {
   const existing = localStorage.getItem(SESSION_KEY)
   if (existing) return existing
 
@@ -26,6 +26,7 @@ export async function initSession(opts?: { firstName?: string; originZip?: strin
       quiz_version: '2.1',
       ...(opts?.firstName && { first_name: opts.firstName }),
       ...(opts?.originZip && { origin_zip: opts.originZip }),
+      ...(opts?.email && { email: opts.email }),
     })
   } catch (err) {
     console.warn('[quizSessionService] initSession write failed:', err)

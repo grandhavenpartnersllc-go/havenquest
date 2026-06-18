@@ -90,6 +90,7 @@ interface StoredProgress {
   sessionId: string
   firstName: string
   originZip: string
+  email: string
 }
 
 export default function BeginPage() {
@@ -100,6 +101,8 @@ export default function BeginPage() {
   const [firstName, setFirstName] = useState('')
   const [zip, setZip] = useState('')
   const [zipError, setZipError] = useState('')
+  const [email, setEmail] = useState('')
+  const [emailError, setEmailError] = useState('')
 
   const [sessionId, setSessionId] = useState('')
   const [entryPath, setEntryPath] = useState<EntryPath | null>(null)
@@ -125,7 +128,7 @@ export default function BeginPage() {
     try {
       sessionStorage.setItem(
         PROGRESS_KEY,
-        JSON.stringify({ ...next, sessionId, firstName, originZip: zip })
+        JSON.stringify({ ...next, sessionId, firstName, originZip: zip, email })
       )
     } catch {}
   }
@@ -135,6 +138,7 @@ export default function BeginPage() {
     setSessionId(resumeData.sessionId)
     setFirstName(resumeData.firstName)
     setZip(resumeData.originZip)
+    setEmail(resumeData.email ?? '')
     setEntryPath(resumeData.entryPath)
     setCardIndex(resumeData.cardIndex)
     setAnswers(resumeData.answers)
@@ -163,10 +167,17 @@ export default function BeginPage() {
       return
     }
     setZipError('')
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setEmailError('Please enter a valid email address')
+      return
+    }
+    setEmailError('')
     const trimmedName = firstName.trim()
     const trimmedZip = zip.trim()
+    const trimmedEmail = email.trim().toLowerCase()
     sessionStorage.setItem('hq_first_name', trimmedName)
     sessionStorage.setItem('hq_origin_zip', trimmedZip)
+    sessionStorage.setItem('hq_email', trimmedEmail)
     const rawSession = localStorage.getItem(LOCAL_SESSION_KEY)
     if (rawSession) {
       try {
@@ -174,8 +185,13 @@ export default function BeginPage() {
         localStorage.setItem(LOCAL_SESSION_KEY, JSON.stringify({ ...sess, firstName: trimmedName }))
       } catch {}
     }
-    const id = await initSession({ firstName: trimmedName, originZip: trimmedZip })
+    const id = await initSession({ firstName: trimmedName, originZip: trimmedZip, email: trimmedEmail })
     setSessionId(id)
+    fetch('/api/quiz-lead', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ firstName: trimmedName, email: trimmedEmail }),
+    }).catch(() => {})
     setPhase('gateway')
   }
 
@@ -466,6 +482,20 @@ export default function BeginPage() {
                     className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400"
                   />
                   {zipError && <p className="mt-1.5 text-xs text-red-500">{zipError}</p>}
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    Email address
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={e => { setEmail(e.target.value); setEmailError('') }}
+                    placeholder="your@email.com"
+                    required
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400"
+                  />
+                  {emailError && <p className="mt-1.5 text-xs text-red-500">{emailError}</p>}
                 </div>
                 <button
                   type="submit"

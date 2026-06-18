@@ -1,15 +1,30 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import OptionCard from './OptionCard'
 import { NAVY } from './quizTheme'
 import type { EntryPath } from '../../utils/quizFlow'
 
-const GATEWAY_OPTIONS: { path: EntryPath; title: string; subtitle: string }[] = [
-  { path: 'explorer', title: 'New to Texas', subtitle: 'Show me the whole state' },
-  { path: 'directed', title: 'I Have a Target Area', subtitle: 'Help me find the right community' },
-  { path: 'instate', title: 'Already in Texas', subtitle: 'Looking for my next chapter' },
-  { path: 'exploring', title: 'Just Exploring', subtitle: "I'm curious what's out there" },
+type Origin = 'new' | 'instate'
+type Progress = 'directed' | 'exploring'
+
+const ORIGIN_OPTIONS: { value: Origin; title: string; subtitle: string }[] = [
+  { value: 'new', title: 'New to Texas', subtitle: "I'm moving from out of state" },
+  { value: 'instate', title: 'Already in Texas', subtitle: "I'm looking for my next chapter" },
 ]
+
+const PROGRESS_OPTIONS: { value: Progress; title: string; subtitle: string }[] = [
+  { value: 'directed', title: 'I Have a Target Area', subtitle: 'Help me find the right community' },
+  { value: 'exploring', title: 'Just Exploring', subtitle: "I'm curious what's out there" },
+]
+
+// Entry path mapping (unchanged from the flat 2x2 gateway):
+// new + directed -> directed | new + exploring -> explorer
+// instate + directed -> directed | instate + exploring -> instate
+function computeEntryPath(origin: Origin, progress: Progress): EntryPath {
+  if (progress === 'directed') return 'directed'
+  return origin === 'new' ? 'explorer' : 'instate'
+}
 
 interface GatewayProps {
   selected: EntryPath | null
@@ -17,7 +32,35 @@ interface GatewayProps {
   onContinue: () => void
 }
 
-export default function Gateway({ selected, onSelect, onContinue }: GatewayProps) {
+export default function Gateway({ onSelect, onContinue }: GatewayProps) {
+  const [origin, setOrigin] = useState<Origin | null>(null)
+  const [progress, setProgress] = useState<Progress | null>(null)
+  const [stage2Animate, setStage2Animate] = useState(false)
+  const [continueAnimate, setContinueAnimate] = useState(false)
+
+  useEffect(() => {
+    if (origin) {
+      const t = setTimeout(() => setStage2Animate(true), 20)
+      return () => clearTimeout(t)
+    }
+    setStage2Animate(false)
+  }, [origin])
+
+  useEffect(() => {
+    if (origin && progress) {
+      onSelect(computeEntryPath(origin, progress))
+      const t = setTimeout(() => setContinueAnimate(true), 20)
+      return () => clearTimeout(t)
+    }
+    setContinueAnimate(false)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [origin, progress])
+
+  function handleOriginSelect(value: Origin) {
+    if (origin !== value) setProgress(null)
+    setOrigin(value)
+  }
+
   return (
     <div className="max-w-2xl mx-auto px-4 py-12">
       <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2" style={{ color: NAVY }}>
@@ -27,27 +70,58 @@ export default function Gateway({ selected, onSelect, onContinue }: GatewayProps
         We&apos;ll tailor the experience based on how much you&apos;ve already decided.
       </p>
 
+      <p className="text-sm font-semibold mb-3" style={{ color: NAVY }}>Where are you coming from?</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-        {GATEWAY_OPTIONS.map(opt => (
+        {ORIGIN_OPTIONS.map(opt => (
           <OptionCard
-            key={opt.path}
+            key={opt.value}
             title={opt.title}
             subtitle={opt.subtitle}
-            selected={selected === opt.path}
-            onClick={() => onSelect(opt.path)}
+            selected={origin === opt.value}
+            onClick={() => handleOriginSelect(opt.value)}
           />
         ))}
       </div>
 
-      <button
-        type="button"
-        disabled={!selected}
-        onClick={onContinue}
-        className="w-full py-3.5 rounded-xl font-bold text-sm transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-        style={{ backgroundColor: '#0076B6', color: '#FFFFFF' }}
-      >
-        Continue
-      </button>
+      {origin && (
+        <div
+          style={{
+            transition: 'opacity 0.25s ease, transform 0.25s ease',
+            opacity: stage2Animate ? 1 : 0,
+            transform: stage2Animate ? 'translateY(0)' : 'translateY(8px)',
+          }}
+        >
+          <p className="text-sm font-semibold mb-3" style={{ color: NAVY }}>How far along are you?</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+            {PROGRESS_OPTIONS.map(opt => (
+              <OptionCard
+                key={opt.value}
+                title={opt.title}
+                subtitle={opt.subtitle}
+                selected={progress === opt.value}
+                onClick={() => setProgress(opt.value)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {origin && progress && (
+        <button
+          type="button"
+          onClick={onContinue}
+          style={{
+            backgroundColor: '#0076B6',
+            color: '#FFFFFF',
+            transition: 'opacity 0.2s ease, transform 0.2s ease',
+            opacity: continueAnimate ? 1 : 0,
+            transform: continueAnimate ? 'translateY(0)' : 'translateY(8px)',
+          }}
+          className="w-full py-3.5 rounded-xl font-bold text-sm"
+        >
+          Continue
+        </button>
+      )}
     </div>
   )
 }

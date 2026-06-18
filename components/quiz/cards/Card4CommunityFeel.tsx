@@ -1,14 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import OptionCard from '../OptionCard'
+import PhotoOptionCard from '../PhotoOptionCard'
 import { NAVY, BLUE } from '../quizTheme'
 
 const OPTIONS = [
-  { key: 'town_square', icon: '🏛️', label: 'Historic town square' },
-  { key: 'suburban', icon: '🏘️', label: 'Master-planned suburban neighborhood' },
-  { key: 'urban', icon: '🌆', label: 'Urban skyline district' },
-  { key: 'acreage', icon: '🌿', label: 'Hill Country acreage' },
+  { key: 'town_square', label: 'Established / Town Square', image: '/images/quiz/town-square.jpg' },
+  { key: 'suburban', label: 'Master-planned suburban neighborhood', image: '/images/quiz/suburban.jpg' },
+  { key: 'urban', label: 'Urban skyline district', image: '/images/quiz/urban-skyline.jpg' },
+  { key: 'acreage', label: 'Hill Country acreage', image: '/images/quiz/hill-country.jpg' },
 ] as const
 
 export interface PersonalityScores {
@@ -40,9 +40,9 @@ export default function Card4CommunityFeel({ onComplete }: Card4CommunityFeelPro
 
       <div className="grid grid-cols-2 gap-3 mb-8">
         {OPTIONS.map(opt => (
-          <OptionCard
+          <PhotoOptionCard
             key={opt.key}
-            icon={opt.icon}
+            imageUrl={opt.image}
             title={opt.label}
             selected={selected === opt.key}
             onClick={() => setSelected(opt.key)}
