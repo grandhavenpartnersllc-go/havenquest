@@ -279,6 +279,7 @@ export default function BeginPage() {
 
   function finishQuiz(finalAnswers: QuizAnswers) {
     if (!entryPath) return
+    console.log('[DEBUG finishQuiz start] finalAnswers:', JSON.stringify(finalAnswers))
 
     const householdSize = bucketHouseholdSize(finalAnswers.householdSize ?? 2)
     const moveTimeline = finalAnswers.moveTimeline ?? 'exploring'
@@ -304,6 +305,7 @@ export default function BeginPage() {
     sessionStorage.removeItem(SESSION_MATCHES_KEY)
 
     const metroId = finalAnswers.targetMetro ? METRO_TO_ID[finalAnswers.targetMetro] : null
+    console.log('[DEBUG finishQuiz metro] targetMetro:', finalAnswers.targetMetro, '| metroId:', metroId)
     if (metroId) sessionStorage.setItem(SESSION_METRO_KEY, metroId)
     else sessionStorage.removeItem(SESSION_METRO_KEY)
 
