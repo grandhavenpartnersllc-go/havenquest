@@ -199,6 +199,7 @@ export default function BeginPage() {
   }
 
   function handleMetroComplete(metro: MetroCaptureValue) {
+    console.log('[DEBUG handleMetroComplete called]', { metro, currentAnswers: JSON.stringify(answers) })
     const metroId = METRO_TO_ID[metro]
     const updatedAnswers = { ...answers, targetMetro: metro }
     setAnswers(updatedAnswers)
