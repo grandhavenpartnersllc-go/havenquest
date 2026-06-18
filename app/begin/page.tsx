@@ -183,23 +183,19 @@ export default function BeginPage() {
     setEntryPath(path)
     sessionStorage.setItem('hq_entry_path', path)
     sessionStorage.setItem('hq_path', ENTRY_PATH_TO_LEGACY[path])
+    sessionStorage.removeItem(PROGRESS_KEY)
     updateSessionStep(sessionId, 0, { entryPath: path })
   }
 
   function handleGatewayContinue() {
     if (!entryPath) return
-    console.log('[DEBUG gateway]', {
-      entryPath,
-      sessionStorageEntryPath: sessionStorage.getItem('hq_entry_path'),
-      nextPhase: entryPath === 'directed' ? 'metro' : 'cards',
-    })
+    sessionStorage.removeItem(PROGRESS_KEY)
     trackEvent('gateway_selected', { sessionId, entry_path: entryPath })
     setPhase(entryPath === 'directed' ? 'metro' : 'cards')
     setCardIndex(0)
   }
 
   function handleMetroComplete(metro: MetroCaptureValue) {
-    console.log('[DEBUG handleMetroComplete FIRED]', { metro })
     const metroId = METRO_TO_ID[metro]
     const updatedAnswers = { ...answers, targetMetro: metro }
     setAnswers(updatedAnswers)
