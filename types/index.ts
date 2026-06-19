@@ -65,6 +65,28 @@ export interface PersonalityProfile {
   lifestyleOrientation: number   // 1 = Highly Practical, 10 = Luxury-Oriented
 }
 
+export type ArchetypeKey = 'family' | 'firsttime' | 'executive' | 'luxury' | 'retiree' | 'youngpro' | 'general'
+
+export interface PersonalityPreference {
+  growthProfile: number
+  pace: number
+  culture: number
+  environment: number
+  lifestyleOrientation: number
+}
+
+export interface DNAScores {
+  schoolQuality: number        // 0-10
+  familyLifestyle: number      // 0-10
+  careerAccess: number         // 0-10
+  outdoorLifestyle: number     // 0-10
+  growthPotential: number      // 0-10
+  diningEntertainment: number  // 0-10
+  luxuryLifestyle: number      // 0-10
+}
+
+export type DNADataSource = 'calibrated-prototype' | 'partial-translation' | 'neutral-default'
+
 export interface Location {
   id: string
   name: string
@@ -85,6 +107,8 @@ export interface Location {
   metroUsed: string
   zone: string
   personality: PersonalityProfile
+  dna: DNAScores
+  dnaDataSource: DNADataSource
   categoryInsights: CategoryInsights
   cityNarrative?: string
   cityImageUrl?: string
@@ -120,6 +144,8 @@ export interface UserProfile {
   notPriorities: (keyof LifestyleScores)[]
   buyerProfile?: BuyerProfile
   financial_picture?: FinancialPicture
+  archetype?: ArchetypeKey
+  personalityPreference?: PersonalityPreference
 }
 
 export interface SandboxProfile {
@@ -157,7 +183,10 @@ export interface FinancialPicture {
 
 export interface CityMatch {
   location: Location
-  matchScore: number
+  matchScore: number               // Final Match Score, 0-100 — unchanged field name/meaning for existing components
+  financialFitScore: number        // 0-10
+  functionalFitScore: number       // 0-10 — Community DNA match
+  emotionalFitScore: number        // 0-10 — Community Personality match
   affordabilityScore: number
   affordabilityFlag: boolean
   estimatedMonthlyHousing: number
@@ -224,6 +253,9 @@ export interface QuizSessionData {
   communityFeel?: string
   growthProfile?: number
   lifestyleOrientation?: number
+  environment?: number
+  pace?: number
+  culture?: number
   homeStatus?: string
   workSituation?: string
   financialData?: QuizFinancialData

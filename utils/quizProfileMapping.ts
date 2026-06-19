@@ -1,4 +1,25 @@
-import { UserProfile, FinancialPicture, QuizFinancialData } from '../types'
+import { UserProfile, FinancialPicture, QuizFinancialData, ArchetypeKey, PersonalityPreference } from '../types'
+
+export function resolveArchetype(rawArchetype: string | undefined): ArchetypeKey {
+  const valid: ArchetypeKey[] = ['family', 'firsttime', 'executive', 'luxury', 'retiree', 'youngpro']
+  return (valid as string[]).includes(rawArchetype ?? '') ? (rawArchetype as ArchetypeKey) : 'general'
+}
+
+export function buildPersonalityPreference(session: {
+  growth_profile?: number | null
+  lifestyle_orientation?: number | null
+  environment?: number | null
+  pace?: number | null
+  culture?: number | null
+}): PersonalityPreference {
+  return {
+    growthProfile: session.growth_profile ?? 5,
+    lifestyleOrientation: session.lifestyle_orientation ?? 5,
+    environment: session.environment ?? 5,
+    pace: session.pace ?? 5,
+    culture: session.culture ?? 5,
+  }
+}
 
 // Card 1 gives a raw household-size int (1-10); the existing UserProfile/matching
 // algorithm only cares about the legacy bucketed enum (and never reads it for

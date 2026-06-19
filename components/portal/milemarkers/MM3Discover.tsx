@@ -258,6 +258,11 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
       down_payment_available: downPayment,
       purchase_timeline: profile?.financial_picture?.purchase_timeline ?? 'exploring',
     },
+    // Navigator v1.0 (Brief 2) scores on archetype + personality preference, not
+    // mustHaves/niceToHaves/notPriorities — carry the real client's values through
+    // so the sandbox doesn't silently fall back to 'general'/neutral for everyone.
+    archetype: profile?.archetype,
+    personalityPreference: profile?.personalityPreference,
   }
 
   const metroCities = (!selectedMetro || selectedMetro === 'State')
@@ -274,7 +279,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
       }
     : sandboxProfile
 
-  const sandboxMatches = getTopMatches(activeProfile, metroCities, 5)
+  const { topMatches: sandboxMatches } = getTopMatches(activeProfile, metroCities, 5)
 
   // On first load, show the MM2 saved matches so MM3 opens as a continuation of MM2.
   // The moment the user adjusts any slider, priority, or metro tab, the live sandbox takes over.

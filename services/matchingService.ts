@@ -1,27 +1,6 @@
-import { Location, UserProfile, CityMatch, FinancialPicture } from '../types'
+import { Location, UserProfile, CityMatch, FinancialPicture, ArchetypeKey, DNAScores, PersonalityPreference } from '../types'
 import { generateZillowUrl } from '../utils/zillowUrl'
-
-export function calculateMatchScore(city: Location, profile: UserProfile): number {
-  const mustHaveTotal = profile.mustHaves.reduce(
-    (sum, key) => sum + city.scores[key] * 3, 0
-  )
-  const importantTotal = profile.niceToHaves.reduce(
-    (sum, key) => sum + city.scores[key] * 2, 0
-  )
-  const wouldBeNiceTotal = profile.notPriorities.reduce(
-    (sum, key) => sum + city.scores[key] * 1, 0
-  )
-
-  const rawScore = mustHaveTotal + importantTotal + wouldBeNiceTotal
-
-  const maxMustHave = profile.mustHaves.length * 10 * 3
-  const maxImportant = profile.niceToHaves.length * 10 * 2
-  const maxWouldBeNice = profile.notPriorities.length * 10 * 1
-  const maxScore = maxMustHave + maxImportant + maxWouldBeNice
-
-  if (maxScore === 0) return 0
-  return Math.round((rawScore / maxScore) * 100)
-}
+import { ARCHETYPE_WEIGHTS, getWeightedDNACategories } from './archetypeService'
 
 export function getMonthlyHousingCost(city: Location): number {
   return Math.round(city.housing.medianHomePrice * 0.007)
@@ -75,109 +54,125 @@ function deriveSegment(monthlyPayment: number, grossMonthlyIncome: number): Segm
   return 'Starter'
 }
 
-interface AffordabilityResult {
-  affordabilityFlag: boolean
+export interface FinancialFitResult {
+  financialModifier: number   // 1.00 / 0.95 / 0.85 / 0.70 / 0.00
+  financialFitScore: number   // 0-10, for MD visibility
   segment: Segment
 }
 
-function computeAffordability(
+// Layer 1 — Financial Modifier gate (graduated, locked refinement). Reuses the
+// same down-payment / proceeds / mortgage-balance plumbing as the prior
+// computeAffordability; only the final burden -> modifier/score mapping changed.
+function calculateFinancialFit(
   cityMedianPrice: number,
   annualIncome: number,
   fp: FinancialPicture | undefined
-): AffordabilityResult {
+): FinancialFitResult {
   const grossMonthlyIncome = annualIncome / 12
-  const threshold = grossMonthlyIncome * 0.40
+
+  let monthlyPayment: number
+  let segment: Segment
 
   if (!fp) {
-    const roughPayment = cityMedianPrice * 0.007
-    const flag = roughPayment > threshold
-    return { affordabilityFlag: flag, segment: flag ? 'Starter' : 'Mid-Market' }
+    monthlyPayment = cityMedianPrice * 0.007
+    segment = monthlyPayment > grossMonthlyIncome * 0.40 ? 'Starter' : 'Mid-Market'
+  } else if (fp.down_payment_available === '$500,000+') {
+    const estateSegment = annualIncome >= 300_000 ? 'Estate' : 'Luxury'
+    return { financialModifier: 1.00, financialFitScore: 10, segment: estateSegment }
+  } else {
+    const downPaymentMidpoint = getDownPaymentMidpoint(fp.down_payment_available)
+    const proceedsMidpoint = fp.is_homeowner ? getProceedsMidpoint(fp.home_sale_proceeds) : 0
+    const totalFunds = downPaymentMidpoint + proceedsMidpoint
+    const mortgageBalance = Math.max(0, cityMedianPrice - totalFunds)
+    monthlyPayment = calculateMonthlyPayment(mortgageBalance)
+    segment = deriveSegment(monthlyPayment, grossMonthlyIncome)
   }
 
-  const downPaymentMidpoint = getDownPaymentMidpoint(fp.down_payment_available)
-  const proceedsMidpoint = fp.is_homeowner
-    ? getProceedsMidpoint(fp.home_sale_proceeds)
-    : 0
+  const burden = monthlyPayment / grossMonthlyIncome
 
-  if (fp.down_payment_available === '$500,000+') {
-    const segment = annualIncome >= 300_000 ? 'Estate' : 'Luxury'
-    return { affordabilityFlag: false, segment }
+  let financialModifier: number
+  let financialFitScore: number
+  if (burden <= 0) {
+    financialModifier = 1.00; financialFitScore = 10
+  } else if (burden < 0.30) {
+    financialModifier = 1.00; financialFitScore = 10
+  } else if (burden < 0.40) {
+    financialModifier = 0.95; financialFitScore = 8
+  } else if (burden < 0.50) {
+    financialModifier = 0.85; financialFitScore = 6
+  } else if (burden < 0.70) {
+    financialModifier = 0.70; financialFitScore = 4
+  } else {
+    financialModifier = 0.00; financialFitScore = 0  // mathematically impossible scenario, per locked refinement
   }
 
-  const totalFunds = downPaymentMidpoint + proceedsMidpoint
-  const mortgageBalance = Math.max(0, cityMedianPrice - totalFunds)
-
-  if (mortgageBalance === 0) {
-    return { affordabilityFlag: false, segment: 'Estate' }
-  }
-
-  const monthlyPayment = calculateMonthlyPayment(mortgageBalance)
-  const affordabilityFlag = monthlyPayment > threshold
-  const segment = deriveSegment(monthlyPayment, grossMonthlyIncome)
-
-  return { affordabilityFlag, segment }
+  return { financialModifier, financialFitScore, segment }
 }
 
-export function checkAffordabilityFlag(city: Location, profile: UserProfile): boolean {
-  const { segment, affordabilityFlag } = computeAffordability(
-    city.housing.medianHomePrice,
-    profile.annualIncome,
-    profile.financial_picture
+// Layer 2 — Community DNA™ (Functional Fit)
+export function calculateFunctionalFitScore(city: Location, archetype: ArchetypeKey): number {
+  const weights = getWeightedDNACategories(archetype)
+  const raw = Object.keys(weights).reduce(
+    (sum, key) => sum + city.dna[key as keyof DNAScores] * weights[key as keyof DNAScores],
+    0
   )
-  const isLuxury = segment === 'Luxury' || segment === 'Estate'
-  if (isLuxury) return false
-  return affordabilityFlag
+  return Math.round(raw * 10) / 10 // 0-10, one decimal
 }
 
-export function getAffordabilityRatio(city: Location, profile: UserProfile): number {
-  const monthlyIncome = profile.annualIncome / 12
-  const monthlyHousing = getMonthlyHousingCost(city)
-  return monthlyHousing / monthlyIncome
+// Layer 3 — Community Personality (Emotional Fit)
+export function calculateEmotionalFitScore(city: Location, preference: PersonalityPreference): number {
+  const dims: (keyof PersonalityPreference)[] = ['growthProfile', 'pace', 'culture', 'environment', 'lifestyleOrientation']
+  const totalDiff = dims.reduce((sum, dim) => sum + Math.abs(city.personality[dim] - preference[dim]), 0)
+  const avgDiff = totalDiff / dims.length
+  const score = 10 * (1 - avgDiff / 9) // 9 = max possible difference on a 1-10 scale
+  return Math.round(Math.max(0, score) * 10) / 10
 }
 
 export function getTopMatches(
   profile: UserProfile,
   cities: Location[],
   limit = 3
-): CityMatch[] {
-  const sorted = cities
-    .map(city => ({ city, matchScore: calculateMatchScore(city, profile) }))
-    .sort((a, b) => b.matchScore - a.matchScore)
+): { topMatches: CityMatch[]; otherStrongMatches: CityMatch[] } {
+  const archetype: ArchetypeKey = profile.archetype ?? 'general'
+  const { dnaWeight, personalityWeight } = ARCHETYPE_WEIGHTS[archetype]
+  const preference: PersonalityPreference = profile.personalityPreference ?? {
+    growthProfile: 5, pace: 5, culture: 5, environment: 5, lifestyleOrientation: 5,
+  }
 
-  const topCities = sorted.slice(0, limit)
-  if (topCities.length === 0) return []
-
-  const topCityMedian = topCities[0].city.housing.medianHomePrice
-  const { segment } = computeAffordability(
-    topCityMedian,
-    profile.annualIncome,
-    profile.financial_picture
-  )
-
-  const isLuxury = segment === 'Luxury' || segment === 'Estate'
-
-  return topCities.map(({ city, matchScore }) => {
-    const affordabilityFlag = isLuxury
-      ? false
-      : computeAffordability(
-          city.housing.medianHomePrice,
-          profile.annualIncome,
-          profile.financial_picture
-        ).affordabilityFlag
+  const scored = cities.map(city => {
+    const { financialModifier, financialFitScore, segment } = calculateFinancialFit(
+      city.housing.medianHomePrice, profile.annualIncome, profile.financial_picture
+    )
+    const functionalFitScore = calculateFunctionalFitScore(city, archetype)
+    const emotionalFitScore = calculateEmotionalFitScore(city, preference)
+    const finalScore = financialModifier * (dnaWeight * functionalFitScore * 10 + personalityWeight * emotionalFitScore * 10)
 
     return {
       location: city,
-      matchScore,
+      matchScore: Math.round(finalScore),
+      financialFitScore,
+      functionalFitScore,
+      emotionalFitScore,
       affordabilityScore: Math.round(city.scores.affordability * 10),
-      affordabilityFlag,
+      affordabilityFlag: financialModifier < 0.95,
       estimatedMonthlyHousing: getMonthlyHousingCost(city),
-      estimatedMonthlyTotal:
-        getMonthlyHousingCost(city) +
-        city.housing.monthlyUtilities +
-        city.housing.monthlyGroceries +
-        city.housing.monthlyTransportation,
+      estimatedMonthlyTotal: getMonthlyHousingCost(city) + city.housing.monthlyUtilities + city.housing.monthlyGroceries + city.housing.monthlyTransportation,
       zillowSearchUrl: generateZillowUrl(city, profile),
       segment,
-    }
+    } as CityMatch
   })
+  .filter(m => m.matchScore > 0 || m.financialFitScore > 0) // excludes true 0.00-modifier (impossible) cities
+
+  const sorted = scored.sort((a, b) => b.matchScore - a.matchScore)
+  const topMatches = sorted.slice(0, limit)
+
+  // True rankings only — never reordered for diversity (locked refinement 4).
+  // "Other Strong Matches": next-highest cities whose zone differs from any city already in topMatches.
+  const usedZones = new Set(topMatches.map(m => m.location.zone))
+  const otherStrongMatches = sorted
+    .slice(limit)
+    .filter(m => !usedZones.has(m.location.zone))
+    .slice(0, 3)
+
+  return { topMatches, otherStrongMatches }
 }

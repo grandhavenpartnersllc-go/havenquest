@@ -11,6 +11,7 @@ import {
   SESSION_PROFILE_KEY,
   SESSION_MATCHES_KEY,
 } from '../../../utils/constants'
+import { resolveArchetype, buildPersonalityPreference } from '../../../utils/quizProfileMapping'
 
 interface PortalContextValue {
   session: UserSession | null
@@ -42,6 +43,12 @@ interface UserRow {
   must_haves: Array<keyof LifestyleScores> | null
   nice_to_haves: Array<keyof LifestyleScores> | null
   not_priorities: Array<keyof LifestyleScores> | null
+  archetype: string | null
+  growth_profile: number | null
+  lifestyle_orientation: number | null
+  environment: number | null
+  pace: number | null
+  culture: number | null
   current_milemarker: number | null
   onboarding_acknowledged: boolean | null
   mm2_checklist: Record<string, boolean> | null
@@ -83,7 +90,7 @@ export default function PortalDataProvider({ children }: { children: ReactNode }
         try { m = JSON.parse(rawMatches) as CityMatch[] } catch {}
       }
       if (m.length === 0) {
-        m = getTopMatches(prof, getAllCities(), 3)
+        m = getTopMatches(prof, getAllCities(), 3).topMatches
       }
       setMatches(m)
     }
@@ -100,7 +107,7 @@ export default function PortalDataProvider({ children }: { children: ReactNode }
 
         const { data } = await supabase
           .from('users')
-          .select('first_name, top_city_matches, annual_income, household_size, moving_timeline, must_haves, nice_to_haves, not_priorities, current_milemarker, onboarding_acknowledged, mm2_checklist, portal_notes')
+          .select('first_name, top_city_matches, annual_income, household_size, moving_timeline, must_haves, nice_to_haves, not_priorities, archetype, growth_profile, lifestyle_orientation, environment, pace, culture, current_milemarker, onboarding_acknowledged, mm2_checklist, portal_notes')
           .eq('email', email)
           .single()
 
@@ -132,6 +139,8 @@ export default function PortalDataProvider({ children }: { children: ReactNode }
             mustHaves: ud.must_haves ?? [],
             niceToHaves: ud.nice_to_haves ?? [],
             notPriorities: ud.not_priorities ?? [],
+            archetype: resolveArchetype(ud.archetype ?? undefined),
+            personalityPreference: buildPersonalityPreference(ud),
           }
 
           const allCities = getAllCities()
@@ -146,6 +155,11 @@ export default function PortalDataProvider({ children }: { children: ReactNode }
                 return {
                   location,
                   matchScore: saved.matchScore,
+                  // saved.matchScore predates Brief 2's component-score breakdown —
+                  // no historical financial/functional/emotional split exists for it.
+                  financialFitScore: 0,
+                  functionalFitScore: 0,
+                  emotionalFitScore: 0,
                   affordabilityScore: Math.round(location.scores.affordability * 10),
                   affordabilityFlag: false,
                   estimatedMonthlyHousing: monthlyHousing,
@@ -160,7 +174,7 @@ export default function PortalDataProvider({ children }: { children: ReactNode }
               })
               .filter((m): m is CityMatch => m !== null)
           } else {
-            restoredMatches = getTopMatches(reconstructedProfile, allCities, 3)
+            restoredMatches = getTopMatches(reconstructedProfile, allCities, 3).topMatches
           }
 
           if (restoredMatches.length > 0) {

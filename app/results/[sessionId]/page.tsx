@@ -28,6 +28,9 @@ export default function SessionResultsPage({ params }: { params: Promise<{ sessi
   const searchParams = useSearchParams()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [matches, setMatches] = useState<CityMatch[]>([])
+  // Not surfaced in this UI yet (no "Other Strong Matches" section exists) — kept
+  // available in state per Brief 2 Part 9, rather than dropped, for a future UI brief.
+  const [, setOtherStrongMatches] = useState<CityMatch[]>([])
   const [ready, setReady] = useState(false)
   const [flowStep, setFlowStep] = useState<FlowStep>('teaser')
   const [showGate, setShowGate] = useState(false)
@@ -50,9 +53,14 @@ export default function SessionResultsPage({ params }: { params: Promise<{ sessi
     const metro = sessionStorage.getItem(SESSION_METRO_KEY)
     const cities = metro ? getCitiesByMetro(metro) : getAllCities()
     const cachedMatches = sessionStorage.getItem(SESSION_MATCHES_KEY)
-    const topMatches: CityMatch[] = cachedMatches
-      ? JSON.parse(cachedMatches)
-      : getTopMatches(prof, cities, 4)
+    let topMatches: CityMatch[]
+    if (cachedMatches) {
+      topMatches = JSON.parse(cachedMatches)
+    } else {
+      const result = getTopMatches(prof, cities, 4)
+      topMatches = result.topMatches
+      setOtherStrongMatches(result.otherStrongMatches)
+    }
     if (!cachedMatches) {
       sessionStorage.setItem(SESSION_MATCHES_KEY, JSON.stringify(topMatches))
       try {

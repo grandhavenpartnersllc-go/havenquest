@@ -7,6 +7,7 @@ import { getTopMatches } from '../../../../services/matchingService'
 import { createReportDocument } from '../../../../services/pdfService'
 import { buildReportReadyEmailHtml } from '../../../../services/emailService'
 import { UserProfile } from '../../../../types'
+import { resolveArchetype, buildPersonalityPreference } from '../../../../utils/quizProfileMapping'
 
 function getSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     const { data: ud, error: dbErr } = await supabase
       .from('users')
-      .select('first_name, report_emailed, annual_income, household_size, housing_preference, moving_timeline, must_haves, nice_to_haves, not_priorities')
+      .select('first_name, report_emailed, annual_income, household_size, housing_preference, moving_timeline, must_haves, nice_to_haves, not_priorities, archetype, growth_profile, lifestyle_orientation, environment, pace, culture')
       .eq('email', email)
       .single()
 
@@ -64,9 +65,11 @@ export async function POST(request: NextRequest) {
       mustHaves: ud.must_haves ?? [],
       niceToHaves: ud.nice_to_haves ?? [],
       notPriorities: ud.not_priorities ?? [],
+      archetype: resolveArchetype(ud.archetype),
+      personalityPreference: buildPersonalityPreference(ud),
     }
 
-    const matches = getTopMatches(profile, getAllCities(), 3)
+    const { topMatches: matches } = getTopMatches(profile, getAllCities(), 3)
     if (matches.length === 0) {
       return NextResponse.json({ skipped: 'no_matches' })
     }

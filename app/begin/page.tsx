@@ -26,13 +26,14 @@ import {
   incomeRangeMidpoint,
   buildFinancialPicture,
   buildQuizFinancialData,
+  resolveArchetype,
   type MoveTimelineValue,
   type Card9Answers,
 } from '../../utils/quizProfileMapping'
 import { initSession, updateSessionStep } from '../../services/quizSessionService'
 import { trackEvent } from '../../utils/analytics'
 import { SESSION_PROFILE_KEY, SESSION_METRO_KEY, SESSION_MATCHES_KEY } from '../../utils/constants'
-import { UserProfile } from '../../types'
+import { UserProfile, PersonalityPreference } from '../../types'
 
 const LOCAL_SESSION_KEY = 'hq_session'
 const PROGRESS_KEY = 'hq_quiz_progress'
@@ -309,6 +310,20 @@ export default function BeginPage() {
       ? buildFinancialPicture(finalAnswers.card9, moveTimeline)
       : undefined
 
+    const archetype = resolveArchetype(finalAnswers.archetype)
+    // finalAnswers.personality (Card 4's environment/pace/culture) and the
+    // growthProfile/lifestyleOrientation sliders are already camelCase and
+    // shaped exactly like PersonalityPreference here — buildPersonalityPreference
+    // (utils/quizProfileMapping.ts) is for the snake_case Supabase-row shape used
+    // server-side; building it directly is simpler for this client-side source.
+    const personalityPreference: PersonalityPreference = {
+      growthProfile: finalAnswers.growthProfile ?? 5,
+      lifestyleOrientation: finalAnswers.lifestyleOrientation ?? 5,
+      environment: finalAnswers.personality?.environment ?? 5,
+      pace: finalAnswers.personality?.pace ?? 5,
+      culture: finalAnswers.personality?.culture ?? 5,
+    }
+
     const profile: UserProfile = {
       annualIncome,
       householdSize,
@@ -317,6 +332,8 @@ export default function BeginPage() {
       niceToHaves,
       notPriorities,
       financial_picture,
+      archetype,
+      personalityPreference,
     }
     sessionStorage.setItem(SESSION_PROFILE_KEY, JSON.stringify(profile))
     sessionStorage.removeItem(SESSION_MATCHES_KEY)
@@ -554,7 +571,10 @@ export default function BeginPage() {
                 <Card4CommunityFeel
                   onComplete={(option, personality) => {
                     sessionStorage.setItem('hq_personality_partial', JSON.stringify(personality))
-                    goNext({ communityFeel: option, personality }, { communityFeel: option })
+                    goNext(
+                      { communityFeel: option, personality },
+                      { communityFeel: option, environment: personality.environment, pace: personality.pace, culture: personality.culture }
+                    )
                   }}
                 />
               )}
