@@ -57,6 +57,14 @@ export interface SchoolData {
   primaryISD: string
 }
 
+export interface PersonalityProfile {
+  growthProfile: number        // 1 = Fully Established, 10 = Highly Emerging
+  pace: number                  // 1 = Very Relaxed, 10 = Fast-Paced
+  culture: number                // 1 = Very Private, 10 = Highly Community-Oriented
+  environment: number            // 1 = Fully Urban, 10 = Fully Rural
+  lifestyleOrientation: number   // 1 = Highly Practical, 10 = Luxury-Oriented
+}
+
 export interface Location {
   id: string
   name: string
@@ -76,6 +84,7 @@ export interface Location {
   lastUpdated: string
   metroUsed: string
   zone: string
+  personality: PersonalityProfile
   categoryInsights: CategoryInsights
   cityNarrative?: string
   cityImageUrl?: string

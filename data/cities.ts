@@ -13,6 +13,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Austin, TX',
     zone: 'Austin Urban Core',
+    personality: {
+      growthProfile: 7,
+      pace: 10,
+      culture: 4,
+      environment: 1,
+      lifestyleOrientation: 6,
+    },
     scores: {
       affordability: 4,
       schools: 5,
@@ -93,6 +100,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX',
     zone: 'Urban Core Dallas',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 4,
       schools: 7,
@@ -173,6 +187,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Houston, TX',
     zone: 'Inner Loop / Urban Core Houston',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 5,
       schools: 7,
@@ -253,6 +274,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'San Antonio, TX',
     zone: 'Urban Core / Central San Antonio',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 7,
       schools: 7,
@@ -333,6 +361,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX',
     zone: 'Fort Worth Urban Core',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 5,
       schools: 5,
@@ -413,6 +448,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'Collin County Growth Corridor',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 3,
       schools: 9,
@@ -493,6 +535,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'North Dallas / Platinum Corridor',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 4,
       schools: 9,
@@ -573,6 +622,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Austin, TX metro area',
     zone: 'Round Rock / Pflugerville / Hutto Corridor',
+    personality: {
+      growthProfile: 9,
+      pace: 6,
+      culture: 8,
+      environment: 7,
+      lifestyleOrientation: 4,
+    },
     scores: {
       affordability: 6,
       schools: 8,
@@ -653,6 +709,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Austin, TX metro area',
     zone: 'Northwest Austin / Cedar Park / Leander',
+    personality: {
+      growthProfile: 8,
+      pace: 5,
+      culture: 8,
+      environment: 6,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 5,
       schools: 8,
@@ -733,6 +796,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Houston, TX metro area',
     zone: 'The Woodlands / North Houston',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 3,
       schools: 8,
@@ -813,6 +883,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Houston, TX metro area',
     zone: 'Sugar Land / Fort Bend County',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 5,
       schools: 8,
@@ -893,6 +970,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'Collin County Growth Corridor',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 4,
       schools: 9,
@@ -973,6 +1057,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Austin, TX metro area',
     zone: 'Georgetown / North Growth Corridor',
+    personality: {
+      growthProfile: 8,
+      pace: 4,
+      culture: 9,
+      environment: 7,
+      lifestyleOrientation: 4,
+    },
     scores: {
       affordability: 6,
       schools: 6,
@@ -1053,6 +1144,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Austin, TX metro area',
     zone: 'Kyle / Buda / South Growth Corridor',
+    personality: {
+      growthProfile: 9,
+      pace: 5,
+      culture: 8,
+      environment: 7,
+      lifestyleOrientation: 4,
+    },
     scores: {
       affordability: 8,
       schools: 7,
@@ -1133,6 +1231,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'San Antonio, TX metro area',
     zone: 'New Braunfels / I-35 Northeast Growth Corridor',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 7,
       schools: 7,
@@ -1213,6 +1318,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Austin, TX metro area',
     zone: 'Kyle / Buda / South Growth Corridor',
+    personality: {
+      growthProfile: 9,
+      pace: 5,
+      culture: 8,
+      environment: 7,
+      lifestyleOrientation: 4,
+    },
     scores: {
       affordability: 9,
       schools: 6,
@@ -1293,6 +1405,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Austin, TX metro area',
     zone: 'Northwest Austin / Cedar Park / Leander',
+    personality: {
+      growthProfile: 8,
+      pace: 5,
+      culture: 8,
+      environment: 6,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 6,
       schools: 8,
@@ -1373,6 +1492,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Austin, TX metro area',
     zone: 'Round Rock / Pflugerville / Hutto Corridor',
+    personality: {
+      growthProfile: 9,
+      pace: 6,
+      culture: 8,
+      environment: 7,
+      lifestyleOrientation: 4,
+    },
     scores: {
       affordability: 7,
       schools: 7,
@@ -1453,6 +1579,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Waco, TX',
     zone: 'Waco',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 9,
       schools: 5,
@@ -1533,6 +1666,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Corpus Christi, TX',
     zone: 'Corpus Christi',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 8,
       schools: 5,
@@ -1613,6 +1753,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'Collin County Growth Corridor',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 4,
       schools: 9,
@@ -1691,6 +1838,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'Collin County Growth Corridor',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 2,
       schools: 9,
@@ -1769,6 +1923,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'Denton County Growth Belt',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 3,
       schools: 8,
@@ -1847,6 +2008,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'Luxury North Suburbs',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 1,
       schools: 10,
@@ -1925,6 +2093,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'Luxury North Suburbs',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 3,
       schools: 8,
@@ -2003,6 +2178,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'South Fort Worth / Mansfield Corridor',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 5,
       schools: 8,
@@ -2081,6 +2263,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'East Dallas & Lake Communities',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 5,
       schools: 8,
@@ -2159,6 +2348,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'Mid-Cities / Airport Corridor',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 3,
       schools: 10,
@@ -2237,6 +2433,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'Mid-Cities / Airport Corridor',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 3,
       schools: 7,
@@ -2315,6 +2518,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'Denton County Growth Belt',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 3,
       schools: 10,
@@ -2393,6 +2603,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'East Dallas & Lake Communities',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 6,
       schools: 9,
@@ -2471,6 +2688,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'Mid-Cities / Airport Corridor',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 7,
       schools: 4,
@@ -2549,6 +2773,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'Mid-Cities / Airport Corridor',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 6,
       schools: 4,
@@ -2627,6 +2858,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'North Dallas / Platinum Corridor',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 4,
       schools: 5,
@@ -2705,6 +2943,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'Denton County Growth Belt',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 7,
       schools: 5,
@@ -2783,6 +3028,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'Denton County Growth Belt',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 6,
       schools: 5,
@@ -2861,6 +3113,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'North Dallas / Platinum Corridor',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 5,
       schools: 5,
@@ -2939,6 +3198,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'Collin County Growth Corridor',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 3,
       schools: 8,
@@ -3017,6 +3283,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'Denton County Growth Belt',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 4,
       schools: 6,
@@ -3095,6 +3368,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'South Fort Worth / Mansfield Corridor',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 5,
       schools: 7,
@@ -3173,6 +3453,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'East Dallas & Lake Communities',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 7,
       schools: 6,
@@ -3251,6 +3538,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'Luxury North Suburbs',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 1,
       schools: 9,
@@ -3329,6 +3623,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'Luxury North Suburbs',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 2,
       schools: 9,
@@ -3407,6 +3708,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'East Dallas & Lake Communities',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 1,
       schools: 8,
@@ -3485,6 +3793,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'Southern Sector / Best Southwest',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 7,
       schools: 6,
@@ -3563,6 +3878,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Austin, TX metro area',
     zone: 'Kyle / Buda / South Growth Corridor',
+    personality: {
+      growthProfile: 9,
+      pace: 5,
+      culture: 8,
+      environment: 7,
+      lifestyleOrientation: 4,
+    },
     scores: {
       affordability: 7,
       schools: 6,
@@ -3641,6 +3963,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Austin, TX metro area',
     zone: 'Round Rock / Pflugerville / Hutto Corridor',
+    personality: {
+      growthProfile: 9,
+      pace: 6,
+      culture: 8,
+      environment: 7,
+      lifestyleOrientation: 4,
+    },
     scores: {
       affordability: 7,
       schools: 4,
@@ -3719,6 +4048,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Austin, TX metro area',
     zone: 'Round Rock / Pflugerville / Hutto Corridor',
+    personality: {
+      growthProfile: 8,
+      pace: 4,
+      culture: 9,
+      environment: 7,
+      lifestyleOrientation: 4,
+    },
     scores: {
       affordability: 9,
       schools: 3,
@@ -3797,6 +4133,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Austin, TX metro area',
     zone: 'Northwest Austin / Cedar Park / Leander',
+    personality: {
+      growthProfile: 8,
+      pace: 5,
+      culture: 8,
+      environment: 6,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 6,
       schools: 7,
@@ -3875,6 +4218,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Austin, TX metro area',
     zone: 'Lake Travis / Hill Country Galleria',
+    personality: {
+      growthProfile: 7,
+      pace: 4,
+      culture: 6,
+      environment: 7,
+      lifestyleOrientation: 9,
+    },
     scores: {
       affordability: 2,
       schools: 9,
@@ -3953,6 +4303,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Austin, TX metro area',
     zone: 'Lake Travis / Hill Country Galleria',
+    personality: {
+      growthProfile: 7,
+      pace: 4,
+      culture: 6,
+      environment: 7,
+      lifestyleOrientation: 9,
+    },
     scores: {
       affordability: 1,
       schools: 10,
@@ -4031,6 +4388,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Austin, TX metro area',
     zone: 'Southwest Austin / Dripping Springs',
+    personality: {
+      growthProfile: 8,
+      pace: 3,
+      culture: 8,
+      environment: 8,
+      lifestyleOrientation: 7,
+    },
     scores: {
       affordability: 3,
       schools: 8,
@@ -4109,6 +4473,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Austin, TX metro area',
     zone: 'East Austin',
+    personality: {
+      growthProfile: 10,
+      pace: 6,
+      culture: 6,
+      environment: 8,
+      lifestyleOrientation: 3,
+    },
     scores: {
       affordability: 8,
       schools: 3,
@@ -4187,6 +4558,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Houston, TX metro area',
     zone: 'Katy / Fulshear / West Houston Energy Corridor',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 6,
       schools: 8,
@@ -4265,6 +4643,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Houston, TX metro area',
     zone: 'Pearland / South Houston',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 6,
       schools: 9,
@@ -4343,6 +4728,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Houston, TX metro area',
     zone: 'Clear Lake / NASA / Southeast Houston',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 6,
       schools: 8,
@@ -4421,6 +4813,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Houston, TX metro area',
     zone: 'Clear Lake / NASA / Southeast Houston',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 4,
       schools: 10,
@@ -4499,6 +4898,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Houston, TX metro area',
     zone: 'Conroe / Montgomery County North Growth Belt',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 7,
       schools: 6,
@@ -4577,6 +4983,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Houston, TX metro area',
     zone: 'Cypress / Northwest Houston',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 6,
       schools: 7,
@@ -4655,6 +5068,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Houston, TX metro area',
     zone: 'Sugar Land / Fort Bend County',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 6,
       schools: 7,
@@ -4733,6 +5153,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Houston, TX metro area',
     zone: 'Spring / Klein / Champions Corridor',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 5,
       schools: 10,
@@ -4811,6 +5238,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Houston, TX metro area',
     zone: 'Katy / Fulshear / West Houston Energy Corridor',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 3,
       schools: 8,
@@ -4889,6 +5323,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Houston, TX metro area',
     zone: 'Baytown / East Houston Industrial Corridor',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 9,
       schools: 5,
@@ -4967,6 +5408,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Houston, TX metro area',
     zone: 'Baytown / East Houston Industrial Corridor',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 9,
       schools: 5,
@@ -5045,6 +5493,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Houston, TX metro area',
     zone: 'Kingwood / Lake Houston Corridor',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 8,
       schools: 4,
@@ -5123,6 +5578,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Houston, TX metro area',
     zone: 'Spring / Klein / Champions Corridor',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 8,
       schools: 4,
@@ -5201,6 +5663,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Houston, TX metro area',
     zone: 'Galveston Island / Gulf Coast',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 5,
       schools: 3,
@@ -5279,6 +5748,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Houston, TX metro area',
     zone: 'Richmond / Rosenberg / Southwest Growth Corridor',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 7,
       schools: 8,
@@ -5357,6 +5833,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Houston, TX metro area',
     zone: 'Richmond / Rosenberg / Southwest Growth Corridor',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 8,
       schools: 8,
@@ -5435,6 +5918,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Houston, TX metro area',
     zone: 'Pearland / South Houston',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 7,
       schools: 7,
@@ -5513,6 +6003,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'San Antonio, TX metro area',
     zone: 'Boerne / Fair Oaks Ranch / Hill Country Corridor',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 3,
       schools: 9,
@@ -5591,6 +6088,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'San Antonio, TX metro area',
     zone: 'Schertz / Cibolo / Universal City',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 5,
       schools: 7,
@@ -5669,6 +6173,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'San Antonio, TX metro area',
     zone: 'Schertz / Cibolo / Universal City',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 5,
       schools: 7,
@@ -5747,6 +6258,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'San Antonio, TX metro area',
     zone: 'Northwest San Antonio / Helotes',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 4,
       schools: 6,
@@ -5825,6 +6343,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'San Antonio, TX metro area',
     zone: 'East San Antonio / Converse Corridor',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 8,
       schools: 3,
@@ -5903,6 +6428,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'San Antonio, TX metro area',
     zone: 'Schertz / Cibolo / Universal City',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 7,
       schools: 7,
@@ -5981,6 +6513,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'San Antonio, TX metro area',
     zone: 'Alamo Heights / Terrell Hills / Olmos Park',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 2,
       schools: 9,
@@ -6059,6 +6598,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'San Antonio, TX metro area',
     zone: 'New Braunfels / I-35 Northeast Growth Corridor',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 8,
       schools: 5,
@@ -6137,6 +6683,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'San Antonio, TX metro area',
     zone: 'Boerne / Fair Oaks Ranch / Hill Country Corridor',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 2,
       schools: 9,
@@ -6215,6 +6768,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'San Antonio, TX metro area',
     zone: 'West San Antonio / Alamo Ranch',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 8,
       schools: 5,
@@ -6293,6 +6853,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'East Dallas & Lake Communities',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 8,
       schools: 6,
@@ -6371,6 +6938,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'Mid-Cities / Airport Corridor',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 7,
       schools: 4,
@@ -6449,6 +7023,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'South Fort Worth / Mansfield Corridor',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 7,
       schools: 7,
@@ -6527,6 +7108,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'East Dallas & Lake Communities',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 8,
       schools: 6,
@@ -6605,6 +7193,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Houston, TX metro area',
     zone: 'Baytown / East Houston Industrial Corridor',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 8,
       schools: 7,
@@ -6683,6 +7278,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Houston, TX metro area',
     zone: 'Galveston Island / Gulf Coast',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 9,
       schools: 4,
@@ -6761,6 +7363,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Houston, TX metro area',
     zone: 'Brazosport / Gulf Coast South',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 8,
       schools: 7,
@@ -6839,6 +7448,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Austin, TX metro area',
     zone: 'Kyle / Buda / South Growth Corridor',
+    personality: {
+      growthProfile: 10,
+      pace: 6,
+      culture: 6,
+      environment: 8,
+      lifestyleOrientation: 3,
+    },
     scores: {
       affordability: 7,
       schools: 4,
@@ -6917,6 +7533,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Austin, TX metro area',
     zone: 'Austin Hill Country',
+    personality: {
+      growthProfile: 8,
+      pace: 3,
+      culture: 8,
+      environment: 8,
+      lifestyleOrientation: 7,
+    },
     scores: {
       affordability: 2,
       schools: 7,
@@ -6995,6 +7618,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'San Antonio, TX metro area',
     zone: 'San Antonio Hill Country',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 6,
       schools: 4,
@@ -7073,6 +7703,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'San Antonio, TX metro area',
     zone: 'San Antonio Hill Country',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 4,
       schools: 7,
@@ -7151,6 +7788,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'Southern Sector / Best Southwest',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 7,
       schools: 4,
@@ -7229,6 +7873,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'Southern Sector / Best Southwest',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 7,
       schools: 4,
@@ -7307,6 +7958,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Dallas, TX metro area',
     zone: 'Collin County Growth Corridor',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 6,
       schools: 7,
@@ -7385,6 +8043,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Houston, TX metro area',
     zone: 'Clear Lake / NASA / Southeast Houston',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 8,
       schools: 8,
@@ -7463,6 +8128,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Houston, TX metro area',
     zone: 'Brazosport / Gulf Coast South',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 7,
       schools: 7,
@@ -7541,6 +8213,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Houston, TX metro area',
     zone: 'Clear Lake / NASA / Southeast Houston',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 6,
       schools: 8,
@@ -7619,6 +8298,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Austin, TX metro area',
     zone: 'Kyle / Buda / South Growth Corridor',
+    personality: {
+      growthProfile: 9,
+      pace: 5,
+      culture: 8,
+      environment: 7,
+      lifestyleOrientation: 4,
+    },
     scores: {
       affordability: 8,
       schools: 3,
@@ -7697,6 +8383,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'Austin, TX metro area',
     zone: 'Austin Hill Country',
+    personality: {
+      growthProfile: 7,
+      pace: 4,
+      culture: 6,
+      environment: 7,
+      lifestyleOrientation: 9,
+    },
     scores: {
       affordability: 5,
       schools: 4,
@@ -7775,6 +8468,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'San Antonio, TX metro area',
     zone: 'San Antonio Hill Country',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 3,
       schools: 7,
@@ -7853,6 +8553,13 @@ export const texasCities: Location[] = [
     lastUpdated: '05/2026',
     metroUsed: 'San Antonio, TX metro area',
     zone: 'South San Antonio / Mission Corridor',
+    personality: {
+      growthProfile: 5,
+      pace: 5,
+      culture: 5,
+      environment: 5,
+      lifestyleOrientation: 5,
+    },
     scores: {
       affordability: 9,
       schools: 4,
