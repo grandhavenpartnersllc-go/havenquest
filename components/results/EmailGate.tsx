@@ -81,7 +81,8 @@ export default function EmailGate({ matches, profile, sessionId, onSuccess, onCl
           setReturningUser(true)
           return
         }
-        setError(data.error || 'Something went wrong. Please try again.')
+        // TEMP diagnostic — revert after root cause found
+        setError(`${data.error || 'Something went wrong.'} [${data.debugCode ?? ''}: ${data.debugMessage ?? ''}]`)
         return
       }
 
