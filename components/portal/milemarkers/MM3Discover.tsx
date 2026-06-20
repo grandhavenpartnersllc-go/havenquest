@@ -22,12 +22,12 @@ const CARD_SHADOW = '0 1px 3px rgba(0,0,0,0.05), 0 4px 20px rgba(0,0,0,0.07)'
 
 const ALL_CATEGORY_KEYS = DNA_CATEGORIES.map(c => c.key)
 const NEUTRAL_PERSONALITY: PersonalityPreference = { growthProfile: 5, pace: 5, culture: 5, environment: 5, lifestyleOrientation: 5 }
-const PERSONALITY_SLIDERS: { key: keyof PersonalityPreference; label: string; left: string; right: string }[] = [
-  { key: 'growthProfile', label: 'Growth Profile', left: 'Established', right: 'Emerging' },
-  { key: 'pace', label: 'Pace', left: 'Relaxed', right: 'Fast-Paced' },
-  { key: 'culture', label: 'Culture', left: 'Private', right: 'Community-Oriented' },
-  { key: 'environment', label: 'Environment', left: 'Urban', right: 'Rural' },
-  { key: 'lifestyleOrientation', label: 'Lifestyle Orientation', left: 'Practical', right: 'Luxury' },
+const PERSONALITY_SLIDERS: { key: keyof PersonalityPreference; label: string; left: string; right: string; description: string }[] = [
+  { key: 'growthProfile', label: 'Growth Profile', left: 'Established', right: 'Emerging', description: "Do you want a place that's already established, or one that's still growing into itself?" },
+  { key: 'pace', label: 'Pace', left: 'Relaxed', right: 'Fast-Paced', description: 'Are you drawn to a relaxed rhythm, or somewhere that moves fast?' },
+  { key: 'culture', label: 'Culture', left: 'Private', right: 'Community-Oriented', description: 'Do you want neighbors who feel like community, or more privacy and space?' },
+  { key: 'environment', label: 'Environment', left: 'Urban', right: 'Rural', description: 'Picture your surroundings — closer to the city, or closer to the land?' },
+  { key: 'lifestyleOrientation', label: 'Lifestyle Orientation', left: 'Practical', right: 'Luxury', description: 'Practical and down-to-earth, or upscale and aspirational?' },
 ]
 
 const DOWN_PAYMENT_OPTIONS = [
@@ -337,6 +337,12 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     affordabilityPct <= 30 ? 'comfortable'
     : affordabilityPct <= 40 ? 'moderate'
     : 'stretched'
+
+  const snapshotTier =
+    affordabilityPct < 30 ? { label: 'Comfortable', color: '#2D7D4E' }
+    : affordabilityPct < 40 ? { label: 'Manageable', color: GOLD }
+    : affordabilityPct < 50 ? { label: 'A Stretch', color: '#C2622A' }
+    : { label: 'Significant Stretch', color: '#DC2626' }
 
   const annualIncome = incomeOverride
   const priceToIncomeRatio = annualIncome > 0 ? topCityPrice / annualIncome : 0
@@ -1274,6 +1280,55 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
             </div>
           </div>
 
+          {/* Affordability Snapshot (Brief D Part 3) */}
+          <div style={{
+            marginTop: '14px',
+            borderRadius: '12px',
+            border: '1px solid var(--color-border-tertiary)',
+            backgroundColor: CARD_BG,
+            boxShadow: CARD_SHADOW,
+            padding: '14px 16px',
+          }}>
+            <p className="text-[10px] font-bold uppercase mb-3"
+               style={{ color: GOLD, letterSpacing: '0.18em' }}>
+              Your Affordability Snapshot
+            </p>
+            <div className="flex items-baseline justify-between mb-2">
+              <span className="text-xl font-bold" style={{ color: WARM_DARK }}>
+                ${Math.round(totalMonthlyHousing).toLocaleString('en-US')}/mo
+              </span>
+              <span className="text-xs" style={{ color: '#9A8E82' }}>
+                {affordabilityPct.toFixed(0)}% of your monthly income
+              </span>
+            </div>
+            <div style={{ position: 'relative', marginTop: '10px' }}>
+              <div className="flex w-full overflow-hidden" style={{ height: '8px', borderRadius: '999px' }}>
+                <div style={{ width: '50%', backgroundColor: '#2D7D4E' }} />
+                <div style={{ width: '16.67%', backgroundColor: GOLD }} />
+                <div style={{ width: '16.67%', backgroundColor: '#C2622A' }} />
+                <div style={{ width: '16.66%', backgroundColor: '#DC2626' }} />
+              </div>
+              <div style={{
+                position: 'absolute',
+                top: '-3px',
+                left: `calc(${Math.min(affordabilityPct, 60) / 60 * 100}% - 5px)`,
+                width: '10px',
+                height: '14px',
+                borderRadius: '3px',
+                backgroundColor: WARM_DARK,
+                border: '2px solid #fff',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+              }} />
+            </div>
+            <div className="flex items-center justify-between mt-2">
+              <span className="text-[10px]" style={{ color: '#9A8E82' }}>0%</span>
+              <span className="text-[10px] font-semibold" style={{ color: snapshotTier.color }}>
+                {snapshotTier.label}
+              </span>
+              <span className="text-[10px]" style={{ color: '#9A8E82' }}>60%+</span>
+            </div>
+          </div>
+
           {/* Lock financials */}
           <div style={{ marginTop: 'auto', paddingTop: '12px', borderTop: '1px solid #F0EDE6' }}>
             <p style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', marginBottom: '8px' }}>
@@ -1521,16 +1576,17 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
               Community Personality
             </p>
             <p className="text-xs mb-4 leading-relaxed" style={{ color: '#6B7280' }}>
-              These sliders shape Emotional Fit — how well a community&apos;s personality
-              matches the client&apos;s. Move any slider and rankings update instantly.
+              These sliders shape how well a community&apos;s personality matches the
+              client&apos;s. Move any slider and rankings update instantly.
             </p>
             <div className="space-y-3">
-              {PERSONALITY_SLIDERS.map(({ key, label, left, right }) => (
+              {PERSONALITY_SLIDERS.map(({ key, label, left, right, description }) => (
                 <div key={key}>
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs font-semibold" style={{ color: WARM_DARK }}>{label}</span>
                     <span className="text-xs font-bold" style={{ color: GOLD }}>{personalityOverride[key]}</span>
                   </div>
+                  <p className="text-xs mb-1.5" style={{ color: '#9A8E82' }}>{description}</p>
                   <input
                     type="range"
                     min={1}
