@@ -128,7 +128,7 @@ export default function PortalDataProvider({ children }: { children: ReactNode }
           setSession(updated)
         }
 
-        const savedMM = ud.current_milemarker ?? 2
+        const savedMM = ud.current_milemarker ?? 1
         setCurrentMM(savedMM)
 
         if (ud.onboarding_acknowledged) setOnboardingAcknowledged(true)
