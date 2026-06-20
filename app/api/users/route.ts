@@ -227,13 +227,11 @@ export async function POST(request: NextRequest) {
           .single()
         if (retryError) {
           console.error('Retry insert error:', retryError.code, retryError.message)
-          // TEMP diagnostic — revert after root cause found
-          return NextResponse.json({ error: 'Failed to save your information. Please try again.', debugCode: retryError.code, debugMessage: retryError.message }, { status: 500 })
+          return NextResponse.json({ error: 'Failed to save your information. Please try again.' }, { status: 500 })
         }
         return await sendWelcomeAndRespond(authUserId ?? retryData.id, firstName, email, topCityMatches, setupLink, isReturningUser)
       }
-      // TEMP diagnostic — revert after root cause found
-      return NextResponse.json({ error: 'Failed to save your information. Please try again.', debugCode: error.code, debugMessage: error.message }, { status: 500 })
+      return NextResponse.json({ error: 'Failed to save your information. Please try again.' }, { status: 500 })
     }
 
     // Return authUserId (Supabase auth UUID) not data.id (Postgres row UUID) —
