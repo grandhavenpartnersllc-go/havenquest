@@ -2,16 +2,11 @@
 
 import { useState } from 'react'
 import { Check, Clock, UserCheck, Heart, ShieldCheck, FileText, Star } from 'lucide-react'
+import { formatPhone } from '../../utils/formatters'
 
 const GOLD = '#B8912A'
 const DARK = '#08101C'
 
-function formatPhone(value: string): string {
-  const digits = value.replace(/\D/g, '').slice(0, 10)
-  if (digits.length <= 3) return digits
-  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`
-  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`
-}
 
 const MARKET_ZONES = [
   {

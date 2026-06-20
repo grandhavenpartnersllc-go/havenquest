@@ -100,6 +100,7 @@ export default function BeginPage() {
   const [phase, setPhase] = useState<Phase>('intent')
   const [intentChecked, setIntentChecked] = useState(false)
   const [firstName, setFirstName] = useState('')
+  const [firstNameError, setFirstNameError] = useState('')
   const [zip, setZip] = useState('')
   const [zipError, setZipError] = useState('')
   const [email, setEmail] = useState('')
@@ -162,7 +163,11 @@ export default function BeginPage() {
 
   async function handleNameZipSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!firstName.trim()) return
+    if (!firstName.trim()) {
+      setFirstNameError('First name is required')
+      return
+    }
+    setFirstNameError('')
     if (!/^\d{5}$/.test(zip)) {
       setZipError('Please enter a valid 5-digit ZIP code')
       return
@@ -473,21 +478,22 @@ export default function BeginPage() {
               >
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    Your first name
+                    Your first name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={firstName}
-                    onChange={e => setFirstName(e.target.value)}
+                    onChange={e => { setFirstName(e.target.value); setFirstNameError('') }}
                     placeholder="Craig"
                     required
                     autoFocus
                     className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400"
                   />
+                  {firstNameError && <p className="mt-1.5 text-xs text-red-500">{firstNameError}</p>}
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    ZIP code you&apos;re moving from
+                    ZIP code you&apos;re moving from <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -502,7 +508,7 @@ export default function BeginPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    Email address
+                    Email address <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="email"
@@ -602,11 +608,8 @@ export default function BeginPage() {
 
               {currentStep.id === 7 && (
                 <div>
-                  <Card7Situation
-                    path={entryPath}
-                    onComplete={(homeStatus, moveTimeline) =>
-                      goNext({ homeStatus, moveTimeline }, { homeStatus, movingTimeline: moveTimeline })
-                    }
+                  <Card8WorkLife
+                    onComplete={(workSituation) => goNext({ workSituation }, { workSituation })}
                   />
                   {!currentStep.required && (
                     <div className="max-w-2xl mx-auto px-4 -mt-4">
@@ -620,8 +623,11 @@ export default function BeginPage() {
 
               {currentStep.id === 8 && (
                 <div>
-                  <Card8WorkLife
-                    onComplete={(workSituation) => goNext({ workSituation }, { workSituation })}
+                  <Card7Situation
+                    path={entryPath}
+                    onComplete={(homeStatus, moveTimeline) =>
+                      goNext({ homeStatus, moveTimeline }, { homeStatus, movingTimeline: moveTimeline })
+                    }
                   />
                   {!currentStep.required && (
                     <div className="max-w-2xl mx-auto px-4 -mt-4">

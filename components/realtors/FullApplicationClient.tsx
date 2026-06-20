@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { formatPhone } from '../../utils/formatters'
 
 const CARD_SHADOW = '0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06)'
 const INPUT_CLASS = 'w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all'
@@ -69,12 +70,6 @@ const PARTNER_STANDARDS = [
   },
 ]
 
-function formatPhone(value: string): string {
-  const digits = value.replace(/\D/g, '').slice(0, 10)
-  if (digits.length <= 3) return digits
-  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`
-  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`
-}
 
 function formatCurrencyInput(value: string): string {
   const digits = value.replace(/\D/g, '')

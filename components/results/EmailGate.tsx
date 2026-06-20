@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { X, CheckCircle2 } from 'lucide-react'
 import { CityMatch, UserProfile, UserSession } from '../../types'
 import { completeSession } from '../../services/quizSessionService'
+import { formatPhone } from '../../utils/formatters'
 
 interface EmailGateProps {
   matches: CityMatch[]
@@ -16,11 +17,11 @@ interface EmailGateProps {
 }
 
 export default function EmailGate({ matches, profile, sessionId, onSuccess, onClose, storedSession }: EmailGateProps) {
-  const [firstName, setFirstName] = useState(
-    storedSession?.firstName ??
-    (typeof window !== 'undefined' ? sessionStorage.getItem('hq_first_name') ?? '' : '')
-  )
-  const [email, setEmail] = useState(storedSession?.email ?? '')
+  const sessionFirstName = typeof window !== 'undefined' ? sessionStorage.getItem('hq_first_name') : null
+  const sessionEmail = typeof window !== 'undefined' ? sessionStorage.getItem('hq_email') : null
+
+  const [firstName, setFirstName] = useState(sessionFirstName || storedSession?.firstName || '')
+  const [email, setEmail] = useState(sessionEmail || storedSession?.email || '')
   const [phone, setPhone] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -183,7 +184,7 @@ export default function EmailGate({ matches, profile, sessionId, onSuccess, onCl
             <input
               type="tel"
               value={phone}
-              onChange={e => setPhone(e.target.value)}
+              onChange={e => setPhone(formatPhone(e.target.value))}
               placeholder="(555) 000-0000"
               className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-accent focus:ring-2 focus:ring-blue-100 transition-all"
             />

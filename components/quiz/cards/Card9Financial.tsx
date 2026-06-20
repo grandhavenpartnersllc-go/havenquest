@@ -105,8 +105,11 @@ export default function Card9Financial({ path, onComplete }: Card9FinancialProps
       </div>
 
       <div className="mb-10">
-        <p className="text-sm font-semibold mb-3" style={{ color: NAVY }}>
-          Estimated funds available for your move and home purchase
+        <p className="text-sm font-semibold mb-1" style={{ color: NAVY }}>
+          Additional funds available for your move and purchase
+        </p>
+        <p className="text-sm text-gray-500 mb-3">
+          Separate from any home sale proceeds above — savings, investments, gifts, etc.
         </p>
         <ButtonSelectRow
           options={FUNDS_OPTIONS}

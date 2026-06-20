@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { usePortalData } from '../providers/PortalDataProvider'
 import { createClient } from '../../../lib/supabase/client'
+import { formatPhone } from '../../../utils/formatters'
 import { Camera } from 'lucide-react'
 
 interface ExtendedUserData {
@@ -78,12 +79,6 @@ function selectStyle(dirty: boolean): React.CSSProperties {
   }
 }
 
-function formatPhone(value: string): string {
-  const digits = value.replace(/\D/g, '').slice(0, 10)
-  if (digits.length <= 3) return digits
-  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`
-  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`
-}
 
 function mmBadgeLabel(mm: number): string {
   const names: Record<number, string> = {

@@ -1,6 +1,7 @@
 'use client'
 
 import type { MM4Profile } from '../../../../../types'
+import { formatPhone } from '../../../../../utils/formatters'
 
 interface Props {
   data: MM4Profile
@@ -80,12 +81,6 @@ function MiniLabel({ children }: { children: React.ReactNode }) {
   )
 }
 
-function formatPhone(value: string): string {
-  const digits = value.replace(/\D/g, '').slice(0, 10)
-  if (digits.length <= 3) return digits
-  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`
-  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`
-}
 
 const col2: React.CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }
 
