@@ -325,6 +325,9 @@ export interface MM4Profile {
   city1_reasoning?: string
   city2_reasoning?: string
   city3_reasoning?: string
+  target_confidence?: 'very_confident' | 'leaning_open' | 'torn'
+  household_alignment?: 'fully_aligned' | 'mostly_aligned' | 'still_working'
+  first_call_priority?: string
 
   // Section 5 — Anything Else
   special_notes?: string

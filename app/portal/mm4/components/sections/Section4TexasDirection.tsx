@@ -30,6 +30,48 @@ function Field({ label, required, error, hint, children }: {
   )
 }
 
+type TargetConfidence = MM4Profile['target_confidence']
+type HouseholdAlignment = MM4Profile['household_alignment']
+
+function PillGroup<T extends string>({
+  options,
+  value,
+  onSelect,
+}: {
+  options: { label: string; value: T }[]
+  value: T | undefined
+  onSelect: (v: T) => void
+}) {
+  return (
+    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+      {options.map(opt => {
+        const selected = value === opt.value
+        return (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => onSelect(opt.value)}
+            style={{
+              padding: '8px 16px',
+              borderRadius: '20px',
+              fontSize: '13px',
+              fontWeight: selected ? 500 : 400,
+              color: selected ? '#ffffff' : 'var(--text-secondary)',
+              backgroundColor: selected ? '#0076B6' : 'transparent',
+              border: `1.5px solid ${selected ? '#0076B6' : 'var(--card-border)'}`,
+              cursor: 'pointer',
+              transition: 'all 0.15s',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {opt.label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 const REASONING_KEYS = ['city1_reasoning', 'city2_reasoning', 'city3_reasoning'] as const
 
 export default function Section4TexasDirection({ data, onChange, errors, chosenCommunities }: Props) {
@@ -132,6 +174,10 @@ export default function Section4TexasDirection({ data, onChange, errors, chosenC
             />
           </Field>
         )}
+
+        <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic', margin: '12px 0 0' }}>
+          These selections reflect everything you&apos;ve shared so far — your Market Director may refine them as your conversation goes deeper.
+        </p>
       </div>
 
       {/* Research */}
@@ -195,6 +241,41 @@ export default function Section4TexasDirection({ data, onChange, errors, chosenC
               </Field>
             </div>
           </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <Field label="How confident are you in your top choice?">
+              <PillGroup
+                options={[
+                  { label: 'Very confident', value: 'very_confident' },
+                  { label: 'Leaning, but open', value: 'leaning_open' },
+                  { label: 'Genuinely torn between these', value: 'torn' },
+                ]}
+                value={data.target_confidence}
+                onSelect={v => onChange({ target_confidence: v as TargetConfidence })}
+              />
+            </Field>
+            <Field label="Is everyone in your household aligned on this direction?">
+              <PillGroup
+                options={[
+                  { label: 'Yes, fully aligned', value: 'fully_aligned' },
+                  { label: 'Mostly, some discussion ongoing', value: 'mostly_aligned' },
+                  { label: 'Still working through it', value: 'still_working' },
+                ]}
+                value={data.household_alignment}
+                onSelect={v => onChange({ household_alignment: v as HouseholdAlignment })}
+              />
+            </Field>
+          </div>
+
+          <Field label="What do you want from your first call?">
+            <textarea
+              className="mm4-textarea"
+              value={data.first_call_priority ?? ''}
+              onChange={e => onChange({ first_call_priority: e.target.value })}
+              placeholder="e.g. I want to understand the school districts better, or talk through financing options..."
+              rows={2}
+            />
+          </Field>
         </div>
       </div>
     </div>

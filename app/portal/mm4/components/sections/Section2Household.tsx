@@ -6,6 +6,7 @@ interface Props {
   data: MM4Profile
   onChange: (updates: Partial<MM4Profile>) => void
   errors: Record<string, string>
+  householdSize?: string | null
 }
 
 type HouseholdMember = { first_name: string; age: number; relationship: string }
@@ -56,10 +57,11 @@ function PillGroup<T extends string>({
   )
 }
 
-function Field({ label, required, error, children }: {
+function Field({ label, required, error, hint, children }: {
   label: string
   required?: boolean
   error?: string
+  hint?: string
   children: React.ReactNode
 }) {
   return (
@@ -68,6 +70,7 @@ function Field({ label, required, error, children }: {
         {label}
         {required && <span style={{ color: '#0076B6', marginLeft: '2px' }}>*</span>}
       </label>
+      {hint && <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '-2px 0 8px' }}>{hint}</p>}
       {children}
       {error && <p style={{ fontSize: '11px', color: '#DC2626', marginTop: '4px' }}>{error}</p>}
     </div>
@@ -91,7 +94,7 @@ function MiniLabel({ children }: { children: React.ReactNode }) {
 
 const col2: React.CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }
 
-export default function Section2Household({ data, onChange, errors }: Props) {
+export default function Section2Household({ data, onChange, errors, householdSize }: Props) {
   const hasChildren = (data.num_children ?? 0) > 0
   const members: HouseholdMember[] = data.household_members ?? []
 
@@ -124,7 +127,12 @@ export default function Section2Household({ data, onChange, errors }: Props) {
 
       {/* Adults / Children */}
       <div style={col2}>
-        <Field label="Adults in household" required error={errors.num_adults}>
+        <Field
+          label="Adults in household"
+          required
+          error={errors.num_adults}
+          hint={householdSize ? `You told us your household size was ${householdSize} when you started — let's get the exact breakdown here.` : undefined}
+        >
           <input
             className="mm4-input"
             type="number"

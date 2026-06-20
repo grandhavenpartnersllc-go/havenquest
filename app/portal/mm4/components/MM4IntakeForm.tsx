@@ -27,6 +27,31 @@ function parseHouseholdSize(hs: string | undefined): number {
   return m ? Math.min(10, Math.max(1, parseInt(m[0], 10))) : 1
 }
 
+// Quiz captures home status as one of these four buckets (Card7Situation) —
+// 'keeping' is the only value that renames on the MM4 side.
+function mapHomeStatusToOriginSituation(homeStatus: string | null | undefined): MM4Profile['origin_situation'] | undefined {
+  switch (homeStatus) {
+    case 'renting': return 'renting'
+    case 'selling': return 'selling'
+    case 'keeping': return 'own_no_sale'
+    case 'other': return 'other'
+    default: return undefined
+  }
+}
+
+// Quiz's moving_timeline is a coarser range than MM4's timeline_flexibility —
+// this is a lossy, one-directional mapping, not a true equivalence.
+function mapMovingTimelineToFlexibility(movingTimeline: string | null | undefined): MM4Profile['timeline_flexibility'] | undefined {
+  switch (movingTimeline) {
+    case '0-3months': return 'hard_deadline'
+    case '3-6months':
+    case '6-12months': return 'flexible_few_months'
+    case '12plus':
+    case 'exploring': return 'very_flexible'
+    default: return undefined
+  }
+}
+
 interface Props {
   onSubmitted: (data: MM4Profile) => void
 }
@@ -42,6 +67,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [chosenCommunities, setChosenCommunities] = useState<string[]>([])
+  const [quizHouseholdSize, setQuizHouseholdSize] = useState<string | null>(null)
 
   const profileSeedApplied = useRef(false)
 
@@ -96,13 +122,25 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
             .maybeSingle(),
           supabase
             .from('users')
-            .select('chosen_communities')
+            .select('chosen_communities, household_size, home_status, moving_timeline')
             .eq('email', email)
             .maybeSingle(),
         ])
 
+        if (userData?.household_size) {
+          setQuizHouseholdSize(userData.household_size)
+        }
+
+        const mappedOriginSituation = mapHomeStatusToOriginSituation(userData?.home_status)
+        const mappedTimelineFlexibility = mapMovingTimelineToFlexibility(userData?.moving_timeline)
+
         if (existing && !existing.submitted) {
-          setFormData(prev => ({ ...prev, ...existing }))
+          setFormData(prev => ({
+            ...prev,
+            ...existing,
+            origin_situation: existing.origin_situation ?? mappedOriginSituation,
+            timeline_flexibility: existing.timeline_flexibility ?? mappedTimelineFlexibility,
+          }))
           profileSeedApplied.current = true
           const resumed = typeof existing.last_completed_section === 'number'
             ? Math.min(existing.last_completed_section, 5)
@@ -111,6 +149,12 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
             setCurrentSection(resumed)
             setAnimKey(k => k + 1)
           }
+        } else if (mappedOriginSituation || mappedTimelineFlexibility) {
+          setFormData(prev => ({
+            ...prev,
+            origin_situation: prev.origin_situation ?? mappedOriginSituation,
+            timeline_flexibility: prev.timeline_flexibility ?? mappedTimelineFlexibility,
+          }))
         }
 
         if (Array.isArray(userData?.chosen_communities) && userData.chosen_communities.length > 0) {
@@ -345,7 +389,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
             <Section1Identity data={formData} onChange={handleChange} errors={errors} />
           )}
           {currentSection === 1 && (
-            <Section2Household data={formData} onChange={handleChange} errors={errors} />
+            <Section2Household data={formData} onChange={handleChange} errors={errors} householdSize={quizHouseholdSize} />
           )}
           {currentSection === 2 && (
             <Section2TheMove data={formData} onChange={handleChange} errors={errors} />

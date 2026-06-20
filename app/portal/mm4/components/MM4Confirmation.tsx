@@ -116,7 +116,16 @@ export default function MM4Confirmation({ data, email }: Props) {
           <span style={{ fontSize: '12px', color: 'var(--text-muted)', width: '120px', flexShrink: 0 }}>Profile sent to</span>
           <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{email}</span>
         </div>
+        {data.why_texas && (
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', fontStyle: 'italic', margin: 0, lineHeight: 1.6 }}>
+            In your own words: &ldquo;{data.why_texas}&rdquo;
+          </p>
+        )}
       </div>
+
+      <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic', margin: '0 0 32px' }}>
+        These selections reflect everything you&apos;ve shared so far — your Market Director may refine them as your conversation goes deeper.
+      </p>
 
       {/* What happens next */}
       <div style={{ marginBottom: '32px' }}>

@@ -178,7 +178,12 @@ export default function Section2TheMove({ data, onChange, errors }: Props) {
               ))}
             </select>
           </Field>
-          <Field label="How flexible is your timeline?" required error={errors.timeline_flexibility}>
+          <Field
+            label="How flexible is your timeline?"
+            required
+            error={errors.timeline_flexibility}
+            hint="Pre-filled from your HavenQuest profile — update if anything has changed."
+          >
             <PillGroup
               options={[
                 { label: 'Hard deadline', value: 'hard_deadline' },
@@ -196,7 +201,12 @@ export default function Section2TheMove({ data, onChange, errors }: Props) {
       <div>
         <MiniLabel>Current Housing Situation</MiniLabel>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <Field label="What's your current housing situation?" required error={errors.origin_situation}>
+          <Field
+            label="What's your current housing situation?"
+            required
+            error={errors.origin_situation}
+            hint="Pre-filled from your HavenQuest profile — update if anything has changed."
+          >
             <PillGroup
               options={[
                 { label: 'Selling my home', value: 'selling' },
