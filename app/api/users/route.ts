@@ -2,6 +2,34 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 import { buildWelcomeEmailHtml } from '../../../services/emailService'
+import { calculateFunctionalFitScore, buildClientBuckets } from '../../../services/matchingService'
+import { getAllCities } from '../../../services/locationService'
+import type { ArchetypeKey, DNAScores, DNABucket } from '../../../types'
+
+// weightingProfile is identical for every city for one client (Brief 2a Part 5) —
+// any city works as the throwaway argument; only the weightingProfile half of the
+// return value is used here.
+function computeWeightingProfile(
+  archetype: string | undefined,
+  mustHaves: (keyof DNAScores)[] | undefined,
+  niceToHaves: (keyof DNAScores)[] | undefined,
+  notPriorities: (keyof DNAScores)[] | undefined
+) {
+  const validArchetypes: ArchetypeKey[] = ['family', 'firsttime', 'executive', 'luxury', 'retiree', 'youngpro', 'general']
+  const resolvedArchetype: ArchetypeKey = (validArchetypes as string[]).includes(archetype ?? '')
+    ? (archetype as ArchetypeKey)
+    : 'general'
+  const buckets: Record<keyof DNAScores, DNABucket> = buildClientBuckets({
+    annualIncome: 0,
+    householdSize: '1',
+    movingTimeline: 'exploring',
+    mustHaves: mustHaves ?? [],
+    niceToHaves: niceToHaves ?? [],
+    notPriorities: notPriorities ?? [],
+  })
+  const anyCity = getAllCities()[0]
+  return calculateFunctionalFitScore(anyCity, resolvedArchetype, buckets).weightingProfile
+}
 
 function getSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -41,14 +69,15 @@ async function sendWelcomeAndRespond(
 
 export async function PATCH(request: NextRequest) {
   try {
-    const { email, topCityMatches } = await request.json()
+    const { email, topCityMatches, archetype, mustHaves, niceToHaves, notPriorities } = await request.json()
     if (!email || !Array.isArray(topCityMatches)) {
       return NextResponse.json({ error: 'email and topCityMatches required' }, { status: 400 })
     }
+    const weightingProfile = computeWeightingProfile(archetype, mustHaves, niceToHaves, notPriorities)
     const supabase = getSupabase()
     await supabase
       .from('users')
-      .update({ top_city_matches: topCityMatches })
+      .update({ top_city_matches: topCityMatches, dna_weighting_profile: weightingProfile })
       .eq('email', (email as string).toLowerCase())
     return NextResponse.json({ ok: true })
   } catch (err) {
@@ -71,6 +100,7 @@ export async function POST(request: NextRequest) {
       mustHaves,
       niceToHaves,
       notPriorities,
+      archetype,
       topCityMatches,
       buyerProfile,
       financialPicture,
@@ -79,6 +109,8 @@ export async function POST(request: NextRequest) {
     const isActiveBuyer =
       financialPicture?.purchase_timeline === '0-3months' ||
       financialPicture?.purchase_timeline === '3-6months'
+
+    const weightingProfile = computeWeightingProfile(archetype, mustHaves, niceToHaves, notPriorities)
 
     if (!firstName || !email) {
       return NextResponse.json({ error: 'First name and email are required' }, { status: 400 })
@@ -149,6 +181,8 @@ export async function POST(request: NextRequest) {
           must_haves: mustHaves,
           nice_to_haves: niceToHaves,
           not_priorities: notPriorities,
+          archetype: archetype ?? null,
+          dna_weighting_profile: weightingProfile,
           top_city_matches: topCityMatches,
           buyer_profile: buyerProfile ?? null,
           financial_picture: financialPicture
@@ -179,6 +213,8 @@ export async function POST(request: NextRequest) {
               must_haves: mustHaves,
               nice_to_haves: niceToHaves,
               not_priorities: notPriorities,
+              archetype: archetype ?? null,
+              dna_weighting_profile: weightingProfile,
               top_city_matches: topCityMatches,
               buyer_profile: buyerProfile ?? null,
               financial_picture: financialPicture

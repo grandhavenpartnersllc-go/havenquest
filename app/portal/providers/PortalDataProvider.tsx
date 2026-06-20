@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '../../../lib/supabase/client'
 import { getAllCities } from '../../../services/locationService'
 import { getTopMatches } from '../../../services/matchingService'
-import type { CityMatch, UserProfile, UserSession, LifestyleScores } from '../../../types'
+import type { CityMatch, UserProfile, UserSession, DNAScores } from '../../../types'
 import {
   LOCAL_SESSION_KEY,
   SESSION_PROFILE_KEY,
@@ -40,9 +40,13 @@ interface UserRow {
   annual_income: number | null
   household_size: string | null
   moving_timeline: string | null
-  must_haves: Array<keyof LifestyleScores> | null
-  nice_to_haves: Array<keyof LifestyleScores> | null
-  not_priorities: Array<keyof LifestyleScores> | null
+  // Typed as DNAScores keys going forward (Brief 2a) — rows saved before this
+  // brief may still contain old LifestyleScores key strings; those simply won't
+  // match any DNA category and are silently ignored by buildClientBuckets/
+  // calculateFunctionalFitScore until the client retakes the quiz.
+  must_haves: Array<keyof DNAScores> | null
+  nice_to_haves: Array<keyof DNAScores> | null
+  not_priorities: Array<keyof DNAScores> | null
   archetype: string | null
   growth_profile: number | null
   lifestyle_orientation: number | null

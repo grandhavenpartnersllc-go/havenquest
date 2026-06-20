@@ -3,9 +3,9 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { CityMatch, UserProfile } from '../../types'
-import { LIFESTYLE_CATEGORIES } from '../../utils/constants'
+import { DNA_CATEGORIES } from '../../utils/constants'
 import { getScoreColor } from '../../utils/scoring'
-import { CATEGORY_ICONS } from '../../utils/categoryIcons'
+import { DNA_CATEGORY_ICONS } from '../../utils/categoryIcons'
 import { formatCurrency } from '../../utils/formatting'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import CompareModal from '../results/CompareModal'
@@ -20,10 +20,10 @@ function getTradeoffStatement(match: CityMatch, profile: UserProfile): string {
   const { location } = match
 
   const toScored = (key: string) => {
-    const k = key as keyof typeof location.scores
+    const k = key as keyof typeof location.dna
     return {
-      score: location.scores[k],
-      label: LIFESTYLE_CATEGORIES.find(c => c.key === k)?.label ?? key,
+      score: location.dna[k],
+      label: DNA_CATEGORIES.find(c => c.key === k)?.label ?? key,
     }
   }
 
@@ -204,9 +204,9 @@ function MatchCard({ match, rank, profile, compareSelected, onCompare }: MatchCa
                 </div>
                 <div className="space-y-1.5">
                   {group.keys.map(key => {
-                    const cat = LIFESTYLE_CATEGORIES.find(c => c.key === key)!
-                    const Icon = CATEGORY_ICONS[key]
-                    const score = match.location.scores[key]
+                    const cat = DNA_CATEGORIES.find(c => c.key === key)!
+                    const Icon = DNA_CATEGORY_ICONS[key]
+                    const score = match.location.dna[key]
                     const color = getScoreColor(score)
                     return (
                       <div key={key} className="flex items-center gap-2">

@@ -2,7 +2,7 @@ import React from 'react'
 import * as ReactPDF from '@react-pdf/renderer'
 import { CityMatch, LifestyleScores, UserProfile } from '../types'
 import { getMonthlyPropertyTax, getTotalMonthlyEstimate, getMonthlyIncomeRemaining } from './affordabilityService'
-import { LIFESTYLE_CATEGORIES } from '../utils/constants'
+import { DNA_CATEGORIES } from '../utils/constants'
 
 const { Document, Page, View, Text, StyleSheet } = ReactPDF
 
@@ -549,9 +549,9 @@ function CompareDocument({ cityA, cityB, profile, summary, generatedDate }: Comp
               <Text style={s.sectionLabel}>YOUR PRIORITIES</Text>
               <View style={s.table}>
                 {priorityCats.map(({ key, tag }, idx) => {
-                  const cat = LIFESTYLE_CATEGORIES.find(c => c.key === key)
-                  const scoreA = cityA.location.scores[key as keyof LifestyleScores]
-                  const scoreB = cityB.location.scores[key as keyof LifestyleScores]
+                  const cat = DNA_CATEGORIES.find(c => c.key === key)
+                  const scoreA = cityA.location.dna[key]
+                  const scoreB = cityB.location.dna[key]
                   const aWins = scoreA > scoreB
                   const bWins = scoreB > scoreA
                   const isLast = idx === priorityCats.length - 1

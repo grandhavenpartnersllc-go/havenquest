@@ -1,6 +1,6 @@
-import { Location, UserProfile, CityMatch, FinancialPicture, ArchetypeKey, DNAScores, PersonalityPreference } from '../types'
+import { Location, UserProfile, CityMatch, FinancialPicture, ArchetypeKey, DNAScores, DNABucket, PersonalityPreference, WeightingProfile } from '../types'
 import { generateZillowUrl } from '../utils/zillowUrl'
-import { ARCHETYPE_WEIGHTS, getWeightedDNACategories } from './archetypeService'
+import { ARCHETYPE_WEIGHTS, BASE_DNA_WEIGHTS, applyClientWeighting } from './archetypeService'
 
 export function getMonthlyHousingCost(city: Location): number {
   return Math.round(city.housing.medianHomePrice * 0.007)
@@ -109,14 +109,42 @@ function calculateFinancialFit(
   return { financialModifier, financialFitScore, segment }
 }
 
-// Layer 2 — Community DNA™ (Functional Fit)
-export function calculateFunctionalFitScore(city: Location, archetype: ArchetypeKey): number {
-  const weights = getWeightedDNACategories(archetype)
-  const raw = Object.keys(weights).reduce(
+// Layer 2 — Community DNA™ (Functional Fit), blended with the client's Card 3 bucket
+// choices (Brief 2a). General-purpose single-city entry point — getTopMatches below
+// hoists applyClientWeighting out of its per-city loop instead of calling this,
+// since the weighting profile is identical across all cities for one client.
+export function calculateFunctionalFitScore(
+  city: Location,
+  archetype: ArchetypeKey,
+  clientBuckets?: Record<keyof DNAScores, DNABucket>
+): { score: number; weightingProfile: WeightingProfile } {
+  const fullBuckets = clientBuckets ?? (Object.keys(BASE_DNA_WEIGHTS) as (keyof DNAScores)[])
+    .reduce((acc, k) => ({ ...acc, [k]: 'would_be_nice' as DNABucket }), {} as Record<keyof DNAScores, DNABucket>)
+
+  const weightingProfile = applyClientWeighting(archetype, fullBuckets, 'soft')
+  const raw = weightedDNASum(city, weightingProfile.activeWeights)
+  return { score: Math.round(raw * 10) / 10, weightingProfile }
+}
+
+function weightedDNASum(city: Location, weights: Record<keyof DNAScores, number>): number {
+  return Object.keys(weights).reduce(
     (sum, key) => sum + city.dna[key as keyof DNAScores] * weights[key as keyof DNAScores],
     0
   )
-  return Math.round(raw * 10) / 10 // 0-10, one decimal
+}
+
+// notPriorities (Card 3) conflates "Would Be Nice" and never-touched categories into
+// one array, so there's no way to recover that distinction here — mapped to
+// 'unassigned' as the closer semantic match. Categories absent from all three arrays
+// (shouldn't happen given Card 3's logic always places every category in exactly one
+// of them, but handled defensively) default to 'would_be_nice' per the brief.
+export function buildClientBuckets(profile: UserProfile): Record<keyof DNAScores, DNABucket> {
+  const buckets = (Object.keys(BASE_DNA_WEIGHTS) as (keyof DNAScores)[])
+    .reduce((acc, k) => ({ ...acc, [k]: 'would_be_nice' as DNABucket }), {} as Record<keyof DNAScores, DNABucket>)
+  profile.mustHaves.forEach(k => { buckets[k] = 'must_have' })
+  profile.niceToHaves.forEach(k => { buckets[k] = 'important' })
+  profile.notPriorities.forEach(k => { buckets[k] = 'unassigned' })
+  return buckets
 }
 
 // Layer 3 — Community Personality (Emotional Fit)
@@ -131,7 +159,11 @@ export function calculateEmotionalFitScore(city: Location, preference: Personali
 export function getTopMatches(
   profile: UserProfile,
   cities: Location[],
-  limit = 3
+  limit = 3,
+  // 'soft' for real client matching (Card 3 blends, never zeroes a category).
+  // 'hard' for MM3's internal sandbox only, where an MD can demonstrate a
+  // category dropping to zero influence (Brief 2a Part 7).
+  mode: 'soft' | 'hard' = 'soft'
 ): { topMatches: CityMatch[]; otherStrongMatches: CityMatch[] } {
   const archetype: ArchetypeKey = profile.archetype ?? 'general'
   const { dnaWeight, personalityWeight } = ARCHETYPE_WEIGHTS[archetype]
@@ -139,11 +171,16 @@ export function getTopMatches(
     growthProfile: 5, pace: 5, culture: 5, environment: 5, lifestyleOrientation: 5,
   }
 
+  // Hoisted out of the per-city loop (Brief 2a Part 5) — the weighting profile only
+  // depends on archetype + this client's Card 3 buckets, identical across all cities.
+  const clientBuckets = buildClientBuckets(profile)
+  const weightingProfile = applyClientWeighting(archetype, clientBuckets, mode)
+
   const scored = cities.map(city => {
     const { financialModifier, financialFitScore, segment } = calculateFinancialFit(
       city.housing.medianHomePrice, profile.annualIncome, profile.financial_picture
     )
-    const functionalFitScore = calculateFunctionalFitScore(city, archetype)
+    const functionalFitScore = Math.round(weightedDNASum(city, weightingProfile.activeWeights) * 10) / 10
     const emotionalFitScore = calculateEmotionalFitScore(city, preference)
     const finalScore = financialModifier * (dnaWeight * functionalFitScore * 10 + personalityWeight * emotionalFitScore * 10)
 

@@ -3,10 +3,10 @@
 import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { Lock, ChevronDown, ChevronRight, CheckCircle } from 'lucide-react'
-import { CityMatch, UserProfile, UserSession, SandboxProfile, LifestyleScores } from '../../../types'
+import { CityMatch, UserProfile, UserSession, SandboxProfile, DNAScores, PersonalityPreference } from '../../../types'
 import FullReport from '../../results/FullReport'
-import { LIFESTYLE_CATEGORIES } from '../../../utils/constants'
-import { CATEGORY_ICONS } from '../../../utils/categoryIcons'
+import { DNA_CATEGORIES } from '../../../utils/constants'
+import { DNA_CATEGORY_ICONS } from '../../../utils/categoryIcons'
 import { getAllCities } from '../../../services/locationService'
 import { getTopMatches, getDownPaymentMidpoint, getProceedsMidpoint, calculateMonthlyPayment } from '../../../services/matchingService'
 import { createClient } from '../../../lib/supabase/client'
@@ -20,7 +20,15 @@ const NAVY = '#0A1E3D'
 const CARD_BG = '#FDFCFA'
 const CARD_SHADOW = '0 1px 3px rgba(0,0,0,0.05), 0 4px 20px rgba(0,0,0,0.07)'
 
-const ALL_CATEGORY_KEYS = LIFESTYLE_CATEGORIES.map(c => c.key)
+const ALL_CATEGORY_KEYS = DNA_CATEGORIES.map(c => c.key)
+const NEUTRAL_PERSONALITY: PersonalityPreference = { growthProfile: 5, pace: 5, culture: 5, environment: 5, lifestyleOrientation: 5 }
+const PERSONALITY_SLIDERS: { key: keyof PersonalityPreference; label: string; left: string; right: string }[] = [
+  { key: 'growthProfile', label: 'Growth Profile', left: 'Established', right: 'Emerging' },
+  { key: 'pace', label: 'Pace', left: 'Relaxed', right: 'Fast-Paced' },
+  { key: 'culture', label: 'Culture', left: 'Private', right: 'Community-Oriented' },
+  { key: 'environment', label: 'Environment', left: 'Urban', right: 'Rural' },
+  { key: 'lifestyleOrientation', label: 'Lifestyle Orientation', left: 'Practical', right: 'Luxury' },
+]
 
 const DOWN_PAYMENT_OPTIONS = [
   'Under $20,000',
@@ -111,21 +119,24 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const [calcExactHomeProceeds, setCalcExactHomeProceeds] = useState<string>('')
   const [reportCity, setReportCity] = useState<CityMatch | null>(null)
 
-  const [mustHaves, setMustHaves] = useState<(keyof LifestyleScores)[]>(
+  const [mustHaves, setMustHaves] = useState<(keyof DNAScores)[]>(
     profile?.mustHaves ?? []
   )
-  const [niceToHaves, setNiceToHaves] = useState<(keyof LifestyleScores)[]>(
+  const [niceToHaves, setNiceToHaves] = useState<(keyof DNAScores)[]>(
     profile?.niceToHaves ?? []
   )
-  const [notPriorities, setNotPriorities] = useState<(keyof LifestyleScores)[]>(
+  const [notPriorities, setNotPriorities] = useState<(keyof DNAScores)[]>(
     profile?.notPriorities ?? []
   )
-  const [unassigned, setUnassigned] = useState<(keyof LifestyleScores)[]>(
+  const [unassigned, setUnassigned] = useState<(keyof DNAScores)[]>(
     ALL_CATEGORY_KEYS.filter(k =>
       !profile?.mustHaves.includes(k) &&
       !profile?.niceToHaves.includes(k) &&
       !profile?.notPriorities.includes(k)
     )
+  )
+  const [personalityOverride, setPersonalityOverride] = useState<PersonalityPreference>(
+    profile?.personalityPreference ?? NEUTRAL_PERSONALITY
   )
 
   const [chosenCities, setChosenCities] = useState<string[]>([])
@@ -150,7 +161,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const [committed, setCommitted] = useState(false)
   const [committing, setCommitting] = useState(false)
   const [flashBucket, setFlashBucket] = useState<string | null>(null)
-  const [draggedCat, setDraggedCat] = useState<keyof LifestyleScores | null>(null)
+  const [draggedCat, setDraggedCat] = useState<keyof DNAScores | null>(null)
   const [dragOverBucket, setDragOverBucket] = useState<BucketKey | null>(null)
   const [cityPopup, setCityPopup] = useState<CityMatch | null>(null)
   const [emailSent, setEmailSent] = useState(false)
@@ -172,6 +183,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         !profile.notPriorities.includes(k)
       )
     )
+    setPersonalityOverride(profile.personalityPreference ?? NEUTRAL_PERSONALITY)
   }, [profile])
 
   useEffect(() => {
@@ -261,8 +273,10 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     // Navigator v1.0 (Brief 2) scores on archetype + personality preference, not
     // mustHaves/niceToHaves/notPriorities — carry the real client's values through
     // so the sandbox doesn't silently fall back to 'general'/neutral for everyone.
+    // personalityOverride (Brief 2a) is seeded from the client's real values and
+    // moves live with the 5 sliders below.
     archetype: profile?.archetype,
-    personalityPreference: profile?.personalityPreference,
+    personalityPreference: personalityOverride,
   }
 
   const metroCities = (!selectedMetro || selectedMetro === 'State')
@@ -279,7 +293,10 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
       }
     : sandboxProfile
 
-  const { topMatches: sandboxMatches } = getTopMatches(activeProfile, metroCities, 5)
+  // 'hard' mode (Brief 2a Part 7) — MM3 is the internal sandbox where an MD can
+  // demonstrate a category dropping to zero influence; real client matching
+  // (matchingService.getTopMatches' default) always stays 'soft'.
+  const { topMatches: sandboxMatches } = getTopMatches(activeProfile, metroCities, 5, 'hard')
 
   // On first load, show the MM2 saved matches so MM3 opens as a continuation of MM2.
   // The moment the user adjusts any slider, priority, or metro tab, the live sandbox takes over.
@@ -326,7 +343,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const estClosingCosts = Math.round(topCityPrice * 0.025)
   const totalCashToClose = (downMid + procMid) + estClosingCosts
 
-  function getBucket(key: keyof LifestyleScores): BucketKey {
+  function getBucket(key: keyof DNAScores): BucketKey {
     if (mustHaves.includes(key)) return 'mustHaves'
     if (niceToHaves.includes(key)) return 'niceToHaves'
     if (notPriorities.includes(key)) return 'notPriorities'
@@ -467,8 +484,8 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           firstName: session.firstName,
           topCity: sandboxMatches[0]?.location.name,
           topScore: sandboxMatches[0]?.matchScore,
-          mustHaves: mustHaves.map(k => LIFESTYLE_CATEGORIES.find(c => c.key === k)?.label ?? k),
-          niceToHaves: niceToHaves.map(k => LIFESTYLE_CATEGORIES.find(c => c.key === k)?.label ?? k),
+          mustHaves: mustHaves.map(k => DNA_CATEGORIES.find(c => c.key === k)?.label ?? k),
+          niceToHaves: niceToHaves.map(k => DNA_CATEGORIES.find(c => c.key === k)?.label ?? k),
           downPayment,
           proceeds,
           interestRate,
@@ -595,7 +612,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
             <p className="text-xs font-semibold mb-1" style={{ color: '#9A8E82' }}>MUST HAVES</p>
             <div className="flex flex-wrap gap-2">
               {mustHaves.map(key => {
-                const cat = LIFESTYLE_CATEGORIES.find(c => c.key === key)!
+                const cat = DNA_CATEGORIES.find(c => c.key === key)!
                 return (
                   <span key={key}
                         className="px-2.5 py-1 rounded-full text-xs font-semibold"
@@ -646,7 +663,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // Interactive priority selector — buckets map to scoring weights:
   // mustHaves = Must Have (3x, cap 4) · niceToHaves = Important (2x, cap 5) ·
   // notPriorities = Nice to Have (1x, no cap) · unassigned = Unassigned (0x, no cap)
-  const PRIORITY_BUCKETS: Array<{ key: BucketKey; label: string; items: (keyof LifestyleScores)[]; cap: number | null; pillBg: string; pillColor: string }> = [
+  const PRIORITY_BUCKETS: Array<{ key: BucketKey; label: string; items: (keyof DNAScores)[]; cap: number | null; pillBg: string; pillColor: string }> = [
     { key: 'mustHaves',     label: 'Must Have',    items: mustHaves,     cap: 4,    pillBg: 'rgba(184,145,42,0.12)', pillColor: GOLD },
     { key: 'niceToHaves',   label: 'Important',    items: niceToHaves,   cap: 5,    pillBg: '#E8F5EE',               pillColor: '#2D7D4E' },
     { key: 'notPriorities', label: 'Nice to Have', items: notPriorities, cap: null, pillBg: 'rgba(26,95,168,0.12)',  pillColor: '#1A5FA8' },
@@ -654,14 +671,14 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const UNASSIGNED_BUCKET: typeof PRIORITY_BUCKETS[number] =
     { key: 'unassigned', label: 'Unassigned', items: unassigned, cap: null, pillBg: 'rgba(107,114,128,0.12)', pillColor: '#6B7280' }
 
-  const bucketSetters: Record<BucketKey, React.Dispatch<React.SetStateAction<(keyof LifestyleScores)[]>>> = {
+  const bucketSetters: Record<BucketKey, React.Dispatch<React.SetStateAction<(keyof DNAScores)[]>>> = {
     mustHaves: setMustHaves,
     niceToHaves: setNiceToHaves,
     notPriorities: setNotPriorities,
     unassigned: setUnassigned,
   }
 
-  function movePriority(key: keyof LifestyleScores, from: BucketKey, to: BucketKey) {
+  function movePriority(key: keyof DNAScores, from: BucketKey, to: BucketKey) {
     if (from === to) return
     bucketSetters[from](prev => prev.filter(k => k !== key))
     bucketSetters[to](prev => [...prev, key])
@@ -687,7 +704,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
 
   // Click cycles Unassigned → Nice to Have → Important → Must Have → Unassigned,
   // skipping any capped-full bucket per the brief.
-  function cyclePriority(key: keyof LifestyleScores) {
+  function cyclePriority(key: keyof DNAScores) {
     setSandboxTouched(true)
     const from = getBucket(key)
     let to: BucketKey
@@ -696,6 +713,14 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     else if (from === 'niceToHaves') to = mustHaves.length >= 4 ? 'unassigned' : 'mustHaves'
     else to = 'unassigned'
     movePriority(key, from, to)
+  }
+
+  // Moved dimension takes the slider's value; the other 4 stay at their current
+  // positions (Brief 2a Part 7 point 4) — sandboxProfile/activeProfile/getTopMatches
+  // recompute on the next render same as every other sandbox control already does.
+  function handlePersonalityChange(dim: keyof PersonalityPreference, value: number) {
+    setSandboxTouched(true)
+    setPersonalityOverride(prev => ({ ...prev, [dim]: value }))
   }
 
   function renderPriorityZone(b: typeof PRIORITY_BUCKETS[number]) {
@@ -727,8 +752,8 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           }}
         >
           {b.items.map(k => {
-            const cat = LIFESTYLE_CATEGORIES.find(c => c.key === k)!
-            const Icon = CATEGORY_ICONS[k]
+            const cat = DNA_CATEGORIES.find(c => c.key === k)!
+            const Icon = DNA_CATEGORY_ICONS[k]
             return (
               <span
                 key={k}
@@ -1488,6 +1513,43 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
             </div>
           </div>
 
+          {/* Personality sliders (Brief 2a Part 7) — Emotional Fit side of the
+              algorithm; seeded from the client's real personalityPreference. */}
+          <div style={{ borderTop: '1px solid #F0EDE6', marginTop: '16px', paddingTop: '12px' }}>
+            <p className="text-[10px] font-bold uppercase mb-2"
+               style={{ color: GOLD, letterSpacing: '0.18em' }}>
+              Community Personality
+            </p>
+            <p className="text-xs mb-4 leading-relaxed" style={{ color: '#6B7280' }}>
+              These sliders shape Emotional Fit — how well a community&apos;s personality
+              matches the client&apos;s. Move any slider and rankings update instantly.
+            </p>
+            <div className="space-y-3">
+              {PERSONALITY_SLIDERS.map(({ key, label, left, right }) => (
+                <div key={key}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-semibold" style={{ color: WARM_DARK }}>{label}</span>
+                    <span className="text-xs font-bold" style={{ color: GOLD }}>{personalityOverride[key]}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={1}
+                    max={10}
+                    step={1}
+                    value={personalityOverride[key]}
+                    onChange={e => handlePersonalityChange(key, Number(e.target.value))}
+                    className="w-full"
+                    style={{ accentColor: GOLD }}
+                  />
+                  <div className="flex justify-between text-[10px]" style={{ color: '#9A8E82' }}>
+                    <span>{left}</span>
+                    <span>{right}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Lock cities */}
           <div style={{ marginTop: '12px', borderTop: '1px solid #F0EDE6', paddingTop: '10px' }}>
             <p style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', marginBottom: '8px' }}>
@@ -1751,13 +1813,13 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
               </p>
               <div className="space-y-1.5">
                 {[...mustHaves, ...niceToHaves].slice(0, 6).map(key => {
-                  const cat = LIFESTYLE_CATEGORIES.find(c => c.key === key)!
-                  const score = cityPopup.location.scores[key]
+                  const cat = DNA_CATEGORIES.find(c => c.key === key)!
+                  const score = cityPopup.location.dna[key]
                   const isMustHave = mustHaves.includes(key)
                   return (
                     <div key={key} className="flex items-center gap-2">
                       {(() => {
-                        const Icon = CATEGORY_ICONS[key]
+                        const Icon = DNA_CATEGORY_ICONS[key]
                         return <Icon size={12} strokeWidth={1.5} style={{ color: isMustHave ? GOLD : '#4B7A5E' }} />
                       })()}
                       <span className="text-xs w-24 shrink-0" style={{ color: WARM_DARK }}>

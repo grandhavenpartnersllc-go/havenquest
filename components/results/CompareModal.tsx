@@ -2,10 +2,10 @@
 
 import React from 'react'
 import { CityMatch, UserProfile } from '../../types'
-import { LIFESTYLE_CATEGORIES } from '../../utils/constants'
+import { DNA_CATEGORIES } from '../../utils/constants'
 import { formatCurrency } from '../../utils/formatting'
 import { getScoreColor } from '../../utils/scoring'
-import { CATEGORY_ICONS } from '../../utils/categoryIcons'
+import { DNA_CATEGORY_ICONS } from '../../utils/categoryIcons'
 import { X, AlertTriangle, CheckCircle, Download } from 'lucide-react'
 
 interface CompareModalProps {
@@ -21,8 +21,8 @@ function getSummary(cityA: CityMatch, cityB: CityMatch, profile: UserProfile): s
 
   if (primaryKeys.length === 0) return ''
 
-  const sumA = primaryKeys.reduce((s, k) => s + cityA.location.scores[k], 0)
-  const sumB = primaryKeys.reduce((s, k) => s + cityB.location.scores[k], 0)
+  const sumA = primaryKeys.reduce((s, k) => s + cityA.location.dna[k], 0)
+  const sumB = primaryKeys.reduce((s, k) => s + cityB.location.dna[k], 0)
   const avgDiff = Math.abs(sumA - sumB) / primaryKeys.length
 
   if (avgDiff < 1) {
@@ -33,10 +33,10 @@ function getSummary(cityA: CityMatch, cityB: CityMatch, profile: UserProfile): s
   const loser = sumA > sumB ? cityB : cityA
 
   const advantages = primaryKeys
-    .filter(k => winner.location.scores[k] > loser.location.scores[k])
+    .filter(k => winner.location.dna[k] > loser.location.dna[k])
     .map(k => {
-      const cat = LIFESTYLE_CATEGORIES.find(c => c.key === k)!
-      return `${cat.label} (${winner.location.scores[k]} vs ${loser.location.scores[k]})`
+      const cat = DNA_CATEGORIES.find(c => c.key === k)!
+      return `${cat.label} (${winner.location.dna[k]} vs ${loser.location.dna[k]})`
     })
 
   if (advantages.length === 0) {
@@ -280,10 +280,10 @@ export default function CompareModal({ cityA, cityB, profile, onClose }: Compare
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Your priorities</p>
               <div>
                 {priorityCats.map(({ key, tag, tagColor, tagBg }) => {
-                  const cat = LIFESTYLE_CATEGORIES.find(c => c.key === key)!
-                  const Icon = CATEGORY_ICONS[key]
-                  const scoreA = cityA.location.scores[key]
-                  const scoreB = cityB.location.scores[key]
+                  const cat = DNA_CATEGORIES.find(c => c.key === key)!
+                  const Icon = DNA_CATEGORY_ICONS[key]
+                  const scoreA = cityA.location.dna[key]
+                  const scoreB = cityB.location.dna[key]
                   const aWins = scoreA > scoreB
                   const bWins = scoreB > scoreA
                   return (

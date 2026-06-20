@@ -1,4 +1,4 @@
-import { ArchetypeKey, DNAScores } from '../types'
+import { ArchetypeKey, DNAScores, DNABucket, WeightingProfile } from '../types'
 
 export interface ArchetypeWeighting {
   dnaWeight: number          // 0-1
@@ -71,4 +71,50 @@ export function getWeightedDNACategories(archetype: ArchetypeKey): Record<keyof 
     adjusted[key] = adjusted[key] / total
   }
   return adjusted
+}
+
+export const WEIGHTING_MODEL_VERSION = '1.0'
+
+// Deliberate implementation choice, not derived from an external spec — see Brief 2a background.
+const SOFT_BUCKET_SHIFT: Record<DNABucket, number> = {
+  must_have: 10,
+  important: 5,
+  would_be_nice: 0,
+  unassigned: -5,
+}
+
+export function applyClientWeighting(
+  archetype: ArchetypeKey,
+  clientBuckets: Record<keyof DNAScores, DNABucket>,
+  mode: 'soft' | 'hard'
+): WeightingProfile {
+  const archetypeWeights = getWeightedDNACategories(archetype)
+  const clientAdjustments: Record<keyof DNAScores, number> = {} as Record<keyof DNAScores, number>
+  const shifted: Record<keyof DNAScores, number> = { ...archetypeWeights }
+
+  for (const key of Object.keys(archetypeWeights) as (keyof DNAScores)[]) {
+    const bucket = clientBuckets[key] ?? 'would_be_nice'
+    if (mode === 'hard' && bucket === 'unassigned') {
+      clientAdjustments[key] = -shifted[key] * 100 // effectively zeroes this category out
+      shifted[key] = 0
+    } else {
+      const shiftPp = SOFT_BUCKET_SHIFT[bucket]
+      clientAdjustments[key] = shiftPp
+      shifted[key] = Math.max(0, shifted[key] + shiftPp / 100)
+    }
+  }
+
+  const total = Object.values(shifted).reduce((sum, w) => sum + w, 0)
+  const activeWeights: Record<keyof DNAScores, number> = {} as Record<keyof DNAScores, number>
+  for (const key of Object.keys(shifted) as (keyof DNAScores)[]) {
+    activeWeights[key] = total > 0 ? shifted[key] / total : 0
+  }
+
+  return {
+    weightingModelVersion: WEIGHTING_MODEL_VERSION,
+    archetypeWeights,
+    clientBuckets,
+    clientAdjustments,
+    activeWeights,
+  }
 }

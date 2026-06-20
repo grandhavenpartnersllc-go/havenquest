@@ -2,21 +2,21 @@
 
 import { useState, useRef } from 'react'
 import { type LucideIcon } from 'lucide-react'
-import { LifestyleScores } from '../../types'
-import { LIFESTYLE_CATEGORIES, MUST_HAVE_MAX, NICE_TO_HAVE_MAX } from '../../utils/constants'
-import { CATEGORY_ICONS } from '../../utils/categoryIcons'
+import { DNAScores } from '../../types'
+import { DNA_CATEGORIES, MUST_HAVE_MAX, NICE_TO_HAVE_MAX } from '../../utils/constants'
+import { DNA_CATEGORY_ICONS } from '../../utils/categoryIcons'
 
 const CHIP_BASE = 'bg-blue-900 border border-blue-400/40 text-white shadow-lg shadow-blue-900/40 hover:bg-blue-800 hover:border-blue-400/70 rounded-xl px-4 py-2 cursor-grab active:cursor-grabbing select-none transition-all duration-200 flex items-center gap-2'
 
 type Bucket = 'mustHave' | 'important' | 'wouldBeNice' | 'unassigned'
 
 interface CategoryItem {
-  key: keyof LifestyleScores
+  key: keyof DNAScores
   bucket: Bucket
 }
 
 interface ChipProps {
-  chipKey: keyof LifestyleScores
+  chipKey: keyof DNAScores
   label: string
   isDragging: boolean
   showRemove?: boolean
@@ -27,7 +27,7 @@ interface ChipProps {
 }
 
 function Chip({ chipKey, label, isDragging, showRemove, onTap, onDragStart, onDragEnd, onRemove }: ChipProps) {
-  const Icon: LucideIcon = CATEGORY_ICONS[chipKey]
+  const Icon: LucideIcon = DNA_CATEGORY_ICONS[chipKey]
   const touchStart = useRef<{ x: number; y: number } | null>(null)
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -74,21 +74,21 @@ function Chip({ chipKey, label, isDragging, showRemove, onTap, onDragStart, onDr
 
 interface PrioritySelectorProps {
   onComplete: (
-    mustHaves: (keyof LifestyleScores)[],
-    niceToHaves: (keyof LifestyleScores)[],
-    notPriorities: (keyof LifestyleScores)[]
+    mustHaves: (keyof DNAScores)[],
+    niceToHaves: (keyof DNAScores)[],
+    notPriorities: (keyof DNAScores)[]
   ) => void
-  categories?: typeof LIFESTYLE_CATEGORIES
+  categories?: typeof DNA_CATEGORIES
 }
 
-export default function PrioritySelector({ onComplete, categories = LIFESTYLE_CATEGORIES }: PrioritySelectorProps) {
+export default function PrioritySelector({ onComplete, categories = DNA_CATEGORIES }: PrioritySelectorProps) {
   const [items, setItems] = useState<CategoryItem[]>(
     categories.map(c => ({ key: c.key, bucket: 'unassigned' }))
   )
-  const [dragging, setDragging] = useState<keyof LifestyleScores | null>(null)
-  const [activeCard, setActiveCard] = useState<keyof LifestyleScores | null>(null)
+  const [dragging, setDragging] = useState<keyof DNAScores | null>(null)
+  const [activeCard, setActiveCard] = useState<keyof DNAScores | null>(null)
   const [dragOverBucket, setDragOverBucket] = useState<Bucket | null>(null)
-  const dragRef = useRef<keyof LifestyleScores | null>(null)
+  const dragRef = useRef<keyof DNAScores | null>(null)
 
   const mustHaves = items.filter(i => i.bucket === 'mustHave').map(i => i.key)
   const importants = items.filter(i => i.bucket === 'important').map(i => i.key)
@@ -101,12 +101,12 @@ export default function PrioritySelector({ onComplete, categories = LIFESTYLE_CA
     return true
   }
 
-  const moveTo = (key: keyof LifestyleScores, bucket: Bucket) => {
+  const moveTo = (key: keyof DNAScores, bucket: Bucket) => {
     if (bucket !== 'unassigned' && !canDrop(bucket)) return
     setItems(prev => prev.map(i => i.key === key ? { ...i, bucket } : i))
   }
 
-  const handleDragStart = (key: keyof LifestyleScores) => {
+  const handleDragStart = (key: keyof DNAScores) => {
     setDragging(key)
     dragRef.current = key
   }
@@ -126,16 +126,16 @@ export default function PrioritySelector({ onComplete, categories = LIFESTYLE_CA
     setDragOverBucket(null)
   }
 
-  const handleCardTap = (key: keyof LifestyleScores) => {
+  const handleCardTap = (key: keyof DNAScores) => {
     setActiveCard(prev => prev === key ? null : key)
   }
 
-  const handleBucketAssign = (key: keyof LifestyleScores, bucket: Bucket) => {
+  const handleBucketAssign = (key: keyof DNAScores, bucket: Bucket) => {
     moveTo(key, bucket)
     setActiveCard(null)
   }
 
-  const getCat = (key: keyof LifestyleScores) =>
+  const getCat = (key: keyof DNAScores) =>
     categories.find(c => c.key === key)!
 
   const canSubmit = mustHaves.length >= 1
@@ -154,11 +154,11 @@ export default function PrioritySelector({ onComplete, categories = LIFESTYLE_CA
           This is where your results get personal.
         </p>
         <p style={{ fontSize: '14px', color: '#6B7280', lineHeight: 1.6, marginBottom: '8px' }}>
-          Assign only what matters to you. Must Haves carry 3× weight, Important to Me carries 2×, Would Be Nice carries 1×. Anything you leave unassigned counts for nothing.
+          Assign only what matters to you. Must Haves carry 3× weight, Important to Me carries 2×, Would Be Nice carries 1×. Anything you leave unassigned still carries some weight.
         </p>
 
         <p className="text-sm text-gray-500">
-          Drag or tap to assign. Must Have: up to {MUST_HAVE_MAX}. Important to Me: up to {NICE_TO_HAVE_MAX}. Unassigned categories won't affect your results.
+          Drag or tap to assign. Must Have: up to {MUST_HAVE_MAX}. Important to Me: up to {NICE_TO_HAVE_MAX}. Unassigned categories carry less weight, but still count.
         </p>
       </div>
 
@@ -247,7 +247,7 @@ export default function PrioritySelector({ onComplete, categories = LIFESTYLE_CA
       {/* Unassigned pool */}
       <div className="mb-6">
         <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
-          Unassigned — won't affect results
+          Unassigned — carries less weight, but still counts
         </p>
         <div className="bg-gray-50 rounded-xl p-4 flex flex-wrap gap-2 min-h-[60px]">
           {unassigned.map(key => {

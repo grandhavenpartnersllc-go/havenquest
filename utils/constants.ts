@@ -1,4 +1,4 @@
-import { LifestyleScores, UserProfile } from '../types'
+import { LifestyleScores, UserProfile, DNAScores } from '../types'
 
 export const LIFESTYLE_CATEGORIES: {
   key: keyof LifestyleScores
@@ -19,6 +19,24 @@ export const LIFESTYLE_CATEGORIES: {
   { key: 'weather', icon: '☀️', label: 'Weather', description: 'Climate, sunshine, seasonal comfort' },
   { key: 'traffic', icon: '🚗', label: 'Traffic', description: 'Commute times and congestion levels' },
   { key: 'healthcare', icon: '🏥', label: 'Healthcare', description: 'Hospitals, specialists, and medical access' },
+]
+
+// DNA categories (Brief 2a) — used by Card 3 and MM3's re-skinned bucket UI.
+// LIFESTYLE_CATEGORIES above is kept as-is for city detail pages, PDF reports,
+// and the methodology page, which still display the old 13-category scores.
+export const DNA_CATEGORIES: {
+  key: keyof DNAScores
+  icon: string
+  label: string
+  description: string
+}[] = [
+  { key: 'schoolQuality', icon: '🎓', label: 'School Quality', description: 'TEA ratings, STAAR scores, graduation and college-readiness rates' },
+  { key: 'familyLifestyle', icon: '👨‍👩‍👧', label: 'Family Lifestyle', description: 'Parks, youth sports, pediatric healthcare, family-oriented retail' },
+  { key: 'careerAccess', icon: '💼', label: 'Career Access', description: 'Employment growth, employer diversity, commute access' },
+  { key: 'outdoorLifestyle', icon: '🏞️', label: 'Outdoor Lifestyle', description: 'Trails, lakes, parks, and outdoor recreation access' },
+  { key: 'growthPotential', icon: '📈', label: 'Growth Potential', description: 'Population growth, new development, employer expansion' },
+  { key: 'diningEntertainment', icon: '🍽️', label: 'Dining & Entertainment', description: 'Restaurants, nightlife, arts, and walkable entertainment districts' },
+  { key: 'luxuryLifestyle', icon: '💎', label: 'Luxury Lifestyle', description: 'High-end retail, country clubs, premium amenities' },
 ]
 
 export const TIER_LABELS: Record<string, string> = {

@@ -87,6 +87,16 @@ export interface DNAScores {
 
 export type DNADataSource = 'calibrated-prototype' | 'partial-translation' | 'neutral-default'
 
+export type DNABucket = 'must_have' | 'important' | 'would_be_nice' | 'unassigned'
+
+export interface WeightingProfile {
+  weightingModelVersion: string
+  archetypeWeights: Record<keyof DNAScores, number>
+  clientBuckets: Record<keyof DNAScores, DNABucket>
+  clientAdjustments: Record<keyof DNAScores, number>
+  activeWeights: Record<keyof DNAScores, number>
+}
+
 export interface Location {
   id: string
   name: string
@@ -139,23 +149,26 @@ export interface UserProfile {
   annualIncome: number
   householdSize: '1' | '2' | '3-4' | '5+'
   movingTimeline: '0-3months' | '3-6months' | '6-12months' | 'exploring'
-  mustHaves: (keyof LifestyleScores)[]
-  niceToHaves: (keyof LifestyleScores)[]
-  notPriorities: (keyof LifestyleScores)[]
+  mustHaves: (keyof DNAScores)[]
+  niceToHaves: (keyof DNAScores)[]
+  notPriorities: (keyof DNAScores)[]
   buyerProfile?: BuyerProfile
   financial_picture?: FinancialPicture
   archetype?: ArchetypeKey
   personalityPreference?: PersonalityPreference
 }
 
+// mustHaves/niceToHaves/notPriorities/unassigned updated to DNAScores keys to
+// stay consistent with MM3Discover's re-skin to DNA_CATEGORIES (Brief 2a Part 7) —
+// not explicitly named in Brief 2a's Part 1, but required for MM3 to compile/make sense.
 export interface SandboxProfile {
   downPaymentOverride: string
   proceedsOverride: string | null
   interestRateOverride: number
-  mustHaves: (keyof LifestyleScores)[]
-  niceToHaves: (keyof LifestyleScores)[]
-  notPriorities: (keyof LifestyleScores)[]
-  unassigned: (keyof LifestyleScores)[]
+  mustHaves: (keyof DNAScores)[]
+  niceToHaves: (keyof DNAScores)[]
+  notPriorities: (keyof DNAScores)[]
+  unassigned: (keyof DNAScores)[]
   citiesLocked?: boolean
 }
 

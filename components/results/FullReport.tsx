@@ -89,7 +89,11 @@ export default function FullReport({ match, profile, rank }: FullReportProps) {
                 label={cat.label}
                 icon={cat.key}
                 score={location.scores[cat.key]}
-                highlighted={profile.mustHaves.includes(cat.key)}
+                // profile.mustHaves are now DNA categories (Brief 2a) and can never equal a
+                // LifestyleScores key — widened to string so this never throws, but it will
+                // also never highlight anything for clients who took the post-2a quiz. The
+                // 13-category score grid itself (LIFESTYLE_CATEGORIES) is untouched per brief.
+                highlighted={(profile.mustHaves as string[]).includes(cat.key)}
                 tooltip={SCORE_TOOLTIPS[cat.key]}
               />
             ))}
@@ -100,11 +104,13 @@ export default function FullReport({ match, profile, rank }: FullReportProps) {
 
         {(() => {
           type InsightCard = { key: keyof LifestyleScores; label: string; text: string; score: number }
-          const insights: InsightCard[] = profile.mustHaves.reduce<InsightCard[]>((acc, key) => {
+          // Same widening as the highlight above — will resolve to an empty list (and this
+          // whole section renders null) for clients whose mustHaves are DNA categories.
+          const insights: InsightCard[] = (profile.mustHaves as string[]).reduce<InsightCard[]>((acc, key) => {
             const cat = LIFESTYLE_CATEGORIES.find(c => c.key === key)
-            const text = location.categoryInsights[key]
+            const text = cat && location.categoryInsights[cat.key]
             if (cat && text && !text.startsWith('CONTENT PENDING')) {
-              acc.push({ key, label: cat.label, text, score: location.scores[key] })
+              acc.push({ key: cat.key, label: cat.label, text, score: location.scores[cat.key] })
             }
             return acc
           }, [])

@@ -3,22 +3,20 @@
 import { useEffect, useState } from 'react'
 import PrioritySelector from '../../form/PrioritySelector'
 import MobilePriorityBuckets, { type PriorityBucket } from '../MobilePriorityBuckets'
-import { LIFESTYLE_CATEGORIES, MUST_HAVE_MAX, NICE_TO_HAVE_MAX } from '../../../utils/constants'
-import { CATEGORY_ICONS } from '../../../utils/categoryIcons'
+import { DNA_CATEGORIES, MUST_HAVE_MAX, NICE_TO_HAVE_MAX } from '../../../utils/constants'
+import { DNA_CATEGORY_ICONS } from '../../../utils/categoryIcons'
 import { NAVY, BLUE } from '../quizTheme'
-import type { LifestyleScores } from '../../../types'
+import type { DNAScores } from '../../../types'
 import type { PriorityWeight } from '../../../types'
 
-// Brief's Card 3 lists 12 categories — drops "transit" from the 13 used
-// elsewhere in the app (city detail pages, PDF reports, methodology page still
-// need all 13 for displaying city scores).
-const QUIZ_CATEGORIES = LIFESTYLE_CATEGORIES.filter(c => c.key !== 'transit')
+// Brief 2a re-skin: all 7 DNA categories apply, unlike the old 12-of-13 lifestyle filter.
+const QUIZ_CATEGORIES = DNA_CATEGORIES
 
 export interface Card3Result {
   priorities: Record<string, PriorityWeight>
-  mustHaves: (keyof LifestyleScores)[]
-  niceToHaves: (keyof LifestyleScores)[]
-  notPriorities: (keyof LifestyleScores)[]
+  mustHaves: (keyof DNAScores)[]
+  niceToHaves: (keyof DNAScores)[]
+  notPriorities: (keyof DNAScores)[]
 }
 
 interface Card3PrioritiesProps {
@@ -26,9 +24,9 @@ interface Card3PrioritiesProps {
 }
 
 function buildPriorities(
-  mustHaves: (keyof LifestyleScores)[],
-  important: (keyof LifestyleScores)[],
-  wouldBeNice: (keyof LifestyleScores)[]
+  mustHaves: (keyof DNAScores)[],
+  important: (keyof DNAScores)[],
+  wouldBeNice: (keyof DNAScores)[]
 ): Record<string, PriorityWeight> {
   const priorities: Record<string, PriorityWeight> = {}
   QUIZ_CATEGORIES.forEach(({ key }) => {
@@ -53,9 +51,9 @@ export default function Card3Priorities({ onComplete }: Card3PrioritiesProps) {
   }, [])
 
   const handleDesktopComplete = (
-    mustHaves: (keyof LifestyleScores)[],
-    niceToHaves: (keyof LifestyleScores)[],
-    notPriorities: (keyof LifestyleScores)[]
+    mustHaves: (keyof DNAScores)[],
+    niceToHaves: (keyof DNAScores)[],
+    notPriorities: (keyof DNAScores)[]
   ) => {
     const assigned = new Set([...mustHaves, ...niceToHaves, ...notPriorities])
     const unassigned = QUIZ_CATEGORIES.map(c => c.key).filter(k => !assigned.has(k))
@@ -96,7 +94,7 @@ export default function Card3Priorities({ onComplete }: Card3PrioritiesProps) {
       {isTouch ? (
         <>
           <MobilePriorityBuckets
-            categories={QUIZ_CATEGORIES.map(c => ({ key: c.key, label: c.label, icon: CATEGORY_ICONS[c.key] }))}
+            categories={QUIZ_CATEGORIES.map(c => ({ key: c.key, label: c.label, icon: DNA_CATEGORY_ICONS[c.key] }))}
             bucketOf={bucketOf}
             onAssign={(key, bucket) => setBucketOf(prev => ({ ...prev, [key]: bucket }))}
             mustHaveMax={MUST_HAVE_MAX}

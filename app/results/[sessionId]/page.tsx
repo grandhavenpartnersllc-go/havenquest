@@ -78,6 +78,10 @@ export default function SessionResultsPage({ params }: { params: Promise<{ sessi
                   cityName: m.location.name,
                   matchScore: m.matchScore,
                 })),
+                archetype: prof.archetype,
+                mustHaves: prof.mustHaves,
+                niceToHaves: prof.niceToHaves,
+                notPriorities: prof.notPriorities,
               }),
             }).catch(() => {})
           }
