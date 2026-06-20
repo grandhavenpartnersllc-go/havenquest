@@ -3,12 +3,13 @@
 import { useState } from 'react'
 import OptionCard from '../OptionCard'
 import { NAVY, BLUE } from '../quizTheme'
+import { Laptop, Shuffle, Building2, Sunrise, HelpCircle } from 'lucide-react'
 
 const OPTIONS = [
-  { value: 'remote', icon: '💻', label: "Fully remote — I can work from anywhere" },
-  { value: 'hybrid', icon: '🔀', label: "Hybrid — I'm in the office a few days a week" },
-  { value: 'commuter', icon: '🏢', label: 'I need daily access to a major employment center' },
-  { value: 'retiring', icon: '🌅', label: 'Retiring or semi-retired' },
+  { value: 'remote', icon: Laptop, label: "Fully remote — I can work from anywhere" },
+  { value: 'hybrid', icon: Shuffle, label: "Hybrid — I'm in the office a few days a week" },
+  { value: 'commuter', icon: Building2, label: 'I need daily access to a major employment center' },
+  { value: 'retiring', icon: Sunrise, label: 'Retiring or semi-retired' },
 ] as const
 
 interface Card8WorkLifeProps {
@@ -40,7 +41,7 @@ export default function Card8WorkLife({ onComplete }: Card8WorkLifeProps) {
       </div>
       <div className="mb-8">
         <OptionCard
-          icon="❓"
+          icon={HelpCircle}
           title="Not sure yet"
           selected={selected === 'unsure'}
           onClick={() => setSelected('unsure')}

@@ -36,19 +36,21 @@ export default function Card7Situation({ path, onComplete }: Card7SituationProps
         {path === 'instate' ? 'Your Current Texas Situation' : 'Where are you in your move?'}
       </h1>
 
-      <div className="mb-8">
-        <p className="text-sm font-semibold mb-3" style={{ color: NAVY }}>Current home status</p>
-        <ButtonSelectRow options={HOME_STATUS_OPTIONS} selected={homeStatus} onSelect={setHomeStatus} layout="stack" />
-      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-8 mb-10">
+        <div>
+          <p className="text-sm font-semibold mb-3" style={{ color: NAVY }}>Current home status</p>
+          <ButtonSelectRow options={HOME_STATUS_OPTIONS} selected={homeStatus} onSelect={setHomeStatus} layout="wrap" />
+        </div>
 
-      <div className="mb-10">
-        <p className="text-sm font-semibold mb-3" style={{ color: NAVY }}>Move timeline</p>
-        <ButtonSelectRow
-          options={TIMELINE_OPTIONS}
-          selected={timeline}
-          onSelect={v => setTimeline(v as MoveTimelineValue)}
-          layout="stack"
-        />
+        <div>
+          <p className="text-sm font-semibold mb-3" style={{ color: NAVY }}>Move timeline</p>
+          <ButtonSelectRow
+            options={TIMELINE_OPTIONS}
+            selected={timeline}
+            onSelect={v => setTimeline(v as MoveTimelineValue)}
+            layout="wrap"
+          />
+        </div>
       </div>
 
       <button

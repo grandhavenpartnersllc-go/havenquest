@@ -4,23 +4,24 @@ import { useState } from 'react'
 import OptionCard from '../OptionCard'
 import { NAVY, BLUE } from '../quizTheme'
 import type { EntryPath } from '../../../utils/quizFlow'
+import { Home, Key, Briefcase, Sparkles, Sunrise, Leaf, GraduationCap, Car, Users, Compass } from 'lucide-react'
 
 const STANDARD_OPTIONS = [
-  { key: 'raising_family', icon: '🏡', label: "We're raising a family and looking for the right place to put down roots" },
-  { key: 'first_home', icon: '🔑', label: "We're buying our first home and want to maximize opportunity" },
-  { key: 'career', icon: '💼', label: 'My career is driving this move' },
-  { key: 'luxury', icon: '✨', label: "We're looking for a higher-end lifestyle or luxury community" },
-  { key: 'next_chapter', icon: '🌅', label: "We're preparing for our next chapter and simplifying life" },
-  { key: 'freedom', icon: '🌿', label: "We're looking for more freedom, flexibility, and a lifestyle change" },
+  { key: 'raising_family', icon: Home, label: "We're raising a family and looking for the right place to put down roots" },
+  { key: 'first_home', icon: Key, label: "We're buying our first home and want to maximize opportunity" },
+  { key: 'career', icon: Briefcase, label: 'My career is driving this move' },
+  { key: 'luxury', icon: Sparkles, label: "We're looking for a higher-end lifestyle or luxury community" },
+  { key: 'next_chapter', icon: Sunrise, label: "We're preparing for our next chapter and simplifying life" },
+  { key: 'freedom', icon: Leaf, label: "We're looking for more freedom, flexibility, and a lifestyle change" },
 ] as const
 
 const INSTATE_OPTIONS = [
-  { key: 'schools', icon: '🏫', label: 'Better schools for my family' },
-  { key: 'more_house', icon: '🏠', label: 'More house for the money' },
-  { key: 'commute', icon: '🚗', label: 'Shorter commute or better access' },
-  { key: 'closer_family', icon: '👨‍👩‍👧', label: 'I want to be closer to family' },
-  { key: 'lifestyle_change', icon: '🌄', label: "I'm ready for a lifestyle change" },
-  { key: 'new_career', icon: '💼', label: 'A new career opportunity' },
+  { key: 'schools', icon: GraduationCap, label: 'Better schools for my family' },
+  { key: 'more_house', icon: Home, label: 'More house for the money' },
+  { key: 'commute', icon: Car, label: 'Shorter commute or better access' },
+  { key: 'closer_family', icon: Users, label: 'I want to be closer to family' },
+  { key: 'lifestyle_change', icon: Compass, label: "I'm ready for a lifestyle change" },
+  { key: 'new_career', icon: Briefcase, label: 'A new career opportunity' },
 ] as const
 
 export const ARCHETYPE_MAP: Record<string, string> = {
