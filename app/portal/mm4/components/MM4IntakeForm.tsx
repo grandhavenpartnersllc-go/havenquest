@@ -379,10 +379,11 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
         maxWidth: '1200px',
         margin: '0 auto',
         width: '100%',
-        backgroundColor: 'var(--card-bg)',
-        border: '3px solid #0076B6',
+        backgroundColor: '#FDFCFA',
+        border: '1px solid var(--card-border)',
         borderRadius: '16px',
         padding: '32px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.05), 0 4px 20px rgba(0,0,0,0.07)',
       }}>
         <div key={animKey} style={animStyle}>
           {currentSection === 0 && (

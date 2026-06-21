@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import type { MM4Profile } from '../../../../../types'
 
 interface Props {
@@ -98,6 +99,17 @@ export default function Section2Household({ data, onChange, errors, householdSiz
   const hasChildren = (data.num_children ?? 0) > 0
   const members: HouseholdMember[] = data.household_members ?? []
 
+  const [adultsDisplay, setAdultsDisplay] = useState(String(data.num_adults ?? 1))
+  const [childrenDisplay, setChildrenDisplay] = useState(String(data.num_children ?? 0))
+
+  useEffect(() => {
+    setAdultsDisplay(String(data.num_adults ?? 1))
+  }, [data.num_adults])
+
+  useEffect(() => {
+    setChildrenDisplay(String(data.num_children ?? 0))
+  }, [data.num_children])
+
   function addMember() {
     if (members.length >= 10) return
     onChange({ household_members: [...members, { first_name: '', age: 0, relationship: 'other' }] })
@@ -135,21 +147,39 @@ export default function Section2Household({ data, onChange, errors, householdSiz
         >
           <input
             className="mm4-input"
-            type="number"
-            min={1}
-            max={20}
-            value={data.num_adults ?? 1}
-            onChange={e => onChange({ num_adults: Math.max(1, parseInt(e.target.value) || 1) })}
+            type="text"
+            inputMode="numeric"
+            value={adultsDisplay}
+            onChange={e => {
+              setAdultsDisplay(e.target.value)
+              const parsed = parseInt(e.target.value)
+              if (!isNaN(parsed)) onChange({ num_adults: Math.max(1, parsed) })
+            }}
+            onBlur={() => {
+              const parsed = parseInt(adultsDisplay)
+              const valid = isNaN(parsed) ? 1 : Math.max(1, parsed)
+              setAdultsDisplay(String(valid))
+              onChange({ num_adults: valid })
+            }}
           />
         </Field>
         <Field label="Children in household">
           <input
             className="mm4-input"
-            type="number"
-            min={0}
-            max={20}
-            value={data.num_children ?? 0}
-            onChange={e => onChange({ num_children: Math.max(0, parseInt(e.target.value) || 0) })}
+            type="text"
+            inputMode="numeric"
+            value={childrenDisplay}
+            onChange={e => {
+              setChildrenDisplay(e.target.value)
+              const parsed = parseInt(e.target.value)
+              if (!isNaN(parsed)) onChange({ num_children: Math.max(0, parsed) })
+            }}
+            onBlur={() => {
+              const parsed = parseInt(childrenDisplay)
+              const valid = isNaN(parsed) ? 0 : Math.max(0, parsed)
+              setChildrenDisplay(String(valid))
+              onChange({ num_children: valid })
+            }}
           />
         </Field>
       </div>
