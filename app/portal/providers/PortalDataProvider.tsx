@@ -109,15 +109,19 @@ export default function PortalDataProvider({ children }: { children: ReactNode }
         const supabase = createClient()
         const email = sess.email.toLowerCase()
 
-        const { data } = await supabase
+        const { data, error: fetchError } = await supabase
           .from('users')
           .select('first_name, top_city_matches, annual_income, household_size, moving_timeline, must_haves, nice_to_haves, not_priorities, archetype, growth_profile, lifestyle_orientation, environment, pace, culture, current_milemarker, onboarding_acknowledged, mm2_checklist, portal_notes')
           .eq('email', email)
           .single()
 
+        if (fetchError) {
+          console.error('Profile fetch error:', fetchError.code, fetchError.message)
+        }
+
         const ud = data as UserRow | null
         if (!ud) {
-          if (!profileWasLoaded) setError('Unable to load your profile. Please refresh or log in again.')
+          if (!profileWasLoaded) setError(`Unable to load your profile. Please refresh or log in again. [${fetchError?.code ?? 'no-error'}: ${fetchError?.message ?? 'no-data-no-error'}]`)
           setReady(true)
           return
         }
