@@ -79,11 +79,22 @@ interface PrioritySelectorProps {
     notPriorities: (keyof DNAScores)[]
   ) => void
   categories?: typeof DNA_CATEGORIES
+  initialValue?: {
+    mustHaves: (keyof DNAScores)[]
+    niceToHaves: (keyof DNAScores)[]
+  }
 }
 
-export default function PrioritySelector({ onComplete, categories = DNA_CATEGORIES }: PrioritySelectorProps) {
+export default function PrioritySelector({ onComplete, categories = DNA_CATEGORIES, initialValue }: PrioritySelectorProps) {
   const [items, setItems] = useState<CategoryItem[]>(
-    categories.map(c => ({ key: c.key, bucket: 'unassigned' }))
+    categories.map(c => ({
+      key: c.key,
+      bucket: initialValue?.mustHaves.includes(c.key)
+        ? 'mustHave'
+        : initialValue?.niceToHaves.includes(c.key)
+        ? 'important'
+        : 'unassigned',
+    }))
   )
   const [dragging, setDragging] = useState<keyof DNAScores | null>(null)
   const [activeCard, setActiveCard] = useState<keyof DNAScores | null>(null)

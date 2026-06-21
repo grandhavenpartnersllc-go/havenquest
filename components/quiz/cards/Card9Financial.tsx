@@ -44,15 +44,16 @@ const FUNDS_OPTIONS: { value: AvailableFundsValue; label: string }[] = [
 ]
 
 interface Card9FinancialProps {
+  initialValue?: Card9Answers
   path: EntryPath
   onComplete: (answers: Card9Answers) => void
 }
 
-export default function Card9Financial({ path, onComplete }: Card9FinancialProps) {
-  const [incomeRange, setIncomeRange] = useState<IncomeRangeValue | null>(null)
-  const [proceedsApplicable, setProceedsApplicable] = useState<'yes' | 'no' | 'not_sure' | null>(null)
-  const [homeProceeds, setHomeProceeds] = useState<HomeProceedsValue | null>(null)
-  const [availableFunds, setAvailableFunds] = useState<AvailableFundsValue | null>(null)
+export default function Card9Financial({ initialValue, path, onComplete }: Card9FinancialProps) {
+  const [incomeRange, setIncomeRange] = useState<IncomeRangeValue | null>(initialValue?.incomeRange ?? null)
+  const [proceedsApplicable, setProceedsApplicable] = useState<'yes' | 'no' | 'not_sure' | null>(initialValue?.proceedsApplicable ?? null)
+  const [homeProceeds, setHomeProceeds] = useState<HomeProceedsValue | null>(initialValue?.homeProceeds ?? null)
+  const [availableFunds, setAvailableFunds] = useState<AvailableFundsValue | null>(initialValue?.availableFunds ?? null)
 
   const handleSubmit = () => {
     if (!incomeRange) return

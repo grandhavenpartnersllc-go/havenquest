@@ -5,11 +5,12 @@ import Slider from '../Slider'
 import { NAVY, BLUE } from '../quizTheme'
 
 interface Card5GrowthProfileProps {
+  initialValue?: number
   onComplete: (growthProfile: number) => void
 }
 
-export default function Card5GrowthProfile({ onComplete }: Card5GrowthProfileProps) {
-  const [value, setValue] = useState(5)
+export default function Card5GrowthProfile({ initialValue, onComplete }: Card5GrowthProfileProps) {
+  const [value, setValue] = useState(initialValue ?? 5)
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">

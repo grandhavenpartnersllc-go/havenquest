@@ -25,11 +25,12 @@ export const PERSONALITY_MAP: Record<string, PersonalityScores> = {
 }
 
 interface Card4CommunityFeelProps {
+  initialValue?: string
   onComplete: (option: string, personality: PersonalityScores) => void
 }
 
-export default function Card4CommunityFeel({ onComplete }: Card4CommunityFeelProps) {
-  const [selected, setSelected] = useState<string | null>(null)
+export default function Card4CommunityFeel({ initialValue, onComplete }: Card4CommunityFeelProps) {
+  const [selected, setSelected] = useState<string | null>(initialValue ?? null)
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">

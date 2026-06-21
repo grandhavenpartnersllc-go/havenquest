@@ -5,11 +5,12 @@ import Slider from '../Slider'
 import { NAVY, BLUE } from '../quizTheme'
 
 interface Card6LifestyleOrientationProps {
+  initialValue?: number
   onComplete: (lifestyleOrientation: number) => void
 }
 
-export default function Card6LifestyleOrientation({ onComplete }: Card6LifestyleOrientationProps) {
-  const [value, setValue] = useState(5)
+export default function Card6LifestyleOrientation({ initialValue, onComplete }: Card6LifestyleOrientationProps) {
+  const [value, setValue] = useState(initialValue ?? 5)
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">

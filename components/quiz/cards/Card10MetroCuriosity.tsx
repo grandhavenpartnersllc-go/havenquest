@@ -8,12 +8,13 @@ const AREAS = ['Dallas–Fort Worth', 'Austin', 'Houston', 'San Antonio'] as con
 const NO_PREFERENCE = 'No preference — show me the best match'
 
 interface Card10MetroCuriosityProps {
+  initialValue?: string[]
   onComplete: (selectedMetros: string[]) => void
 }
 
-export default function Card10MetroCuriosity({ onComplete }: Card10MetroCuriosityProps) {
-  const [selected, setSelected] = useState<string[]>([])
-  const [noPreference, setNoPreference] = useState(false)
+export default function Card10MetroCuriosity({ initialValue, onComplete }: Card10MetroCuriosityProps) {
+  const [selected, setSelected] = useState<string[]>(initialValue ?? [])
+  const [noPreference, setNoPreference] = useState(initialValue !== undefined && initialValue.length === 0)
 
   const toggleArea = (area: string) => {
     setNoPreference(false)

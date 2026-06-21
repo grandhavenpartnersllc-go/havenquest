@@ -20,6 +20,7 @@ export interface Card3Result {
 }
 
 interface Card3PrioritiesProps {
+  initialValue?: Card3Result
   onComplete: (result: Card3Result) => void
 }
 
@@ -38,11 +39,17 @@ function buildPriorities(
   return priorities
 }
 
-export default function Card3Priorities({ onComplete }: Card3PrioritiesProps) {
+export default function Card3Priorities({ initialValue, onComplete }: Card3PrioritiesProps) {
   const [isTouch, setIsTouch] = useState<boolean | null>(null)
   const [bucketOf, setBucketOf] = useState<Record<string, PriorityBucket>>(() => {
     const initial: Record<string, PriorityBucket> = {}
-    QUIZ_CATEGORIES.forEach(c => { initial[c.key] = 'unassigned' })
+    QUIZ_CATEGORIES.forEach(c => {
+      initial[c.key] = initialValue?.mustHaves.includes(c.key)
+        ? 'must_have'
+        : initialValue?.niceToHaves.includes(c.key)
+        ? 'important'
+        : 'unassigned'
+    })
     return initial
   })
 
@@ -111,7 +118,11 @@ export default function Card3Priorities({ onComplete }: Card3PrioritiesProps) {
           </button>
         </>
       ) : (
-        <PrioritySelector categories={QUIZ_CATEGORIES} onComplete={handleDesktopComplete} />
+        <PrioritySelector
+          categories={QUIZ_CATEGORIES}
+          onComplete={handleDesktopComplete}
+          initialValue={initialValue ? { mustHaves: initialValue.mustHaves, niceToHaves: initialValue.niceToHaves } : undefined}
+        />
       )}
     </div>
   )

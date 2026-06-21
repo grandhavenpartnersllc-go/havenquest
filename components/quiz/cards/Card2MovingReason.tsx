@@ -35,12 +35,13 @@ export const ARCHETYPE_MAP: Record<string, string> = {
 }
 
 interface Card2MovingReasonProps {
+  initialValue?: string
   path: EntryPath
   onComplete: (optionKey: string, archetype?: string) => void
 }
 
-export default function Card2MovingReason({ path, onComplete }: Card2MovingReasonProps) {
-  const [selected, setSelected] = useState<string | null>(null)
+export default function Card2MovingReason({ initialValue, path, onComplete }: Card2MovingReasonProps) {
+  const [selected, setSelected] = useState<string | null>(initialValue ?? null)
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">

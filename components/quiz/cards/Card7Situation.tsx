@@ -22,13 +22,14 @@ const TIMELINE_OPTIONS: { value: MoveTimelineValue; label: string }[] = [
 ]
 
 interface Card7SituationProps {
+  initialValue?: { homeStatus: string; moveTimeline: MoveTimelineValue }
   path: EntryPath
   onComplete: (homeStatus: string, moveTimeline: MoveTimelineValue) => void
 }
 
-export default function Card7Situation({ path, onComplete }: Card7SituationProps) {
-  const [homeStatus, setHomeStatus] = useState<string | null>(null)
-  const [timeline, setTimeline] = useState<MoveTimelineValue | null>(null)
+export default function Card7Situation({ initialValue, path, onComplete }: Card7SituationProps) {
+  const [homeStatus, setHomeStatus] = useState<string | null>(initialValue?.homeStatus ?? null)
+  const [timeline, setTimeline] = useState<MoveTimelineValue | null>(initialValue?.moveTimeline ?? null)
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">

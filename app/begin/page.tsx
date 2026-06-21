@@ -288,6 +288,12 @@ export default function BeginPage() {
     persistProgress({ entryPath, cardIndex: next, answers: merged })
   }
 
+  function goBack() {
+    if (cardIndex > 0) {
+      setCardIndex(cardIndex - 1)
+    }
+  }
+
   function handleSkip() {
     if (!entryPath) return
     const flow = flowFor(entryPath)
@@ -559,41 +565,89 @@ export default function BeginPage() {
               )}
 
               {currentStep.id === 2 && (
-                <Card2MovingReason
-                  path={entryPath}
-                  onComplete={(key, archetype) =>
-                    goNext({ movingReasonKey: key, archetype }, { archetype })
-                  }
-                />
+                <>
+                  {cardIndex > 0 && (
+                    <div className="max-w-2xl mx-auto px-4 mb-2">
+                      <button type="button" onClick={goBack} className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
+                        ← Back
+                      </button>
+                    </div>
+                  )}
+                  <Card2MovingReason
+                    initialValue={answers.movingReasonKey}
+                    path={entryPath}
+                    onComplete={(key, archetype) =>
+                      goNext({ movingReasonKey: key, archetype }, { archetype })
+                    }
+                  />
+                </>
               )}
 
               {currentStep.id === 3 && (
-                <Card3Priorities
-                  onComplete={(result) => goNext({ card3: result }, { priorities: result.priorities })}
-                />
+                <>
+                  {cardIndex > 0 && (
+                    <div className="max-w-2xl mx-auto px-4 mb-2">
+                      <button type="button" onClick={goBack} className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
+                        ← Back
+                      </button>
+                    </div>
+                  )}
+                  <Card3Priorities
+                    initialValue={answers.card3}
+                    onComplete={(result) => goNext({ card3: result }, { priorities: result.priorities })}
+                  />
+                </>
               )}
 
               {currentStep.id === 4 && (
-                <Card4CommunityFeel
-                  onComplete={(option, personality) => {
-                    sessionStorage.setItem('hq_personality_partial', JSON.stringify(personality))
-                    goNext(
-                      { communityFeel: option, personality },
-                      { communityFeel: option, environment: personality.environment, pace: personality.pace, culture: personality.culture }
-                    )
-                  }}
-                />
+                <>
+                  {cardIndex > 0 && (
+                    <div className="max-w-2xl mx-auto px-4 mb-2">
+                      <button type="button" onClick={goBack} className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
+                        ← Back
+                      </button>
+                    </div>
+                  )}
+                  <Card4CommunityFeel
+                    initialValue={answers.communityFeel}
+                    onComplete={(option, personality) => {
+                      sessionStorage.setItem('hq_personality_partial', JSON.stringify(personality))
+                      goNext(
+                        { communityFeel: option, personality },
+                        { communityFeel: option, environment: personality.environment, pace: personality.pace, culture: personality.culture }
+                      )
+                    }}
+                  />
+                </>
               )}
 
               {currentStep.id === 5 && (
-                <Card5GrowthProfile
-                  onComplete={(v) => goNext({ growthProfile: v }, { growthProfile: v })}
-                />
+                <>
+                  {cardIndex > 0 && (
+                    <div className="max-w-2xl mx-auto px-4 mb-2">
+                      <button type="button" onClick={goBack} className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
+                        ← Back
+                      </button>
+                    </div>
+                  )}
+                  <Card5GrowthProfile
+                    initialValue={answers.growthProfile}
+                    onComplete={(v) => goNext({ growthProfile: v }, { growthProfile: v })}
+                  />
+                </>
               )}
 
               {currentStep.id === 6 && (
                 <div>
+                  {cardIndex > 0 && (
+                    <div className="max-w-2xl mx-auto px-4 mb-2">
+                      <button type="button" onClick={goBack} className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
+                        ← Back
+                      </button>
+                    </div>
+                  )}
                   <Card6LifestyleOrientation
+                    initialValue={answers.lifestyleOrientation}
                     onComplete={(v) => goNext({ lifestyleOrientation: v }, { lifestyleOrientation: v })}
                   />
                   {!currentStep.required && (
@@ -608,7 +662,15 @@ export default function BeginPage() {
 
               {currentStep.id === 7 && (
                 <div>
+                  {cardIndex > 0 && (
+                    <div className="max-w-2xl mx-auto px-4 mb-2">
+                      <button type="button" onClick={goBack} className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
+                        ← Back
+                      </button>
+                    </div>
+                  )}
                   <Card8WorkLife
+                    initialValue={answers.workSituation}
                     onComplete={(workSituation) => goNext({ workSituation }, { workSituation })}
                   />
                   {!currentStep.required && (
@@ -623,7 +685,19 @@ export default function BeginPage() {
 
               {currentStep.id === 8 && (
                 <div>
+                  {cardIndex > 0 && (
+                    <div className="max-w-2xl mx-auto px-4 mb-2">
+                      <button type="button" onClick={goBack} className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
+                        ← Back
+                      </button>
+                    </div>
+                  )}
                   <Card7Situation
+                    initialValue={
+                      answers.homeStatus !== undefined && answers.moveTimeline !== undefined
+                        ? { homeStatus: answers.homeStatus, moveTimeline: answers.moveTimeline }
+                        : undefined
+                    }
                     path={entryPath}
                     onComplete={(homeStatus, moveTimeline) =>
                       goNext({ homeStatus, moveTimeline }, { homeStatus, movingTimeline: moveTimeline })
@@ -641,7 +715,15 @@ export default function BeginPage() {
 
               {currentStep.id === 9 && (
                 <div>
+                  {cardIndex > 0 && (
+                    <div className="max-w-2xl mx-auto px-4 mb-2">
+                      <button type="button" onClick={goBack} className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
+                        ← Back
+                      </button>
+                    </div>
+                  )}
                   <Card9Financial
+                    initialValue={answers.card9}
                     path={entryPath}
                     onComplete={(card9) => goNext({ card9 }, { financialData: buildQuizFinancialData(card9) })}
                   />
@@ -656,9 +738,19 @@ export default function BeginPage() {
               )}
 
               {currentStep.id === 10 && (
-                <Card10MetroCuriosity
-                  onComplete={(metros) => goNext({ metroPreference: metros }, { metroPreference: metros })}
-                />
+                <>
+                  {cardIndex > 0 && (
+                    <div className="max-w-2xl mx-auto px-4 mb-2">
+                      <button type="button" onClick={goBack} className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
+                        ← Back
+                      </button>
+                    </div>
+                  )}
+                  <Card10MetroCuriosity
+                    initialValue={answers.metroPreference}
+                    onComplete={(metros) => goNext({ metroPreference: metros }, { metroPreference: metros })}
+                  />
+                </>
               )}
             </>
           )}

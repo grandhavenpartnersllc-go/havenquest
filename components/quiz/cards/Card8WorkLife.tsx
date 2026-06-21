@@ -13,11 +13,12 @@ const OPTIONS = [
 ] as const
 
 interface Card8WorkLifeProps {
+  initialValue?: string
   onComplete: (workSituation: string) => void
 }
 
-export default function Card8WorkLife({ onComplete }: Card8WorkLifeProps) {
-  const [selected, setSelected] = useState<string | null>(null)
+export default function Card8WorkLife({ initialValue, onComplete }: Card8WorkLifeProps) {
+  const [selected, setSelected] = useState<string | null>(initialValue ?? null)
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">
