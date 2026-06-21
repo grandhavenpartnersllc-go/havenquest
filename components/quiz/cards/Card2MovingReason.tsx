@@ -2,17 +2,18 @@
 
 import { useState } from 'react'
 import OptionCard from '../OptionCard'
+import PhotoOptionCard from '../PhotoOptionCard'
 import { NAVY, BLUE } from '../quizTheme'
 import type { EntryPath } from '../../../utils/quizFlow'
-import { Home, Key, Briefcase, Sparkles, Sunrise, Leaf, GraduationCap, Car, Users, Compass } from 'lucide-react'
+import { Home, GraduationCap, Briefcase, Car, Users, Compass } from 'lucide-react'
 
 const STANDARD_OPTIONS = [
-  { key: 'raising_family', icon: Home, label: "We're raising a family and looking for the right place to put down roots" },
-  { key: 'first_home', icon: Key, label: "We're buying our first home and want to maximize opportunity" },
-  { key: 'career', icon: Briefcase, label: 'My career is driving this move' },
-  { key: 'luxury', icon: Sparkles, label: "We're looking for a higher-end lifestyle or luxury community" },
-  { key: 'next_chapter', icon: Sunrise, label: "We're preparing for our next chapter and simplifying life" },
-  { key: 'freedom', icon: Leaf, label: "We're looking for more freedom, flexibility, and a lifestyle change" },
+  { key: 'raising_family', image: '/images/quiz/raising-family.JPG', label: "We're raising a family and looking for the right place to put down roots" },
+  { key: 'first_home', image: '/images/quiz/first-home.JPG', label: "We're buying our first home and want to maximize opportunity" },
+  { key: 'career', image: '/images/quiz/career-move.JPG', label: 'My career is driving this move' },
+  { key: 'luxury', image: '/images/quiz/luxury-lifestyle.JPG', label: "We're looking for a higher-end lifestyle or luxury community" },
+  { key: 'next_chapter', image: '/images/quiz/next-chapter.JPG', label: "We're preparing for our next chapter and simplifying life" },
+  { key: 'freedom', image: '/images/quiz/lifestyle-freedom.JPG', label: "We're looking for more freedom, flexibility, and a lifestyle change" },
 ] as const
 
 const INSTATE_OPTIONS = [
@@ -40,7 +41,6 @@ interface Card2MovingReasonProps {
 
 export default function Card2MovingReason({ path, onComplete }: Card2MovingReasonProps) {
   const [selected, setSelected] = useState<string | null>(null)
-  const options = path === 'instate' ? INSTATE_OPTIONS : STANDARD_OPTIONS
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">
@@ -50,15 +50,25 @@ export default function Card2MovingReason({ path, onComplete }: Card2MovingReaso
       <p className="text-gray-500 mb-8">We&apos;ll use this to tailor your community recommendations.</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
-        {options.map(opt => (
-          <OptionCard
-            key={opt.key}
-            icon={opt.icon}
-            title={opt.label}
-            selected={selected === opt.key}
-            onClick={() => setSelected(opt.key)}
-          />
-        ))}
+        {path === 'instate'
+          ? INSTATE_OPTIONS.map(opt => (
+              <OptionCard
+                key={opt.key}
+                icon={opt.icon}
+                title={opt.label}
+                selected={selected === opt.key}
+                onClick={() => setSelected(opt.key)}
+              />
+            ))
+          : STANDARD_OPTIONS.map(opt => (
+              <PhotoOptionCard
+                key={opt.key}
+                imageUrl={opt.image}
+                title={opt.label}
+                selected={selected === opt.key}
+                onClick={() => setSelected(opt.key)}
+              />
+            ))}
       </div>
 
       <button
