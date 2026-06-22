@@ -189,6 +189,14 @@ export default function BeginPage() {
       if (result?.city) sessionStorage.setItem('hq_origin_city', result.city)
       if (result?.state) sessionStorage.setItem('hq_origin_state', result.state)
     })
+    fetch(`/api/origin-market-data?zip=${trimmedZip}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data?.medianHomeValue || data?.medianRealEstateTaxes) {
+          sessionStorage.setItem('hq_origin_market_data', JSON.stringify(data))
+        }
+      })
+      .catch(() => {})
     const rawSession = localStorage.getItem(LOCAL_SESSION_KEY)
     if (rawSession) {
       try {

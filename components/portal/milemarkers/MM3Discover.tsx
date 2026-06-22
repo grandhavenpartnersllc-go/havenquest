@@ -174,6 +174,29 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
 
   const [selectedMetro, setSelectedMetro] = useState<string>('')
 
+  const [originLabel, setOriginLabel] = useState<string | null>(null)
+  const [originMarketData, setOriginMarketData] = useState<{
+    medianHomeValue: number | null
+    medianRealEstateTaxes: number | null
+    effectiveTaxRate: number | null
+  } | null>(null)
+
+  // Origin City Comparison (Brief: origin_city_comparison) — quiz-time lookup,
+  // read-only here. Missing/null is the normal case for many users (sparse ZIP,
+  // lookup didn't finish in time) and is handled in the render, not here.
+  useEffect(() => {
+    const city = sessionStorage.getItem('hq_origin_city')
+    const state = sessionStorage.getItem('hq_origin_state')
+    if (city) setOriginLabel(state ? `${city}, ${state}` : city)
+
+    const raw = sessionStorage.getItem('hq_origin_market_data')
+    if (raw) {
+      try {
+        setOriginMarketData(JSON.parse(raw))
+      } catch {}
+    }
+  }, [])
+
   useEffect(() => {
     if (!profile) return
     setMustHaves(profile.mustHaves ?? [])
@@ -1287,7 +1310,10 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           <div style={{
             marginTop: '14px',
             borderRadius: '12px',
-            border: '1px solid var(--color-border-tertiary)',
+            borderTop: '1px solid var(--color-border-tertiary)',
+            borderLeft: '1px solid var(--color-border-tertiary)',
+            borderRight: '1px solid var(--color-border-tertiary)',
+            borderBottom: `2px solid ${GOLD}`,
             backgroundColor: CARD_BG,
             boxShadow: CARD_SHADOW,
             padding: '14px 16px',
@@ -1330,6 +1356,87 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
               </span>
               <span className="text-[10px]" style={{ color: '#9A8E82' }}>60%+</span>
             </div>
+          </div>
+
+          {/* Origin City Comparison (Brief: origin_city_comparison) */}
+          <div style={{
+            marginTop: '14px',
+            borderRadius: '12px',
+            border: '1px solid var(--color-border-tertiary)',
+            backgroundColor: CARD_BG,
+            boxShadow: CARD_SHADOW,
+            padding: '14px 16px',
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+          }}>
+            <p className="text-[10px] font-bold uppercase mb-3"
+               style={{ color: GOLD, letterSpacing: '0.18em' }}>
+              Origin City Comparison
+            </p>
+
+            {originMarketData?.medianHomeValue ? (
+              <>
+                <p className="text-xs mb-3" style={{ color: '#9A8E82' }}>
+                  How {topCity?.name ?? 'your top match'} compares to {originLabel ?? 'where you’re moving from'}.
+                </p>
+
+                <div className="mb-3">
+                  <p className="text-[10px] mb-1" style={{ color: '#9A8E82' }}>Median home price</p>
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-sm" style={{ color: WARM_DARK }}>
+                      {originLabel ?? 'Origin'}: <strong>${originMarketData.medianHomeValue.toLocaleString('en-US')}</strong>
+                    </span>
+                    <span className="text-sm" style={{ color: WARM_DARK }}>
+                      {topCity?.name ?? 'Match'}: <strong>${Math.round(topCityPrice).toLocaleString('en-US')}</strong>
+                    </span>
+                  </div>
+                  {(() => {
+                    const deltaPct = Math.round(
+                      ((originMarketData.medianHomeValue! - topCityPrice) / originMarketData.medianHomeValue!) * 100
+                    )
+                    if (deltaPct === 0) return null
+                    return (
+                      <p className="text-xs mt-1" style={{ color: deltaPct > 0 ? '#2D7D4E' : '#C2622A' }}>
+                        {Math.abs(deltaPct)}% {deltaPct > 0 ? 'lower' : 'higher'} in {topCity?.name ?? 'your top match'}
+                      </p>
+                    )
+                  })()}
+                </div>
+
+                {originMarketData.effectiveTaxRate != null && (
+                  <div>
+                    <p className="text-[10px] mb-1" style={{ color: '#9A8E82' }}>Effective tax rate (est.)</p>
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-sm" style={{ color: WARM_DARK }}>
+                        {originLabel ?? 'Origin'}: <strong>{(originMarketData.effectiveTaxRate * 100).toFixed(2)}%</strong>
+                      </span>
+                      <span className="text-sm" style={{ color: WARM_DARK }}>
+                        {topCity?.name ?? 'Match'}: <strong>{((topCity?.housing.propertyTaxRate ?? 0) * 100).toFixed(2)}%</strong>
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <p className="text-xs mb-3" style={{ color: '#9A8E82' }}>
+                  Here&apos;s what it costs to live in {topCity?.name ?? 'your top match'}.
+                </p>
+                <div className="mb-3">
+                  <p className="text-[10px] mb-1" style={{ color: '#9A8E82' }}>Median home price</p>
+                  <p className="text-sm" style={{ color: WARM_DARK }}>
+                    <strong>${Math.round(topCityPrice).toLocaleString('en-US')}</strong>
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] mb-1" style={{ color: '#9A8E82' }}>Effective tax rate (est.)</p>
+                  <p className="text-sm" style={{ color: WARM_DARK }}>
+                    <strong>{((topCity?.housing.propertyTaxRate ?? 0) * 100).toFixed(2)}%</strong>
+                  </p>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Lock financials */}
