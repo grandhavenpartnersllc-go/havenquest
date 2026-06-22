@@ -44,13 +44,13 @@ export default function Card2MovingReason({ initialValue, path, onComplete }: Ca
   const [selected, setSelected] = useState<string | null>(initialValue ?? null)
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10">
+    <div className="max-w-5xl mx-auto px-4 py-10">
       <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2" style={{ color: NAVY }}>
         {path === 'instate' ? "What's driving your next move?" : "What's bringing you to Texas?"}
       </h1>
       <p className="text-gray-500 mb-8">We&apos;ll use this to tailor your community recommendations.</p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
         {path === 'instate'
           ? INSTATE_OPTIONS.map(opt => (
               <OptionCard

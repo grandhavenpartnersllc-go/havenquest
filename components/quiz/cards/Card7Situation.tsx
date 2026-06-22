@@ -32,7 +32,7 @@ export default function Card7Situation({ initialValue, path, onComplete }: Card7
   const [timeline, setTimeline] = useState<MoveTimelineValue | null>(initialValue?.moveTimeline ?? null)
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10">
+    <div className="max-w-5xl mx-auto px-4 py-10">
       <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-8" style={{ color: NAVY }}>
         {path === 'instate' ? 'Your Current Texas Situation' : 'Where are you in your move?'}
       </h1>

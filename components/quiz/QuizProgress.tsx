@@ -10,7 +10,7 @@ interface QuizProgressProps {
 export default function QuizProgress({ current, total }: QuizProgressProps) {
   const pct = total > 0 ? Math.min(100, Math.round((current / total) * 100)) : 0
   return (
-    <div className="w-full max-w-2xl mx-auto mb-6">
+    <div className="w-full max-w-5xl mx-auto mb-6">
       <p className="text-xs font-medium text-gray-400 mb-2">
         Card {current} of {total}
       </p>

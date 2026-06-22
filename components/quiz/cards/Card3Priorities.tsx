@@ -90,7 +90,7 @@ export default function Card3Priorities({ initialValue, onComplete }: Card3Prior
   if (isTouch === null) return null
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10">
+    <div className="max-w-5xl mx-auto px-4 py-10">
       <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2" style={{ color: NAVY }}>
         What matters most to you in a community?
       </h1>

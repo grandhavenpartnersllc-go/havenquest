@@ -16,7 +16,7 @@ export default function Card1Household({ initialValue, onComplete, onChangeJourn
   const display = (n: number) => (n >= 8 ? '8+' : String(n))
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10">
+    <div className="max-w-5xl mx-auto px-4 py-10">
       <div className="flex flex-col items-center text-center">
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2" style={{ color: NAVY }}>
           Tell us about your household.

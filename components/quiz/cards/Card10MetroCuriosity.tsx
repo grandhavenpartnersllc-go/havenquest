@@ -27,7 +27,7 @@ export default function Card10MetroCuriosity({ initialValue, onComplete }: Card1
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10">
+    <div className="max-w-5xl mx-auto px-4 py-10">
       <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2" style={{ color: NAVY }}>
         Are there any Texas areas you&apos;re already drawn to?
       </h1>

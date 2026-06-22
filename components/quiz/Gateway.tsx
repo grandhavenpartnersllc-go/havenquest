@@ -77,7 +77,7 @@ export default function Gateway({ onSelect, onContinue }: GatewayProps) {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-12">
+    <div className="max-w-5xl mx-auto px-4 py-12">
       <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2" style={{ color: NAVY }}>
         Let&apos;s start with where you are in your Texas journey.
       </h1>

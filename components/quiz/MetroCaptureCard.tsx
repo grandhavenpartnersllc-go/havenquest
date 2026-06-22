@@ -23,7 +23,7 @@ export default function MetroCaptureCard({ onComplete }: MetroCaptureCardProps) 
   const [selected, setSelected] = useState<MetroCaptureValue | null>(null)
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-12">
+    <div className="max-w-5xl mx-auto px-4 py-12">
       <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-8" style={{ color: NAVY }}>
         Which Texas area are you focused on?
       </h1>

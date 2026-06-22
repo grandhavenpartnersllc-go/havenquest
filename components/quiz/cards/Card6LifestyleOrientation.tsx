@@ -13,7 +13,7 @@ export default function Card6LifestyleOrientation({ initialValue, onComplete }: 
   const [value, setValue] = useState(initialValue ?? 5)
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10">
+    <div className="max-w-5xl mx-auto px-4 py-10">
       <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-10" style={{ color: NAVY }}>
         How would you describe your ideal lifestyle?
       </h1>

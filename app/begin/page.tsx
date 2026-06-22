@@ -366,7 +366,7 @@ export default function BeginPage() {
     <>
       <Header />
       <main className="flex-1 bg-surface">
-        <div className="max-w-3xl mx-auto px-4 py-16 pb-24">
+        <div className="max-w-6xl mx-auto px-4 py-16 pb-24">
 
           {phase === 'resume' && resumeData && (
             <div style={{ maxWidth: '480px' }}>
@@ -567,7 +567,7 @@ export default function BeginPage() {
               {currentStep.id === 2 && (
                 <>
                   {cardIndex > 0 && (
-                    <div className="max-w-2xl mx-auto px-4 mb-2">
+                    <div className="max-w-5xl mx-auto px-4 mb-2">
                       <button type="button" onClick={goBack} className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
                         ← Back
                       </button>
@@ -586,7 +586,7 @@ export default function BeginPage() {
               {currentStep.id === 3 && (
                 <>
                   {cardIndex > 0 && (
-                    <div className="max-w-2xl mx-auto px-4 mb-2">
+                    <div className="max-w-5xl mx-auto px-4 mb-2">
                       <button type="button" onClick={goBack} className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
                         ← Back
                       </button>
@@ -602,7 +602,7 @@ export default function BeginPage() {
               {currentStep.id === 4 && (
                 <>
                   {cardIndex > 0 && (
-                    <div className="max-w-2xl mx-auto px-4 mb-2">
+                    <div className="max-w-5xl mx-auto px-4 mb-2">
                       <button type="button" onClick={goBack} className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
                         ← Back
                       </button>
@@ -624,7 +624,7 @@ export default function BeginPage() {
               {currentStep.id === 5 && (
                 <>
                   {cardIndex > 0 && (
-                    <div className="max-w-2xl mx-auto px-4 mb-2">
+                    <div className="max-w-5xl mx-auto px-4 mb-2">
                       <button type="button" onClick={goBack} className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
                         ← Back
                       </button>
@@ -640,7 +640,7 @@ export default function BeginPage() {
               {currentStep.id === 6 && (
                 <div>
                   {cardIndex > 0 && (
-                    <div className="max-w-2xl mx-auto px-4 mb-2">
+                    <div className="max-w-5xl mx-auto px-4 mb-2">
                       <button type="button" onClick={goBack} className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
                         ← Back
                       </button>
@@ -651,7 +651,7 @@ export default function BeginPage() {
                     onComplete={(v) => goNext({ lifestyleOrientation: v }, { lifestyleOrientation: v })}
                   />
                   {!currentStep.required && (
-                    <div className="max-w-2xl mx-auto px-4 -mt-4">
+                    <div className="max-w-5xl mx-auto px-4 -mt-4">
                       <button type="button" onClick={handleSkip} className="text-sm text-gray-400 hover:text-gray-600">
                         Skip this question →
                       </button>
@@ -663,7 +663,7 @@ export default function BeginPage() {
               {currentStep.id === 7 && (
                 <div>
                   {cardIndex > 0 && (
-                    <div className="max-w-2xl mx-auto px-4 mb-2">
+                    <div className="max-w-5xl mx-auto px-4 mb-2">
                       <button type="button" onClick={goBack} className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
                         ← Back
                       </button>
@@ -674,7 +674,7 @@ export default function BeginPage() {
                     onComplete={(workSituation) => goNext({ workSituation }, { workSituation })}
                   />
                   {!currentStep.required && (
-                    <div className="max-w-2xl mx-auto px-4 -mt-4">
+                    <div className="max-w-5xl mx-auto px-4 -mt-4">
                       <button type="button" onClick={handleSkip} className="text-sm text-gray-400 hover:text-gray-600">
                         Skip this question →
                       </button>
@@ -686,7 +686,7 @@ export default function BeginPage() {
               {currentStep.id === 8 && (
                 <div>
                   {cardIndex > 0 && (
-                    <div className="max-w-2xl mx-auto px-4 mb-2">
+                    <div className="max-w-5xl mx-auto px-4 mb-2">
                       <button type="button" onClick={goBack} className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
                         ← Back
                       </button>
@@ -704,7 +704,7 @@ export default function BeginPage() {
                     }
                   />
                   {!currentStep.required && (
-                    <div className="max-w-2xl mx-auto px-4 -mt-4">
+                    <div className="max-w-5xl mx-auto px-4 -mt-4">
                       <button type="button" onClick={handleSkip} className="text-sm text-gray-400 hover:text-gray-600">
                         Skip this question →
                       </button>
@@ -716,7 +716,7 @@ export default function BeginPage() {
               {currentStep.id === 9 && (
                 <div>
                   {cardIndex > 0 && (
-                    <div className="max-w-2xl mx-auto px-4 mb-2">
+                    <div className="max-w-5xl mx-auto px-4 mb-2">
                       <button type="button" onClick={goBack} className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
                         ← Back
                       </button>
@@ -728,7 +728,7 @@ export default function BeginPage() {
                     onComplete={(card9) => goNext({ card9 }, { financialData: buildQuizFinancialData(card9) })}
                   />
                   {!currentStep.required && (
-                    <div className="max-w-2xl mx-auto px-4 -mt-4">
+                    <div className="max-w-5xl mx-auto px-4 -mt-4">
                       <button type="button" onClick={handleSkip} className="text-sm text-gray-400 hover:text-gray-600">
                         Skip this question →
                       </button>
@@ -740,7 +740,7 @@ export default function BeginPage() {
               {currentStep.id === 10 && (
                 <>
                   {cardIndex > 0 && (
-                    <div className="max-w-2xl mx-auto px-4 mb-2">
+                    <div className="max-w-5xl mx-auto px-4 mb-2">
                       <button type="button" onClick={goBack} className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
                         ← Back
                       </button>
