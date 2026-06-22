@@ -23,7 +23,9 @@ function Field({ label, required, error, hint, children }: {
         {label}
         {required && <span style={{ color: '#0076B6', marginLeft: '2px' }}>*</span>}
       </label>
-      {hint && <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '-2px 0 8px' }}>{hint}</p>}
+      <p style={{ fontSize: '12px', color: hint ? 'var(--text-muted)' : 'transparent', margin: '-2px 0 8px' }}>
+        {hint || ' '}
+      </p>
       {children}
       {error && <p style={{ fontSize: '11px', color: '#DC2626', marginTop: '4px' }}>{error}</p>}
     </div>
