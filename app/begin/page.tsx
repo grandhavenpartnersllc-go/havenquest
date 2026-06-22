@@ -31,6 +31,7 @@ import {
   type Card9Answers,
 } from '../../utils/quizProfileMapping'
 import { initSession, updateSessionStep } from '../../services/quizSessionService'
+import { lookupZipCityState } from '../../utils/zipLookup'
 import { trackEvent } from '../../utils/analytics'
 import { SESSION_PROFILE_KEY, SESSION_METRO_KEY, SESSION_MATCHES_KEY } from '../../utils/constants'
 import { UserProfile, PersonalityPreference } from '../../types'
@@ -184,6 +185,10 @@ export default function BeginPage() {
     sessionStorage.setItem('hq_first_name', trimmedName)
     sessionStorage.setItem('hq_origin_zip', trimmedZip)
     sessionStorage.setItem('hq_email', trimmedEmail)
+    void lookupZipCityState(trimmedZip).then(result => {
+      if (result?.city) sessionStorage.setItem('hq_origin_city', result.city)
+      if (result?.state) sessionStorage.setItem('hq_origin_state', result.state)
+    })
     const rawSession = localStorage.getItem(LOCAL_SESSION_KEY)
     if (rawSession) {
       try {

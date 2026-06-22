@@ -98,11 +98,19 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
     }))
   }, [profile])
 
-  // Pre-populate current_zip from sessionStorage origin ZIP
+  // Pre-populate current_zip/city/state from sessionStorage origin ZIP lookup (set at the quiz's name/ZIP step)
   useEffect(() => {
     const zip = sessionStorage.getItem('hq_origin_zip')
     if (zip) {
       setFormData(prev => ({ ...prev, current_zip: prev.current_zip || zip }))
+    }
+    const city = sessionStorage.getItem('hq_origin_city')
+    if (city) {
+      setFormData(prev => ({ ...prev, current_city: prev.current_city || city }))
+    }
+    const state = sessionStorage.getItem('hq_origin_state')
+    if (state) {
+      setFormData(prev => ({ ...prev, current_state: prev.current_state || state }))
     }
   }, [])
 

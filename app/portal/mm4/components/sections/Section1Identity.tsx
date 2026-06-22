@@ -2,6 +2,7 @@
 
 import type { MM4Profile } from '../../../../../types'
 import { formatPhone } from '../../../../../utils/formatters'
+import { lookupZipCityState } from '../../../../../utils/zipLookup'
 
 interface Props {
   data: MM4Profile
@@ -67,23 +68,12 @@ function Field({ label, required, error, children }: {
 }
 
 async function lookupZip(zip: string, onChange: (updates: Partial<MM4Profile>) => void) {
-  try {
-    const res = await fetch(`https://api.zippopotam.us/us/${zip}`)
-    if (!res.ok) return
-    const json = await res.json()
-    const place = json?.places?.[0]
-    if (!place) return
-    const city = place['place name']
-    const state = place['state abbreviation']
-    if (city || state) {
-      onChange({
-        ...(city ? { current_city: city } : {}),
-        ...(state ? { current_state: state } : {}),
-      })
-    }
-  } catch {
-    // Silent failure — invalid ZIP, no match, or unreachable API all leave City/State untouched
-  }
+  const result = await lookupZipCityState(zip)
+  if (!result) return
+  onChange({
+    ...(result.city ? { current_city: result.city } : {}),
+    ...(result.state ? { current_state: result.state } : {}),
+  })
 }
 
 function MiniLabel({ children }: { children: React.ReactNode }) {
