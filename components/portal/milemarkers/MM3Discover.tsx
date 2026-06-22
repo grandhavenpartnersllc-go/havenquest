@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Lock, ChevronDown, ChevronRight, CheckCircle } from 'lucide-react'
 import { CityMatch, UserProfile, UserSession, SandboxProfile, DNAScores, PersonalityPreference } from '../../../types'
@@ -10,6 +11,7 @@ import { DNA_CATEGORY_ICONS } from '../../../utils/categoryIcons'
 import { getAllCities } from '../../../services/locationService'
 import { getTopMatches, getDownPaymentMidpoint, getProceedsMidpoint, calculateMonthlyPayment } from '../../../services/matchingService'
 import { createClient } from '../../../lib/supabase/client'
+import StickyAdvanceBar from '../StickyAdvanceBar'
 
 // calculateMonthlyPayment exported for external use; MM3 computes inline with dynamic interestRate
 void calculateMonthlyPayment
@@ -103,6 +105,7 @@ interface MM3DiscoverProps {
 }
 
 export default function MM3Discover({ matches, profile, session, onAdvanceToConnect, initialMetro, initialCityIndex }: MM3DiscoverProps) {
+  const router = useRouter()
   const [downPayment, setDownPayment] = useState<string>(
     profile?.financial_picture?.down_payment_available ?? '$20,000 – $50,000'
   )
@@ -1771,57 +1774,26 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
             : 'Your plan is set. Confirm below to continue.'}
         </p>
 
-        {/* Confirmation checkbox */}
-        <label style={{
-          display: 'flex', alignItems: 'flex-start', gap: '10px',
-          cursor: (financialsLocked && citiesLocked) ? 'pointer' : 'not-allowed',
-          opacity: (financialsLocked && citiesLocked) ? 1 : 0.4,
-          marginBottom: '16px',
-          transition: 'opacity 300ms ease',
-        }}>
-          <input
-            type="checkbox"
-            checked={confirmed}
-            onChange={e => { if (financialsLocked && citiesLocked) setConfirmed(e.target.checked) }}
-            disabled={!(financialsLocked && citiesLocked)}
-            style={{ marginTop: '2px', accentColor: GOLD, width: '16px', height: '16px', flexShrink: 0 }}
-          />
-          <span style={{ fontSize: '13px', color: '#4B5563', lineHeight: 1.5 }}>
-            I&apos;ve reviewed my plan and I&apos;m ready to take the next step.
-          </span>
-        </label>
-
-        {/* Submit button */}
-        {(() => {
-          const canAdvance = financialsLocked && citiesLocked && confirmed
-          return (
-            <button
-              onClick={canAdvance ? async () => {
-                const supabase = createClient()
-                const { data: { session } } = await supabase.auth.getSession()
-                if (session?.user?.email) {
-                  await supabase.from('users')
-                    .update({ current_milemarker: 4, sandbox_committed: true })
-                    .eq('email', session.user.email.toLowerCase())
-                }
-                window.location.href = '/portal/mm4'
-              } : undefined}
-              disabled={!canAdvance}
-              className="w-full py-4 rounded-xl font-bold text-base"
-              style={{
-                backgroundColor: canAdvance ? '#C5B783' : '#9A8E82',
-                color: canAdvance ? NAVY : '#ffffff',
-                opacity: !canAdvance ? 0.4 : 1,
-                cursor: !canAdvance ? 'not-allowed' : 'pointer',
-                transition: 'all 300ms ease',
-                border: 'none',
-              }}
-            >
-              I&apos;m ready to build my relocation plan →
-            </button>
-          )
-        })()}
       </div>
+
+      <StickyAdvanceBar
+        checked={confirmed}
+        onCheckedChange={setConfirmed}
+        checkboxLabel="I've reviewed my plan and I'm ready to take the next step."
+        disabled={!(financialsLocked && citiesLocked)}
+        onPrev={() => router.push('/portal/mm2')}
+        onNext={async () => {
+          const supabase = createClient()
+          const { data: { session } } = await supabase.auth.getSession()
+          if (session?.user?.email) {
+            await supabase.from('users')
+              .update({ current_milemarker: 4, sandbox_committed: true })
+              .eq('email', session.user.email.toLowerCase())
+          }
+          window.location.href = '/portal/mm4'
+        }}
+        nextLabel="I'm ready to build my relocation plan →"
+      />
 
       {/* City Snapshot Popup */}
       {cityPopup && (

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Download, Mail, Map } from 'lucide-react'
 import { CityMatch, UserProfile } from '../../../types'
@@ -9,6 +10,7 @@ import { createClient } from '../../../lib/supabase/client'
 import SavedMatches from '../SavedMatches'
 import NotesArea from '../NotesArea'
 import FullReport from '../../results/FullReport'
+import StickyAdvanceBar from '../StickyAdvanceBar'
 
 const WARM_DARK = '#16120D'
 const GOLD = '#B8912A'
@@ -50,6 +52,7 @@ interface MM2DiscoverProps {
 }
 
 export default function MM2Discover({ matches, profile, initialChecklist, initialNotes, onAdvanceToDiscover, email }: MM2DiscoverProps) {
+  const router = useRouter()
   const [dlState, setDlState] = useState<BtnState>('idle')
   const [emailState, setEmailState] = useState<BtnState>('idle')
   const [scorePopupOpen, setScorePopupOpen] = useState(false)
@@ -373,51 +376,6 @@ export default function MM2Discover({ matches, profile, initialChecklist, initia
         </section>
       )}
 
-      {/* Advance to Discover */}
-      <div className="mt-10 pt-6" style={{ borderTop: '1px solid #E5E7EB' }}>
-        <p className="text-sm mb-4" style={{ color: '#6B7280' }}>
-          When you&apos;re ready to take the next step, Refine — MileMarker 3 — is where you&apos;ll dig deeper into your top communities, refine your financial picture, and zero in on where you want to plant your flag.
-        </p>
-        <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', marginBottom: '16px' }}>
-          <input
-            type="checkbox"
-            checked={mm2ReadyChecked}
-            onChange={e => setMm2ReadyChecked(e.target.checked)}
-            style={{ marginTop: '3px', accentColor: GOLD, width: '16px', height: '16px', flexShrink: 0 }}
-          />
-          <span style={{ fontSize: '14px', color: '#4B5563', lineHeight: 1.5 }}>
-            I&apos;ve reviewed my city matches and I&apos;m ready to move forward.
-          </span>
-        </label>
-        <button
-          disabled={!mm2ReadyChecked}
-          onClick={async () => {
-            if (!mm2ReadyChecked) return
-            if (email) {
-              try {
-                const supabase = createClient()
-                await supabase
-                  .from('users')
-                  .update({ current_milemarker: 3 })
-                  .eq('email', email.toLowerCase())
-              } catch (err) {
-                console.error('[MM2→3] write failed:', err)
-              }
-            }
-            onAdvanceToDiscover()
-          }}
-          className="w-full py-3 rounded-xl font-bold text-sm transition-opacity hover:opacity-90"
-          style={{
-            backgroundColor: mm2ReadyChecked ? GOLD : '#9A8E82',
-            color: '#16120D',
-            opacity: mm2ReadyChecked ? 1 : 0.5,
-            cursor: mm2ReadyChecked ? 'pointer' : 'not-allowed',
-          }}
-        >
-          Continue to Refine →
-        </button>
-      </div>
-
       {/* Score explanation popup */}
       {scorePopupOpen && (
         <div
@@ -486,6 +444,28 @@ export default function MM2Discover({ matches, profile, initialChecklist, initia
           </div>
         </div>
       )}
+
+      <StickyAdvanceBar
+        checked={mm2ReadyChecked}
+        onCheckedChange={setMm2ReadyChecked}
+        checkboxLabel="I've reviewed my city matches and I'm ready to move forward."
+        onPrev={() => router.push('/portal/mm1')}
+        onNext={async () => {
+          if (email) {
+            try {
+              const supabase = createClient()
+              await supabase
+                .from('users')
+                .update({ current_milemarker: 3 })
+                .eq('email', email.toLowerCase())
+            } catch (err) {
+              console.error('[MM2→3] write failed:', err)
+            }
+          }
+          onAdvanceToDiscover()
+        }}
+        nextLabel="Continue to Refine →"
+      />
     </div>
   )
 }
