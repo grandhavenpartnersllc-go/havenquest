@@ -3,6 +3,7 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 const GOLD = '#B8912A'
+const CARD_BG = '#FDFCFA'
 const CARD_SHADOW = '0 1px 3px rgba(0,0,0,0.05), 0 4px 20px rgba(0,0,0,0.07)'
 
 interface StickyAdvanceBarProps {
@@ -38,9 +39,9 @@ export default function StickyAdvanceBar({
         bottom: 0,
         zIndex: 5,
         width: '100%',
-        backgroundColor: 'var(--accent-navy)',
+        backgroundColor: CARD_BG,
         boxShadow: CARD_SHADOW,
-        borderTop: '1px solid rgba(255,255,255,0.12)',
+        borderTop: '4px solid var(--accent-gold)',
         marginTop: '24px',
       }}
     >
@@ -65,9 +66,9 @@ export default function StickyAdvanceBar({
             borderRadius: '10px',
             fontSize: '13px',
             fontWeight: 500,
-            color: 'rgba(255,255,255,0.85)',
+            color: 'rgba(10,30,61,0.7)',
             backgroundColor: 'transparent',
-            border: '1.5px solid rgba(255,255,255,0.3)',
+            border: '1.5px solid rgba(10,30,61,0.25)',
             cursor: 'pointer',
             flexShrink: 0,
           }}
@@ -96,7 +97,7 @@ export default function StickyAdvanceBar({
             onChange={e => onCheckedChange(e.target.checked)}
             style={{ accentColor: GOLD, width: '16px', height: '16px', flexShrink: 0 }}
           />
-          <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.85)', lineHeight: 1.4 }}>
+          <span style={{ fontSize: '13px', color: '#4B5563', lineHeight: 1.4 }}>
             {checkboxLabel}
           </span>
         </label>
@@ -113,9 +114,9 @@ export default function StickyAdvanceBar({
             borderRadius: '10px',
             fontSize: '13px',
             fontWeight: 700,
-            backgroundColor: canAdvance ? 'var(--accent-blue)' : 'rgba(255,255,255,0.15)',
-            color: canAdvance ? '#ffffff' : 'rgba(255,255,255,0.4)',
-            opacity: 1,
+            backgroundColor: canAdvance ? 'var(--accent-blue)' : '#9A8E82',
+            color: '#ffffff',
+            opacity: canAdvance ? 1 : 0.5,
             border: 'none',
             cursor: canAdvance ? 'pointer' : 'not-allowed',
             flexShrink: 0,
