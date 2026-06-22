@@ -376,7 +376,7 @@ export default function MM2Discover({ matches, profile, initialChecklist, initia
       {/* Advance to Discover */}
       <div className="mt-10 pt-6" style={{ borderTop: '1px solid #E5E7EB' }}>
         <p className="text-sm mb-4" style={{ color: '#6B7280' }}>
-          When you&apos;re ready to take the next step, Discover — MileMarker 3 — is where you&apos;ll dig deeper into your top communities, refine your financial picture, and zero in on where you want to plant your flag.
+          When you&apos;re ready to take the next step, Refine — MileMarker 3 — is where you&apos;ll dig deeper into your top communities, refine your financial picture, and zero in on where you want to plant your flag.
         </p>
         <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', marginBottom: '16px' }}>
           <input
@@ -414,7 +414,7 @@ export default function MM2Discover({ matches, profile, initialChecklist, initia
             cursor: mm2ReadyChecked ? 'pointer' : 'not-allowed',
           }}
         >
-          Continue to Discover →
+          Continue to Refine →
         </button>
       </div>
 

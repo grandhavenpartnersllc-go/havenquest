@@ -112,7 +112,7 @@ export default function MM4Connect({ session }: MM4ConnectProps) {
             <p className="text-sm leading-relaxed" style={{ color: '#4B5563' }}>
               Your Market Director has already reviewed your full profile — your priorities,
               your financial picture, your top city matches, and everything you shared in
-              your Discover session. Your first conversation won&apos;t start with
+              your Refine session. Your first conversation won&apos;t start with
               &ldquo;tell me about yourself.&rdquo; It starts with real guidance from someone who
               already knows your situation.
             </p>

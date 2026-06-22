@@ -7,14 +7,14 @@ import { usePortalData } from '../providers/PortalDataProvider'
 import { createClient } from '../../../lib/supabase/client'
 
 const MM_NAMES: Record<number, string> = {
-  1: 'Welcome', 2: 'Explore', 3: 'Discover', 4: 'Connect',
+  1: 'Welcome', 2: 'Discover', 3: 'Refine', 4: 'Connect',
   5: 'Plan', 6: 'Prepare', 7: 'Match', 8: 'Engage',
   9: 'Transition', 10: 'Home',
 }
 
 const NEXT_ACTIONS: Record<number, string> = {
   1: 'Begin your Navigator journey',
-  2: 'Explore your matched communities',
+  2: 'Discover your matched communities',
   3: 'Select your target community',
   4: 'Complete your family profile',
 }

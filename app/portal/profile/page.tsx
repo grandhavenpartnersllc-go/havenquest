@@ -82,7 +82,7 @@ function selectStyle(dirty: boolean): React.CSSProperties {
 
 function mmBadgeLabel(mm: number): string {
   const names: Record<number, string> = {
-    1: 'Welcome', 2: 'Explore', 3: 'Discover', 4: 'Connect',
+    1: 'Welcome', 2: 'Discover', 3: 'Refine', 4: 'Connect',
     5: 'Plan', 6: 'Prepare', 7: 'Match', 8: 'Engage', 9: 'Transition', 10: 'Home'
   }
   return names[mm] ?? 'In Progress'
@@ -630,7 +630,7 @@ export default function ProfilePage() {
                   <PriorityGroup label="Important to Me" keys={profile.niceToHaves} labels={priorityLabels} color="#0076B6" bg="#EBF5FB" />
                   <PriorityGroup label="Would Be Nice" keys={profile.notPriorities} labels={priorityLabels} color="#8a93a0" bg="#f4f6f8" />
                   <p style={{ fontSize: '12px', color: '#b0b8c1', margin: '12px 0 0', lineHeight: 1.5 }}>
-                    To update your priorities, visit MM2 — Explore.
+                    To update your priorities, visit MM2 — Discover.
                   </p>
                 </>
               ) : (

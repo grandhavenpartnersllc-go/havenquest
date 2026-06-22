@@ -103,7 +103,7 @@ export default function Section4TexasDirection({ data, onChange, errors, chosenC
         {hasCityCards ? (
           <div>
             <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 12px' }}>
-              These are the communities you locked in during Discover. Tell us what draws you to each one.
+              These are the communities you locked in during Refine. Tell us what draws you to each one.
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
               {resolvedCities.map((city, index) => {

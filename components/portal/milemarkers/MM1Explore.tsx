@@ -12,8 +12,8 @@ const CARD_SHADOW = '0 1px 3px rgba(0,0,0,0.05), 0 4px 20px rgba(0,0,0,0.07)'
 
 const MILEMARKERS = [
   { mm: 1,  name: 'Welcome',  what: "You're here — get oriented" },
-  { mm: 2,  name: 'Explore',  what: 'Review your matched Texas communities' },
-  { mm: 3,  name: 'Discover', what: 'Commit to your target city' },
+  { mm: 2,  name: 'Discover', what: 'Review your matched Texas communities' },
+  { mm: 3,  name: 'Refine',   what: 'Commit to your target city' },
   { mm: 4,  name: 'Connect',  what: 'Meet your Market Director' },
   { mm: 5,  name: 'Plan',     what: 'Build your relocation strategy' },
   { mm: 6,  name: 'Prepare',  what: 'Get financially and logistically ready' },
@@ -232,12 +232,12 @@ export default function MM1Explore({
           What's Waiting for You
         </p>
         <p style={{ fontSize: '15px', color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: '16px' }}>
-          Your city matches are ready in your next step — Explore. They were built from everything you told us — your income, your household, your priorities. Take your time reviewing them. There&apos;s no rush.
+          Your city matches are ready in your next step — Discover. They were built from everything you told us — your income, your household, your priorities. Take your time reviewing them. There&apos;s no rush.
         </p>
         <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.7 }}>
           When you&apos;re ready, click{' '}
           <Link href="/portal/mm2" style={{ color: '#0076B6', fontWeight: 600, textDecoration: 'none' }}>
-            Explore
+            Discover
           </Link>
           {' '}in the left nav to see where your life fits in Texas. →
         </p>
@@ -264,7 +264,7 @@ export default function MM1Explore({
                   I&apos;ve read through the Navigator overview and I&apos;m ready to explore my Texas communities.
                 </p>
                 <p style={{ fontSize: '12px', color: '#9A8E82', margin: 0 }}>
-                  Check this to continue to Explore — MileMarker 2 — where your city matches are waiting.
+                  Check this to continue to Discover — MileMarker 2 — where your city matches are waiting.
                 </p>
               </div>
             </label>
@@ -274,7 +274,7 @@ export default function MM1Explore({
                 <span style={{ color: '#ffffff', fontSize: '10px' }}>✓</span>
               </div>
               <p style={{ fontSize: '14px', fontWeight: 500, color: '#2D7D4E', margin: 0 }}>
-                You&apos;re all set. Your full reports are ready in Explore.
+                You&apos;re all set. Your full reports are ready in Discover.
               </p>
             </div>
           )}
@@ -294,7 +294,7 @@ export default function MM1Explore({
                 cursor: 'pointer',
               }}
             >
-              Start Exploring →
+              Start Discovering →
             </button>
           )}
         </div>
@@ -351,7 +351,7 @@ export default function MM1Explore({
                   whiteSpace: 'nowrap',
                 }}
               >
-                Start Exploring →
+                Start Discovering →
               </button>
             </>
           )}

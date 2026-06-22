@@ -795,7 +795,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           position: 'relative',
         }}>
           <p style={{ fontSize: '10px', fontWeight: 600, color: '#B8912A', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '8px' }}>
-            Your Discover Worksheet
+            Your Refine Worksheet
           </p>
           <p style={{ fontSize: '13px', color: 'var(--color-text-primary)', fontWeight: 500, marginBottom: '8px', lineHeight: 1.5 }}>
             This is one of the most important steps in your Navigator journey.
@@ -840,7 +840,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
       <div className="mb-6">
         <p className="text-[10px] font-bold uppercase mb-2"
            style={{ color: GOLD, letterSpacing: '0.18em' }}>
-          Your Discover Sandbox
+          Your Refine Sandbox
         </p>
         <h2 className="text-[20px] font-bold tracking-tight mb-2" style={{ color: WARM_DARK }}>
           Move things around. See what changes.

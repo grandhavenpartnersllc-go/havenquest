@@ -17,8 +17,8 @@ interface MMEntry {
 
 const MILEMARKERS: MMEntry[] = [
   { number: 1,  name: 'Welcome',    deliverable: 'Journey Introduction'          },
-  { number: 2,  name: 'Explore',    deliverable: 'Community Profile'             },
-  { number: 3,  name: 'Discover',   deliverable: 'Committed Direction Package'   },
+  { number: 2,  name: 'Discover',   deliverable: 'Community Profile'             },
+  { number: 3,  name: 'Refine',     deliverable: 'Committed Direction Package'   },
   { number: 4,  name: 'Connect',    deliverable: 'Relocation Roadmap'            },
   { number: 5,  name: 'Plan',       deliverable: null                            },
   { number: 6,  name: 'Prepare',    deliverable: null                            },

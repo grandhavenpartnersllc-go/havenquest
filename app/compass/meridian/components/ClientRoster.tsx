@@ -8,8 +8,8 @@ import type { MDClientWithProfile } from '../../../../types'
 
 const MM_LABELS: Record<number, string> = {
   1: 'MM1 — Welcome',
-  2: 'MM2 — Explore',
-  3: 'MM3 — Discover',
+  2: 'MM2 — Discover',
+  3: 'MM3 — Refine',
   4: 'MM4 — Connect',
   5: 'MM5 — Your Texas Plan',
 }

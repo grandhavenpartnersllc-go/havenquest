@@ -86,7 +86,7 @@ export default function MileMarkerContent({
       if (selectedMileMarker < currentMileMarker) {
         return (
           <CompletedCard
-            name="Discover"
+            name="Refine"
             description="You explored your options and committed your direction."
           />
         )
@@ -122,7 +122,7 @@ export default function MileMarkerContent({
           />
         )
       }
-      return <MM4to10 mmNumber={3} name="Discover" />
+      return <MM4to10 mmNumber={3} name="Refine" />
     case 4:
       if (selectedMileMarker < currentMileMarker) {
         return (
