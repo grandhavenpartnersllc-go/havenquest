@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, type CSSProperties } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Lock, ChevronDown, ChevronRight, CheckCircle } from 'lucide-react'
@@ -12,6 +12,7 @@ import { getAllCities } from '../../../services/locationService'
 import { getTopMatches, getDownPaymentMidpoint, getProceedsMidpoint, calculateMonthlyPayment } from '../../../services/matchingService'
 import { createClient } from '../../../lib/supabase/client'
 import StickyAdvanceBar from '../StickyAdvanceBar'
+import { getStateIncomeTaxRate } from '../../../utils/stateIncomeTax'
 
 // calculateMonthlyPayment exported for external use; MM3 computes inline with dynamic interestRate
 void calculateMonthlyPayment
@@ -21,6 +22,27 @@ const GOLD = '#B8912A'
 const NAVY = '#0A1E3D'
 const CARD_BG = '#FDFCFA'
 const CARD_SHADOW = '0 1px 3px rgba(0,0,0,0.05), 0 4px 20px rgba(0,0,0,0.07)'
+
+// Origin City Comparison column layout — same structural pattern as
+// CompareModal.tsx (label col + two fixed-width city cols sharing one divider
+// position across header and every row), but themed to this page's gold/
+// warm-dark palette instead of CompareModal's blue header.
+const OCC_COL_W = 120
+const OCC_DIVIDER_PAD = 10
+const OCC_COL_LABEL: CSSProperties = { flex: '1 1 0', minWidth: 0 }
+const OCC_COL_A: CSSProperties = {
+  width: OCC_COL_W,
+  flexShrink: 0,
+  paddingRight: OCC_DIVIDER_PAD,
+  borderRight: '2px solid rgba(184,145,42,0.3)',
+  textAlign: 'right',
+}
+const OCC_COL_B: CSSProperties = {
+  width: OCC_COL_W,
+  flexShrink: 0,
+  paddingLeft: OCC_DIVIDER_PAD,
+  textAlign: 'right',
+}
 
 const ALL_CATEGORY_KEYS = DNA_CATEGORIES.map(c => c.key)
 const NEUTRAL_PERSONALITY: PersonalityPreference = { growthProfile: 5, pace: 5, culture: 5, environment: 5, lifestyleOrientation: 5 }
@@ -175,8 +197,10 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const [selectedMetro, setSelectedMetro] = useState<string>('')
 
   const [originLabel, setOriginLabel] = useState<string | null>(null)
+  const [originState, setOriginState] = useState<string | null>(null)
   const [originMarketData, setOriginMarketData] = useState<{
     medianHomeValue: number | null
+    medianMonthlyHousingCost: number | null
     medianRealEstateTaxes: number | null
     effectiveTaxRate: number | null
   } | null>(null)
@@ -186,8 +210,11 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // lookup didn't finish in time) and is handled in the render, not here.
   useEffect(() => {
     const city = sessionStorage.getItem('hq_origin_city')
+    // hq_origin_state is the 2-letter USPS abbreviation (Zippopotam's "state
+    // abbreviation" field — see utils/zipLookup.ts), not a full state name.
     const state = sessionStorage.getItem('hq_origin_state')
     if (city) setOriginLabel(state ? `${city}, ${state}` : city)
+    if (state) setOriginState(state)
 
     const raw = sessionStorage.getItem('hq_origin_market_data')
     if (raw) {
@@ -1376,48 +1403,82 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
             </p>
 
             {originMarketData?.medianHomeValue ? (
-              <>
-                <p className="text-xs mb-3" style={{ color: '#9A8E82' }}>
-                  How {topCity?.name ?? 'your top match'} compares to {originLabel ?? 'where you’re moving from'}.
-                </p>
+              (() => {
+                const destName = topCity?.name ?? 'Match'
+                const destTaxRate = (topCity?.housing.propertyTaxRate ?? 0) * 100
+                const originTaxRate = getStateIncomeTaxRate(originState)
+                const deltaPct = Math.round(
+                  ((originMarketData.medianHomeValue! - topCityPrice) / originMarketData.medianHomeValue!) * 100
+                )
 
-                <div className="mb-3">
-                  <p className="text-[10px] mb-1" style={{ color: '#9A8E82' }}>Median home price</p>
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-sm" style={{ color: WARM_DARK }}>
-                      {originLabel ?? 'Origin'}: <strong>${originMarketData.medianHomeValue.toLocaleString('en-US')}</strong>
-                    </span>
-                    <span className="text-sm" style={{ color: WARM_DARK }}>
-                      {topCity?.name ?? 'Match'}: <strong>${Math.round(topCityPrice).toLocaleString('en-US')}</strong>
-                    </span>
-                  </div>
-                  {(() => {
-                    const deltaPct = Math.round(
-                      ((originMarketData.medianHomeValue! - topCityPrice) / originMarketData.medianHomeValue!) * 100
-                    )
-                    if (deltaPct === 0) return null
-                    return (
-                      <p className="text-xs mt-1" style={{ color: deltaPct > 0 ? '#2D7D4E' : '#C2622A' }}>
-                        {Math.abs(deltaPct)}% {deltaPct > 0 ? 'lower' : 'higher'} in {topCity?.name ?? 'your top match'}
-                      </p>
-                    )
-                  })()}
-                </div>
+                const rows: { label: string; a: string; b: string }[] = [
+                  {
+                    label: 'Median home price',
+                    a: `$${originMarketData.medianHomeValue!.toLocaleString('en-US')}`,
+                    b: `$${Math.round(topCityPrice).toLocaleString('en-US')}`,
+                  },
+                ]
+                if (originMarketData.effectiveTaxRate != null) {
+                  rows.push({
+                    label: 'Effective tax rate (est.)',
+                    a: `${(originMarketData.effectiveTaxRate * 100).toFixed(2)}%`,
+                    b: `${destTaxRate.toFixed(2)}%`,
+                  })
+                }
+                if (originMarketData.medianMonthlyHousingCost != null) {
+                  rows.push({
+                    label: 'Median monthly housing cost',
+                    a: `$${originMarketData.medianMonthlyHousingCost.toLocaleString('en-US')}/mo`,
+                    b: `$${Math.round(totalMonthlyHousing).toLocaleString('en-US')}/mo`,
+                  })
+                }
+                if (originTaxRate != null) {
+                  rows.push({
+                    label: 'State income tax',
+                    a: `${(originTaxRate * 100).toFixed(1)}%`,
+                    b: '0.0%',
+                  })
+                }
 
-                {originMarketData.effectiveTaxRate != null && (
-                  <div>
-                    <p className="text-[10px] mb-1" style={{ color: '#9A8E82' }}>Effective tax rate (est.)</p>
-                    <div className="flex items-baseline justify-between">
-                      <span className="text-sm" style={{ color: WARM_DARK }}>
-                        {originLabel ?? 'Origin'}: <strong>{(originMarketData.effectiveTaxRate * 100).toFixed(2)}%</strong>
+                return (
+                  <>
+                    <p className="text-xs mb-3" style={{ color: '#9A8E82' }}>
+                      How {destName} compares to {originLabel ?? 'where you’re moving from'}.
+                    </p>
+
+                    {/* Header row — city names, no match-score badges */}
+                    <div className="flex items-baseline pb-2 mb-1" style={{ borderBottom: `1px solid rgba(184,145,42,0.3)` }}>
+                      <span style={OCC_COL_LABEL} />
+                      <span className="text-xs font-bold truncate" style={{ ...OCC_COL_A, color: WARM_DARK }}>
+                        {originLabel ?? 'Origin'}
                       </span>
-                      <span className="text-sm" style={{ color: WARM_DARK }}>
-                        {topCity?.name ?? 'Match'}: <strong>{((topCity?.housing.propertyTaxRate ?? 0) * 100).toFixed(2)}%</strong>
+                      <span className="text-xs font-bold truncate" style={{ ...OCC_COL_B, color: WARM_DARK }}>
+                        {destName}
                       </span>
                     </div>
-                  </div>
-                )}
-              </>
+
+                    {rows.map(row => (
+                      <div key={row.label} className="flex items-center py-2" style={{ borderBottom: '1px solid #F0EDE6' }}>
+                        <span className="text-xs truncate" style={{ ...OCC_COL_LABEL, color: '#9A8E82' }}>
+                          {row.label}
+                        </span>
+                        <span className="text-xs font-semibold" style={{ ...OCC_COL_A, color: WARM_DARK }}>
+                          {row.a}
+                        </span>
+                        <span className="text-xs font-semibold" style={{ ...OCC_COL_B, color: WARM_DARK }}>
+                          {row.b}
+                        </span>
+                      </div>
+                    ))}
+
+                    {deltaPct !== 0 && (
+                      <p className="text-xs mt-2" style={{ color: deltaPct > 0 ? '#2D7D4E' : '#C2622A' }}>
+                        {Math.abs(deltaPct)}% {deltaPct > 0 ? 'lower' : 'higher'} home price in {destName}
+                      </p>
+                    )}
+                  </>
+                )
+              })()
             ) : (
               <>
                 <p className="text-xs mb-3" style={{ color: '#9A8E82' }}>

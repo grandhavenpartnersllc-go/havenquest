@@ -2,12 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 
 interface OriginMarketData {
   medianHomeValue: number | null
+  medianMonthlyHousingCost: number | null
   medianRealEstateTaxes: number | null
   effectiveTaxRate: number | null
 }
 
 const EMPTY_RESULT: OriginMarketData = {
   medianHomeValue: null,
+  medianMonthlyHousingCost: null,
   medianRealEstateTaxes: null,
   effectiveTaxRate: null,
 }
@@ -26,23 +28,31 @@ function parseAcsValue(raw: unknown): number | null {
 // match. On a missing/invalid key it 302s to an HTML "Missing Key" page
 // instead of JSON — response.json() throws in that case, which the caller
 // catches and treats as "no data" rather than a hard error.
-async function fetchAcsVariable(
+// Variables passed together must belong to the same dataset (e.g. DP04_0089E
+// and DP04_0101E are both acs5/profile) — that's the only way to combine them
+// into one request; a different dataset (e.g. B25103_001E, acs5 base tables)
+// needs its own separate call.
+async function fetchAcsVariables(
   datasetPath: string,
-  variable: string,
+  variables: string[],
   zip: string,
   apiKey: string,
   signal: AbortSignal
-): Promise<number | null> {
-  const url = `https://api.census.gov/data/${datasetPath}?get=NAME,${variable}&for=zip%20code%20tabulation%20area:${zip}&key=${apiKey}`
+): Promise<Record<string, number | null>> {
+  const empty = Object.fromEntries(variables.map(v => [v, null]))
+  const url = `https://api.census.gov/data/${datasetPath}?get=NAME,${variables.join(',')}&for=zip%20code%20tabulation%20area:${zip}&key=${apiKey}`
   const res = await fetch(url, { signal })
-  if (!res.ok) return null
+  if (!res.ok) return empty
   const rows = await res.json()
-  if (!Array.isArray(rows) || rows.length < 2) return null
+  if (!Array.isArray(rows) || rows.length < 2) return empty
   const header: string[] = rows[0]
   const dataRow: string[] = rows[1]
-  const colIndex = header.indexOf(variable)
-  if (colIndex === -1) return null
-  return parseAcsValue(dataRow[colIndex])
+  const result: Record<string, number | null> = {}
+  for (const v of variables) {
+    const colIndex = header.indexOf(v)
+    result[v] = colIndex === -1 ? null : parseAcsValue(dataRow[colIndex])
+  }
+  return result
 }
 
 async function lookupOriginMarketData(zip: string): Promise<OriginMarketData> {
@@ -53,17 +63,21 @@ async function lookupOriginMarketData(zip: string): Promise<OriginMarketData> {
   const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS)
 
   try {
-    const [medianHomeValue, medianRealEstateTaxes] = await Promise.all([
-      fetchAcsVariable('2023/acs/acs5/profile', 'DP04_0089E', zip, apiKey, controller.signal),
-      fetchAcsVariable('2023/acs/acs5', 'B25103_001E', zip, apiKey, controller.signal),
+    const [profileVars, taxVars] = await Promise.all([
+      fetchAcsVariables('2023/acs/acs5/profile', ['DP04_0089E', 'DP04_0101E'], zip, apiKey, controller.signal),
+      fetchAcsVariables('2023/acs/acs5', ['B25103_001E'], zip, apiKey, controller.signal),
     ])
+
+    const medianHomeValue = profileVars['DP04_0089E']
+    const medianMonthlyHousingCost = profileVars['DP04_0101E']
+    const medianRealEstateTaxes = taxVars['B25103_001E']
 
     const effectiveTaxRate =
       medianHomeValue && medianRealEstateTaxes && medianHomeValue > 0
         ? medianRealEstateTaxes / medianHomeValue
         : null
 
-    return { medianHomeValue, medianRealEstateTaxes, effectiveTaxRate }
+    return { medianHomeValue, medianMonthlyHousingCost, medianRealEstateTaxes, effectiveTaxRate }
   } catch (err) {
     console.error('[origin-market-data] lookup failed:', err)
     return EMPTY_RESULT
