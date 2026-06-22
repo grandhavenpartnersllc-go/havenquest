@@ -98,48 +98,51 @@ export default function MM1Explore({
             </Link>
           </>
         ) : (
-          <>
-            <h1 style={{ fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 16px', lineHeight: 1.3 }}>
-              Welcome{firstName !== 'there' ? `, ${firstName}` : ''}. Your Texas journey starts here.
-            </h1>
+          <div className="flex flex-col md:flex-row md:items-center" style={{ gap: '28px' }}>
+            <div className="flex-1" style={{ minWidth: 0 }}>
+              <h1 style={{ fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 16px', lineHeight: 1.3 }}>
+                Welcome{firstName !== 'there' ? `, ${firstName}` : ''}. Your Texas journey starts here.
+              </h1>
 
-            {/* Welcome video placeholder — structured as if a real embed will replace it */}
-            <div style={{
-              position: 'relative',
-              width: '100%',
-              aspectRatio: '16 / 9',
-              borderRadius: '14px',
-              backgroundColor: '#0A1E3D',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginBottom: '20px',
-              overflow: 'hidden',
-            }}>
-              <PlayCircle size={56} style={{ color: 'rgba(255,255,255,0.85)' }} />
+              <p style={{ fontSize: '15px', color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: '20px' }}>
+                This is your private HavenQuest Navigator — your home base for the entire relocation process. Your journey unfolds across 10 MileMarkers, each with a clear purpose and the right people in place to help you move forward. Everything you do here is saved, and your team works alongside you from right here.
+              </p>
+
+              <button
+                type="button"
+                onClick={handleBeginJourney}
+                style={{
+                  padding: '12px 24px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  backgroundColor: GOLD,
+                  color: '#16120D',
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
+                Begin Your Journey →
+              </button>
             </div>
 
-            <p style={{ fontSize: '15px', color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: '20px' }}>
-              This is your private HavenQuest Navigator — your home base for the entire relocation process. Your journey unfolds across 10 MileMarkers, each with a clear purpose and the right people in place to help you move forward. Everything you do here is saved, and your team works alongside you from right here.
-            </p>
-
-            <button
-              type="button"
-              onClick={handleBeginJourney}
-              style={{
-                padding: '12px 24px',
-                borderRadius: '12px',
-                border: 'none',
-                backgroundColor: GOLD,
-                color: '#16120D',
-                fontSize: '14px',
-                fontWeight: 700,
-                cursor: 'pointer',
-              }}
-            >
-              Begin Your Journey →
-            </button>
-          </>
+            {/* Welcome video placeholder — structured as if a real embed will replace it */}
+            <div className="w-full md:w-[42%]" style={{ flexShrink: 0 }}>
+              <div style={{
+                position: 'relative',
+                width: '100%',
+                aspectRatio: '16 / 9',
+                borderRadius: '14px',
+                backgroundColor: '#0A1E3D',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden',
+              }}>
+                <PlayCircle size={56} style={{ color: 'rgba(255,255,255,0.85)' }} />
+              </div>
+            </div>
+          </div>
         )}
       </div>
 
