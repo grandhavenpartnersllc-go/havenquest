@@ -66,6 +66,26 @@ function Field({ label, required, error, children }: {
   )
 }
 
+async function lookupZip(zip: string, onChange: (updates: Partial<MM4Profile>) => void) {
+  try {
+    const res = await fetch(`https://api.zippopotam.us/us/${zip}`)
+    if (!res.ok) return
+    const json = await res.json()
+    const place = json?.places?.[0]
+    if (!place) return
+    const city = place['place name']
+    const state = place['state abbreviation']
+    if (city || state) {
+      onChange({
+        ...(city ? { current_city: city } : {}),
+        ...(state ? { current_state: state } : {}),
+      })
+    }
+  } catch {
+    // Silent failure — invalid ZIP, no match, or unreachable API all leave City/State untouched
+  }
+}
+
 function MiniLabel({ children }: { children: React.ReactNode }) {
   return (
     <p style={{
@@ -190,6 +210,10 @@ export default function Section1Identity({ data, onChange, errors }: Props) {
               type="text"
               value={data.current_zip ?? ''}
               onChange={e => onChange({ current_zip: e.target.value })}
+              onBlur={e => {
+                const zip = e.target.value.trim()
+                if (/^\d{5}$/.test(zip)) void lookupZip(zip, onChange)
+              }}
               placeholder="90210"
               maxLength={5}
               autoComplete="postal-code"
