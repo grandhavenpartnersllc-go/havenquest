@@ -333,7 +333,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
                   <span style={{
                     fontSize: '10px',
                     fontWeight: active ? 600 : 400,
-                    color: active ? '#ffffff' : done ? 'rgba(255,255,255,0.65)' : 'rgba(255,255,255,0.4)',
+                    color: active ? '#0076B6' : done ? 'rgba(10,30,61,0.55)' : 'rgba(10,30,61,0.4)',
                     whiteSpace: 'nowrap',
                     letterSpacing: '0.02em',
                     transition: 'color 0.25s',
@@ -345,7 +345,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
                   <div style={{
                     flex: 1,
                     height: '2px',
-                    backgroundColor: done ? '#0076B6' : 'rgba(255,255,255,0.2)',
+                    backgroundColor: done ? '#0076B6' : 'rgba(10,30,61,0.15)',
                     marginBottom: '22px',
                     marginLeft: '6px',
                     marginRight: '6px',
@@ -357,7 +357,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
           })}
         </div>
 
-        <div style={{ height: '3px', backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: '2px', overflow: 'hidden' }}>
+        <div style={{ height: '3px', backgroundColor: 'rgba(10,30,61,0.12)', borderRadius: '2px', overflow: 'hidden' }}>
           <div style={{
             width: `${pct}%`,
             height: '100%',
@@ -446,9 +446,9 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
                 borderRadius: '8px',
                 fontSize: '14px',
                 fontWeight: 500,
-                color: currentSection === 0 ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.75)',
+                color: currentSection === 0 ? 'rgba(10,30,61,0.3)' : 'rgba(10,30,61,0.7)',
                 backgroundColor: 'transparent',
-                border: '1.5px solid rgba(255,255,255,0.25)',
+                border: `1.5px solid ${currentSection === 0 ? 'rgba(10,30,61,0.15)' : 'rgba(10,30,61,0.3)'}`,
                 cursor: currentSection === 0 ? 'not-allowed' : 'pointer',
                 transition: 'all 0.15s',
               }}
@@ -457,7 +457,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
             </button>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.55)' }}>
+              <span style={{ fontSize: '12px', color: 'rgba(10,30,61,0.55)' }}>
                 Step {currentSection + 1} of 6
               </span>
               <button
@@ -498,9 +498,9 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
               borderRadius: '8px',
               fontSize: '14px',
               fontWeight: 500,
-              color: 'rgba(255,255,255,0.75)',
+              color: 'rgba(10,30,61,0.7)',
               backgroundColor: 'transparent',
-              border: '1.5px solid rgba(255,255,255,0.25)',
+              border: '1.5px solid rgba(10,30,61,0.3)',
               cursor: 'pointer',
             }}
           >
