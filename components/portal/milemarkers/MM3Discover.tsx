@@ -970,6 +970,68 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
               )
             })}
           </div>
+          {displayedMatches.length > 3 && (
+            <div style={{ marginTop: '12px', marginBottom: '12px' }}>
+              <p style={{ fontSize: '10px', fontWeight: 600, color: '#9A8E82', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '8px' }}>
+                Also in your top matches
+              </p>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                {displayedMatches.slice(3).map((match, i) => {
+                  const globalIndex = i + 3
+                  const afStatus = getCityAffordabilityStatus(match)
+                  const afDotColor = afStatus === 'comfortable' ? '#22C55E'
+                    : afStatus === 'moderate' ? '#F59E0B' : '#EF4444'
+                  return (
+                    <div
+                      key={match.location.id}
+                      style={{
+                        flex: '0 0 calc(50% - 5px)',
+                        maxWidth: 'calc(50% - 5px)',
+                        borderRadius: '10px',
+                        border: selectedCityIndex === globalIndex ? '1.5px solid #B8912A' : '0.5px solid var(--color-border-tertiary)',
+                        background: 'var(--color-background-primary)',
+                        overflow: 'hidden',
+                        cursor: 'pointer',
+                        transition: 'border-color 0.15s',
+                      }}
+                      onClick={() => setSelectedCityIndex(globalIndex)}
+                    >
+                      <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: 'var(--color-background-tertiary)' }}>
+                        <Image
+                          src={`/images/cities/${match.location.id}.jpg`}
+                          alt={`${match.location.name}, Texas`}
+                          fill
+                          className="object-cover"
+                          onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('default-tx')) { t.src = '/images/cities/default-tx.jpg' } }}
+                        />
+                      </div>
+                      <div style={{ padding: '10px 12px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                          <div>
+                            <p style={{ fontSize: '10px', fontWeight: 500, color: '#B8912A', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '2px' }}>
+                              #{globalIndex + 1} Match
+                            </p>
+                            <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: '1px' }}>
+                              {match.location.name}
+                            </p>
+                            <p style={{ fontSize: '11px', color: 'var(--color-text-tertiary)' }}>
+                              {match.location.metroUsed}
+                            </p>
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                            <span style={{ fontSize: '18px', fontWeight: 700, color: '#B8912A' }}>
+                              {match.matchScore}%
+                            </span>
+                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: afDotColor }} />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
           <p className="text-xs leading-relaxed" style={{ color: '#9A8E82' }}>
             Use the explorer below to dig deeper into any metro and see how cities rank by your current priorities.
           </p>

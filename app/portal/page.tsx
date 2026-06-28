@@ -6,6 +6,7 @@ export const dynamic = 'force-dynamic'
 
 interface CurrentMMRow {
   current_milemarker: number | null
+  welcome_seen: boolean | null
 }
 
 export default async function PortalPage() {
@@ -22,11 +23,14 @@ export default async function PortalPage() {
 
   const { data } = await supabase
     .from('users')
-    .select('current_milemarker')
+    .select('current_milemarker, welcome_seen')
     .eq('email', user.email.toLowerCase())
     .single()
 
   const row = data as CurrentMMRow | null
+
+  if (!row?.welcome_seen) redirect('/portal/welcome')
+
   const mm = row?.current_milemarker
 
   if (typeof mm === 'number' && mm >= 1 && mm <= 10) {

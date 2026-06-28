@@ -15,17 +15,23 @@ interface MMEntry {
   deliverable: string | null
 }
 
-const MILEMARKERS: MMEntry[] = [
-  { number: 1,  name: 'Welcome',    deliverable: 'Journey Introduction'          },
-  { number: 2,  name: 'Discover',   deliverable: 'Community Profile'             },
-  { number: 3,  name: 'Refine',     deliverable: 'Committed Direction Package'   },
-  { number: 4,  name: 'Connect',    deliverable: 'Relocation Roadmap'            },
-  { number: 5,  name: 'Plan',       deliverable: null                            },
-  { number: 6,  name: 'Prepare',    deliverable: null                            },
-  { number: 7,  name: 'Match',      deliverable: null                            },
-  { number: 8,  name: 'Engage',     deliverable: null                            },
-  { number: 9,  name: 'Transition', deliverable: null                            },
-  { number: 10, name: 'Home',       deliverable: null                            },
+const ALL_MILEMARKERS: MMEntry[] = [
+  { number: 1,  name: 'Welcome',      deliverable: 'Journey Introduction'          },
+  { number: 2,  name: 'Discovery',    deliverable: 'Community Profile'             },
+  { number: 3,  name: 'Refine',       deliverable: 'Committed Direction Package'   },
+  { number: 4,  name: 'Consultation', deliverable: 'Relocation Roadmap'            },
+  { number: 5,  name: 'Plan',         deliverable: null                            },
+  { number: 6,  name: 'Prepare',      deliverable: null                            },
+  { number: 7,  name: 'Match',        deliverable: null                            },
+  { number: 8,  name: 'Engage',       deliverable: null                            },
+  { number: 9,  name: 'Transition',   deliverable: null                            },
+  { number: 10, name: 'Home',         deliverable: null                            },
+]
+
+const ORIENTATION_MILEMARKERS: MMEntry[] = [
+  { number: 2,  name: 'Discovery',    deliverable: 'Community Profile'             },
+  { number: 3,  name: 'Refine',       deliverable: 'Committed Direction Package'   },
+  { number: 4,  name: 'Consultation', deliverable: 'Relocation Roadmap'            },
 ]
 
 function getStatus(mmNumber: number, currentMM: number): MMStatus {
@@ -225,7 +231,8 @@ function BottomItem({
 }
 
 export default function JourneyRail() {
-  const { currentMM, ready } = usePortalData()
+  const { currentMM, ready, engagementPaid } = usePortalData()
+  const MILEMARKERS = engagementPaid ? ALL_MILEMARKERS : ORIENTATION_MILEMARKERS
   const pathname = usePathname()
   const router = useRouter()
   const activeMMFromPath = (() => {
@@ -270,7 +277,7 @@ export default function JourneyRail() {
 
       <div style={{ flex: 1 }}>
         {!ready
-          ? Array.from({ length: 10 }, (_, i) => <SkeletonRow key={i} />)
+          ? Array.from({ length: engagementPaid ? 10 : 3 }, (_, i) => <SkeletonRow key={i} />)
           : MILEMARKERS.map(mm => (
               <MMRow
                 key={mm.number}

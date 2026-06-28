@@ -23,6 +23,7 @@ interface PortalContextValue {
   initialNotes: string
   ready: boolean
   error: string | null
+  engagementPaid: boolean
   handleAcknowledge: () => Promise<void>
 }
 
@@ -40,6 +41,7 @@ interface UserRow {
   annual_income: number | null
   household_size: string | null
   moving_timeline: string | null
+  engagement_paid: boolean | null
   // Typed as DNAScores keys going forward (Brief 2a) — rows saved before this
   // brief may still contain old LifestyleScores key strings; those simply won't
   // match any DNA category and are silently ignored by buildClientBuckets/
@@ -70,6 +72,7 @@ export default function PortalDataProvider({ children }: { children: ReactNode }
   const [initialNotes, setInitialNotes] = useState('')
   const [ready, setReady] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [engagementPaid, setEngagementPaid] = useState(false)
 
   useEffect(() => {
     const rawSession = localStorage.getItem(LOCAL_SESSION_KEY)
@@ -94,7 +97,7 @@ export default function PortalDataProvider({ children }: { children: ReactNode }
         try { m = JSON.parse(rawMatches) as CityMatch[] } catch {}
       }
       if (m.length === 0) {
-        m = getTopMatches(prof, getAllCities(), 3).topMatches
+        m = getTopMatches(prof, getAllCities(), 5).topMatches
       }
       setMatches(m)
     }
@@ -111,7 +114,7 @@ export default function PortalDataProvider({ children }: { children: ReactNode }
 
         const { data, error: fetchError } = await supabase
           .from('users')
-          .select('first_name, top_city_matches, annual_income, household_size, moving_timeline, must_haves, nice_to_haves, not_priorities, archetype, growth_profile, lifestyle_orientation, environment, pace, culture, current_milemarker, onboarding_acknowledged, mm2_checklist, portal_notes')
+          .select('first_name, top_city_matches, annual_income, household_size, moving_timeline, must_haves, nice_to_haves, not_priorities, archetype, growth_profile, lifestyle_orientation, environment, pace, culture, current_milemarker, onboarding_acknowledged, mm2_checklist, portal_notes, engagement_paid')
           .eq('email', email)
           .single()
 
@@ -138,6 +141,7 @@ export default function PortalDataProvider({ children }: { children: ReactNode }
         if (ud.onboarding_acknowledged) setOnboardingAcknowledged(true)
         if (ud.mm2_checklist) setInitialChecklist(ud.mm2_checklist)
         if (ud.portal_notes) setInitialNotes(ud.portal_notes)
+        if (ud.engagement_paid) setEngagementPaid(true)
 
         if (!profileWasLoaded && ud.annual_income) {
           const reconstructedProfile: UserProfile = {
@@ -182,7 +186,7 @@ export default function PortalDataProvider({ children }: { children: ReactNode }
               })
               .filter((m): m is CityMatch => m !== null)
           } else {
-            restoredMatches = getTopMatches(reconstructedProfile, allCities, 3).topMatches
+            restoredMatches = getTopMatches(reconstructedProfile, allCities, 5).topMatches
           }
 
           if (restoredMatches.length > 0) {
@@ -234,6 +238,7 @@ export default function PortalDataProvider({ children }: { children: ReactNode }
         initialNotes,
         ready,
         error,
+        engagementPaid,
         handleAcknowledge,
       }}
     >

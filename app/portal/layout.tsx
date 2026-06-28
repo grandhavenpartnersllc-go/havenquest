@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import ThemeProvider from './providers/ThemeProvider'
 import PortalDataProvider from './providers/PortalDataProvider'
@@ -13,6 +13,10 @@ export default async function PortalLayout({ children }: { children: ReactNode }
   const cookieStore = await cookies()
   const authToken = cookieStore.get('hq_auth')?.value
   if (!authToken) redirect('/login')
+
+  const headersList = await headers()
+  const pathname = headersList.get('x-pathname') ?? ''
+  const isWelcomePage = pathname === '/portal/welcome'
 
   return (
     <ThemeProvider>
@@ -64,9 +68,15 @@ export default async function PortalLayout({ children }: { children: ReactNode }
               overflow: 'hidden',
             }}
           >
-            <JourneyRail />
-            <WorkspacePanel>{children}</WorkspacePanel>
-            <CommandCenter />
+            {isWelcomePage ? (
+              <div style={{ flex: 1, overflowY: 'auto' }}>{children}</div>
+            ) : (
+              <>
+                <JourneyRail />
+                <WorkspacePanel>{children}</WorkspacePanel>
+                <CommandCenter />
+              </>
+            )}
           </div>
         </div>
       </PortalDataProvider>

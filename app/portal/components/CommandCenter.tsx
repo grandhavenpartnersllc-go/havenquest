@@ -60,7 +60,9 @@ function SkeletonCircle({ size }: { size: number }) {
 }
 
 export default function CommandCenter() {
-  const { currentMM, ready } = usePortalData()
+  const { currentMM, ready, engagementPaid } = usePortalData()
+
+  if (!engagementPaid) return null
   const router = useRouter()
   const [team, setTeam] = useState<TeamData>({ marketDirector: null, selectAgent: null, lender: null })
   const [teamLoading, setTeamLoading] = useState(true)
