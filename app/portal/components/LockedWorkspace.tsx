@@ -36,7 +36,7 @@ export default function LockedWorkspace({
           Your journey
           <span style={{ margin: '0 5px' }}>›</span>
           <span style={{ color: 'var(--text-secondary)' }}>
-            MM{mmNumber} — {name}
+            {name}
           </span>
         </p>
       </div>

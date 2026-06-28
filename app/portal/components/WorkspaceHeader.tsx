@@ -4,7 +4,7 @@ interface WorkspaceHeaderProps {
   deliverable?: string
 }
 
-export default function WorkspaceHeader({ mmNumber, name, deliverable }: WorkspaceHeaderProps) {
+export default function WorkspaceHeader({ name, deliverable }: WorkspaceHeaderProps) {
   return (
     <div
       style={{
@@ -17,7 +17,7 @@ export default function WorkspaceHeader({ mmNumber, name, deliverable }: Workspa
       <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '0 0 6px', lineHeight: 1 }}>
         Your journey
         <span style={{ margin: '0 5px' }}>›</span>
-        <span style={{ color: 'var(--text-secondary)' }}>MM{mmNumber} — {name}</span>
+        <span style={{ color: 'var(--text-secondary)' }}>{name}</span>
       </p>
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '16px' }}>
         <h1

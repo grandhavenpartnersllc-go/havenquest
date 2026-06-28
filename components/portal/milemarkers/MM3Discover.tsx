@@ -194,7 +194,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const [selectedCityIndex, setSelectedCityIndex] = useState(initialCityIndex ?? 0)
   const [sandboxTouched, setSandboxTouched] = useState(false)
 
-  const [selectedMetro, setSelectedMetro] = useState<string>('')
+  const [selectedMetro, setSelectedMetro] = useState<string>(initialMetro ?? 'State')
 
   const [originLabel, setOriginLabel] = useState<string | null>(null)
   const [originState, setOriginState] = useState<string | null>(null)
@@ -976,7 +976,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                 Also in your top matches
               </p>
               <div style={{ display: 'flex', gap: '10px' }}>
-                {displayedMatches.slice(3).map((match, i) => {
+                {displayedMatches.slice(3, 5).map((match, i) => {
                   const globalIndex = i + 3
                   const afStatus = getCityAffordabilityStatus(match)
                   const afDotColor = afStatus === 'comfortable' ? '#22C55E'
