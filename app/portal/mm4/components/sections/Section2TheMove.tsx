@@ -129,39 +129,6 @@ export default function Section2TheMove({ data, onChange, errors }: Props) {
         </p>
       </div>
 
-      {/* Motivation — Why Texas / Why now side by side */}
-      <div>
-        <MiniLabel>Motivation</MiniLabel>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-          <Field
-            label="Why Texas?"
-            required
-            error={errors.why_texas}
-            hint="What's drawing you to Texas specifically?"
-          >
-            <textarea
-              className="mm4-textarea"
-              value={data.why_texas ?? ''}
-              onChange={e => onChange({ why_texas: e.target.value })}
-              placeholder="Lower cost of living, no state income tax, family nearby, lifestyle change..."
-              rows={3}
-            />
-          </Field>
-          <Field
-            label="Why now?"
-            hint="What's making this the right time? (optional)"
-          >
-            <textarea
-              className="mm4-textarea"
-              value={data.why_now ?? ''}
-              onChange={e => onChange({ why_now: e.target.value })}
-              placeholder="Job change, life event, kids leaving home, retiring..."
-              rows={3}
-            />
-          </Field>
-        </div>
-      </div>
-
       {/* Timing — Target date / Timeline flexibility side by side */}
       <div>
         <MiniLabel>Timing</MiniLabel>

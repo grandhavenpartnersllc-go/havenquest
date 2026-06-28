@@ -635,7 +635,7 @@ export default function ProfilePage() {
                 </>
               ) : (
                 <p style={{ fontSize: '14px', color: '#8a93a0', margin: 0 }}>
-                  Priority data is not available. Complete the quiz to set your priorities.
+                  Priority data is not available. Complete your Discovery to set your priorities.
                 </p>
               )}
             </Section>
@@ -680,7 +680,7 @@ export default function ProfilePage() {
                 </>
               ) : (
                 <p style={{ fontSize: '14px', color: '#8a93a0', margin: 0 }}>
-                  No matches available yet. Complete your quiz to see your top Texas cities.
+                  No matches available yet. Complete your Discovery to see your top Texas cities.
                 </p>
               )}
             </Section>

@@ -98,20 +98,14 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
     }))
   }, [profile])
 
-  // Pre-populate current_zip/city/state from sessionStorage origin ZIP lookup (set at the quiz's name/ZIP step)
+  // Pre-populate current_zip/city/state from sessionStorage (fallback only — Supabase values take priority in the load effect below)
   useEffect(() => {
     const zip = sessionStorage.getItem('hq_origin_zip')
-    if (zip) {
-      setFormData(prev => ({ ...prev, current_zip: prev.current_zip || zip }))
-    }
+    if (zip) setFormData(prev => ({ ...prev, current_zip: prev.current_zip || zip }))
     const city = sessionStorage.getItem('hq_origin_city')
-    if (city) {
-      setFormData(prev => ({ ...prev, current_city: prev.current_city || city }))
-    }
+    if (city) setFormData(prev => ({ ...prev, current_city: prev.current_city || city }))
     const state = sessionStorage.getItem('hq_origin_state')
-    if (state) {
-      setFormData(prev => ({ ...prev, current_state: prev.current_state || state }))
-    }
+    if (state) setFormData(prev => ({ ...prev, current_state: prev.current_state || state }))
   }, [])
 
   // Load existing partial record + chosen_communities on mount
@@ -130,7 +124,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
             .maybeSingle(),
           supabase
             .from('users')
-            .select('chosen_communities, household_size, home_status, moving_timeline')
+            .select('chosen_communities, household_size, home_status, moving_timeline, annual_income_override, sandbox_profile, origin_city, origin_state')
             .eq('email', email)
             .maybeSingle(),
         ])
@@ -139,8 +133,21 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
           setQuizHouseholdSize(userData.household_size)
         }
 
-        const mappedOriginSituation = mapHomeStatusToOriginSituation(userData?.home_status)
-        const mappedTimelineFlexibility = mapMovingTimelineToFlexibility(userData?.moving_timeline)
+        // A3: prefer MM3 override values over quiz values
+        const sandboxProfile = userData?.sandbox_profile as Record<string, unknown> | null ?? null
+        const mappedOriginSituation = mapHomeStatusToOriginSituation(
+          (sandboxProfile?.homeStatus as string | undefined) ?? userData?.home_status
+        )
+        const mappedTimelineFlexibility = mapMovingTimelineToFlexibility(
+          (sandboxProfile?.moveTimeline as string | undefined) ?? userData?.moving_timeline
+        )
+        const incomeFromSupabase = userData?.annual_income_override
+          ? `$${userData.annual_income_override.toLocaleString('en-US')}`
+          : null
+
+        // A4: prefer Supabase origin city/state over sessionStorage
+        const originCityFromDb = userData?.origin_city as string | null ?? null
+        const originStateFromDb = userData?.origin_state as string | null ?? null
 
         if (existing && !existing.submitted) {
           setFormData(prev => ({
@@ -148,6 +155,9 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
             ...existing,
             origin_situation: existing.origin_situation ?? mappedOriginSituation,
             timeline_flexibility: existing.timeline_flexibility ?? mappedTimelineFlexibility,
+            income_range_confirmed: existing.income_range_confirmed || incomeFromSupabase || prev.income_range_confirmed,
+            current_city: existing.current_city || originCityFromDb || prev.current_city,
+            current_state: existing.current_state || originStateFromDb || prev.current_state,
           }))
           profileSeedApplied.current = true
           const resumed = typeof existing.last_completed_section === 'number'
@@ -157,11 +167,14 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
             setCurrentSection(resumed)
             setAnimKey(k => k + 1)
           }
-        } else if (mappedOriginSituation || mappedTimelineFlexibility) {
+        } else if (mappedOriginSituation || mappedTimelineFlexibility || incomeFromSupabase || originCityFromDb) {
           setFormData(prev => ({
             ...prev,
             origin_situation: prev.origin_situation ?? mappedOriginSituation,
             timeline_flexibility: prev.timeline_flexibility ?? mappedTimelineFlexibility,
+            income_range_confirmed: prev.income_range_confirmed || incomeFromSupabase || prev.income_range_confirmed,
+            current_city: prev.current_city || originCityFromDb || prev.current_city,
+            current_state: prev.current_state || originStateFromDb || prev.current_state,
           }))
         }
 
@@ -194,7 +207,6 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
     } else if (sectionIndex === 1) {
       if (!formData.num_adults || formData.num_adults < 1) e.num_adults = 'Required'
     } else if (sectionIndex === 2) {
-      if (!formData.why_texas?.trim()) e.why_texas = 'Required'
       if (!formData.origin_situation) e.origin_situation = 'Please select one'
       if (!formData.timeline_flexibility) e.timeline_flexibility = 'Please select one'
     } else if (sectionIndex === 3) {
@@ -267,6 +279,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
       const { data: { session: supaSession } } = await supabase.auth.getSession()
 
       const now = new Date().toISOString()
+      const quizSessionId = typeof window !== 'undefined' ? localStorage.getItem('hq_session_id') : null
       const submitData: MM4Profile = {
         ...formData,
         email: session.email.toLowerCase(),
@@ -274,6 +287,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
         submitted_at: now,
         last_completed_section: 6,
         ...(supaSession?.user?.id ? { user_id: supaSession.user.id } : {}),
+        ...(quizSessionId ? { quiz_session_id: quizSessionId } : {}),
       }
 
       const { error: upsertError } = await supabase

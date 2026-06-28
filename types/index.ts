@@ -279,6 +279,7 @@ export interface QuizSessionData {
 export interface MM4Profile {
   id?: string
   user_id?: string
+  quiz_session_id?: string
   email: string
 
   // Section 1 — Identity and Household

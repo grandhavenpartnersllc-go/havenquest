@@ -387,7 +387,7 @@ export default function BeginPage() {
                 Continue where you left off?
               </h1>
               <p className="text-gray-500 mb-8">
-                Looks like you were partway through your HavenQuest assessment.
+                Looks like you were partway through your HavenQuest Discovery.
               </p>
               <div className="flex gap-3">
                 <button
@@ -443,7 +443,7 @@ export default function BeginPage() {
               </div>
 
               <p style={{ fontSize: '13px', color: '#6B7280', lineHeight: 1.7, marginBottom: '28px' }}>
-                After you complete the assessment, you&apos;ll see your top Texas community matches — ranked by your priorities and budget. Create your free portal to unlock your full report and begin your Navigator journey.
+                After you complete your Discovery, you&apos;ll see your top Texas community matches — ranked by your priorities and budget. Create your free portal to unlock your full report and begin your Navigator journey.
               </p>
 
               <div style={{ display: 'flex', flexDirection: 'row', gap: '12px', alignItems: 'flex-start', marginBottom: '28px' }}>

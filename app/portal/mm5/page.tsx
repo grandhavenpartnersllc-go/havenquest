@@ -16,7 +16,7 @@ export default function MM5Page() {
         'Warm lender introduction and pre-qualification',
         'Move Blueprint document delivered',
       ]}
-      unlockCondition="When Market Director confirms MM4 complete and Navigator Activation fee is paid"
+      unlockCondition="When Market Director confirms MM4 complete and HavenQuest Engagement is complete"
     />
   )
 }

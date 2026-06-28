@@ -348,16 +348,20 @@ export async function POST(request: NextRequest) {
       console.error('[MM4/submit] MD notification error:', err)
     }
 
-    // Persist origin_zip to public.users so it's available for future queries
-    if (profile.current_zip && profile.email) {
+    // Persist origin location to public.users so it's available for future queries
+    if (profile.email && (profile.current_zip || profile.current_city || profile.current_state)) {
       try {
         const supabase = getSupabase()
         await supabase
           .from('users')
-          .update({ origin_zip: profile.current_zip })
+          .update({
+            ...(profile.current_zip ? { origin_zip: profile.current_zip } : {}),
+            ...(profile.current_city ? { origin_city: profile.current_city } : {}),
+            ...(profile.current_state ? { origin_state: profile.current_state } : {}),
+          })
           .eq('email', profile.email.toLowerCase())
       } catch (err) {
-        console.error('[MM4/submit] origin_zip save error:', err)
+        console.error('[MM4/submit] origin location save error:', err)
       }
     }
 

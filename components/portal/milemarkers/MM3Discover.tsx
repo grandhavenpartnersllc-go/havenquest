@@ -1960,7 +1960,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           }
           window.location.href = '/portal/mm4'
         }}
-        nextLabel="I'm ready to build my relocation plan →"
+        nextLabel="Schedule a Consultation →"
       />
 
       {/* City Snapshot Popup */}

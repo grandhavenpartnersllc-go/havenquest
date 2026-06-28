@@ -32,7 +32,7 @@ const CONTAINER = { maxWidth: '1080px', margin: '0 auto', padding: '0 40px' } as
 const PROMISE_ITEMS = [
   { Icon: BarChart2, label: 'Matched to your life', desc: 'We score every Texas community across 12 lifestyle categories — schools, safety, walkability, weather, healthcare, and more — weighted by what matters most to you.' },
   { Icon: UserCheck, label: 'A real guide at your side', desc: "When you're ready to take the next step, your personal Market Director steps in — having already reviewed your full profile, your priorities, and your financial picture. They don't sell you. They guide you — from direction to closing day and beyond." },
-  { Icon: ShieldCheck, label: 'Guided all the way home', desc: "HavenQuest doesn't hand you off at the closing table. From your first quiz to your first night in your new Texas home — and beyond — your team is with you every step of the way." },
+  { Icon: ShieldCheck, label: 'Guided all the way home', desc: "HavenQuest doesn't hand you off at the closing table. From your Discovery to your first night in your new Texas home — and beyond — your team is with you every step of the way." },
   { Icon: Lock, label: 'Your data stays yours', desc: 'Everything you share powers your personal experience. Nothing is sold. Nothing is shared without your consent. Your profile is private by default — always.' },
 ]
 

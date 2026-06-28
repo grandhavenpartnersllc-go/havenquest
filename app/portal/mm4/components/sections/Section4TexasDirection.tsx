@@ -33,7 +33,6 @@ function Field({ label, required, error, hint, children }: {
 }
 
 type TargetConfidence = MM4Profile['target_confidence']
-type HouseholdAlignment = MM4Profile['household_alignment']
 
 function PillGroup<T extends string>({
   options,
@@ -244,38 +243,15 @@ export default function Section4TexasDirection({ data, onChange, errors, chosenC
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            <Field label="How confident are you in your top choice?">
-              <PillGroup
-                options={[
-                  { label: 'Very confident', value: 'very_confident' },
-                  { label: 'Leaning, but open', value: 'leaning_open' },
-                  { label: 'Genuinely torn between these', value: 'torn' },
-                ]}
-                value={data.target_confidence}
-                onSelect={v => onChange({ target_confidence: v as TargetConfidence })}
-              />
-            </Field>
-            <Field label="Is everyone in your household aligned on this direction?">
-              <PillGroup
-                options={[
-                  { label: 'Yes, fully aligned', value: 'fully_aligned' },
-                  { label: 'Mostly, some discussion ongoing', value: 'mostly_aligned' },
-                  { label: 'Still working through it', value: 'still_working' },
-                ]}
-                value={data.household_alignment}
-                onSelect={v => onChange({ household_alignment: v as HouseholdAlignment })}
-              />
-            </Field>
-          </div>
-
-          <Field label="What do you want from your first call?">
-            <textarea
-              className="mm4-textarea"
-              value={data.first_call_priority ?? ''}
-              onChange={e => onChange({ first_call_priority: e.target.value })}
-              placeholder="e.g. I want to understand the school districts better, or talk through financing options..."
-              rows={2}
+          <Field label="How confident are you in your top choice?">
+            <PillGroup
+              options={[
+                { label: 'Very confident', value: 'very_confident' },
+                { label: 'Leaning, but open', value: 'leaning_open' },
+                { label: 'Genuinely torn between these', value: 'torn' },
+              ]}
+              value={data.target_confidence}
+              onSelect={v => onChange({ target_confidence: v as TargetConfidence })}
             />
           </Field>
         </div>
