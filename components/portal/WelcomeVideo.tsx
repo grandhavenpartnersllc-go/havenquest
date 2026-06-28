@@ -3,7 +3,7 @@
 import type { CSSProperties } from 'react'
 
 // ── CONFIGURE THIS ONE LINE TO CHANGE VIDEO SOURCE ──────────────
-const WELCOME_VIDEO_SOURCE = "/videos/navigator-welcome.mp4"
+const WELCOME_VIDEO_SOURCE = "https://youtu.be/dUmG7DmGwKM"
 // Accepted formats:
 //   "/videos/navigator-welcome.mp4"          → HTML5 upload
 //   "https://www.youtube.com/watch?v=XXXXX"  → YouTube embed
