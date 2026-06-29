@@ -113,19 +113,14 @@ export default function MM2Discover({ matches, profile, onAdvanceToDiscover, ema
         </p>
       </div>
 
-      {/* Carousel wrap */}
-      <div style={{ position: 'relative', overflow: 'hidden', borderRadius: '12px', width: '100%' }}>
-        <div style={{
-          display: 'flex',
-          transform: `translateX(-${current * 100}%)`,
-          transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-          willChange: 'transform',
-        }}>
-          {visibleMatches.map((match, idx) => {
-            const city = match.location
-            const status = getCityAffordabilityStatus(match)
-            const isExpanded = expandedCards[idx]
-            const char = communityChar(city.personality.environment)
+      {/* Carousel — fade approach (immune to parent overflow-y:auto bleed) */}
+      <div style={{ position: 'relative', borderRadius: '12px', width: '100%' }}>
+        {visibleMatches.map((match, idx) => {
+          const isActive = idx === current
+          const city = match.location
+          const status = getCityAffordabilityStatus(match)
+          const isExpanded = expandedCards[idx]
+          const char = communityChar(city.personality.environment)
 
             const statusLabel = status === 'comfortable' ? 'Comfortable' : status === 'moderate' ? 'Moderate' : 'Stretched'
             const statusStyle = status === 'comfortable'
@@ -138,9 +133,17 @@ export default function MM2Discover({ matches, profile, onAdvanceToDiscover, ema
             const costOfLiving = Math.round(city.housing.monthlyGroceries + city.housing.monthlyUtilities + city.housing.monthlyTransportation)
             const yoy = city.market.priceYOY
 
-            return (
-              <div key={city.id} style={{ minWidth: '100%', flexShrink: 0 }}>
-                <div style={{ background: '#fff', borderRadius: '12px', overflow: 'hidden' }}>
+          return (
+            <div key={city.id} style={{
+              position: isActive ? 'relative' : 'absolute',
+              top: isActive ? undefined : 0,
+              left: isActive ? undefined : 0,
+              width: '100%',
+              opacity: isActive ? 1 : 0,
+              transition: 'opacity 0.35s ease',
+              pointerEvents: isActive ? 'auto' : 'none',
+            }}>
+              <div style={{ background: '#fff', borderRadius: '12px', overflow: 'hidden' }}>
 
                   {/* Photo */}
                   <div style={{ height: '180px', position: 'relative', background: '#2D4A6B', overflow: 'hidden' }}>
@@ -286,9 +289,8 @@ export default function MM2Discover({ matches, profile, onAdvanceToDiscover, ema
                   </div>
                 </div>
               </div>
-            )
-          })}
-        </div>
+          )
+        })}
       </div>
 
       {/* Navigation row */}
