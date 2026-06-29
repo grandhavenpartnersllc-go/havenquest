@@ -74,7 +74,8 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
 
   // Community
   const [pinnedCities, setPinnedCities] = useState<string[]>([])
-  const [openDetailId, setOpenDetailId] = useState<string | null>(null)
+  const [selectedCityId, setSelectedCityId] = useState<string | null>(null)
+  const [showAllCities, setShowAllCities] = useState(false)
   const [selectedMetro, setSelectedMetro] = useState(initialMetro ?? 'State')
   const [sandboxTouched, setSandboxTouched] = useState(false)
 
@@ -386,7 +387,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
                       <p style={{ fontSize: '13px', color: '#fff', fontWeight: 500, margin: 0, lineHeight: 1.2 }}>{cityLoc.name}</p>
                       <button type="button" onClick={() => {
-                        setOpenDetailId(cityId)
+                        setSelectedCityId(cityId)
                         commSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
                       }} style={{ fontSize: '10px', color: '#C5B783', cursor: 'pointer', background: 'none', border: 'none', padding: 0, textDecoration: 'underline', textUnderlineOffset: '2px', flexShrink: 0, marginLeft: '6px' }}>
                         Report →
@@ -510,19 +511,19 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         <div style={{ flex: 1, background: '#F2F1EE', minWidth: 0 }}>
 
           {/* SECTION 1 — Communities */}
-          <div ref={commSectionRef} style={{ padding: '18px 20px', borderBottom: '0.5px solid #D5D0C9' }}>
+          <div ref={commSectionRef} style={{ padding: '18px 20px 0', borderBottom: '0.5px solid #D5D0C9' }}>
             <p style={{ fontSize: '14px', fontWeight: 500, color: '#0A1E3D', margin: '0 0 3px' }}>Your communities</p>
-            <p style={{ fontSize: '11px', color: '#86868b', margin: '0 0 12px' }}>
-              Rankings update live as you adjust priorities. Pin up to 3 communities. Click any city for details.
+            <p style={{ fontSize: '11px', color: '#86868b', margin: '0 0 10px' }}>
+              Rankings update live as you adjust priorities. Pin up to 3 communities. Click any city to preview.
             </p>
 
             {/* Metro filter */}
-            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '12px' }}>
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '10px' }}>
               {METRO_FILTERS.map(f => {
                 const active = selectedMetro === f.value
                 return (
-                  <button key={f.value} type="button" onClick={() => setSelectedMetro(f.value)} style={{
-                    padding: '5px 12px', borderRadius: '20px', fontSize: '12px',
+                  <button key={f.value} type="button" onClick={() => { setSelectedMetro(f.value); setSelectedCityId(null); setShowAllCities(false) }} style={{
+                    padding: '4px 11px', borderRadius: '20px', fontSize: '11px',
                     fontWeight: active ? 500 : 400,
                     background: active ? '#0A1E3D' : '#fff',
                     color: active ? '#fff' : '#6B6A65',
@@ -533,132 +534,234 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
               })}
             </div>
 
-            {/* Ranked list */}
+            {/* Master-detail body */}
             {rankedCities.length === 0 ? (
               <p style={{ fontSize: '13px', color: '#86868b', padding: '12px 0' }}>No communities in this metro.</p>
-            ) : (
-              <div>
-                {rankedCities.map((match, idx) => {
-                  const city = match.location
-                  const isPinned = pinnedCities.includes(city.id)
-                  const isOpen = openDetailId === city.id
-                  const status = afStatus(city.housing.medianHomePrice)
+            ) : (() => {
+              const effectiveSelectedId = selectedCityId ?? rankedCities[0]?.location.id
+              const selectedMatch = rankedCities.find(m => m.location.id === effectiveSelectedId)
+              const selectedRankIdx = rankedCities.findIndex(m => m.location.id === effectiveSelectedId)
+              const displayedCities = showAllCities ? rankedCities : rankedCities.slice(0, 5)
 
-                  return (
-                    <div key={city.id}>
+              function rankPillLabel(idx: number): string {
+                if (idx === 0) return '⭐ Top pick'
+                if (idx === 1) return 'Runner-up'
+                if (idx === 2) return 'Strong alt'
+                return `#${idx + 1}`
+              }
+
+              function communityCharLabel(env: number): string {
+                if (env <= 3) return 'Urban'
+                if (env <= 6) return 'Suburban'
+                if (env <= 8) return 'Small Town'
+                return 'Rural'
+              }
+
+              return (
+                <div style={{
+                  display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0,
+                  borderTop: '0.5px solid #E8E6E2',
+                }}>
+                  {/* City list column */}
+                  <div style={{ borderRight: '0.5px solid #E8E6E2', padding: '12px 14px 14px 0', overflowY: 'auto' }}>
+                    {displayedCities.map((match, idx) => {
+                      const city = match.location
+                      const isPinned = pinnedCities.includes(city.id)
+                      const isSelected = city.id === effectiveSelectedId
+                      const status = afStatus(city.housing.medianHomePrice)
+                      const overallIdx = rankedCities.findIndex(m => m.location.id === city.id)
+
+                      let rowBg = '#fff'
+                      let rowBorder = 'transparent'
+                      if (isPinned) { rowBg = '#FEFDF8'; rowBorder = '#C5B783' }
+                      else if (isSelected) { rowBg = '#F0F3F8'; rowBorder = '#0A1E3D' }
+
+                      return (
+                        <div
+                          key={city.id}
+                          onClick={() => setSelectedCityId(city.id)}
+                          style={{
+                            background: rowBg,
+                            border: `0.5px solid ${rowBorder}`,
+                            borderRadius: '6px', padding: '7px 8px',
+                            display: 'flex', alignItems: 'center', gap: '6px',
+                            marginBottom: '2px', cursor: 'pointer',
+                          }}
+                          onMouseEnter={e => { if (!isSelected && !isPinned) (e.currentTarget as HTMLDivElement).style.borderColor = '#D0CEC8' }}
+                          onMouseLeave={e => { if (!isSelected && !isPinned) (e.currentTarget as HTMLDivElement).style.borderColor = 'transparent' }}
+                        >
+                          <span style={{ fontSize: '9px', color: '#86868b', width: '18px', flexShrink: 0 }}>#{overallIdx + 1}</span>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <p style={{ fontSize: '11px', color: '#1d1d1f', fontWeight: 500, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{city.name}</p>
+                            <p style={{ fontSize: '9px', color: '#86868b', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{city.metroUsed}</p>
+                          </div>
+                          <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: afColor(status), flexShrink: 0 }} />
+                          <span style={{ fontSize: '10px', color: '#C5B783', fontWeight: 500, flexShrink: 0 }}>{match.matchScore}%</span>
+                          <button
+                            type="button"
+                            onClick={e => { e.stopPropagation(); isPinned ? unpinCity(city.id) : pinCity(city.id) }}
+                            disabled={!isPinned && pinnedCities.length >= 3}
+                            style={{
+                              fontSize: '9px',
+                              color: isPinned ? '#C5B783' : '#0076B6',
+                              padding: '2px 5px', borderRadius: '8px',
+                              border: isPinned ? '0.5px solid rgba(197,183,131,0.4)' : '0.5px solid #C8E0F5',
+                              background: isPinned ? 'rgba(197,183,131,0.1)' : '#F0F7FF',
+                              cursor: (!isPinned && pinnedCities.length >= 3) ? 'not-allowed' : 'pointer',
+                              flexShrink: 0,
+                              opacity: !isPinned && pinnedCities.length >= 3 ? 0.38 : 1,
+                            }}
+                          >
+                            {isPinned ? '✓' : 'Pin'}
+                          </button>
+                        </div>
+                      )
+                    })}
+
+                    {/* Show more / less toggle */}
+                    {rankedCities.length > 5 && (
                       <div
-                        onClick={() => setOpenDetailId(isOpen ? null : city.id)}
+                        onClick={() => setShowAllCities(v => !v)}
                         style={{
-                          background: isPinned ? '#FEFDF8' : '#fff',
-                          border: `0.5px solid ${isPinned ? '#C5B783' : '#E0DED8'}`,
-                          borderRadius: '8px', padding: '9px 12px',
-                          display: 'flex', alignItems: 'center', gap: '8px',
-                          marginBottom: '5px', cursor: 'pointer',
+                          textAlign: 'center', padding: '6px',
+                          fontSize: '10px', color: '#0076B6',
+                          cursor: 'pointer',
+                          borderTop: '0.5px solid #E8E6E2', marginTop: '4px',
                         }}
                       >
-                        <span style={{ fontSize: '10px', color: '#86868b', width: '22px', flexShrink: 0 }}>#{idx + 1}</span>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ fontSize: '13px', color: '#1d1d1f', fontWeight: 500, margin: 0 }}>{city.name}</p>
-                          <p style={{ fontSize: '10px', color: '#86868b', margin: 0 }}>{city.metroUsed}</p>
-                        </div>
-                        <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: afColor(status), flexShrink: 0 }} />
-                        <span style={{ fontSize: '12px', color: '#C5B783', fontWeight: 500, width: '34px', textAlign: 'right' }}>
-                          {match.matchScore}%
-                        </span>
-                        <button
-                          type="button"
-                          onClick={e => { e.stopPropagation(); isPinned ? unpinCity(city.id) : pinCity(city.id) }}
-                          disabled={!isPinned && pinnedCities.length >= 3}
-                          style={{
-                            fontSize: '11px',
-                            color: isPinned ? '#C5B783' : '#0076B6',
-                            background: 'none', border: 'none',
-                            cursor: (!isPinned && pinnedCities.length >= 3) ? 'not-allowed' : 'pointer',
-                            padding: 0, whiteSpace: 'nowrap',
-                            opacity: !isPinned && pinnedCities.length >= 3 ? 0.38 : 1,
-                          }}
-                        >
-                          {isPinned ? '✓ Pinned' : 'Pin'}
-                        </button>
+                        {showAllCities ? 'Show less ↑' : `Show more cities ↓`}
                       </div>
+                    )}
+                  </div>
 
-                      {/* Inline detail panel */}
-                      {isOpen && (
-                        <div style={{
-                          background: '#F8F7F4',
-                          border: '0.5px solid #D5C794', borderRadius: '8px',
-                          padding: '12px', marginBottom: '8px',
-                        }}>
+                  {/* City preview pane */}
+                  <div style={{ padding: '12px 0 14px 14px', overflowY: 'auto' }}>
+                    {selectedMatch ? (() => {
+                      const city = selectedMatch.location
+                      const isPinned = pinnedCities.includes(city.id)
+                      const status = afStatus(city.housing.medianHomePrice)
+                      const charLabel = communityCharLabel(city.personality.environment)
+                      const statusBadge = status === 'comfortable'
+                        ? { bg: '#E8F5EE', color: '#1a6b35' }
+                        : status === 'moderate'
+                        ? { bg: '#FAEEDA', color: '#633806' }
+                        : { bg: '#FCEBEB', color: '#A32D2D' }
+
+                      return (
+                        <>
                           {/* Photo */}
-                          <div style={{
-                            width: '100%', height: '96px', borderRadius: '6px',
-                            background: '#2D4A6B', position: 'relative', overflow: 'hidden', marginBottom: '10px',
-                          }}>
+                          <div style={{ height: '110px', borderRadius: '8px', overflow: 'hidden', position: 'relative', marginBottom: '10px', background: '#2D4A6B' }}>
                             <Image
-                              src={`/images/cities/${city.id}.jpg`}
+                              src={city.cityImageUrl ?? `/images/cities/${city.id}.jpg`}
                               alt={city.name}
                               fill
                               className="object-cover"
                               onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
                             />
                             <div style={{
-                              position: 'absolute', bottom: 0, left: 0, right: 0,
-                              padding: '6px 8px',
+                              position: 'absolute', bottom: 0, left: 0, right: 0, height: '60px',
                               background: 'linear-gradient(transparent, rgba(0,0,0,0.6))',
-                            }}>
-                              <p style={{ fontSize: '11px', color: '#fff', margin: 0, fontWeight: 500 }}>{city.name}</p>
+                              pointerEvents: 'none',
+                            }} />
+                            <p style={{ position: 'absolute', bottom: '7px', left: '9px', fontSize: '9px', color: 'rgba(255,255,255,0.65)', margin: 0, zIndex: 1 }}>
+                              {city.name}
+                            </p>
+                            {/* Rank pill */}
+                            <div style={{ position: 'absolute', top: '8px', left: '8px', background: 'rgba(0,0,0,0.4)', borderRadius: '14px', padding: '3px 8px' }}>
+                              <span style={{ fontSize: '8px', fontWeight: 600, letterSpacing: '0.06em', color: '#fff', textTransform: 'uppercase' }}>
+                                {rankPillLabel(selectedRankIdx)}
+                              </span>
+                            </div>
+                            {/* Match pill */}
+                            <div style={{ position: 'absolute', top: '8px', right: '8px', background: '#C5B783', borderRadius: '14px', padding: '3px 8px' }}>
+                              <span style={{ fontSize: '9px', fontWeight: 600, color: '#0A1E3D' }}>{selectedMatch.matchScore}%</span>
                             </div>
                           </div>
 
-                          {/* Stats */}
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '5px', marginBottom: '9px' }}>
+                          {/* City name + location */}
+                          <p style={{ fontSize: '13px', fontWeight: 500, color: '#0A1E3D', marginBottom: '1px' }}>{city.name}</p>
+                          <p style={{ fontSize: '9px', color: '#86868b', marginBottom: '7px' }}>
+                            {city.metroUsed} metro · {city.county} County
+                          </p>
+
+                          {/* Description */}
+                          <p style={{ fontSize: '10px', color: '#3a3a3a', lineHeight: 1.55, marginBottom: '8px' }}>
+                            {city.description}
+                          </p>
+
+                          {/* Stats 2×2 */}
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', marginBottom: '8px' }}>
                             {[
-                              { label: 'Schools',  value: city.school?.teaRating ? `${city.school.teaRating} rated` : '—' },
-                              { label: 'Med home', value: fmtK(city.housing.medianHomePrice) },
-                              { label: 'Safety',   value: city.scores.safety >= 7 ? 'Low risk' : city.scores.safety >= 4 ? 'Moderate' : 'Higher risk' },
-                              { label: 'Family',   value: city.dna.familyLifestyle >= 7 ? 'Family-focused' : city.dna.familyLifestyle >= 4 ? 'Mixed' : 'Less family' },
-                              { label: 'Growth',   value: city.dna.growthPotential >= 7 ? 'Fast growing' : city.dna.growthPotential >= 4 ? 'Steady' : 'Slow growth' },
-                              { label: 'Match',    value: `${match.matchScore}%` },
+                              { label: 'Schools',   value: city.school?.teaRating ? `${city.school.teaRating} rated` : '—' },
+                              { label: 'Med home',  value: fmtK(city.housing.medianHomePrice) },
+                              { label: 'Safety',    value: city.scores.safety >= 7 ? 'Low risk' : city.scores.safety >= 4 ? 'Moderate' : 'Higher risk' },
+                              { label: 'Community', value: charLabel },
                             ].map(stat => (
-                              <div key={stat.label} style={{
-                                background: '#fff', borderRadius: '6px',
-                                padding: '6px 8px', border: '0.5px solid #E0DED8',
-                              }}>
-                                <p style={{ fontSize: '9px', color: '#86868b', textTransform: 'uppercase', letterSpacing: '0.04em', margin: '0 0 2px' }}>{stat.label}</p>
-                                <p style={{ fontSize: '11px', color: '#1d1d1f', fontWeight: 500, margin: 0 }}>{stat.value}</p>
+                              <div key={stat.label} style={{ background: '#F5F5F7', borderRadius: '5px', padding: '5px 7px' }}>
+                                <p style={{ fontSize: '8px', color: '#86868b', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '1px' }}>{stat.label}</p>
+                                <p style={{ fontSize: '10px', color: '#1d1d1f', fontWeight: 500, margin: 0 }}>{stat.value}</p>
                               </div>
                             ))}
                           </div>
 
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          {/* Budget fit */}
+                          <div style={{
+                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                            background: '#F5F5F7', borderRadius: '6px', padding: '6px 8px', marginBottom: '8px',
+                          }}>
+                            <div>
+                              <p style={{ fontSize: '8px', color: '#86868b', margin: '0 0 1px' }}>Budget fit</p>
+                              <p style={{ fontSize: '10px', color: '#1d1d1f', fontWeight: 500, margin: 0 }}>
+                                Est. ${selectedMatch.estimatedMonthlyHousing.toLocaleString()}/mo
+                              </p>
+                            </div>
+                            <span style={{
+                              background: statusBadge.bg, color: statusBadge.color,
+                              borderRadius: '12px', padding: '3px 8px', fontSize: '9px', fontWeight: 500,
+                            }}>{afLabel(status)}</span>
+                          </div>
+
+                          {/* Action buttons */}
+                          <div style={{ display: 'flex', gap: '5px' }}>
                             <button
                               type="button"
                               onClick={() => isPinned ? unpinCity(city.id) : pinCity(city.id)}
                               disabled={!isPinned && pinnedCities.length >= 3}
                               style={{
-                                fontSize: '11px',
-                                color: isPinned ? '#C5B783' : '#0076B6',
-                                background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-                                opacity: !isPinned && pinnedCities.length >= 3 ? 0.4 : 1,
+                                flex: 1,
+                                background: isPinned ? 'rgba(197,183,131,0.15)' : '#0A1E3D',
+                                color: isPinned ? '#C5B783' : '#fff',
+                                border: isPinned ? '0.5px solid rgba(197,183,131,0.4)' : 'none',
+                                borderRadius: '6px', padding: '7px',
+                                fontSize: '10px', fontWeight: 500,
+                                cursor: (!isPinned && pinnedCities.length >= 3) ? 'not-allowed' : 'pointer',
+                                opacity: !isPinned && pinnedCities.length >= 3 ? 0.5 : 1,
+                                textAlign: 'center', fontFamily: 'inherit',
                               }}
                             >
-                              {isPinned ? '✓ Pinned' : 'Pin this community'}
+                              {isPinned ? 'Pinned ✓' : 'Pin this community'}
                             </button>
                             <button
                               type="button"
-                              onClick={() => setReportMatch(match)}
-                              style={{ fontSize: '11px', color: '#0076B6', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                              onClick={() => setReportMatch(selectedMatch)}
+                              style={{
+                                flex: 1, border: '0.5px solid #D0CEC8', borderRadius: '6px',
+                                padding: '7px', fontSize: '10px', color: '#555',
+                                background: '#fff', cursor: 'pointer', textAlign: 'center', fontFamily: 'inherit',
+                              }}
                             >
-                              View full report →
+                              Full report →
                             </button>
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-            )}
+                        </>
+                      )
+                    })() : (
+                      <p style={{ fontSize: '11px', color: '#86868b', padding: '12px 0' }}>Select a city to preview.</p>
+                    )}
+                  </div>
+                </div>
+              )
+            })()}
           </div>
 
           {/* SECTION 2 — Priorities */}
@@ -684,7 +787,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                         cursor: 'pointer',
                       }}>
                       <span>{cat.icon} {cat.label}</span>
-                      <span style={{ color: '#C0BFBA', fontSize: '10px' }}>→</span>
+                      <span style={{ color: '#0076B6', fontSize: '10px' }}>→</span>
                     </div>
                   )
                 })}
@@ -703,12 +806,12 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                       display: 'flex', alignItems: 'center', gap: '4px',
                     }}>
                       <button type="button" onClick={() => movePriority(key, 'up')}
-                        style={{ color: '#C0BFBA', fontSize: '10px', background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px', lineHeight: 1 }}>
+                        style={{ color: '#0076B6', fontSize: '10px', background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px', lineHeight: 1 }}>
                         ←
                       </button>
                       <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cat.icon} {cat.label}</span>
                       <button type="button" onClick={() => movePriority(key, 'down')}
-                        style={{ color: '#C0BFBA', fontSize: '10px', background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px', lineHeight: 1 }}>
+                        style={{ color: '#0076B6', fontSize: '10px', background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px', lineHeight: 1 }}>
                         →
                       </button>
                     </div>
@@ -723,13 +826,17 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                 {lessImportant.map(key => {
                   const cat = DNA_CATEGORIES.find(c => c.key === key)!
                   return (
-                    <div key={key} onClick={() => movePriority(key, 'up')}
+                    <div key={key}
                       style={{
-                        background: '#F5F5F7', borderRadius: '5px', padding: '6px 8px',
+                        background: '#F5F5F7', borderRadius: '5px', padding: '5px 6px',
                         fontSize: '11px', color: '#1d1d1f', marginBottom: '4px',
-                        cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', gap: '4px',
                       }}>
-                      {cat.icon} {cat.label}
+                      <button type="button" onClick={() => movePriority(key, 'up')}
+                        style={{ color: '#0076B6', fontSize: '10px', background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px', lineHeight: 1, flexShrink: 0 }}>
+                        ←
+                      </button>
+                      <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cat.icon} {cat.label}</span>
                     </div>
                   )
                 })}
