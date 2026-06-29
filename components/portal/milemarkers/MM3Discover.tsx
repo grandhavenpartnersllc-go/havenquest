@@ -1,123 +1,53 @@
 'use client'
 
-import { useState, useEffect, useRef, type CSSProperties } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
-import { Lock, ChevronDown, ChevronRight, CheckCircle } from 'lucide-react'
-import { CityMatch, UserProfile, UserSession, SandboxProfile, DNAScores, PersonalityPreference } from '../../../types'
+import { CityMatch, UserProfile, UserSession, SandboxProfile, DNAScores } from '../../../types'
 import FullReport from '../../results/FullReport'
 import { DNA_CATEGORIES } from '../../../utils/constants'
-import { DNA_CATEGORY_ICONS } from '../../../utils/categoryIcons'
 import { getAllCities } from '../../../services/locationService'
-import { getTopMatches, getDownPaymentMidpoint, getProceedsMidpoint, calculateMonthlyPayment } from '../../../services/matchingService'
+import { getTopMatches } from '../../../services/matchingService'
 import { createClient } from '../../../lib/supabase/client'
-import StickyAdvanceBar from '../StickyAdvanceBar'
-import { getStateIncomeTaxRate } from '../../../utils/stateIncomeTax'
 
-// calculateMonthlyPayment exported for external use; MM3 computes inline with dynamic interestRate
-void calculateMonthlyPayment
+const ALL_KEYS = DNA_CATEGORIES.map(c => c.key) as (keyof DNAScores)[]
 
-const WARM_DARK = '#16120D'
-const GOLD = '#B8912A'
-const NAVY = '#0A1E3D'
-const CARD_BG = '#FDFCFA'
-const CARD_SHADOW = '0 1px 3px rgba(0,0,0,0.05), 0 4px 20px rgba(0,0,0,0.07)'
-
-// Origin City Comparison column layout — same structural pattern as
-// CompareModal.tsx (label col + two fixed-width city cols sharing one divider
-// position across header and every row), but themed to this page's gold/
-// warm-dark palette instead of CompareModal's blue header.
-const OCC_COL_W = 120
-const OCC_DIVIDER_PAD = 10
-const OCC_COL_LABEL: CSSProperties = { flex: '1 1 0', minWidth: 0 }
-const OCC_COL_A: CSSProperties = {
-  width: OCC_COL_W,
-  flexShrink: 0,
-  paddingRight: OCC_DIVIDER_PAD,
-  borderRight: '2px solid rgba(184,145,42,0.3)',
-  textAlign: 'right',
-}
-const OCC_COL_B: CSSProperties = {
-  width: OCC_COL_W,
-  flexShrink: 0,
-  paddingLeft: OCC_DIVIDER_PAD,
-  textAlign: 'right',
-}
-
-const ALL_CATEGORY_KEYS = DNA_CATEGORIES.map(c => c.key)
-const NEUTRAL_PERSONALITY: PersonalityPreference = { growthProfile: 5, pace: 5, culture: 5, environment: 5, lifestyleOrientation: 5 }
-const PERSONALITY_SLIDERS: { key: keyof PersonalityPreference; label: string; left: string; right: string; description: string }[] = [
-  { key: 'growthProfile', label: 'Growth Profile', left: 'Established', right: 'Emerging', description: "Do you want a place that's already established, or one that's still growing into itself?" },
-  { key: 'pace', label: 'Pace', left: 'Relaxed', right: 'Fast-Paced', description: 'Are you drawn to a relaxed rhythm, or somewhere that moves fast?' },
-  { key: 'culture', label: 'Culture', left: 'Private', right: 'Community-Oriented', description: 'Do you want neighbors who feel like community, or more privacy and space?' },
-  { key: 'environment', label: 'Environment', left: 'Urban', right: 'Rural', description: 'Picture your surroundings — closer to the city, or closer to the land?' },
-  { key: 'lifestyleOrientation', label: 'Lifestyle Orientation', left: 'Practical', right: 'Luxury', description: 'Practical and down-to-earth, or upscale and aspirational?' },
-]
-
-const DOWN_PAYMENT_OPTIONS = [
-  'Under $20,000',
-  '$20,000 – $50,000',
-  '$50,000 – $100,000',
-  '$100,000 – $200,000',
-  '$200,000 – $500,000',
-  '$500,000+',
-  "I'm not sure yet",
-]
-
-const METRO_OPTIONS = [
-  { label: 'State',        value: 'State' },
-  { label: 'Austin',       value: 'Austin' },
-  { label: 'DFW',          value: 'Dallas' },
-  { label: 'Houston',      value: 'Houston' },
-  { label: 'San Antonio',  value: 'San Antonio' },
-]
-
-// Current market rate data — update quarterly
-// Source: Freddie Mac PMMS, May 28, 2026
-const RATE_MARKET_LOW = 6.25
-const RATE_MARKET_HIGH = 7.00
+const RATE_DEFAULT = 6.5
 const RATE_MARKET_AVG = 6.53
-const RATE_DATA_DATE = 'May 2026'
-const RATE_DEFAULT = 6.75
 
-function getRateZone(rate: number): 'low' | 'market' | 'high' {
-  if (rate < RATE_MARKET_LOW) return 'low'
-  if (rate <= RATE_MARKET_HIGH) return 'market'
-  return 'high'
-}
-
-const PROCEEDS_OPTIONS = [
-  'Under $50,000',
-  '$50,000 – $100,000',
-  '$100,000 – $200,000',
-  '$200,000 – $350,000',
-  '$350,000 – $500,000',
-  '$500,000 – $750,000',
-  '$750,000+',
-  "I'm not sure yet",
+const METRO_FILTERS = [
+  { label: 'All Texas', value: 'State' },
+  { label: 'Austin',     value: 'Austin' },
+  { label: 'DFW',        value: 'Dallas' },
+  { label: 'Houston',    value: 'Houston' },
+  { label: 'San Antonio', value: 'San Antonio' },
 ]
 
-function formatCurrency(raw: string): string {
+function fmtCurrency(raw: string): string {
   const digits = raw.replace(/[^0-9]/g, '')
   if (!digits) return ''
-  const num = parseInt(digits, 10)
-  return '$' + num.toLocaleString('en-US')
+  return '$' + parseInt(digits, 10).toLocaleString('en-US')
 }
 
-function parseCurrency(formatted: string): number | null {
-  const digits = formatted.replace(/[^0-9]/g, '')
-  if (!digits) return null
-  const num = parseInt(digits, 10)
-  return isNaN(num) || num <= 0 ? null : num
+function parseMoney(s: string): number {
+  const n = parseInt(s.replace(/[^0-9]/g, ''), 10)
+  return isNaN(n) ? 0 : n
 }
 
-function parseExactAmount(val: string): number | null {
-  return parseCurrency(val)
+function fmtK(n: number): string {
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`
+  if (n >= 1_000) return `$${Math.round(n / 1_000)}K`
+  return n ? `$${n.toLocaleString()}` : '$0'
 }
 
-type BucketKey = 'mustHaves' | 'niceToHaves' | 'notPriorities' | 'unassigned'
+function calcMonthly(principal: number, annualRate: number, termYears: number): number {
+  if (principal <= 0) return 0
+  const r = annualRate / 100 / 12
+  const n = termYears * 12
+  if (r === 0) return Math.round(principal / n)
+  return Math.round(principal * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1))
+}
 
-interface MM3DiscoverProps {
+interface Props {
   matches: CityMatch[]
   profile: UserProfile | null
   session: UserSession
@@ -126,367 +56,233 @@ interface MM3DiscoverProps {
   initialCityIndex?: number
 }
 
-export default function MM3Discover({ matches, profile, session, onAdvanceToConnect, initialMetro, initialCityIndex }: MM3DiscoverProps) {
-  const router = useRouter()
-  const [downPayment, setDownPayment] = useState<string>(
-    profile?.financial_picture?.down_payment_available ?? '$20,000 – $50,000'
-  )
-  const [proceeds, setProceeds] = useState<string | null>(
-    profile?.financial_picture?.home_sale_proceeds ?? null
-  )
-  // interestRate is stored and displayed but does not affect ranking math.
-  // matchingService.ts uses a hardcoded 7.0% rate. Full interest rate integration is Phase 2.
-  const [interestRate, setInterestRate] = useState<number>(RATE_DEFAULT)
+export default function MM3Discover({ matches, profile, session, onAdvanceToConnect, initialMetro }: Props) {
+  // Financial
+  const [isSelling, setIsSelling] = useState(false)
+  const [proceeds, setProceeds] = useState('')
+  const [savings, setSavings] = useState('')
+  const [interestRate, setInterestRate] = useState(RATE_DEFAULT)
   const [loanTerm, setLoanTerm] = useState<30 | 15>(30)
-  const [exactDownPayment, setExactDownPayment] = useState<string>('')
-  const [exactHomeProceeds, setExactHomeProceeds] = useState<string>('')
-  const [calcExactDownPayment, setCalcExactDownPayment] = useState<string>('')
-  const [calcExactHomeProceeds, setCalcExactHomeProceeds] = useState<string>('')
-  const [reportCity, setReportCity] = useState<CityMatch | null>(null)
+  const [incomeVal, setIncomeVal] = useState(0)
+  const [incomeDisplay, setIncomeDisplay] = useState('')
 
-  const [mustHaves, setMustHaves] = useState<(keyof DNAScores)[]>(
-    profile?.mustHaves ?? []
-  )
-  const [niceToHaves, setNiceToHaves] = useState<(keyof DNAScores)[]>(
-    profile?.niceToHaves ?? []
-  )
-  const [notPriorities, setNotPriorities] = useState<(keyof DNAScores)[]>(
-    profile?.notPriorities ?? []
-  )
-  const [unassigned, setUnassigned] = useState<(keyof DNAScores)[]>(
-    ALL_CATEGORY_KEYS.filter(k =>
-      !profile?.mustHaves.includes(k) &&
-      !profile?.niceToHaves.includes(k) &&
-      !profile?.notPriorities.includes(k)
-    )
-  )
-  const [personalityOverride, setPersonalityOverride] = useState<PersonalityPreference>(
-    profile?.personalityPreference ?? NEUTRAL_PERSONALITY
-  )
+  // Priorities
+  const [mustHaves, setMustHaves] = useState<(keyof DNAScores)[]>([])
+  const [niceToHaves, setNiceToHaves] = useState<(keyof DNAScores)[]>([])
+  const [notPriorities, setNotPriorities] = useState<(keyof DNAScores)[]>([])
+  const [unassigned, setUnassigned] = useState<(keyof DNAScores)[]>(ALL_KEYS)
 
-  const [chosenCities, setChosenCities] = useState<string[]>([])
-  const [confirmed, setConfirmed] = useState(false)
-  const [financialsLocked, setFinancialsLocked] = useState(false)
-  const [citiesLocked, setCitiesLocked] = useState(false)
-  const [worksheetDismissed, setWorksheetDismissed] = useState(false)
-  const [financialCalcOpen, setFinancialCalcOpen] = useState(false)
-  const [incomeInputValue, setIncomeInputValue] = useState<string>(
-    formatCurrency(String(profile?.annualIncome ?? 100000))
-  )
-  const [incomeOverride, setIncomeOverride] = useState<number>(
-    profile?.annualIncome ?? 100000
-  )
-  const incomeDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const exactDownDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const exactProceedsDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  const rankingsRef = useRef<HTMLDivElement>(null)
-  const justCommittedRef = useRef(false)
-
-  const [committed, setCommitted] = useState(false)
-  const [committing, setCommitting] = useState(false)
-  const [flashBucket, setFlashBucket] = useState<string | null>(null)
-  const [draggedCat, setDraggedCat] = useState<keyof DNAScores | null>(null)
-  const [dragOverBucket, setDragOverBucket] = useState<BucketKey | null>(null)
-  const [cityPopup, setCityPopup] = useState<CityMatch | null>(null)
-  const [emailSent, setEmailSent] = useState(false)
-  const [sendingEmail, setSendingEmail] = useState(false)
-  const [selectedCityIndex, setSelectedCityIndex] = useState(initialCityIndex ?? 0)
+  // Community
+  const [pinnedCities, setPinnedCities] = useState<string[]>([])
+  const [openDetailId, setOpenDetailId] = useState<string | null>(null)
+  const [selectedMetro, setSelectedMetro] = useState(initialMetro ?? 'State')
   const [sandboxTouched, setSandboxTouched] = useState(false)
 
-  const [selectedMetro, setSelectedMetro] = useState<string>(initialMetro ?? 'State')
+  // UI
+  const [ctaError, setCtaError] = useState<string | null>(null)
+  const [committing, setCommitting] = useState(false)
+  const [reportMatch, setReportMatch] = useState<CityMatch | null>(null)
 
-  const [originLabel, setOriginLabel] = useState<string | null>(null)
-  const [originState, setOriginState] = useState<string | null>(null)
-  const [originMarketData, setOriginMarketData] = useState<{
-    medianHomeValue: number | null
-    medianMonthlyHousingCost: number | null
-    medianRealEstateTaxes: number | null
-    effectiveTaxRate: number | null
-  } | null>(null)
+  const commSectionRef = useRef<HTMLDivElement>(null)
+  const priorityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const incomeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Origin City Comparison (Brief: origin_city_comparison) — quiz-time lookup,
-  // read-only here. Missing/null is the normal case for many users (sparse ZIP,
-  // lookup didn't finish in time) and is handled in the render, not here.
+  // Load DB state
   useEffect(() => {
-    const city = sessionStorage.getItem('hq_origin_city')
-    // hq_origin_state is the 2-letter USPS abbreviation (Zippopotam's "state
-    // abbreviation" field — see utils/zipLookup.ts), not a full state name.
-    const state = sessionStorage.getItem('hq_origin_state')
-    if (city) setOriginLabel(state ? `${city}, ${state}` : city)
-    if (state) setOriginState(state)
+    async function load() {
+      const supabase = createClient()
+      const { data: { session: s } } = await supabase.auth.getSession()
+      if (!s?.user?.email) return
+      const { data } = await supabase
+        .from('users')
+        .select('sandbox_committed,sandbox_profile,chosen_communities,home_status,exact_home_proceeds,available_funds,annual_income_override,loan_term_preference')
+        .eq('email', s.user.email.toLowerCase())
+        .maybeSingle()
+      if (!data) return
 
-    const raw = sessionStorage.getItem('hq_origin_market_data')
-    if (raw) {
-      try {
-        setOriginMarketData(JSON.parse(raw))
-      } catch {}
+      if (data.sandbox_committed) { onAdvanceToConnect(); return }
+
+      if (data.home_status === 'selling') setIsSelling(true)
+
+      if (data.sandbox_profile) {
+        const sp: SandboxProfile = data.sandbox_profile
+        if (sp.mustHaves?.length) setMustHaves(sp.mustHaves)
+        if (sp.niceToHaves?.length) setNiceToHaves(sp.niceToHaves)
+        if (sp.notPriorities?.length) setNotPriorities(sp.notPriorities)
+        if (sp.unassigned !== undefined) setUnassigned(sp.unassigned)
+        if (sp.interestRateOverride) setInterestRate(sp.interestRateOverride)
+        setSandboxTouched(true)
+      }
+
+      if (data.exact_home_proceeds) setProceeds(fmtCurrency(String(data.exact_home_proceeds)))
+      if (data.available_funds) setSavings(fmtCurrency(String(data.available_funds)))
+
+      if (data.annual_income_override) {
+        setIncomeVal(data.annual_income_override)
+        setIncomeDisplay(fmtCurrency(String(data.annual_income_override)))
+      }
+      if (data.loan_term_preference === 15 || data.loan_term_preference === 30) {
+        setLoanTerm(data.loan_term_preference)
+      }
+      if (Array.isArray(data.chosen_communities) && data.chosen_communities.length > 0) {
+        setPinnedCities(data.chosen_communities)
+      }
     }
-  }, [])
+    load()
+  }, [onAdvanceToConnect])
 
+  // Seed from profile
   useEffect(() => {
     if (!profile) return
-    setMustHaves(profile.mustHaves ?? [])
-    setNiceToHaves(profile.niceToHaves ?? [])
-    setNotPriorities(profile.notPriorities ?? [])
-    setUnassigned(
-      ALL_CATEGORY_KEYS.filter(k =>
-        !profile.mustHaves.includes(k) &&
-        !profile.niceToHaves.includes(k) &&
-        !profile.notPriorities.includes(k)
-      )
-    )
-    setPersonalityOverride(profile.personalityPreference ?? NEUTRAL_PERSONALITY)
-  }, [profile])
-
-  useEffect(() => {
-    if (!profile?.financial_picture) return
-    setDownPayment(profile.financial_picture.down_payment_available ?? '$20,000 – $50,000')
-    setProceeds(profile.financial_picture.home_sale_proceeds ?? null)
-  }, [profile])
-
-  useEffect(() => {
-    setSelectedCityIndex(0)
-  }, [mustHaves, niceToHaves, notPriorities])
-
-  useEffect(() => {
-    setSelectedCityIndex(0)
-  }, [selectedMetro])
-
-  useEffect(() => {
-    if (initialMetro && selectedMetro === '') {
-      setSelectedMetro(initialMetro)
+    if (mustHaves.length === 0 && profile.mustHaves?.length > 0) {
+      setMustHaves(profile.mustHaves)
+      const used = new Set([...profile.mustHaves, ...(profile.niceToHaves ?? []), ...(profile.notPriorities ?? [])])
+      setNiceToHaves(profile.niceToHaves ?? [])
+      setNotPriorities(profile.notPriorities ?? [])
+      setUnassigned(ALL_KEYS.filter(k => !used.has(k)))
     }
-  }, [initialMetro, matches])
-
-  useEffect(() => {
-    const supabase = createClient()
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
-      if (!s?.user?.email) return
-      supabase
-        .from('users')
-        .select('sandbox_committed, sandbox_profile, chosen_communities, financials_locked')
-        .eq('email', s.user.email.toLowerCase())
-        .single()
-        .then(({ data }) => {
-          if (data?.sandbox_committed && data?.sandbox_profile) {
-            const sp: SandboxProfile = data.sandbox_profile
-            setDownPayment(sp.downPaymentOverride)
-            setProceeds(sp.proceedsOverride)
-            setInterestRate(sp.interestRateOverride)
-            setMustHaves(sp.mustHaves)
-            setNiceToHaves(sp.niceToHaves)
-            setNotPriorities(sp.notPriorities)
-            setUnassigned(sp.unassigned)
-            if (sp.citiesLocked) setCitiesLocked(true)
-            setCommitted(true)
-            onAdvanceToConnect()
-          }
-          if (Array.isArray(data?.chosen_communities)) {
-            setChosenCities(data.chosen_communities)
-          }
-          if (data?.financials_locked) setFinancialsLocked(true)
-        })
-    })
-  }, [])
-
-  useEffect(() => {
-    if (sessionStorage.getItem('mm3_worksheet_dismissed') === 'true') {
-      setWorksheetDismissed(true)
+    if (!incomeDisplay && profile.annualIncome) {
+      setIncomeVal(profile.annualIncome)
+      setIncomeDisplay(fmtCurrency(String(profile.annualIncome)))
     }
-  }, [])
+  }, [profile]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => {
-    setFinancialCalcOpen(window.innerWidth >= 768)
-  }, [])
+  // Computed
+  const proceedsNum = parseMoney(proceeds)
+  const savingsNum = parseMoney(savings)
+  const totalFunds = (isSelling ? proceedsNum : 0) + savingsNum
 
-  useEffect(() => {
-    if (committed && justCommittedRef.current) {
-      justCommittedRef.current = false
-      onAdvanceToConnect()
-    }
-  }, [committed, onAdvanceToConnect])
-
-  // Build sandbox profile from current slider/priority state.
-  // Rankings are driven by lifestyle priority weights only — financial picture affects
-  // affordabilityFlag display per city but does not reorder match scores.
   const sandboxProfile: UserProfile = {
-    annualIncome: incomeOverride,
+    annualIncome: incomeVal || profile?.annualIncome || 100000,
     householdSize: profile?.householdSize ?? '1',
     movingTimeline: profile?.movingTimeline ?? 'exploring',
     mustHaves,
     niceToHaves,
     notPriorities,
     financial_picture: {
-      is_homeowner: profile?.financial_picture?.is_homeowner ?? false,
-      home_sale_proceeds: proceeds,
-      down_payment_available: downPayment,
+      is_homeowner: isSelling,
+      home_sale_proceeds: isSelling ? (proceeds || null) : null,
+      down_payment_available: savings || '$0',
       purchase_timeline: profile?.financial_picture?.purchase_timeline ?? 'exploring',
     },
-    // Navigator v1.0 (Brief 2) scores on archetype + personality preference, not
-    // mustHaves/niceToHaves/notPriorities — carry the real client's values through
-    // so the sandbox doesn't silently fall back to 'general'/neutral for everyone.
-    // personalityOverride (Brief 2a) is seeded from the client's real values and
-    // moves live with the 5 sliders below.
     archetype: profile?.archetype,
-    personalityPreference: personalityOverride,
+    personalityPreference: profile?.personalityPreference ?? { growthProfile: 5, pace: 5, culture: 5, environment: 5, lifestyleOrientation: 5 },
   }
 
-  const metroCities = (!selectedMetro || selectedMetro === 'State')
+  const activeProfile = (!sandboxTouched && profile) ? profile : sandboxProfile
+
+  const metroCities = selectedMetro === 'State'
     ? getAllCities()
-    : getAllCities().filter(city => city.metroUsed.includes(selectedMetro))
+    : getAllCities().filter(c => c.metroUsed.includes(selectedMetro))
 
-  const activeProfile: UserProfile = !sandboxTouched && profile
-    ? {
-        ...profile,
-        mustHaves: profile.mustHaves ?? [],
-        niceToHaves: profile.niceToHaves ?? [],
-        notPriorities: profile.notPriorities ?? [],
-        financial_picture: profile.financial_picture ?? sandboxProfile.financial_picture,
-      }
-    : sandboxProfile
+  const { topMatches: rankedCities } = getTopMatches(activeProfile, metroCities, 20, 'hard')
 
-  // 'hard' mode (Brief 2a Part 7) — MM3 is the internal sandbox where an MD can
-  // demonstrate a category dropping to zero influence; real client matching
-  // (matchingService.getTopMatches' default) always stays 'soft'.
-  const { topMatches: sandboxMatches } = getTopMatches(activeProfile, metroCities, 5, 'hard')
-
-  // On first load, show the MM2 saved matches so MM3 opens as a continuation of MM2.
-  // The moment the user adjusts any slider, priority, or metro tab, the live sandbox takes over.
-  const displayedMatches = (!sandboxTouched && matches.length > 0)
-    ? matches
-    : sandboxMatches
-
-  // Computed financial outputs — recalculate on every render, client-side
-  const topCity = displayedMatches[selectedCityIndex]?.location ?? displayedMatches[0]?.location
-  const topCityPrice = topCity?.housing?.medianHomePrice ?? 341800
-
-  const downMid = parseExactAmount(calcExactDownPayment) ?? getDownPaymentMidpoint(downPayment)
-  const procMid = parseExactAmount(calcExactHomeProceeds) ?? (proceeds ? getProceedsMidpoint(proceeds) : 0)
-  const totalFunds = downMid + procMid
-  const mortgageBalance = Math.max(0, topCityPrice - totalFunds)
-
-  const months = loanTerm * 12
-  const effectiveRate = loanTerm === 15 ? Math.max(interestRate - 0.5, 2.0) : interestRate
-  const monthlyRate = effectiveRate / 100 / 12
-  const monthlyMortgage = mortgageBalance > 0
-    ? Math.round((mortgageBalance * monthlyRate * Math.pow(1 + monthlyRate, months)) /
-      (Math.pow(1 + monthlyRate, months) - 1))
-    : 0
-
-  // propertyTaxRate is stored as a decimal (e.g. 0.0195 = 1.95%) — no /100 needed
-  const monthlyPropertyTax = topCity
-    ? Math.round((topCityPrice * topCity.housing.propertyTaxRate) / 12)
-    : 0
-
-  const totalMonthlyHousing = monthlyMortgage + monthlyPropertyTax
-
-  const grossMonthlyIncome = incomeOverride / 12
-  const affordabilityPct = grossMonthlyIncome > 0
-    ? (totalMonthlyHousing / grossMonthlyIncome) * 100
-    : 0
-
-  const affordabilityStatus =
-    affordabilityPct <= 30 ? 'comfortable'
-    : affordabilityPct <= 40 ? 'moderate'
-    : 'stretched'
-
-  const snapshotTier =
-    affordabilityPct < 30 ? { label: 'Comfortable', color: '#2D7D4E' }
-    : affordabilityPct < 40 ? { label: 'Manageable', color: GOLD }
-    : affordabilityPct < 50 ? { label: 'A Stretch', color: '#C2622A' }
-    : { label: 'Significant Stretch', color: '#DC2626' }
-
-  const annualIncome = incomeOverride
-  const priceToIncomeRatio = annualIncome > 0 ? topCityPrice / annualIncome : 0
-  const estClosingCosts = Math.round(topCityPrice * 0.025)
-  const totalCashToClose = (downMid + procMid) + estClosingCosts
-
-  function getBucket(key: keyof DNAScores): BucketKey {
-    if (mustHaves.includes(key)) return 'mustHaves'
-    if (niceToHaves.includes(key)) return 'niceToHaves'
-    if (notPriorities.includes(key)) return 'notPriorities'
-    return 'unassigned'
-  }
-
-  function getCityAffordabilityStatus(match: CityMatch): 'comfortable' | 'moderate' | 'stretched' {
-    const grossMonthlyIncome = incomeOverride / 12
-    const cityPrice = match.location.housing.medianHomePrice
-    const taxRate = match.location.housing.propertyTaxRate ?? 0.018
-    const totalFunds = downMid + procMid
-    const balance = Math.max(0, cityPrice - totalFunds)
-    if (balance === 0) return 'comfortable'
-    const cityEffectiveRate = loanTerm === 15 ? Math.max(interestRate - 0.5, 2.0) : interestRate
-    const cityMonths = loanTerm * 12
-    const mRate = cityEffectiveRate / 100 / 12
-    const payment = Math.round(
-      (balance * mRate * Math.pow(1 + mRate, cityMonths)) /
-      (Math.pow(1 + mRate, cityMonths) - 1)
-    )
-    const tax = Math.round((cityPrice * taxRate) / 12)
-    const pct = (payment + tax) / grossMonthlyIncome
-    if (pct <= 0.30) return 'comfortable'
-    if (pct <= 0.40) return 'moderate'
+  // Affordability — brief formula: full price / (income/12 × 0.28)
+  function afStatus(medianPrice: number): 'comfortable' | 'moderate' | 'stretched' {
+    const income = incomeVal || profile?.annualIncome || 0
+    if (income <= 0) return 'stretched'
+    const rate = loanTerm === 15 ? Math.max(interestRate - 0.5, 2) : interestRate
+    const monthly = calcMonthly(medianPrice, rate, loanTerm)
+    const maxMonthly = income / 12 * 0.28
+    const ratio = maxMonthly > 0 ? monthly / maxMonthly : 99
+    if (ratio < 0.85) return 'comfortable'
+    if (ratio <= 1.1) return 'moderate'
     return 'stretched'
   }
 
-  function handleIncomeChange(raw: string) {
-    const formatted = formatCurrency(raw)
-    setIncomeInputValue(formatted)
-    setSandboxTouched(true)
-    if (incomeDebounceRef.current) clearTimeout(incomeDebounceRef.current)
-    incomeDebounceRef.current = setTimeout(() => {
-      const parsed = parseCurrency(formatted)
-      if (parsed) setIncomeOverride(parsed)
-    }, 300)
+  const afColor = (s: 'comfortable' | 'moderate' | 'stretched') =>
+    s === 'comfortable' ? '#34C759' : s === 'moderate' ? '#F5A623' : '#FF3B30'
+
+  const afLabel = (s: 'comfortable' | 'moderate' | 'stretched') =>
+    s === 'comfortable' ? 'Comfortable' : s === 'moderate' ? 'Moderate' : 'Stretched'
+
+  // Buying power monthly estimate (first pinned city or $385K reference)
+  const refCityData = getAllCities().find(c => c.id === pinnedCities[0])
+  const refPrice = refCityData?.housing.medianHomePrice ?? 385000
+  const refBalance = Math.max(0, refPrice - totalFunds)
+  const refRate = loanTerm === 15 ? Math.max(interestRate - 0.5, 2) : interestRate
+  const refMonthly = calcMonthly(refBalance, refRate, loanTerm)
+
+  // Helpers
+  function findMatch(cityId: string): CityMatch | undefined {
+    return rankedCities.find(m => m.location.id === cityId) ?? matches.find(m => m.location.id === cityId)
   }
 
-  async function handleLockFinancials() {
-    const newLocked = !financialsLocked
-    setFinancialsLocked(newLocked)
-    if (newLocked) {
-      try {
-        const supabase = createClient()
-        const { data: { session: s } } = await supabase.auth.getSession()
-        if (!s?.user?.email) return
-        // Requires annual_income_override column (nullable integer) on public.users
-        await supabase
-          .from('users')
-          .update({ annual_income_override: incomeOverride })
-          .eq('email', s.user.email.toLowerCase())
-      } catch (err) {
-        console.error('Failed to save income override:', err)
-      }
-    }
-  }
-
-  async function handleLockCities() {
-    setCitiesLocked(true)
+  async function persistPinned(ids: string[]) {
     try {
       const supabase = createClient()
       const { data: { session: s } } = await supabase.auth.getSession()
       if (!s?.user?.email) return
-      await supabase
-        .from('users')
-        .update({
+      await supabase.from('users').update({ chosen_communities: ids }).eq('email', s.user.email.toLowerCase())
+    } catch {}
+  }
+
+  async function persistNumbers(updates: Record<string, unknown>) {
+    try {
+      const supabase = createClient()
+      const { data: { session: s } } = await supabase.auth.getSession()
+      if (!s?.user?.email) return
+      await supabase.from('users').update(updates).eq('email', s.user.email.toLowerCase())
+    } catch {}
+  }
+
+  function debounceSavePriorities(mh: (keyof DNAScores)[], nh: (keyof DNAScores)[], np: (keyof DNAScores)[], ua: (keyof DNAScores)[]) {
+    if (priorityTimerRef.current) clearTimeout(priorityTimerRef.current)
+    priorityTimerRef.current = setTimeout(async () => {
+      try {
+        const supabase = createClient()
+        const { data: { session: s } } = await supabase.auth.getSession()
+        if (!s?.user?.email) return
+        await supabase.from('users').update({
           sandbox_profile: {
-            downPaymentOverride: downPayment,
-            proceedsOverride: proceeds,
+            downPaymentOverride: savings || '$0',
+            proceedsOverride: isSelling ? (proceeds || null) : null,
             interestRateOverride: interestRate,
-            mustHaves,
-            niceToHaves,
-            notPriorities,
-            unassigned,
-            citiesLocked: true,
-          },
-        })
-        .eq('email', s.user.email.toLowerCase())
-    } catch (err) {
-      console.error('Failed to save cities locked:', err)
-    }
+            mustHaves: mh, niceToHaves: nh, notPriorities: np, unassigned: ua,
+          }
+        }).eq('email', s.user.email.toLowerCase())
+      } catch {}
+    }, 600)
+  }
+
+  function movePriority(key: keyof DNAScores, direction: 'up' | 'down') {
+    setSandboxTouched(true)
+    const inMH = mustHaves.includes(key)
+    const inNH = niceToHaves.includes(key)
+    let newMH = mustHaves.filter(k => k !== key)
+    let newNH = niceToHaves.filter(k => k !== key)
+    let newNP = notPriorities.filter(k => k !== key)
+    let newUA = unassigned.filter(k => k !== key)
+
+    if (inMH && direction === 'down') newNH = [...newNH, key]
+    else if (inNH && direction === 'up') newMH = [...newMH, key]
+    else if (inNH && direction === 'down') newNP = [...newNP, key]
+    else newNH = [...newNH, key] // less/unassigned always goes to nice
+
+    setMustHaves(newMH); setNiceToHaves(newNH); setNotPriorities(newNP); setUnassigned(newUA)
+    debounceSavePriorities(newMH, newNH, newNP, newUA)
+  }
+
+  async function pinCity(cityId: string) {
+    if (pinnedCities.includes(cityId) || pinnedCities.length >= 3) return
+    const updated = [...pinnedCities, cityId]
+    setPinnedCities(updated)
+    setCtaError(null)
+    await persistPinned(updated)
+  }
+
+  async function unpinCity(cityId: string) {
+    const updated = pinnedCities.filter(id => id !== cityId)
+    setPinnedCities(updated)
+    await persistPinned(updated)
   }
 
   async function handleCommit() {
+    if (pinnedCities.length === 0) {
+      setCtaError('Pin at least one community before scheduling your consultation.')
+      return
+    }
+    setCtaError(null)
     setCommitting(true)
     try {
       const supabase = createClient()
@@ -494,1676 +290,650 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
       if (!s?.user?.email) return
 
       const sandboxData: SandboxProfile = {
-        downPaymentOverride: downPayment,
-        proceedsOverride: proceeds,
+        downPaymentOverride: savings || '$0',
+        proceedsOverride: isSelling ? (proceeds || null) : null,
         interestRateOverride: interestRate,
-        mustHaves,
-        niceToHaves,
-        notPriorities,
-        unassigned,
+        mustHaves, niceToHaves, notPriorities, unassigned,
+        citiesLocked: true,
       }
 
-      const email = s.user.email.toLowerCase()
-      const { data, error } = await supabase
-        .from('users')
-        .update({
-          current_milemarker: 4,
-          sandbox_profile: sandboxData,
-          sandbox_committed: true,
-          sandbox_committed_at: new Date().toISOString(),
-          chosen_communities: chosenCities,
-          exact_down_payment: parseExactAmount(exactDownPayment) ?? null,
-          exact_home_proceeds: parseExactAmount(exactHomeProceeds) ?? null,
-          loan_term_preference: loanTerm,
-          financials_locked: financialsLocked,
-        })
-        .eq('email', email)
-        .select('current_milemarker')
-      if (error) throw error
-      if (!data || data.length === 0) {
-        console.warn('[MM3→4] write affected 0 rows — RLS UPDATE policy missing or JWT email mismatch for', email)
-      }
+      await supabase.from('users').update({
+        current_milemarker: 4,
+        sandbox_profile: sandboxData,
+        sandbox_committed: true,
+        sandbox_committed_at: new Date().toISOString(),
+        chosen_communities: pinnedCities,
+        exact_home_proceeds: isSelling ? (proceedsNum || null) : null,
+        exact_down_payment: savingsNum || null,
+        loan_term_preference: loanTerm,
+        financials_locked: true,
+        annual_income_override: incomeVal || null,
+      }).eq('email', s.user.email.toLowerCase())
 
-      justCommittedRef.current = true
-      setCommitted(true)
+      onAdvanceToConnect()
     } catch (err) {
-      console.error('MM3 handleCommit write failed:', err)
+      console.error('[MM3] commit failed:', err)
+      setCtaError('Something went wrong. Please try again.')
+    } finally {
+      setCommitting(false)
     }
-    finally { setCommitting(false) }
   }
 
-  async function handleSendEmail() {
-    setSendingEmail(true)
-    try {
-      const res = await fetch('/api/sandbox-report', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: session.email,
-          firstName: session.firstName,
-          topCity: sandboxMatches[0]?.location.name,
-          topScore: sandboxMatches[0]?.matchScore,
-          mustHaves: mustHaves.map(k => DNA_CATEGORIES.find(c => c.key === k)?.label ?? k),
-          niceToHaves: niceToHaves.map(k => DNA_CATEGORIES.find(c => c.key === k)?.label ?? k),
-          downPayment,
-          proceeds,
-          interestRate,
-          monthlyMortgage,
-          monthlyPropertyTax,
-          totalMonthlyHousing,
-          topCities: sandboxMatches.map(m => ({
-            name: m.location.name,
-            metro: m.location.metroUsed,
-            score: m.matchScore,
-          })),
-        }),
-      })
-      if (res.ok) setEmailSent(true)
-    } catch {}
-    finally { setSendingEmail(false) }
-  }
+  const lessImportant = [...notPriorities, ...unassigned]
 
-  if (committed) {
-    const downDisplay = parseCurrency(exactDownPayment)
-      ? `$${parseCurrency(exactDownPayment)!.toLocaleString('en-US')}`
-      : downPayment
-    const proceedsDisplay = parseCurrency(exactHomeProceeds)
-      ? `$${parseCurrency(exactHomeProceeds)!.toLocaleString('en-US')}`
-      : proceeds
-
-    return (
-      <div>
-
-        {/* Post-commit Section 1 — Confirmation */}
-        <div className="mb-4 rounded-xl p-5"
-             style={{ backgroundColor: '#F0FAF4', border: '1.5px solid #C6E8D4' }}>
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-                 style={{ backgroundColor: '#2D7D4E' }}>
-              <span className="text-white text-sm">✓</span>
-            </div>
-            <div>
-              <p className="font-bold text-sm" style={{ color: '#2D7D4E' }}>
-                Your direction is locked in.
-              </p>
-              <p className="text-xs" style={{ color: '#4B7A5E' }}>
-                Your Market Director will be in touch within 24 hours.
-              </p>
-            </div>
-          </div>
-          <p className="text-sm leading-relaxed" style={{ color: '#4B7A5E' }}>
-            Your plan is saved as your new starting point. Your original profile is preserved
-            alongside it — your Market Director will see both. The wheel is still in your hands.
-            Now you have a copilot.
-          </p>
-        </div>
-
-        {/* Post-commit actions */}
-        <button
-          onClick={() => window.print()}
-          className="w-full py-3 rounded-xl font-bold text-sm border mb-3"
-          style={{ borderColor: GOLD, color: GOLD, backgroundColor: 'transparent' }}
-        >
-          Download My Plan Summary
-        </button>
-
-        <button
-          onClick={handleSendEmail}
-          disabled={emailSent || sendingEmail}
-          className="w-full py-3 rounded-xl font-bold text-sm mb-3"
-          style={{
-            backgroundColor: emailSent ? '#F0FAF4' : GOLD,
-            color: emailSent ? '#2D7D4E' : '#16120D',
-            opacity: sendingEmail ? 0.6 : 1,
-          }}
-        >
-          {emailSent ? '✓ Plan summary sent to your email'
-           : sendingEmail ? 'Sending...'
-           : 'Email Me My Plan Summary'}
-        </button>
-
-        <button
-          onClick={onAdvanceToConnect}
-          className="w-full py-3 rounded-xl font-bold text-sm mb-6"
-          style={{ backgroundColor: NAVY, color: '#ffffff' }}
-        >
-          Continue to Connect →
-        </button>
-
-        {/* Post-commit Section 2 — Committed Direction Summary */}
-        <div className="mb-8 rounded-xl p-5"
-             style={{ backgroundColor: CARD_BG, boxShadow: CARD_SHADOW }}>
-          <p className="text-[10px] font-bold uppercase mb-3"
-             style={{ color: GOLD, letterSpacing: '0.18em' }}>
-            Your Committed Direction
-          </p>
-
-          <div className="mb-4">
-            <p style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', marginBottom: '4px' }}>
-              {chosenCities.length === 1 ? 'Selected community' : 'Selected communities'}
-            </p>
-            {chosenCities.length > 0 ? chosenCities.map(cityId => {
-              const city = getAllCities().find(c => c.id === cityId)
-              const match = displayedMatches.find(m => m.location.id === cityId)
-              return city ? (
-                <div key={cityId} style={{ marginBottom: '6px' }}>
-                  <span style={{ fontSize: '15px', fontWeight: 600, color: 'var(--color-text-primary)' }}>
-                    {city.name}
-                  </span>
-                  {match && (
-                    <span style={{ fontSize: '12px', color: 'var(--color-text-tertiary)', marginLeft: '8px' }}>
-                      {match.matchScore}% match
-                    </span>
-                  )}
-                  <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '1px' }}>
-                    {city.metroUsed}
-                  </p>
-                </div>
-              ) : null
-            }) : (
-              <p className="text-sm" style={{ color: WARM_DARK }}>
-                {sandboxMatches[0]?.location.name} — {sandboxMatches[0]?.matchScore} points
-              </p>
-            )}
-          </div>
-
-          <div className="mb-4">
-            <p className="text-xs font-semibold mb-1" style={{ color: '#9A8E82' }}>MUST HAVES</p>
-            <div className="flex flex-wrap gap-2">
-              {mustHaves.map(key => {
-                const cat = DNA_CATEGORIES.find(c => c.key === key)!
-                return (
-                  <span key={key}
-                        className="px-2.5 py-1 rounded-full text-xs font-semibold"
-                        style={{ backgroundColor: 'rgba(184,145,42,0.12)', color: GOLD }}>
-                    {cat.icon} {cat.label}
-                  </span>
-                )
-              })}
-              {mustHaves.length === 0 && (
-                <span className="text-xs italic" style={{ color: '#9A8E82' }}>None set</span>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <p className="text-xs font-semibold mb-1" style={{ color: '#9A8E82' }}>FINANCIAL PICTURE</p>
-            <p className="text-sm" style={{ color: '#4B5563' }}>
-              Down payment: {downDisplay}
-              {proceeds && proceeds !== 'None' && ` · Proceeds: ${proceedsDisplay}`}
-              {' '}· Rate assumption: {effectiveRate.toFixed(2)}% · {loanTerm}-year
-            </p>
-          </div>
-        </div>
-
-        {/* Post-commit Section 3 — What Happens Next */}
-        <div className="rounded-xl p-5" style={{ backgroundColor: '#F7F6F3' }}>
-          <p className="text-[10px] font-bold uppercase mb-3"
-             style={{ color: GOLD, letterSpacing: '0.18em' }}>
-            What Happens Next
-          </p>
-          <p className="text-sm leading-relaxed mb-4" style={{ color: '#4B5563' }}>
-            Your Market Director is being assigned. Before they reach out, they&apos;ll read
-            everything — your original profile, what you changed in the sandbox, and your
-            committed direction. Expect to hear from them within 24 hours.
-          </p>
-          <div className="rounded-xl p-4"
-               style={{ backgroundColor: 'rgba(184,145,42,0.08)', border: `1px solid ${GOLD}33` }}>
-            <p className="text-sm font-medium" style={{ color: '#7A5A1A' }}>
-              <Lock size={13} style={{ verticalAlign: 'middle', marginRight: 4 }} /> Connect will unlock when your Market Director initiates contact.
-            </p>
-          </div>
-        </div>
-
-      </div>
-    )
-  }
-
-  // Interactive priority selector — buckets map to scoring weights:
-  // mustHaves = Must Have (3x, cap 4) · niceToHaves = Important (2x, cap 5) ·
-  // notPriorities = Nice to Have (1x, no cap) · unassigned = Unassigned (0x, no cap)
-  const PRIORITY_BUCKETS: Array<{ key: BucketKey; label: string; items: (keyof DNAScores)[]; cap: number | null; pillBg: string; pillColor: string }> = [
-    { key: 'mustHaves',     label: 'Must Have',    items: mustHaves,     cap: 4,    pillBg: 'rgba(184,145,42,0.12)', pillColor: GOLD },
-    { key: 'niceToHaves',   label: 'Important',    items: niceToHaves,   cap: 5,    pillBg: '#E8F5EE',               pillColor: '#2D7D4E' },
-    { key: 'notPriorities', label: 'Nice to Have', items: notPriorities, cap: null, pillBg: 'rgba(26,95,168,0.12)',  pillColor: '#1A5FA8' },
-  ]
-  const UNASSIGNED_BUCKET: typeof PRIORITY_BUCKETS[number] =
-    { key: 'unassigned', label: 'Unassigned', items: unassigned, cap: null, pillBg: 'rgba(107,114,128,0.12)', pillColor: '#6B7280' }
-
-  const bucketSetters: Record<BucketKey, React.Dispatch<React.SetStateAction<(keyof DNAScores)[]>>> = {
-    mustHaves: setMustHaves,
-    niceToHaves: setNiceToHaves,
-    notPriorities: setNotPriorities,
-    unassigned: setUnassigned,
-  }
-
-  function movePriority(key: keyof DNAScores, from: BucketKey, to: BucketKey) {
-    if (from === to) return
-    bucketSetters[from](prev => prev.filter(k => k !== key))
-    bucketSetters[to](prev => [...prev, key])
-  }
-
-  function flashFull(b: BucketKey) {
-    setFlashBucket(b)
-    setTimeout(() => setFlashBucket(null), 600)
-  }
-
-  function handlePriorityDrop(to: BucketKey) {
-    const key = draggedCat
-    setDraggedCat(null)
-    setDragOverBucket(null)
-    if (!key) return
-    const from = getBucket(key)
-    if (from === to) return
-    setSandboxTouched(true)
-    if (to === 'mustHaves' && mustHaves.length >= 4) { flashFull('mustHaves'); return }
-    if (to === 'niceToHaves' && niceToHaves.length >= 5) { flashFull('niceToHaves'); return }
-    movePriority(key, from, to)
-  }
-
-  // Click cycles Unassigned → Nice to Have → Important → Must Have → Unassigned,
-  // skipping any capped-full bucket per the brief.
-  function cyclePriority(key: keyof DNAScores) {
-    setSandboxTouched(true)
-    const from = getBucket(key)
-    let to: BucketKey
-    if (from === 'unassigned') to = 'notPriorities'
-    else if (from === 'notPriorities') to = niceToHaves.length >= 5 ? (mustHaves.length >= 4 ? 'unassigned' : 'mustHaves') : 'niceToHaves'
-    else if (from === 'niceToHaves') to = mustHaves.length >= 4 ? 'unassigned' : 'mustHaves'
-    else to = 'unassigned'
-    movePriority(key, from, to)
-  }
-
-  // Moved dimension takes the slider's value; the other 4 stay at their current
-  // positions (Brief 2a Part 7 point 4) — sandboxProfile/activeProfile/getTopMatches
-  // recompute on the next render same as every other sandbox control already does.
-  function handlePersonalityChange(dim: keyof PersonalityPreference, value: number) {
-    setSandboxTouched(true)
-    setPersonalityOverride(prev => ({ ...prev, [dim]: value }))
-  }
-
-  function renderPriorityZone(b: typeof PRIORITY_BUCKETS[number]) {
-    const isOver = dragOverBucket === b.key
-    const isFlashing = flashBucket === b.key
-    return (
-      <div key={b.key}>
-        <p className="text-[9px] font-bold uppercase mb-1" style={{ color: GOLD, letterSpacing: '0.1em' }}>
-          {b.label}{' '}
-          <span style={{ color: isFlashing ? '#EF4444' : '#9A8E82' }}>
-            {b.items.length}{b.cap ? `/${b.cap}` : ''}
-          </span>
-        </p>
-        <div
-          onDragOver={e => { e.preventDefault(); if (dragOverBucket !== b.key) setDragOverBucket(b.key) }}
-          onDragLeave={() => setDragOverBucket(prev => (prev === b.key ? null : prev))}
-          onDrop={() => handlePriorityDrop(b.key)}
-          style={{
-            border: isFlashing ? '1px solid #EF4444' : isOver ? '1px solid #C9A84C' : '1px solid #D4C5A9',
-            borderRadius: '8px',
-            background: isFlashing ? 'rgba(239,68,68,0.06)' : isOver ? 'rgba(201,168,76,0.12)' : '#F9F6F1',
-            minHeight: '80px',
-            padding: '8px',
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '4px',
-            alignContent: 'flex-start',
-            transition: 'border-color 0.15s, background 0.15s',
-          }}
-        >
-          {b.items.map(k => {
-            const cat = DNA_CATEGORIES.find(c => c.key === k)!
-            const Icon = DNA_CATEGORY_ICONS[k]
-            return (
-              <span
-                key={k}
-                draggable
-                onDragStart={() => setDraggedCat(k)}
-                onDragEnd={() => { setDraggedCat(null); setDragOverBucket(null) }}
-                onClick={() => cyclePriority(k)}
-                className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-semibold"
-                style={{ backgroundColor: b.pillBg, color: b.pillColor, cursor: 'grab', userSelect: 'none' }}
-                title="Drag to a bucket or click to cycle"
-              >
-                <Icon size={10} strokeWidth={2} />
-                {cat.label}
-              </span>
-            )
-          })}
-        </div>
-      </div>
-    )
-  }
-
+  // ──────────────────────────────────────────────────────────
+  // RENDER
+  // ──────────────────────────────────────────────────────────
   return (
-    <div>
-
-      {/* Worksheet orientation banner */}
-      {!worksheetDismissed && (
-        <div style={{
-          borderLeft: '4px solid #B8912A',
-          background: 'rgba(184,145,42,0.06)',
-          borderRadius: '0 8px 8px 0',
-          padding: '16px 20px',
-          marginBottom: '24px',
-          position: 'relative',
-        }}>
-          <p style={{ fontSize: '10px', fontWeight: 600, color: '#B8912A', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '8px' }}>
-            Your Refine Worksheet
-          </p>
-          <p style={{ fontSize: '13px', color: 'var(--color-text-primary)', fontWeight: 500, marginBottom: '8px', lineHeight: 1.5 }}>
-            This is one of the most important steps in your Navigator journey.
-          </p>
-          <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: 1.6, marginBottom: '8px' }}>
-            Before your Market Director can guide you effectively, they need
-            a clear picture of two things: where you want to be, and what you
-            can realistically spend. This worksheet helps you define both.
-          </p>
-          <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
-            Take your time. Adjust your priorities. Refine your financial
-            picture. Explore the cities that match your life. When you&apos;re
-            ready — lock your financials, choose your top communities, and
-            commit your direction. Your Market Director receives everything
-            you complete here before your first conversation.
-          </p>
-          <button
-            onClick={() => {
-              setWorksheetDismissed(true)
-              sessionStorage.setItem('mm3_worksheet_dismissed', 'true')
-            }}
-            style={{
-              position: 'absolute',
-              top: '12px',
-              right: '16px',
-              background: 'transparent',
-              border: 'none',
-              fontSize: '12px',
-              color: '#B8912A',
-              cursor: 'pointer',
-              fontWeight: 500,
-              padding: '4px 8px',
-              borderRadius: '4px',
-            }}
-          >
-            Got it ✓
-          </button>
+    <>
+      {/* Full report modal overlay */}
+      {reportMatch && (
+        <div
+          onClick={() => setReportMatch(null)}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)',
+            zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '24px', overflowY: 'auto',
+          }}
+        >
+          <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '760px', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
+              <button
+                type="button"
+                onClick={() => setReportMatch(null)}
+                style={{ fontSize: '13px', color: '#fff', background: 'none', border: 'none', cursor: 'pointer' }}
+              >
+                ✕ Close
+              </button>
+            </div>
+            <FullReport match={reportMatch} profile={activeProfile} />
+          </div>
         </div>
       )}
 
-      {/* Section 1 — Header */}
-      <div className="mb-6">
-        <p className="text-[10px] font-bold uppercase mb-2"
-           style={{ color: GOLD, letterSpacing: '0.18em' }}>
-          Your Refine Sandbox
-        </p>
-        <h2 className="text-[20px] font-bold tracking-tight mb-2" style={{ color: WARM_DARK }}>
-          Move things around. See what changes.
-        </h2>
-        <p className="text-sm leading-relaxed" style={{ color: '#6B7280' }}>
-          Your original matches are your starting point — not your final answer.
-          Adjust your financial picture and priorities below and watch your city rankings
-          respond in real time. When something clicks, commit your direction and
-          your Market Director steps in as your copilot.
-        </p>
-      </div>
+      {/* Two-panel layout */}
+      <div style={{ display: 'flex', flex: 1, minHeight: '100vh' }}>
 
-      {/* Anchor — Your Global Top Matches */}
-      {matches.length > 0 && (
-        <div className="mb-6 rounded-xl p-4"
-             style={{ backgroundColor: CARD_BG, boxShadow: CARD_SHADOW }}>
-          <p className="text-[10px] font-bold uppercase mb-0.5"
-             style={{ color: GOLD, letterSpacing: '0.18em' }}>
-            Your Top Matches
+        {/* ── LEFT PANEL ── */}
+        <div style={{
+          width: '220px', flexShrink: 0,
+          background: '#0A1E3D',
+          padding: '20px 16px',
+          display: 'flex', flexDirection: 'column', gap: '18px',
+          position: 'sticky', top: 0, height: '100vh',
+          overflowY: 'auto', alignSelf: 'flex-start',
+        }}>
+          {/* Label */}
+          <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.12em', color: '#C5B783', textTransform: 'uppercase', margin: 0 }}>
+            Your Direction
           </p>
-          <p className="text-xs mb-3" style={{ color: '#9A8E82' }}>
-            From your full assessment of all 101 Texas communities
-          </p>
-          <div className="grid grid-cols-3 md:grid-cols-5 gap-3 mb-3">
-            {displayedMatches.map((match, i) => {
-              const afStatus = getCityAffordabilityStatus(match)
-              const afDotColor = afStatus === 'comfortable' ? '#4CD964'
-                : afStatus === 'moderate' ? '#F5A623' : '#FF3B30'
-              return (
-                <div
-                  key={match.location.id}
-                  onClick={() => setSelectedCityIndex(i)}
-                  style={{
-                    position: 'relative',
-                    aspectRatio: '2/3',
-                    borderRadius: '12px',
-                    border: '0.5px solid rgba(255,255,255,0.1)',
-                    overflow: 'hidden',
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s ease',
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.02)')}
-                  onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
-                >
-                  <Image
-                    src={`/images/cities/${match.location.id}.jpg`}
-                    alt={`${match.location.name}, Texas`}
-                    fill
-                    className="object-cover"
-                    onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('default-tx')) { t.src = '/images/cities/default-tx.jpg' } }}
-                  />
-                  <div style={{
-                    position: 'absolute',
-                    bottom: 0, left: 0, right: 0,
-                    padding: '12px 10px',
-                    background: 'linear-gradient(transparent, rgba(0,0,0,0.78))',
+
+          {/* City slots */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
+            {[0, 1, 2].map(i => {
+              const cityId = pinnedCities[i]
+              const match = cityId ? findMatch(cityId) : undefined
+              const cityLoc = match?.location ?? (cityId ? getAllCities().find(c => c.id === cityId) : undefined)
+              const status = cityLoc ? afStatus(cityLoc.housing.medianHomePrice) : null
+
+              if (cityLoc) {
+                return (
+                  <div key={cityId} style={{
+                    background: 'rgba(197,183,131,0.12)',
+                    border: '0.5px solid rgba(197,183,131,0.3)',
+                    borderRadius: '8px', padding: '10px 11px',
                   }}>
-                    <p style={{ fontSize: '10px', fontWeight: 500, letterSpacing: '0.06em', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', marginBottom: '3px' }}>
-                      #{i + 1} Match
-                    </p>
-                    <p style={{ fontSize: '14px', fontWeight: 500, color: '#ffffff', lineHeight: 1.2, marginBottom: '2px' }}>
-                      {match.location.name}
-                    </p>
-                    <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)' }}>
-                      {match.location.metroUsed}
-                    </p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
-                      <span style={{ fontSize: '12px', color: '#C5B783', fontWeight: 500 }}>
-                        {match.matchScore}%
-                      </span>
-                      <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: afDotColor }} />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
+                      <p style={{ fontSize: '13px', color: '#fff', fontWeight: 500, margin: 0, lineHeight: 1.2 }}>{cityLoc.name}</p>
+                      <button type="button" onClick={() => {
+                        setOpenDetailId(cityId)
+                        commSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                      }} style={{ fontSize: '10px', color: '#C5B783', cursor: 'pointer', background: 'none', border: 'none', padding: 0, textDecoration: 'underline', textUnderlineOffset: '2px', flexShrink: 0, marginLeft: '6px' }}>
+                        Report →
+                      </button>
                     </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: afColor(status!), flexShrink: 0 }} />
+                      <span style={{ fontSize: '10px', color: afColor(status!) }}>{afLabel(status!)}</span>
+                      {match && <span style={{ fontSize: '11px', color: '#C5B783', marginLeft: 'auto' }}>{match.matchScore}%</span>}
+                    </div>
+                    <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', margin: '3px 0 0' }}>{cityLoc.metroUsed}</p>
                   </div>
+                )
+              }
+
+              return (
+                <div key={i} style={{
+                  border: '0.5px dashed rgba(255,255,255,0.14)',
+                  borderRadius: '8px', padding: '10px 11px',
+                }}>
+                  <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.22)', fontStyle: 'italic', margin: 0 }}>
+                    Pin a community →
+                  </p>
                 </div>
               )
             })}
           </div>
-          <p className="text-xs leading-relaxed" style={{ color: '#9A8E82' }}>
-            Use the explorer below to dig deeper into any metro and see how cities rank by your current priorities.
-          </p>
-        </div>
-      )}
 
-      {/* Section 2 — Split Dashboard Panel */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3 items-stretch">
-
-        {/* LEFT — Financial Summary */}
-        <div className="rounded-xl p-4"
-             style={{ backgroundColor: CARD_BG, boxShadow: CARD_SHADOW, display: 'flex', flexDirection: 'column' }}>
-          <div className="mb-3">
-            <p className="text-[10px] font-bold uppercase"
-               style={{ color: GOLD, letterSpacing: '0.18em' }}>
-              Your financial picture
-            </p>
-            {(topCity?.name || displayedMatches[0]?.location.name) && (
-              <p className="text-sm font-semibold mt-0.5" style={{ color: '#B8912A' }}>
-                {topCity?.name ?? displayedMatches[0]?.location.name}
+          {/* What matters most */}
+          {mustHaves.length > 0 && (
+            <div>
+              <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.1em', color: '#C5B783', textTransform: 'uppercase', margin: '0 0 7px' }}>
+                What matters most
               </p>
-            )}
-          </div>
-
-          <div className="grid grid-cols-2 gap-2 mb-4">
-            <div className="rounded-xl p-2.5" style={{ backgroundColor: '#F7F6F3' }}>
-              <p className="text-[10px] mb-1" style={{ color: '#9A8E82' }}>Down payment</p>
-              <p className="text-sm font-bold" style={{ color: WARM_DARK }}>
-                ${(downMid + procMid).toLocaleString()}
-              </p>
-            </div>
-            <div className="rounded-xl p-2.5" style={{ backgroundColor: '#F7F6F3' }}>
-              <p className="text-[10px] mb-1" style={{ color: '#9A8E82' }}>Est. mortgage</p>
-              <p className="text-sm font-bold" style={{ color: WARM_DARK }}>
-                ${monthlyMortgage.toLocaleString()}/mo
-              </p>
-            </div>
-            <div className="rounded-xl p-2.5" style={{ backgroundColor: '#F7F6F3' }}>
-              <p className="text-[10px] mb-1" style={{ color: '#9A8E82' }}>Est. property tax</p>
-              <p className="text-sm font-bold" style={{ color: WARM_DARK }}>
-                ${monthlyPropertyTax.toLocaleString()}/mo
-              </p>
-            </div>
-            <div
-              className="rounded-xl p-2.5"
-              style={{
-                backgroundColor:
-                  affordabilityStatus === 'comfortable' ? '#F0FAF4'
-                  : affordabilityStatus === 'moderate' ? '#FFFBEB'
-                  : '#FEF2F2',
-              }}
-            >
-              <p className="text-[10px] mb-1" style={{ color: '#9A8E82' }}>Total housing</p>
-              <p className="text-sm font-bold"
-                 style={{
-                   color: affordabilityStatus === 'comfortable' ? '#2D7D4E'
-                     : affordabilityStatus === 'moderate' ? '#B45309'
-                     : '#DC2626',
-                 }}>
-                ${totalMonthlyHousing.toLocaleString()}/mo
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2 mb-4">
-            <div className="rounded-xl p-2.5" style={{ backgroundColor: '#F7F6F3' }}>
-              <p className="text-[10px] mb-1" style={{ color: '#9A8E82' }}>Price-to-income ratio</p>
-              <p className="text-sm font-bold" style={{ color: WARM_DARK }}>
-                {priceToIncomeRatio.toFixed(1)}× your income
-              </p>
-            </div>
-            <div className="rounded-xl p-2.5" style={{ backgroundColor: '#F7F6F3' }}>
-              <p className="text-[10px] mb-1" style={{ color: '#9A8E82' }}>Est. closing costs</p>
-              <p className="text-sm font-bold" style={{ color: WARM_DARK }}>
-                ${estClosingCosts.toLocaleString()}
-              </p>
-            </div>
-            <div className="rounded-xl p-2.5 col-span-2" style={{ backgroundColor: '#F7F6F3' }}>
-              <p className="text-[10px] mb-1" style={{ color: '#9A8E82' }}>Total cash to close</p>
-              <p className="text-sm font-bold" style={{ color: WARM_DARK }}>
-                ${totalCashToClose.toLocaleString()}
-              </p>
-            </div>
-          </div>
-
-          <div className="mb-3 rounded-lg p-2.5"
-               style={{
-                 backgroundColor:
-                   affordabilityStatus === 'comfortable' ? '#F0FAF4'
-                   : affordabilityStatus === 'moderate' ? '#FFFBEB'
-                   : '#FEF2F2',
-                 border: `1px solid ${
-                   affordabilityStatus === 'comfortable' ? '#C6E8D4'
-                   : affordabilityStatus === 'moderate' ? '#FDE68A'
-                   : '#FECACA'
-                 }`,
-               }}>
-            <p className="text-xs font-semibold"
-               style={{
-                 color: affordabilityStatus === 'comfortable' ? '#2D7D4E'
-                   : affordabilityStatus === 'moderate' ? '#B45309'
-                   : '#DC2626',
-               }}>
-              {affordabilityStatus === 'comfortable'
-                ? `✓ Comfortable — ${Math.round(affordabilityPct)}% of monthly income`
-                : affordabilityStatus === 'moderate'
-                ? `⚠ Moderate — ${Math.round(affordabilityPct)}% of monthly income`
-                : `⚠ Stretched — ${Math.round(affordabilityPct)}% of monthly income`}
-            </p>
-            <p className="text-[10px] mt-0.5" style={{ color: '#9A8E82' }}>
-              Based on {topCity?.name ?? 'your top city'} · {effectiveRate.toFixed(2)}% rate · {loanTerm}-year
-            </p>
-          </div>
-
-          {/* Collapsible — Adjust your financial picture */}
-          <div style={{ borderTop: '1px solid #F0EDE6', paddingTop: '10px' }}>
-            <button
-              type="button"
-              onClick={() => setFinancialCalcOpen(o => !o)}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
-            >
-              <span className="text-[10px] font-bold uppercase"
-                    style={{ color: GOLD, letterSpacing: '0.18em' }}>
-                Adjust your financial picture
-              </span>
-              {financialCalcOpen
-                ? <ChevronDown size={16} style={{ color: GOLD }} />
-                : <ChevronRight size={16} style={{ color: GOLD }} />}
-            </button>
-            <div style={{
-              overflow: 'hidden',
-              maxHeight: financialCalcOpen ? '1200px' : '0px',
-              opacity: financialCalcOpen ? 1 : 0,
-              transition: 'max-height 0.3s ease, opacity 0.2s ease',
-            }}>
-              <div className="grid grid-cols-1 gap-4" style={{ paddingTop: '12px', opacity: financialsLocked ? 0.6 : 1, pointerEvents: financialsLocked ? 'none' : 'auto', transition: 'opacity 0.2s' }}>
-                <div>
-                  <label className="block text-xs font-semibold mb-1" style={{ color: WARM_DARK }}>
-                    Annual household income
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. $150,000"
-                    value={incomeInputValue}
-                    onChange={e => handleIncomeChange(e.target.value)}
-                    onFocus={e => { e.target.style.border = '1px solid #B8912A' }}
-                    onBlur={e => { e.target.style.border = '1px solid rgba(184,145,42,0.4)' }}
-                    style={{
-                      width: '100%',
-                      fontSize: '13px',
-                      padding: '6px 10px',
-                      borderRadius: '6px',
-                      border: '1px solid rgba(184,145,42,0.4)',
-                      background: 'rgba(184,145,42,0.04)',
-                      color: 'var(--color-text-primary)',
-                    }}
-                  />
-                  <p style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', fontStyle: 'italic', marginTop: '4px' }}>
-                    Adjust if your income has changed since your initial assessment.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold mb-1" style={{ color: WARM_DARK }}>
-                      Down payment
-                    </label>
-                    <select
-                      value={downPayment}
-                      onChange={e => { setSandboxTouched(true); setDownPayment(e.target.value) }}
-                      className="w-full rounded-xl border px-3 py-2 text-xs appearance-none"
-                      style={{ borderColor: '#E5E7EB', color: WARM_DARK }}
-                    >
-                      {DOWN_PAYMENT_OPTIONS.map(opt => (
-                        <option key={opt} value={opt}>{opt}</option>
-                      ))}
-                    </select>
-                    <div style={{ marginTop: '6px' }}>
-                      <label style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', display: 'block', marginBottom: '4px' }}>
-                        Or enter exact Down Payment amount
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="e.g. $47,500"
-                        value={exactDownPayment}
-                        onChange={e => {
-                          const formatted = formatCurrency(e.target.value)
-                          setExactDownPayment(formatted)
-                          if (exactDownDebounceRef.current) clearTimeout(exactDownDebounceRef.current)
-                          exactDownDebounceRef.current = setTimeout(() => {
-                            const parsed = parseCurrency(formatted)
-                            if (parsed && parsed >= 1000) setCalcExactDownPayment(formatted)
-                            else if (!parsed) setCalcExactDownPayment('')
-                          }, 1000)
-                        }}
-                        onFocus={e => { e.target.style.border = '1px solid #B8912A' }}
-                        onBlur={e => { e.target.style.border = '1px solid rgba(184,145,42,0.4)' }}
-                        style={{
-                          width: '100%',
-                          fontSize: '13px',
-                          padding: '6px 10px',
-                          borderRadius: '6px',
-                          border: '1px solid rgba(184,145,42,0.4)',
-                          background: 'rgba(184,145,42,0.04)',
-                          color: 'var(--color-text-primary)',
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold mb-1" style={{ color: WARM_DARK }}>
-                      Home sale proceeds
-                    </label>
-                    <select
-                      value={proceeds ?? 'None'}
-                      onChange={e => { setSandboxTouched(true); setProceeds(e.target.value === 'None' ? null : e.target.value) }}
-                      className="w-full rounded-xl border px-3 py-2 text-xs appearance-none"
-                      style={{ borderColor: '#E5E7EB', color: WARM_DARK }}
-                    >
-                      <option value="None">None</option>
-                      {PROCEEDS_OPTIONS.map(opt => (
-                        <option key={opt} value={opt}>{opt}</option>
-                      ))}
-                    </select>
-                    <div style={{ marginTop: '6px' }}>
-                      <label style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', display: 'block', marginBottom: '4px' }}>
-                        Or enter exact Home Sale Proceeds amount
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="e.g. $120,000"
-                        value={exactHomeProceeds}
-                        onChange={e => {
-                          const formatted = formatCurrency(e.target.value)
-                          setExactHomeProceeds(formatted)
-                          if (exactProceedsDebounceRef.current) clearTimeout(exactProceedsDebounceRef.current)
-                          exactProceedsDebounceRef.current = setTimeout(() => {
-                            const parsed = parseCurrency(formatted)
-                            if (parsed && parsed >= 1000) setCalcExactHomeProceeds(formatted)
-                            else if (!parsed) setCalcExactHomeProceeds('')
-                          }, 1000)
-                        }}
-                        onFocus={e => { e.target.style.border = '1px solid #B8912A' }}
-                        onBlur={e => { e.target.style.border = '1px solid rgba(184,145,42,0.4)' }}
-                        style={{
-                          width: '100%',
-                          fontSize: '13px',
-                          padding: '6px 10px',
-                          borderRadius: '6px',
-                          border: '1px solid rgba(184,145,42,0.4)',
-                          background: 'rgba(184,145,42,0.04)',
-                          color: 'var(--color-text-primary)',
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="text-xs font-semibold" style={{ color: WARM_DARK }}>
-                      Rate assumption
-                    </label>
-                    <span
-                      className="text-xs font-bold"
-                      style={{
-                        color: getRateZone(interestRate) === 'market' ? '#22C55E'
-                             : getRateZone(interestRate) === 'low' ? '#9A8E82'
-                             : '#F59E0B',
-                      }}
-                    >
-                      {interestRate.toFixed(2)}%
-                    </span>
-                  </div>
-
-                  {/* Color-zoned slider track */}
-                  <div className="relative mt-2 mb-1">
-                    {/* Background zone track */}
-                    <div className="w-full h-2 rounded-full overflow-hidden flex"
-                         style={{ backgroundColor: '#E5E7EB' }}>
-                      {/* Low zone — gray */}
-                      <div style={{ width: `${((RATE_MARKET_LOW - 3) / (10 - 3)) * 100}%`, backgroundColor: '#D1D5DB' }} />
-                      {/* Market zone — green */}
-                      <div style={{ width: `${((RATE_MARKET_HIGH - RATE_MARKET_LOW) / (10 - 3)) * 100}%`, backgroundColor: 'rgba(34,197,94,0.3)' }} />
-                      {/* High zone — amber */}
-                      <div style={{ flex: 1, backgroundColor: 'rgba(245,158,11,0.2)' }} />
-                    </div>
-
-                    {/* Actual range input overlaid */}
-                    <input
-                      type="range"
-                      min={3.0}
-                      max={10.0}
-                      step={0.25}
-                      value={interestRate}
-                      onChange={e => { setSandboxTouched(true); setInterestRate(parseFloat(e.target.value)) }}
-                      className="absolute inset-0 w-full opacity-0 cursor-pointer"
-                      style={{ height: '8px' }}
-                    />
-
-                    {/* Custom thumb */}
-                    <div
-                      className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 border-white pointer-events-none"
-                      style={{
-                        left: `calc(${((interestRate - 3) / (10 - 3)) * 100}% - 8px)`,
-                        backgroundColor: getRateZone(interestRate) === 'market' ? '#22C55E'
-                                       : getRateZone(interestRate) === 'low' ? '#9CA3AF'
-                                       : '#F59E0B',
-                        boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
-                      }}
-                    />
-                  </div>
-
-                  {/* Zone labels */}
-                  <div className="flex justify-between text-[9px] mb-1">
-                    <span style={{ color: '#9A8E82' }}>3%</span>
-                    <span style={{ color: '#22C55E', fontWeight: 600 }}>
-                      ↑ Current market {RATE_MARKET_LOW}%–{RATE_MARKET_HIGH}%
-                    </span>
-                    <span style={{ color: '#9A8E82' }}>10%</span>
-                  </div>
-
-                  {/* Market rate note */}
-                  <p className="text-[9px] leading-relaxed" style={{ color: '#9A8E82' }}>
-                    Freddie Mac avg: {RATE_MARKET_AVG}% · {RATE_DATA_DATE} · Updated quarterly
-                  </p>
-
-                  {/* Loan term toggle */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
-                    <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>Loan term</span>
-                    <div style={{ display: 'flex', border: '0.5px solid var(--color-border-tertiary)', borderRadius: '6px', overflow: 'hidden' }}>
-                      {([30, 15] as const).map(term => (
-                        <button
-                          key={term}
-                          type="button"
-                          onClick={() => setLoanTerm(term)}
-                          style={{
-                            padding: '4px 12px',
-                            fontSize: '12px',
-                            fontWeight: loanTerm === term ? 500 : 400,
-                            background: loanTerm === term ? '#B8912A' : 'transparent',
-                            color: loanTerm === term ? '#fff' : 'var(--color-text-secondary)',
-                            border: 'none',
-                            cursor: 'pointer',
-                            transition: 'all 0.15s',
-                          }}
-                        >
-                          {term}-yr
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  {loanTerm === 15 && (
-                    <p style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', marginTop: '4px' }}>
-                      15-year builds equity faster — higher monthly, less total interest
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Affordability Snapshot (Brief D Part 3) */}
-          <div style={{
-            marginTop: '14px',
-            borderRadius: '12px',
-            borderTop: '1px solid var(--color-border-tertiary)',
-            borderLeft: '1px solid var(--color-border-tertiary)',
-            borderRight: '1px solid var(--color-border-tertiary)',
-            borderBottom: `2px solid ${GOLD}`,
-            backgroundColor: CARD_BG,
-            boxShadow: CARD_SHADOW,
-            padding: '14px 16px',
-          }}>
-            <p className="text-[10px] font-bold uppercase mb-3"
-               style={{ color: GOLD, letterSpacing: '0.18em' }}>
-              Your Affordability Snapshot
-            </p>
-            <div className="flex items-baseline justify-between mb-2">
-              <span className="text-xl font-bold" style={{ color: WARM_DARK }}>
-                ${Math.round(totalMonthlyHousing).toLocaleString('en-US')}/mo
-              </span>
-              <span className="text-xs" style={{ color: '#9A8E82' }}>
-                {affordabilityPct.toFixed(0)}% of your monthly income
-              </span>
-            </div>
-            <div style={{ position: 'relative', marginTop: '10px' }}>
-              <div className="flex w-full overflow-hidden" style={{ height: '8px', borderRadius: '999px' }}>
-                <div style={{ width: '50%', backgroundColor: '#2D7D4E' }} />
-                <div style={{ width: '16.67%', backgroundColor: GOLD }} />
-                <div style={{ width: '16.67%', backgroundColor: '#C2622A' }} />
-                <div style={{ width: '16.66%', backgroundColor: '#DC2626' }} />
-              </div>
-              <div style={{
-                position: 'absolute',
-                top: '-3px',
-                left: `calc(${Math.min(affordabilityPct, 60) / 60 * 100}% - 5px)`,
-                width: '10px',
-                height: '14px',
-                borderRadius: '3px',
-                backgroundColor: WARM_DARK,
-                border: '2px solid #fff',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-              }} />
-            </div>
-            <div className="flex items-center justify-between mt-2">
-              <span className="text-[10px]" style={{ color: '#9A8E82' }}>0%</span>
-              <span className="text-[10px] font-semibold" style={{ color: snapshotTier.color }}>
-                {snapshotTier.label}
-              </span>
-              <span className="text-[10px]" style={{ color: '#9A8E82' }}>60%+</span>
-            </div>
-          </div>
-
-          {/* Origin City Comparison (Brief: origin_city_comparison) */}
-          <div style={{
-            marginTop: '14px',
-            borderRadius: '12px',
-            border: '1px solid var(--color-border-tertiary)',
-            backgroundColor: CARD_BG,
-            boxShadow: CARD_SHADOW,
-            padding: '14px 16px',
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-          }}>
-            <p className="text-[10px] font-bold uppercase mb-3"
-               style={{ color: GOLD, letterSpacing: '0.18em' }}>
-              Origin City Comparison
-            </p>
-
-            {originMarketData?.medianHomeValue ? (
-              (() => {
-                const destName = topCity?.name ?? 'Match'
-                const destTaxRate = (topCity?.housing.propertyTaxRate ?? 0) * 100
-                const originTaxRate = getStateIncomeTaxRate(originState)
-                const deltaPct = Math.round(
-                  ((originMarketData.medianHomeValue! - topCityPrice) / originMarketData.medianHomeValue!) * 100
-                )
-
-                const rows: { label: string; a: string; b: string }[] = [
-                  {
-                    label: 'Median home price',
-                    a: `$${originMarketData.medianHomeValue!.toLocaleString('en-US')}`,
-                    b: `$${Math.round(topCityPrice).toLocaleString('en-US')}`,
-                  },
-                ]
-                if (originMarketData.effectiveTaxRate != null) {
-                  rows.push({
-                    label: 'Effective tax rate (est.)',
-                    a: `${(originMarketData.effectiveTaxRate * 100).toFixed(2)}%`,
-                    b: `${destTaxRate.toFixed(2)}%`,
-                  })
-                }
-                if (originMarketData.medianMonthlyHousingCost != null) {
-                  rows.push({
-                    label: 'Median monthly housing cost',
-                    a: `$${originMarketData.medianMonthlyHousingCost.toLocaleString('en-US')}/mo`,
-                    b: `$${Math.round(totalMonthlyHousing).toLocaleString('en-US')}/mo`,
-                  })
-                }
-                if (originTaxRate != null) {
-                  rows.push({
-                    label: 'State income tax',
-                    a: `${(originTaxRate * 100).toFixed(1)}%`,
-                    b: '0.0%',
-                  })
-                }
-
+              {mustHaves.slice(0, 3).map((key, i) => {
+                const cat = DNA_CATEGORIES.find(c => c.key === key)
+                if (!cat) return null
                 return (
-                  <>
-                    <p className="text-xs mb-3" style={{ color: '#9A8E82' }}>
-                      How {destName} compares to {originLabel ?? 'where you’re moving from'}.
-                    </p>
-
-                    {/* Header row — city names, no match-score badges */}
-                    <div className="flex items-baseline pb-2 mb-1" style={{ borderBottom: `1px solid rgba(184,145,42,0.3)` }}>
-                      <span style={OCC_COL_LABEL} />
-                      <span className="text-xs font-bold truncate" style={{ ...OCC_COL_A, color: WARM_DARK }}>
-                        {originLabel ?? 'Origin'}
-                      </span>
-                      <span className="text-xs font-bold truncate" style={{ ...OCC_COL_B, color: WARM_DARK }}>
-                        {destName}
-                      </span>
-                    </div>
-
-                    {rows.map(row => (
-                      <div key={row.label} className="flex items-center py-2" style={{ borderBottom: '1px solid #F0EDE6' }}>
-                        <span className="text-xs truncate" style={{ ...OCC_COL_LABEL, color: '#9A8E82' }}>
-                          {row.label}
-                        </span>
-                        <span className="text-xs font-semibold" style={{ ...OCC_COL_A, color: WARM_DARK }}>
-                          {row.a}
-                        </span>
-                        <span className="text-xs font-semibold" style={{ ...OCC_COL_B, color: WARM_DARK }}>
-                          {row.b}
-                        </span>
-                      </div>
-                    ))}
-
-                    {deltaPct !== 0 && (
-                      <p className="text-xs mt-2" style={{ color: deltaPct > 0 ? '#2D7D4E' : '#C2622A' }}>
-                        {Math.abs(deltaPct)}% {deltaPct > 0 ? 'lower' : 'higher'} home price in {destName}
-                      </p>
-                    )}
-                  </>
-                )
-              })()
-            ) : (
-              <>
-                <p className="text-xs mb-3" style={{ color: '#9A8E82' }}>
-                  Here&apos;s what it costs to live in {topCity?.name ?? 'your top match'}.
-                </p>
-                <div className="mb-3">
-                  <p className="text-[10px] mb-1" style={{ color: '#9A8E82' }}>Median home price</p>
-                  <p className="text-sm" style={{ color: WARM_DARK }}>
-                    <strong>${Math.round(topCityPrice).toLocaleString('en-US')}</strong>
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[10px] mb-1" style={{ color: '#9A8E82' }}>Effective tax rate (est.)</p>
-                  <p className="text-sm" style={{ color: WARM_DARK }}>
-                    <strong>{((topCity?.housing.propertyTaxRate ?? 0) * 100).toFixed(2)}%</strong>
-                  </p>
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Lock financials */}
-          <div style={{ marginTop: 'auto', paddingTop: '12px', borderTop: '1px solid #F0EDE6' }}>
-            <p style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', marginBottom: '8px' }}>
-              Lock your financial picture when you&apos;re ready. Your Market Director will use these numbers to guide your search.
-            </p>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '8px' }}>
-              {financialsLocked && (
-                <button
-                  onClick={() => setFinancialsLocked(false)}
-                  style={{ fontSize: '11px', color: GOLD, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
-                >
-                  Edit
-                </button>
-              )}
-              <button
-                onClick={handleLockFinancials}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '6px',
-                  fontSize: '12px', padding: '6px 14px', borderRadius: '8px',
-                  border: financialsLocked ? '0.5px solid #1D9E75' : 'none',
-                  backgroundColor: financialsLocked ? 'rgba(29,158,117,0.08)' : NAVY,
-                  color: financialsLocked ? '#1D9E75' : '#ffffff',
-                  cursor: 'pointer',
-                }}
-              >
-                <Lock size={13} style={{ verticalAlign: 'middle', flexShrink: 0 }} />
-                <span>{financialsLocked ? 'Financials locked' : 'Lock my financials'}</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* RIGHT — Live City Rankings */}
-        <div ref={rankingsRef} className="rounded-xl p-4"
-             style={{ backgroundColor: CARD_BG, boxShadow: CARD_SHADOW }}>
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-3 gap-1.5">
-            <p className="text-[10px] font-bold uppercase"
-               style={{ color: GOLD, letterSpacing: '0.18em' }}>
-              Live city rankings
-            </p>
-            <div className="flex gap-1 overflow-x-auto flex-nowrap pb-0.5 md:pb-0" style={{ scrollbarWidth: 'none' }}>
-              {METRO_OPTIONS.map(metro => {
-                const isActive = selectedMetro === metro.value
-                return (
-                  <button
-                    key={metro.value}
-                    onClick={() => { setSandboxTouched(true); setSelectedMetro(metro.value) }}
-                    className="px-2 py-0.5 rounded-full text-[10px] font-bold transition-all"
-                    style={{
-                      backgroundColor: isActive ? GOLD : 'transparent',
-                      color: isActive ? '#16120D' : '#9A8E82',
-                      border: isActive ? 'none' : '1px solid #E5E7EB',
-                    }}
-                  >
-                    {metro.label}
-                  </button>
+                  <div key={key} style={{
+                    background: 'rgba(255,255,255,0.07)',
+                    borderRadius: '16px', padding: '5px 10px',
+                    fontSize: '11px', color: 'rgba(255,255,255,0.7)',
+                    display: 'flex', alignItems: 'center', gap: '6px',
+                    marginBottom: '4px',
+                  }}>
+                    <span style={{ fontSize: '9px', color: '#C5B783', fontWeight: 700, width: '12px' }}>{i + 1}</span>
+                    <span>{cat.icon}</span>
+                    <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cat.label}</span>
+                  </div>
                 )
               })}
             </div>
-          </div>
-          {/* Metro context line */}
-          <p className="text-xs mb-2" style={{ color: '#9A8E82' }}>
-            {(() => {
-              if (!selectedMetro) return 'Select a metro above to explore how your priorities rank cities in each market.'
-              if (selectedMetro === 'State') return !sandboxTouched
-                ? 'Showing your top matches across all 101 Texas communities.'
-                : 'Showing all 101 Texas communities ranked by your current priorities and budget.'
-              const metroLabel = METRO_OPTIONS.find(m => m.value === selectedMetro)?.label
-              return !sandboxTouched
-                ? `${metroLabel} is your top match. Use the buttons above to see how your priorities and budget rank cities in other Texas metros.`
-                : `Showing ${metroLabel} cities ranked by your current priorities and budget.`
-            })()}
-          </p>
-          {/* Affordability legend */}
-          <div className="flex items-center gap-3 mb-3">
-            {[
-              { color: '#22C55E', label: 'Comfortable' },
-              { color: '#F59E0B', label: 'Moderate' },
-              { color: '#EF4444', label: 'Stretched' },
-            ].map(item => (
-              <div key={item.label} className="flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full shrink-0"
-                     style={{ backgroundColor: item.color }} />
-                <span className="text-[9px] font-medium" style={{ color: '#9A8E82' }}>
-                  {item.label}
-                </span>
-              </div>
-            ))}
-            <span className="text-[9px]" style={{ color: '#C5BFB8' }}>— based on your income</span>
-          </div>
-          {/* Selection instructions */}
-          <div style={{
-            background: 'rgba(184,145,42,0.07)',
-            border: '1px solid rgba(184,145,42,0.35)',
-            borderRadius: '12px',
-            padding: '12px 14px',
-            marginBottom: '12px',
-          }}>
-            <p style={{ fontSize: '12px', fontWeight: 600, color: '#7A5A1A', marginBottom: '4px', lineHeight: 1.5 }}>
-              Choose up to 3 communities you want to explore.
+          )}
+
+          {/* Buying power */}
+          <div>
+            <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.1em', color: '#C5B783', textTransform: 'uppercase', margin: '0 0 6px' }}>
+              Buying power
             </p>
-            <p style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
-              Hit &ldquo;Choose This Community&rdquo; on any city card to select it. Your
-              selections tell your Market Director exactly where to focus.
+            <p style={{ fontSize: '22px', fontWeight: 500, color: '#fff', margin: '0 0 3px' }}>
+              {totalFunds > 0 ? fmtK(totalFunds) : '—'}
             </p>
-          </div>
-          <div className="space-y-2">
-            {displayedMatches.map((match, i) => (
-              <div
-                key={match.location.id}
-                className="rounded-xl p-3 cursor-pointer transition-all"
-                onClick={() => setSelectedCityIndex(i)}
-                style={{
-                  backgroundColor: (chosenCities.includes(match.location.id) || i === selectedCityIndex) ? '#FBF3E3' : '#F7F6F3',
-                  borderLeft: (chosenCities.includes(match.location.id) || i === selectedCityIndex) ? `3px solid ${GOLD}` : '3px solid transparent',
-                  outline: (chosenCities.includes(match.location.id) || i === selectedCityIndex) ? '1px solid rgba(184,145,42,0.3)' : 'none',
-                }}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold"
-                          style={{ color: i === selectedCityIndex ? GOLD : '#9A8E82' }}>
-                      #{i + 1}
-                    </span>
-                    <span className="text-sm font-bold" style={{ color: WARM_DARK }}>
-                      {match.location.name}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-12 h-1.5 rounded-full overflow-hidden"
-                           style={{ backgroundColor: '#E5E7EB' }}>
-                        <div className="h-full rounded-full"
-                             style={{ width: `${match.matchScore}%`, backgroundColor: GOLD }} />
-                      </div>
-                      <span className="text-xs font-bold" style={{ color: GOLD }}>
-                        {match.matchScore}
-                      </span>
-                    </div>
-                    {(() => {
-                      const status = getCityAffordabilityStatus(match)
-                      const dotColor = status === 'comfortable' ? '#22C55E'
-                                     : status === 'moderate' ? '#F59E0B'
-                                     : '#EF4444'
-                      return (
-                        <div
-                          className="w-2.5 h-2.5 rounded-full shrink-0"
-                          style={{ backgroundColor: dotColor }}
-                          title={status === 'comfortable' ? 'Comfortable — within budget'
-                               : status === 'moderate' ? 'Moderate — close to the limit'
-                               : 'Stretched — over 40% of income'}
-                        />
-                      )
-                    })()}
-                  </div>
-                </div>
-                <div className="flex items-center justify-between mt-1">
-                  <p className="text-[10px]" style={{ color: '#9A8E82' }}>
-                    {match.location.metroUsed}
-                  </p>
-                  <div className="flex items-center gap-2 flex-wrap justify-end">
-                    <button
-                      onClick={() => setCityPopup(match)}
-                      style={{
-                        fontSize: '11px',
-                        fontWeight: 500,
-                        color: GOLD,
-                        background: 'transparent',
-                        border: '1px solid rgba(184,145,42,0.45)',
-                        borderRadius: '6px',
-                        padding: '3px 8px',
-                        cursor: 'pointer',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      Learn more about {match.location.name}
-                    </button>
-                    <button
-                      onClick={() => {
-                        const cityId = match.location.id
-                        if (chosenCities.includes(cityId)) {
-                          setChosenCities(prev => prev.filter(id => id !== cityId))
-                        } else if (chosenCities.length < 3) {
-                          setChosenCities(prev => [...prev, cityId])
-                        }
-                      }}
-                      className="transition-all"
-                      style={{
-                        fontSize: '11px',
-                        fontWeight: 500,
-                        padding: '4px 10px',
-                        borderRadius: '8px',
-                        whiteSpace: 'nowrap',
-                        backgroundColor: chosenCities.includes(match.location.id) ? '#FBF3E3' : '#C9A84C',
-                        color: chosenCities.includes(match.location.id) ? '#8A6D1F' : '#FFFFFF',
-                        border: chosenCities.includes(match.location.id) ? '1.5px solid #B8912A' : '1.5px solid #C9A84C',
-                        boxShadow: chosenCities.includes(match.location.id) ? 'none' : '0 1px 3px rgba(184,145,42,0.3)',
-                        opacity: !chosenCities.includes(match.location.id) && chosenCities.length >= 3 ? 0.4 : 1,
-                        cursor: !chosenCities.includes(match.location.id) && chosenCities.length >= 3 ? 'not-allowed' : 'pointer',
-                      }}
-                    >
-                      {chosenCities.includes(match.location.id) ? '✓ Selected' : 'Choose This Community'}
-                    </button>
-                  </div>
-                </div>
-                {i === selectedCityIndex && (
-                  <p className="text-[9px] font-semibold mt-1"
-                     style={{ color: GOLD, letterSpacing: '0.06em' }}>
-                    ↑ Financial panel showing this city
-                  </p>
-                )}
-              </div>
-            ))}
+            {totalFunds > 0 && (
+              <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', margin: '0 0 5px' }}>
+                {isSelling && proceedsNum > 0 ? fmtK(proceedsNum) + ' proceeds' : ''}
+                {isSelling && proceedsNum > 0 && savingsNum > 0 ? ' + ' : ''}
+                {savingsNum > 0 ? fmtK(savingsNum) + ' savings' : ''}
+              </p>
+            )}
+            {refMonthly > 0 && (
+              <p style={{ fontSize: '11px', color: '#C5B783', margin: 0 }}>
+                Est. ${refMonthly.toLocaleString()}/mo · {interestRate}% · {loanTerm}yr
+              </p>
+            )}
           </div>
 
-          {/* What Shaped Your Rankings — interactive priority selector */}
-          <div style={{ borderTop: '1px solid #F0EDE6', marginTop: '16px', paddingTop: '12px' }}>
-            <p className="text-[10px] font-bold uppercase mb-2"
-               style={{ color: GOLD, letterSpacing: '0.18em' }}>
-              What Shaped Your Rankings
+          {/* Rate slider */}
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+              <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)' }}>Rate</span>
+              <span style={{ fontSize: '11px', color: '#C5B783' }}>{interestRate}%</span>
+            </div>
+            <input
+              type="range" min={3} max={10} step={0.25} value={interestRate}
+              onChange={e => { setSandboxTouched(true); setInterestRate(parseFloat(e.target.value)) }}
+              style={{ width: '100%', accentColor: '#C5B783', cursor: 'pointer' }}
+            />
+            <p style={{ fontSize: '9px', color: 'rgba(255,255,255,0.18)', margin: '3px 0 0' }}>
+              Drag to see payment impact
             </p>
-            <p className="text-xs mb-4 leading-relaxed" style={{ color: '#6B7280' }}>
-              These are the priorities you set — and they&apos;re what shaped these
-              rankings. Drag or click any category to reassign it. Rankings update instantly.
-            </p>
-            {/* Mobile: 2×2 grid */}
-            <div className="grid grid-cols-2 md:hidden gap-2 mb-2">
-              {PRIORITY_BUCKETS.map(renderPriorityZone)}
-              {renderPriorityZone(UNASSIGNED_BUCKET)}
-            </div>
-            {/* Desktop: 3-col + full-width unassigned */}
-            <div className="hidden md:grid grid-cols-3 gap-2 mb-2">
-              {PRIORITY_BUCKETS.map(renderPriorityZone)}
-            </div>
-            <div className="hidden md:block">
-              {renderPriorityZone(UNASSIGNED_BUCKET)}
-            </div>
           </div>
 
-          {/* Personality sliders (Brief 2a Part 7) — Emotional Fit side of the
-              algorithm; seeded from the client's real personalityPreference. */}
-          <div style={{ borderTop: '1px solid #F0EDE6', marginTop: '16px', paddingTop: '12px' }}>
-            <p className="text-[10px] font-bold uppercase mb-2"
-               style={{ color: GOLD, letterSpacing: '0.18em' }}>
-              Community Personality
-            </p>
-            <p className="text-xs mb-4 leading-relaxed" style={{ color: '#6B7280' }}>
-              These sliders shape how well a community&apos;s personality matches the
-              client&apos;s. Move any slider and rankings update instantly.
-            </p>
-            <div className="space-y-3">
-              {PERSONALITY_SLIDERS.map(({ key, label, left, right, description }) => (
-                <div key={key}>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-semibold" style={{ color: WARM_DARK }}>{label}</span>
-                    <span className="text-xs font-bold" style={{ color: GOLD }}>{personalityOverride[key]}</span>
-                  </div>
-                  <p className="text-xs mb-1.5" style={{ color: '#9A8E82' }}>{description}</p>
-                  <input
-                    type="range"
-                    min={1}
-                    max={10}
-                    step={1}
-                    value={personalityOverride[key]}
-                    onChange={e => handlePersonalityChange(key, Number(e.target.value))}
-                    className="w-full"
-                    style={{ accentColor: GOLD }}
-                  />
-                  <div className="flex justify-between text-[10px]" style={{ color: '#9A8E82' }}>
-                    <span>{left}</span>
-                    <span>{right}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Lock cities */}
-          <div style={{ marginTop: '12px', borderTop: '1px solid #F0EDE6', paddingTop: '10px' }}>
-            <p style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', marginBottom: '8px' }}>
-              Lock your city choices when you&apos;re ready. Your Market Director will focus your search on these communities.
-            </p>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '8px' }}>
-              {citiesLocked && (
-                <button
-                  onClick={() => setCitiesLocked(false)}
-                  style={{ fontSize: '11px', color: GOLD, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
-                >
-                  Edit
-                </button>
-              )}
-              <button
-                onClick={handleLockCities}
-                disabled={chosenCities.length === 0}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '6px',
-                  fontSize: '12px', padding: '6px 14px', borderRadius: '8px',
-                  border: citiesLocked ? '0.5px solid #1D9E75' : 'none',
-                  backgroundColor: citiesLocked ? 'rgba(29,158,117,0.08)' : NAVY,
-                  color: citiesLocked ? '#1D9E75' : '#ffffff',
-                  cursor: chosenCities.length === 0 ? 'not-allowed' : 'pointer',
-                  opacity: chosenCities.length === 0 ? 0.4 : 1,
-                }}
-              >
-                <Lock size={13} style={{ verticalAlign: 'middle', flexShrink: 0 }} />
-                <span>{citiesLocked ? 'Cities locked' : 'Lock my city choices'}</span>
-              </button>
-            </div>
+          {/* CTA */}
+          <div style={{ marginTop: 'auto' }}>
+            <button
+              type="button" onClick={handleCommit} disabled={committing}
+              style={{
+                width: '100%', background: '#C5B783', color: '#0A1E3D',
+                border: 'none', borderRadius: '8px', padding: '11px',
+                fontSize: '12px', fontWeight: 700,
+                cursor: committing ? 'not-allowed' : 'pointer',
+                opacity: committing ? 0.7 : 1,
+              }}
+            >
+              {committing ? 'Saving…' : 'Schedule a Consultation →'}
+            </button>
+            {ctaError && (
+              <p style={{ fontSize: '10px', color: '#FF6B6B', margin: '6px 0 0', textAlign: 'center', lineHeight: 1.4 }}>
+                {ctaError}
+              </p>
+            )}
+            {!ctaError && (
+              <p style={{ fontSize: '9px', color: 'rgba(255,255,255,0.18)', textAlign: 'center', margin: '5px 0 0', lineHeight: 1.4 }}>
+                Pin at least one community first
+              </p>
+            )}
           </div>
         </div>
 
-      </div>
+        {/* ── RIGHT PANEL ── */}
+        <div style={{ flex: 1, background: '#F2F1EE', minWidth: 0 }}>
 
-      {/* Section 5 — Commitment Panel */}
-      <div style={{ marginTop: '32px', border: '1px solid rgba(197,183,131,0.4)', borderTop: '4px solid #0A1E3D', borderRadius: '16px', backgroundColor: '#FAFAF8', padding: '24px' }}>
-        <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: GOLD, marginBottom: '8px' }}>
-          Your Relocation Plan
-        </p>
-        <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: 1.6, marginBottom: '20px' }}>
-          This is your starting point — the direction you&apos;ve set based on everything you&apos;ve explored. Your financials and community choices give your Market Director a clear picture of where you&apos;re headed. Keep in mind that after your first conversation, things may shift. Your target city could change, your budget may get refined, and new communities might come into focus. That&apos;s exactly how this process works. What matters right now is that you have a direction — and that&apos;s enough to take the next step.
-        </p>
+          {/* SECTION 1 — Communities */}
+          <div ref={commSectionRef} style={{ padding: '18px 20px', borderBottom: '0.5px solid #D5D0C9' }}>
+            <p style={{ fontSize: '14px', fontWeight: 500, color: '#0A1E3D', margin: '0 0 3px' }}>Your communities</p>
+            <p style={{ fontSize: '11px', color: '#86868b', margin: '0 0 12px' }}>
+              Rankings update live as you adjust priorities. Pin up to 3 communities. Click any city for details.
+            </p>
 
-        {/* Two-column summary */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
-
-          {/* Left — Financial Summary */}
-          <div style={{
-            borderRadius: '12px',
-            border: '1px solid var(--color-border-tertiary)',
-            padding: '14px 16px',
-            opacity: financialsLocked ? 1 : 0.35,
-            transition: 'opacity 300ms ease',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '10px' }}>
-              {financialsLocked
-                ? <CheckCircle size={12} style={{ color: '#1D9E75', flexShrink: 0 }} />
-                : <Lock size={12} style={{ color: '#9A8E82', flexShrink: 0 }} />}
-              <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: financialsLocked ? '#1D9E75' : '#9A8E82' }}>
-                {financialsLocked ? 'Financials locked' : 'Financial Summary'}
-              </span>
+            {/* Metro filter */}
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '12px' }}>
+              {METRO_FILTERS.map(f => {
+                const active = selectedMetro === f.value
+                return (
+                  <button key={f.value} type="button" onClick={() => setSelectedMetro(f.value)} style={{
+                    padding: '5px 12px', borderRadius: '20px', fontSize: '12px',
+                    fontWeight: active ? 500 : 400,
+                    background: active ? '#0A1E3D' : '#fff',
+                    color: active ? '#fff' : '#6B6A65',
+                    border: `0.5px solid ${active ? '#0A1E3D' : '#D0CEC8'}`,
+                    cursor: 'pointer', transition: 'all 0.15s',
+                  }}>{f.label}</button>
+                )
+              })}
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                <span style={{ fontSize: '11px', color: '#9A8E82' }}>Annual Income</span>
-                <span style={{ fontSize: '12px', fontWeight: 600, color: WARM_DARK }}>${incomeOverride.toLocaleString('en-US')}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                <span style={{ fontSize: '11px', color: '#9A8E82' }}>Monthly Budget</span>
-                <span style={{ fontSize: '12px', fontWeight: 600, color: WARM_DARK }}>${Math.round(grossMonthlyIncome * 0.28).toLocaleString('en-US')}/mo</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                <span style={{ fontSize: '11px', color: '#9A8E82' }}>Down Payment</span>
-                <span style={{ fontSize: '12px', fontWeight: 600, color: WARM_DARK }}>${totalFunds.toLocaleString('en-US')}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                <span style={{ fontSize: '11px', color: '#9A8E82' }}>Est. Monthly</span>
-                <span style={{ fontSize: '12px', fontWeight: 600, color: WARM_DARK }}>${totalMonthlyHousing.toLocaleString('en-US')}/mo</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '2px' }}>
-                <span style={{ fontSize: '11px', color: '#9A8E82' }}>Affordability</span>
-                <span style={{
-                  fontSize: '10px', fontWeight: 600, padding: '2px 7px', borderRadius: '5px',
-                  backgroundColor: affordabilityStatus === 'comfortable' ? 'rgba(34,197,94,0.12)' : affordabilityStatus === 'moderate' ? 'rgba(245,158,11,0.12)' : 'rgba(239,68,68,0.12)',
-                  color: affordabilityStatus === 'comfortable' ? '#16A34A' : affordabilityStatus === 'moderate' ? '#D97706' : '#DC2626',
-                }}>
-                  {affordabilityStatus === 'comfortable' ? 'Comfortable' : affordabilityStatus === 'moderate' ? 'Moderate' : 'Stretched'}
-                </span>
-              </div>
-            </div>
-          </div>
 
-          {/* Right — City Summary */}
-          <div style={{
-            borderRadius: '12px',
-            border: '1px solid var(--color-border-tertiary)',
-            padding: '14px 16px',
-            opacity: citiesLocked ? 1 : (chosenCities.length > 0 ? 1 : 0.35),
-            transition: 'opacity 300ms ease',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '10px' }}>
-              {citiesLocked
-                ? <CheckCircle size={12} style={{ color: '#1D9E75', flexShrink: 0 }} />
-                : <Lock size={12} style={{ color: '#9A8E82', flexShrink: 0 }} />}
-              <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: citiesLocked ? '#1D9E75' : '#9A8E82' }}>
-                {citiesLocked ? 'Cities locked' : 'Your Communities'}
-              </span>
-            </div>
-            {chosenCities.length === 0 ? (
-              <p style={{ fontSize: '12px', color: '#9A8E82', fontStyle: 'italic', margin: 0 }}>Select communities above</p>
+            {/* Ranked list */}
+            {rankedCities.length === 0 ? (
+              <p style={{ fontSize: '13px', color: '#86868b', padding: '12px 0' }}>No communities in this metro.</p>
             ) : (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: citiesLocked ? 0 : '10px' }}>
-                {chosenCities.map(cityId => {
-                  const city = getAllCities().find(c => c.id === cityId)
-                  return city ? (
-                    <div key={cityId} style={{
-                      width: '160px',
-                      borderRadius: '8px',
-                      overflow: 'hidden',
-                      border: citiesLocked ? '1.5px solid #C5B783' : '1px solid var(--color-border-tertiary)',
-                      filter: citiesLocked ? 'none' : 'grayscale(100%)',
-                      opacity: citiesLocked ? 1 : 0.35,
-                      transition: 'all 300ms ease',
-                      backgroundColor: 'var(--color-background-primary)',
-                    }}>
-                      <div style={{ position: 'relative', width: '100%', height: '90px', background: 'var(--color-background-tertiary)' }}>
-                        <Image
-                          src={`/images/cities/${cityId}.jpg`}
-                          alt={city.name}
-                          fill
-                          className="object-cover"
-                          onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('default-tx')) { t.src = '/images/cities/default-tx.jpg' } }}
-                        />
+              <div>
+                {rankedCities.map((match, idx) => {
+                  const city = match.location
+                  const isPinned = pinnedCities.includes(city.id)
+                  const isOpen = openDetailId === city.id
+                  const status = afStatus(city.housing.medianHomePrice)
+
+                  return (
+                    <div key={city.id}>
+                      <div
+                        onClick={() => setOpenDetailId(isOpen ? null : city.id)}
+                        style={{
+                          background: isPinned ? '#FEFDF8' : '#fff',
+                          border: `0.5px solid ${isPinned ? '#C5B783' : '#E0DED8'}`,
+                          borderRadius: '8px', padding: '9px 12px',
+                          display: 'flex', alignItems: 'center', gap: '8px',
+                          marginBottom: '5px', cursor: 'pointer',
+                        }}
+                      >
+                        <span style={{ fontSize: '10px', color: '#86868b', width: '22px', flexShrink: 0 }}>#{idx + 1}</span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ fontSize: '13px', color: '#1d1d1f', fontWeight: 500, margin: 0 }}>{city.name}</p>
+                          <p style={{ fontSize: '10px', color: '#86868b', margin: 0 }}>{city.metroUsed}</p>
+                        </div>
+                        <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: afColor(status), flexShrink: 0 }} />
+                        <span style={{ fontSize: '12px', color: '#C5B783', fontWeight: 500, width: '34px', textAlign: 'right' }}>
+                          {match.matchScore}%
+                        </span>
+                        <button
+                          type="button"
+                          onClick={e => { e.stopPropagation(); isPinned ? unpinCity(city.id) : pinCity(city.id) }}
+                          disabled={!isPinned && pinnedCities.length >= 3}
+                          style={{
+                            fontSize: '11px',
+                            color: isPinned ? '#C5B783' : '#0076B6',
+                            background: 'none', border: 'none',
+                            cursor: (!isPinned && pinnedCities.length >= 3) ? 'not-allowed' : 'pointer',
+                            padding: 0, whiteSpace: 'nowrap',
+                            opacity: !isPinned && pinnedCities.length >= 3 ? 0.38 : 1,
+                          }}
+                        >
+                          {isPinned ? '✓ Pinned' : 'Pin'}
+                        </button>
                       </div>
-                      <p style={{ fontSize: '13px', textAlign: 'center', padding: '6px 4px', margin: 0, fontWeight: 500, color: WARM_DARK }}>
-                        {city.name}
-                      </p>
+
+                      {/* Inline detail panel */}
+                      {isOpen && (
+                        <div style={{
+                          background: '#F8F7F4',
+                          border: '0.5px solid #D5C794', borderRadius: '8px',
+                          padding: '12px', marginBottom: '8px',
+                        }}>
+                          {/* Photo */}
+                          <div style={{
+                            width: '100%', height: '96px', borderRadius: '6px',
+                            background: '#2D4A6B', position: 'relative', overflow: 'hidden', marginBottom: '10px',
+                          }}>
+                            <Image
+                              src={`/images/cities/${city.id}.jpg`}
+                              alt={city.name}
+                              fill
+                              className="object-cover"
+                              onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+                            />
+                            <div style={{
+                              position: 'absolute', bottom: 0, left: 0, right: 0,
+                              padding: '6px 8px',
+                              background: 'linear-gradient(transparent, rgba(0,0,0,0.6))',
+                            }}>
+                              <p style={{ fontSize: '11px', color: '#fff', margin: 0, fontWeight: 500 }}>{city.name}</p>
+                            </div>
+                          </div>
+
+                          {/* Stats */}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '5px', marginBottom: '9px' }}>
+                            {[
+                              { label: 'Schools',  value: city.school?.teaRating ? `${city.school.teaRating} rated` : '—' },
+                              { label: 'Med home', value: fmtK(city.housing.medianHomePrice) },
+                              { label: 'Safety',   value: city.scores.safety >= 7 ? 'Low risk' : city.scores.safety >= 4 ? 'Moderate' : 'Higher risk' },
+                              { label: 'Family',   value: city.dna.familyLifestyle >= 7 ? 'Family-focused' : city.dna.familyLifestyle >= 4 ? 'Mixed' : 'Less family' },
+                              { label: 'Growth',   value: city.dna.growthPotential >= 7 ? 'Fast growing' : city.dna.growthPotential >= 4 ? 'Steady' : 'Slow growth' },
+                              { label: 'Match',    value: `${match.matchScore}%` },
+                            ].map(stat => (
+                              <div key={stat.label} style={{
+                                background: '#fff', borderRadius: '6px',
+                                padding: '6px 8px', border: '0.5px solid #E0DED8',
+                              }}>
+                                <p style={{ fontSize: '9px', color: '#86868b', textTransform: 'uppercase', letterSpacing: '0.04em', margin: '0 0 2px' }}>{stat.label}</p>
+                                <p style={{ fontSize: '11px', color: '#1d1d1f', fontWeight: 500, margin: 0 }}>{stat.value}</p>
+                              </div>
+                            ))}
+                          </div>
+
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <button
+                              type="button"
+                              onClick={() => isPinned ? unpinCity(city.id) : pinCity(city.id)}
+                              disabled={!isPinned && pinnedCities.length >= 3}
+                              style={{
+                                fontSize: '11px',
+                                color: isPinned ? '#C5B783' : '#0076B6',
+                                background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                                opacity: !isPinned && pinnedCities.length >= 3 ? 0.4 : 1,
+                              }}
+                            >
+                              {isPinned ? '✓ Pinned' : 'Pin this community'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setReportMatch(match)}
+                              style={{ fontSize: '11px', color: '#0076B6', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                            >
+                              View full report →
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  ) : null
+                  )
                 })}
               </div>
             )}
           </div>
-        </div>
 
-        {/* Status message */}
-        <p style={{
-          fontSize: '12px',
-          color: (financialsLocked && citiesLocked) ? WARM_DARK : '#9A8E82',
-          textAlign: 'center',
-          marginBottom: '14px',
-          fontWeight: (financialsLocked && citiesLocked) ? 500 : 400,
-          transition: 'color 300ms ease',
-        }}>
-          {!financialsLocked && !citiesLocked
-            ? 'Lock in your financials and cities above to confirm your plan'
-            : financialsLocked && !citiesLocked
-            ? 'Lock in your city choices above to continue'
-            : !financialsLocked && citiesLocked
-            ? 'Lock in your financials above to continue'
-            : 'Your plan is set. Confirm below to continue.'}
-        </p>
-
-      </div>
-
-      <StickyAdvanceBar
-        checked={confirmed}
-        onCheckedChange={setConfirmed}
-        checkboxLabel="I've reviewed my plan and I'm ready to take the next step."
-        disabled={!(financialsLocked && citiesLocked)}
-        onPrev={() => router.push('/portal/mm2')}
-        onNext={async () => {
-          const supabase = createClient()
-          const { data: { session } } = await supabase.auth.getSession()
-          if (session?.user?.email) {
-            await supabase.from('users')
-              .update({ current_milemarker: 4, sandbox_committed: true })
-              .eq('email', session.user.email.toLowerCase())
-          }
-          window.location.href = '/portal/mm4'
-        }}
-        nextLabel="Schedule a Consultation →"
-      />
-
-      {/* City Snapshot Popup */}
-      {cityPopup && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
-          onClick={() => setCityPopup(null)}
-        >
-          <div
-            className="rounded-2xl p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto"
-            style={{ backgroundColor: '#FDFCFA' }}
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h3 className="font-bold text-lg" style={{ color: WARM_DARK }}>
-                  {cityPopup.location.name}, {cityPopup.location.state}
-                </h3>
-                <p className="text-xs" style={{ color: GOLD }}>
-                  {cityPopup.location.metroUsed}
-                </p>
-                <p className="text-xs" style={{ color: '#9A8E82' }}>
-                  {cityPopup.location.county} County · {cityPopup.location.tier}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-2xl font-bold" style={{ color: GOLD }}>
-                  {cityPopup.matchScore}
-                </p>
-                <p className="text-[10px] font-semibold uppercase"
-                   style={{ color: '#9A8E82', letterSpacing: '0.1em' }}>
-                  match score
-                </p>
-              </div>
-            </div>
-
-            <p className="text-sm leading-relaxed mb-4" style={{ color: '#4B5563' }}>
-              {cityPopup.location.description}
+          {/* SECTION 2 — Priorities */}
+          <div style={{ padding: '18px 20px', borderBottom: '0.5px solid #D5D0C9' }}>
+            <p style={{ fontSize: '14px', fontWeight: 500, color: '#0A1E3D', margin: '0 0 3px' }}>Your priorities</p>
+            <p style={{ fontSize: '11px', color: '#86868b', margin: '0 0 12px' }}>
+              Click an item to move it between columns. City rankings update live as you adjust.
             </p>
 
-            <div className="mb-4">
-              <p className="text-[10px] font-bold uppercase mb-2"
-                 style={{ color: '#9A8E82', letterSpacing: '0.1em' }}>
-                Your priority scores
-              </p>
-              <div className="space-y-1.5">
-                {[...mustHaves, ...niceToHaves].slice(0, 6).map(key => {
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+              {/* Must have */}
+              <div style={{ background: '#fff', border: '0.5px solid #E0DED8', borderRadius: '8px', padding: '10px' }}>
+                <p style={{ fontSize: '10px', fontWeight: 700, color: '#0A1E3D', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Must have</p>
+                {mustHaves.length === 0 && <p style={{ fontSize: '11px', color: 'rgba(0,0,0,0.22)', fontStyle: 'italic', margin: 0 }}>Empty</p>}
+                {mustHaves.map(key => {
                   const cat = DNA_CATEGORIES.find(c => c.key === key)!
-                  const score = cityPopup.location.dna[key]
-                  const isMustHave = mustHaves.includes(key)
                   return (
-                    <div key={key} className="flex items-center gap-2">
-                      {(() => {
-                        const Icon = DNA_CATEGORY_ICONS[key]
-                        return <Icon size={12} strokeWidth={1.5} style={{ color: isMustHave ? GOLD : '#4B7A5E' }} />
-                      })()}
-                      <span className="text-xs w-24 shrink-0" style={{ color: WARM_DARK }}>
-                        {cat.label}
-                      </span>
-                      <div className="flex-1 h-1.5 rounded-full overflow-hidden"
-                           style={{ backgroundColor: '#E5E7EB' }}>
-                        <div className="h-full rounded-full"
-                             style={{
-                               width: `${score * 10}%`,
-                               backgroundColor: isMustHave ? GOLD : '#4B7A5E',
-                             }} />
-                      </div>
-                      <span className="text-xs font-bold w-8 text-right"
-                            style={{ color: isMustHave ? GOLD : '#4B7A5E' }}>
-                        {score}/10
-                      </span>
+                    <div key={key} onClick={() => movePriority(key, 'down')}
+                      style={{
+                        background: '#F5F5F7', borderRadius: '5px', padding: '6px 8px',
+                        fontSize: '11px', color: '#1d1d1f', marginBottom: '4px',
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        cursor: 'pointer',
+                      }}>
+                      <span>{cat.icon} {cat.label}</span>
+                      <span style={{ color: '#C0BFBA', fontSize: '10px' }}>→</span>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* Nice to have */}
+              <div style={{ background: '#fff', border: '0.5px solid #E0DED8', borderRadius: '8px', padding: '10px' }}>
+                <p style={{ fontSize: '10px', fontWeight: 700, color: '#6B6A65', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Nice to have</p>
+                {niceToHaves.length === 0 && <p style={{ fontSize: '11px', color: 'rgba(0,0,0,0.22)', fontStyle: 'italic', margin: 0 }}>Empty</p>}
+                {niceToHaves.map(key => {
+                  const cat = DNA_CATEGORIES.find(c => c.key === key)!
+                  return (
+                    <div key={key} style={{
+                      background: '#F5F5F7', borderRadius: '5px', padding: '5px 6px',
+                      fontSize: '11px', color: '#1d1d1f', marginBottom: '4px',
+                      display: 'flex', alignItems: 'center', gap: '4px',
+                    }}>
+                      <button type="button" onClick={() => movePriority(key, 'up')}
+                        style={{ color: '#C0BFBA', fontSize: '10px', background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px', lineHeight: 1 }}>
+                        ←
+                      </button>
+                      <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cat.icon} {cat.label}</span>
+                      <button type="button" onClick={() => movePriority(key, 'down')}
+                        style={{ color: '#C0BFBA', fontSize: '10px', background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px', lineHeight: 1 }}>
+                        →
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* Less important */}
+              <div style={{ background: '#fff', border: '0.5px solid #E0DED8', borderRadius: '8px', padding: '10px' }}>
+                <p style={{ fontSize: '10px', fontWeight: 700, color: '#B0ADA6', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Less important</p>
+                {lessImportant.length === 0 && <p style={{ fontSize: '11px', color: 'rgba(0,0,0,0.22)', fontStyle: 'italic', margin: 0 }}>Empty</p>}
+                {lessImportant.map(key => {
+                  const cat = DNA_CATEGORIES.find(c => c.key === key)!
+                  return (
+                    <div key={key} onClick={() => movePriority(key, 'up')}
+                      style={{
+                        background: '#F5F5F7', borderRadius: '5px', padding: '6px 8px',
+                        fontSize: '11px', color: '#1d1d1f', marginBottom: '4px',
+                        cursor: 'pointer',
+                      }}>
+                      {cat.icon} {cat.label}
                     </div>
                   )
                 })}
               </div>
             </div>
-
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              <div className="rounded-xl p-3" style={{ backgroundColor: '#F7F6F3' }}>
-                <p className="text-[10px] font-bold uppercase mb-1"
-                   style={{ color: '#9A8E82', letterSpacing: '0.08em' }}>
-                  Schools
-                </p>
-                <p className="text-sm font-bold" style={{ color: WARM_DARK }}>
-                  TEA {cityPopup.location.school.teaRating}
-                </p>
-                <p className="text-xs" style={{ color: '#9A8E82' }}>
-                  {cityPopup.location.school.primaryISD}
-                </p>
-              </div>
-              <div className="rounded-xl p-3" style={{ backgroundColor: '#F7F6F3' }}>
-                <p className="text-[10px] font-bold uppercase mb-1"
-                   style={{ color: '#9A8E82', letterSpacing: '0.08em' }}>
-                  Market
-                </p>
-                <p className="text-sm font-bold" style={{ color: WARM_DARK }}>
-                  {cityPopup.location.market.marketCondition}
-                </p>
-                <p className="text-xs" style={{ color: '#9A8E82' }}>
-                  ${cityPopup.location.housing.medianHomePrice.toLocaleString()} median
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-2">
-              <button
-                onClick={() => setCityPopup(null)}
-                className="flex-1 py-2.5 rounded-xl text-sm font-semibold border"
-                style={{ borderColor: '#E5E7EB', color: '#6B7280' }}
-              >
-                Close
-              </button>
-              <button
-                onClick={() => { setReportCity(cityPopup); setCityPopup(null) }}
-                className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
-                style={{ backgroundColor: GOLD, color: '#16120D' }}
-              >
-                View Full Report →
-              </button>
-            </div>
           </div>
-        </div>
-      )}
 
-      {/* Full Report Modal */}
-      {reportCity && profile && (
-        <div
-          onClick={() => setReportCity(null)}
-          style={{
-            position: 'fixed',
-            top: 0, right: 0, bottom: 0, left: 0,
-            background: 'rgba(0,0,0,0.75)',
-            zIndex: 1000,
-            display: 'flex',
-            alignItems: 'flex-start',
-            justifyContent: 'center',
-            overflowY: 'auto',
-            padding: '40px 16px',
-          }}
-        >
-          <div
-            onClick={e => e.stopPropagation()}
-            style={{
-              background: 'var(--color-background-primary)',
-              borderRadius: '16px',
-              width: '100%',
-              maxWidth: '800px',
-              overflow: 'hidden',
-              marginBottom: '40px',
-            }}
-          >
-            {/* Modal Header */}
+          {/* SECTION 3 — Numbers */}
+          <div style={{ padding: '18px 20px' }}>
+            <p style={{ fontSize: '14px', fontWeight: 500, color: '#0A1E3D', margin: '0 0 3px' }}>Your numbers</p>
+            <p style={{ fontSize: '11px', color: '#86868b', margin: '0 0 16px' }}>
+              Adjust to see how your buying power affects each community in real time.
+            </p>
+
+            {/* Selling toggle */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+              <span style={{ fontSize: '13px', color: '#1d1d1f' }}>Selling a home?</span>
+              {(['Yes', 'No'] as const).map(v => {
+                const active = (v === 'Yes') === isSelling
+                return (
+                  <button key={v} type="button" onClick={() => { setIsSelling(v === 'Yes'); setSandboxTouched(true) }}
+                    style={{
+                      padding: '5px 14px', borderRadius: '20px', fontSize: '12px',
+                      background: active ? '#0A1E3D' : '#fff',
+                      color: active ? '#fff' : '#6B6A65',
+                      border: `0.5px solid ${active ? '#0A1E3D' : '#D0CEC8'}`,
+                      cursor: 'pointer',
+                    }}>{v}</button>
+                )
+              })}
+            </div>
+
+            {/* Proceeds + Savings */}
+            <div style={{ display: 'grid', gridTemplateColumns: isSelling ? '1fr 1fr' : '1fr', gap: '12px', marginBottom: '12px' }}>
+              {isSelling && (
+                <div>
+                  <p style={{ fontSize: '11px', color: '#86868b', margin: '0 0 4px' }}>Expected sale proceeds</p>
+                  <div style={{ display: 'flex', alignItems: 'center', background: '#fff', border: '0.5px solid #E0DED8', borderRadius: '7px', overflow: 'hidden' }}>
+                    <span style={{ padding: '7px 8px', fontSize: '12px', color: '#86868b', borderRight: '0.5px solid #E0DED8', background: '#FAFAF8', flexShrink: 0 }}>$</span>
+                    <input type="text"
+                      value={proceeds.replace(/^\$/, '')}
+                      onChange={e => { setProceeds(fmtCurrency(e.target.value)); setSandboxTouched(true) }}
+                      onBlur={() => persistNumbers({ exact_home_proceeds: proceedsNum || null })}
+                      placeholder="340,000"
+                      style={{ border: 'none', padding: '7px 9px', fontSize: '13px', color: '#1d1d1f', background: '#fff', outline: 'none', width: '100%', fontFamily: 'inherit' }}
+                    />
+                  </div>
+                  <p style={{ fontSize: '10px', color: '#86868b', margin: '3px 0 0' }}>After paying off your mortgage</p>
+                </div>
+              )}
+              <div>
+                <p style={{ fontSize: '11px', color: '#86868b', margin: '0 0 4px' }}>
+                  {isSelling ? 'Additional savings or funds' : 'Savings or funds available'}
+                </p>
+                <div style={{ display: 'flex', alignItems: 'center', background: '#fff', border: '0.5px solid #E0DED8', borderRadius: '7px', overflow: 'hidden' }}>
+                  <span style={{ padding: '7px 8px', fontSize: '12px', color: '#86868b', borderRight: '0.5px solid #E0DED8', background: '#FAFAF8', flexShrink: 0 }}>$</span>
+                  <input type="text"
+                    value={savings.replace(/^\$/, '')}
+                    onChange={e => { setSavings(fmtCurrency(e.target.value)); setSandboxTouched(true) }}
+                    onBlur={() => persistNumbers({ exact_down_payment: savingsNum || null })}
+                    placeholder="75,000"
+                    style={{ border: 'none', padding: '7px 9px', fontSize: '13px', color: '#1d1d1f', background: '#fff', outline: 'none', width: '100%', fontFamily: 'inherit' }}
+                  />
+                </div>
+                <p style={{ fontSize: '10px', color: '#86868b', margin: '3px 0 0' }}>Savings, investments, gifts</p>
+              </div>
+            </div>
+
+            {/* Total bar */}
             <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '16px 20px',
-              borderBottom: '0.5px solid var(--color-border-tertiary)',
-              background: '#16120D',
-              position: 'sticky',
-              top: 0,
-              zIndex: 10,
+              background: '#0A1E3D', borderRadius: '7px', padding: '10px 14px',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              marginBottom: '16px',
             }}>
               <div>
-                <p style={{ fontSize: '10px', color: '#9A8E82', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '2px' }}>
-                  Full Report
-                </p>
-                <p style={{ fontSize: '16px', fontWeight: 500, color: '#E8E2D9' }}>
-                  {reportCity.location.name}
-                </p>
+                <p style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', margin: '0 0 2px', letterSpacing: '0.06em' }}>Total available</p>
+                {totalFunds > 0 && (
+                  <p style={{ fontSize: '10px', color: '#C5B783', margin: 0 }}>
+                    {isSelling && proceedsNum > 0 ? fmtK(proceedsNum) : ''}
+                    {isSelling && proceedsNum > 0 && savingsNum > 0 ? ' + ' : ''}
+                    {savingsNum > 0 ? fmtK(savingsNum) : ''}
+                  </p>
+                )}
               </div>
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <button
-                  onClick={() => window.print()}
-                  style={{ padding: '6px 14px', fontSize: '12px', fontWeight: 500, border: '0.5px solid rgba(232,226,217,0.3)', borderRadius: '6px', background: 'transparent', color: '#E8E2D9', cursor: 'pointer' }}
-                >
-                  Print
-                </button>
-                <button
-                  onClick={() => window.open(`/report/${reportCity.location.id}`, '_blank')}
-                  style={{ padding: '6px 14px', fontSize: '12px', fontWeight: 500, border: 'none', borderRadius: '6px', background: '#B8912A', color: '#fff', cursor: 'pointer' }}
-                >
-                  Download ↓
-                </button>
-                <button
-                  onClick={() => setReportCity(null)}
-                  style={{ padding: '6px 10px', fontSize: '18px', border: 'none', background: 'transparent', color: '#9A8E82', cursor: 'pointer', lineHeight: 1 }}
-                >
-                  ✕
-                </button>
+              <p style={{ fontSize: '17px', fontWeight: 500, color: '#fff', margin: 0 }}>
+                {totalFunds > 0 ? fmtK(totalFunds) : '$0'}
+              </p>
+            </div>
+
+            {/* Income */}
+            <div style={{ marginBottom: '16px' }}>
+              <p style={{ fontSize: '11px', color: '#86868b', margin: '0 0 4px' }}>Annual household income</p>
+              <div style={{ display: 'flex', alignItems: 'center', background: '#fff', border: '0.5px solid #E0DED8', borderRadius: '7px', overflow: 'hidden' }}>
+                <span style={{ padding: '7px 8px', fontSize: '12px', color: '#86868b', borderRight: '0.5px solid #E0DED8', background: '#FAFAF8', flexShrink: 0 }}>$</span>
+                <input type="text"
+                  value={incomeDisplay.replace(/^\$/, '')}
+                  onChange={e => {
+                    setIncomeDisplay(fmtCurrency(e.target.value))
+                    setSandboxTouched(true)
+                    const parsed = parseMoney(e.target.value)
+                    if (incomeTimerRef.current) clearTimeout(incomeTimerRef.current)
+                    incomeTimerRef.current = setTimeout(() => { if (parsed > 0) setIncomeVal(parsed) }, 400)
+                  }}
+                  onBlur={() => {
+                    const parsed = parseMoney(incomeDisplay)
+                    if (parsed > 0) {
+                      setIncomeVal(parsed)
+                      persistNumbers({ annual_income_override: parsed })
+                    }
+                  }}
+                  placeholder="100,000"
+                  style={{ border: 'none', padding: '7px 9px', fontSize: '13px', color: '#1d1d1f', background: '#fff', outline: 'none', width: '100%', fontFamily: 'inherit' }}
+                />
               </div>
             </div>
 
-            {/* Modal Body */}
-            <div style={{ padding: '24px' }}>
-              <FullReport match={reportCity} profile={profile} />
+            {/* Rate slider */}
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                <p style={{ fontSize: '11px', color: '#86868b', margin: 0 }}>Interest rate</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '10px', background: '#E8F5EE', color: '#1a6b35', padding: '2px 7px', borderRadius: '10px' }}>
+                    {RATE_MARKET_AVG}% avg
+                  </span>
+                  <span style={{ fontSize: '12px', color: '#1d1d1f', fontWeight: 500 }}>{interestRate}%</span>
+                </div>
+              </div>
+              <input type="range" min={3} max={10} step={0.25} value={interestRate}
+                onChange={e => { setSandboxTouched(true); setInterestRate(parseFloat(e.target.value)) }}
+                style={{ width: '100%', accentColor: '#0A1E3D', cursor: 'pointer' }}
+              />
+            </div>
+
+            {/* Loan term */}
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+              {([30, 15] as const).map(term => {
+                const active = loanTerm === term
+                return (
+                  <button key={term} type="button" onClick={() => {
+                    setLoanTerm(term); setSandboxTouched(true)
+                    persistNumbers({ loan_term_preference: term })
+                  }} style={{
+                    padding: '6px 16px', borderRadius: '20px', fontSize: '12px',
+                    background: active ? '#0A1E3D' : '#fff',
+                    color: active ? '#fff' : '#6B6A65',
+                    border: `0.5px solid ${active ? '#0A1E3D' : '#D0CEC8'}`,
+                    cursor: 'pointer',
+                  }}>{term} year</button>
+                )
+              })}
+            </div>
+
+            {/* Monthly estimate */}
+            <div style={{
+              background: '#EDF2FF', borderRadius: '7px', padding: '10px 14px',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              marginBottom: '16px',
+            }}>
+              <div>
+                <p style={{ fontSize: '10px', color: '#0076B6', margin: '0 0 1px' }}>Estimated monthly payment</p>
+                <p style={{ fontSize: '10px', color: '#86868b', margin: 0 }}>Principal + interest only</p>
+              </div>
+              <p style={{ fontSize: '17px', fontWeight: 500, color: '#0A1E3D', margin: 0 }}>
+                {refMonthly > 0 ? `$${refMonthly.toLocaleString()}` : '—'}
+              </p>
+            </div>
+
+            {/* Affordability per pinned city */}
+            <div>
+              <p style={{ fontSize: '11px', color: '#86868b', margin: '0 0 8px' }}>Affordability per pinned community</p>
+              {pinnedCities.length === 0 ? (
+                <p style={{ fontSize: '12px', color: '#B0ADA6', fontStyle: 'italic' }}>Pin communities above to see affordability</p>
+              ) : (
+                pinnedCities.map(cityId => {
+                  const cd = getAllCities().find(c => c.id === cityId)
+                  if (!cd) return null
+                  const s = afStatus(cd.housing.medianHomePrice)
+                  const badge = s === 'comfortable'
+                    ? { bg: '#E8F5EE', color: '#1a6b35' }
+                    : s === 'moderate'
+                    ? { bg: '#FAEEDA', color: '#633806' }
+                    : { bg: '#FCEBEB', color: '#A32D2D' }
+                  return (
+                    <div key={cityId} style={{
+                      background: '#fff', border: '0.5px solid #E0DED8',
+                      borderRadius: '7px', padding: '8px 10px',
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                      marginBottom: '5px',
+                    }}>
+                      <p style={{ fontSize: '12px', color: '#1d1d1f', margin: 0 }}>
+                        {cd.name} · {fmtK(cd.housing.medianHomePrice)} median
+                      </p>
+                      <span style={{
+                        ...badge, fontSize: '11px', fontWeight: 500,
+                        padding: '3px 9px', borderRadius: '12px', flexShrink: 0,
+                      }}>{afLabel(s)}</span>
+                    </div>
+                  )
+                })
+              )}
             </div>
           </div>
         </div>
-      )}
-
-    </div>
+      </div>
+    </>
   )
 }

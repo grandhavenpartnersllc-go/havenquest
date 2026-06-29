@@ -1,7 +1,6 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import WorkspaceHeader from '../components/WorkspaceHeader'
 import { usePortalData } from '../providers/PortalDataProvider'
 import MM3Discover from '../../../components/portal/milemarkers/MM3Discover'
 import { createClient } from '../../../lib/supabase/client'
@@ -54,10 +53,8 @@ export default function MM3Page() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
-      <WorkspaceHeader mmNumber={3} name="Refine" deliverable="Committed Direction Package" />
-      <div style={{ padding: '24px', flex: 1 }}>
-        <MM3Discover
+    <div style={{ display: 'flex', flex: 1, minHeight: '100%' }}>
+      <MM3Discover
           matches={matches}
           profile={profile}
           session={session}
@@ -76,7 +73,6 @@ export default function MM3Page() {
           initialMetro={initialMetro}
           initialCityIndex={0}
         />
-      </div>
     </div>
   )
 }
