@@ -1,48 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { Download, Mail, Map } from 'lucide-react'
+import Image from 'next/image'
 import { CityMatch, UserProfile } from '../../../types'
 import { getDownPaymentMidpoint, getProceedsMidpoint } from '../../../services/matchingService'
 import { createClient } from '../../../lib/supabase/client'
-import SavedMatches from '../SavedMatches'
-import NotesArea from '../NotesArea'
-import FullReport from '../../results/FullReport'
-import StickyAdvanceBar from '../StickyAdvanceBar'
 
-const WARM_DARK = '#16120D'
-const GOLD = '#B8912A'
-const CARD_BG = '#FDFCFA'
-const CARD_SHADOW = '0 1px 3px rgba(0,0,0,0.05), 0 4px 20px rgba(0,0,0,0.07)'
+const RANK_LABELS = ['⭐ Top pick', 'Runner-up', 'Strong alt']
 
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <p
-      className="text-[10px] font-bold uppercase mb-3"
-      style={{ color: GOLD, letterSpacing: '0.18em' }}
-    >
-      {children}
-    </p>
-  )
-}
-
-function Card({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return (
-    <div
-      className={`rounded-2xl p-6 ${className}`}
-      style={{ backgroundColor: CARD_BG, boxShadow: CARD_SHADOW }}
-    >
-      {children}
-    </div>
-  )
-}
-
-type BtnState = 'idle' | 'loading' | 'done' | 'error'
-
-interface MM2DiscoverProps {
+interface Props {
   matches: CityMatch[]
   profile: UserProfile | null
   initialChecklist: Record<string, boolean>
@@ -51,421 +17,361 @@ interface MM2DiscoverProps {
   email?: string
 }
 
-export default function MM2Discover({ matches, profile, initialChecklist, initialNotes, onAdvanceToDiscover, email }: MM2DiscoverProps) {
-  const router = useRouter()
-  const [dlState, setDlState] = useState<BtnState>('idle')
-  const [emailState, setEmailState] = useState<BtnState>('idle')
-  const [scorePopupOpen, setScorePopupOpen] = useState(false)
-  const [activeReportIndex, setActiveReportIndex] = useState(0)
-  const [mm2ReadyChecked, setMm2ReadyChecked] = useState(false)
+function fmtMoney(n: number): string {
+  return '$' + Math.round(n).toLocaleString('en-US')
+}
 
-  const topCity = matches[0]?.location ?? null
+function fmtK(n: number): string {
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`
+  if (n >= 1_000) return `$${Math.round(n / 1_000)}K`
+  return `$${n.toLocaleString()}`
+}
 
-  function getCityAffordabilityStatus(cityMedianPrice: number, cityTaxRate: number): 'comfortable' | 'moderate' | 'stretched' {
+function communityChar(env: number): string {
+  if (env <= 3) return 'Urban'
+  if (env <= 6) return 'Suburban'
+  if (env <= 8) return 'Small Town'
+  return 'Rural'
+}
+
+export default function MM2Discover({ matches, profile, onAdvanceToDiscover, email }: Props) {
+  const [current, setCurrent] = useState(0)
+  const [hasSeenAll, setHasSeenAll] = useState(false)
+  const [expandedCards, setExpandedCards] = useState<boolean[]>([false, false, false])
+  const [advancing, setAdvancing] = useState(false)
+
+  const visibleMatches = matches.slice(0, 3)
+
+  function goTo(idx: number) {
+    setCurrent(idx)
+    if (idx >= visibleMatches.length - 1) setHasSeenAll(true)
+  }
+
+  function toggleExpand(idx: number) {
+    setExpandedCards(prev => {
+      const next = [...prev]
+      next[idx] = !next[idx]
+      return next
+    })
+  }
+
+  function getCityAffordabilityStatus(match: CityMatch): 'comfortable' | 'moderate' | 'stretched' {
+    const city = match.location
     const grossMonthlyIncome = (profile?.annualIncome ?? 100000) / 12
     const fp = profile?.financial_picture
-    const downMid = fp?.down_payment_available
-      ? getDownPaymentMidpoint(fp.down_payment_available)
-      : 30000
-    const procMid = fp?.home_sale_proceeds && fp.is_homeowner
-      ? getProceedsMidpoint(fp.home_sale_proceeds)
-      : 0
-    const balance = Math.max(0, cityMedianPrice - downMid - procMid)
+    const downMid = fp?.down_payment_available ? getDownPaymentMidpoint(fp.down_payment_available) : 30000
+    const procMid = fp?.home_sale_proceeds && fp.is_homeowner ? getProceedsMidpoint(fp.home_sale_proceeds) : 0
+    const balance = Math.max(0, city.housing.medianHomePrice - downMid - procMid)
     if (balance === 0) return 'comfortable'
     const monthlyRate = 0.07 / 12
     const payment = Math.round(
       (balance * monthlyRate * Math.pow(1 + monthlyRate, 360)) /
       (Math.pow(1 + monthlyRate, 360) - 1)
     )
-    const tax = Math.round((cityMedianPrice * (cityTaxRate ?? 0.018)) / 12)
+    const tax = Math.round((city.housing.medianHomePrice * (city.housing.propertyTaxRate ?? 0.018)) / 12)
     const pct = (payment + tax) / grossMonthlyIncome
     if (pct <= 0.30) return 'comfortable'
     if (pct <= 0.40) return 'moderate'
     return 'stretched'
   }
 
-  async function handleDownload() {
-    setDlState('loading')
+  async function handleAdvance() {
+    setAdvancing(true)
     try {
-      const res = await fetch('/api/auth/download-report', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: '{}',
-      })
-      if (!res.ok) throw new Error('Failed')
-
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = 'HavenQuest-Report.pdf'
-      a.click()
-      URL.revokeObjectURL(url)
-
-      setDlState('done')
-    } catch {
-      setDlState('error')
-    } finally {
-      setTimeout(() => setDlState('idle'), 3000)
-    }
+      if (email) {
+        const supabase = createClient()
+        await supabase.from('users').update({ current_milemarker: 3 }).eq('email', email.toLowerCase())
+      }
+    } catch {}
+    onAdvanceToDiscover()
   }
 
-  async function handleEmailReport() {
-    setEmailState('loading')
-    try {
-      const res = await fetch('/api/auth/send-report', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ force: true }),
-      })
-      if (!res.ok) throw new Error('Failed')
-
-      setEmailState('done')
-    } catch {
-      setEmailState('error')
-    } finally {
-      setTimeout(() => setEmailState('idle'), 3000)
-    }
+  if (visibleMatches.length === 0) {
+    return (
+      <div style={{ textAlign: 'center', padding: '48px 24px' }}>
+        <p style={{ fontSize: '14px', color: '#86868b' }}>No city matches found. Please complete your profile to see recommendations.</p>
+      </div>
+    )
   }
+
+  // Set hasSeenAll on mount if only 1 city
+  if (visibleMatches.length === 1 && !hasSeenAll) setHasSeenAll(true)
 
   return (
-    <div className="space-y-10">
+    <div style={{ maxWidth: '600px', margin: '0 auto' }}>
 
-      {/* Forward-looking intro */}
-      <div className="mb-6">
-        <p className="text-[10px] font-bold uppercase mb-2"
-           style={{ color: GOLD, letterSpacing: '0.18em' }}>
-          Welcome to Your Matched Cities
+      {/* Header */}
+      <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+        <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.1em', color: '#C5B783', textTransform: 'uppercase', margin: '0 0 8px' }}>
+          Your Matched Communities
         </p>
-        <h2 className="text-[20px] font-bold tracking-tight mb-3" style={{ color: WARM_DARK }}>
-          Meet your top Texas matches.
-        </h2>
-        <p className="text-sm leading-relaxed" style={{ color: '#6B7280' }}>
-          Based on everything you told us, these are the communities where your life
-          genuinely fits. This is your introduction to each of them — their schools,
-          their markets, their lifestyle scores, and what it actually costs to live there.
-          Take your time. Read the reports. Get a feel for each place. When something
-          catches your attention, that&apos;s worth paying attention to.
+        <h1 style={{ fontSize: '22px', fontWeight: 500, color: '#0A1E3D', marginBottom: '6px' }}>
+          Here&apos;s where you belong.
+        </h1>
+        <p style={{ fontSize: '13px', color: '#86868b', maxWidth: '480px', margin: '0 auto', lineHeight: 1.6 }}>
+          Based on everything you shared, these are the Texas communities where your life genuinely fits. Take your time with each one.
         </p>
       </div>
 
-      {/* Match summary cards — or prompt to start a new search */}
-      {matches.length > 0 ? (
-        <section>
-          <div className="flex items-center justify-between mb-1.5">
-            <p className="text-[10px] font-bold uppercase" style={{ color: GOLD, letterSpacing: '0.18em' }}>
-              Your Matched Cities
-            </p>
-            <div className="flex gap-2">
-              <button
-                onClick={handleDownload}
-                disabled={dlState === 'loading'}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all disabled:opacity-50"
-                style={{
-                  borderColor: dlState === 'error' ? '#E05252' : dlState === 'done' ? '#4CAF50' : GOLD,
-                  color: dlState === 'error' ? '#E05252' : dlState === 'done' ? '#4CAF50' : GOLD,
-                  backgroundColor: 'transparent',
-                }}
-              >
-                <Download size={13} />
-                {dlState === 'loading' ? 'Generating…' : dlState === 'done' ? 'Downloaded!' : dlState === 'error' ? 'Failed' : 'Download Report'}
-              </button>
-              <button
-                onClick={handleEmailReport}
-                disabled={emailState === 'loading'}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all disabled:opacity-50"
-                style={{
-                  borderColor: emailState === 'error' ? '#E05252' : emailState === 'done' ? '#4CAF50' : GOLD,
-                  color: emailState === 'error' ? '#E05252' : emailState === 'done' ? '#4CAF50' : GOLD,
-                  backgroundColor: 'transparent',
-                }}
-              >
-                <Mail size={13} />
-                {emailState === 'loading' ? 'Sending…' : emailState === 'done' ? 'Sent!' : emailState === 'error' ? 'Failed' : 'Email Report'}
-              </button>
-            </div>
-          </div>
-          <p className="text-xs mb-3" style={{ color: '#9A8E82' }}>
-            Select any two cities to compare them side by side
-          </p>
-          <button
-            onClick={() => setScorePopupOpen(true)}
-            className="text-xs font-medium underline underline-offset-2 mb-4 block"
-            style={{ color: GOLD }}
-          >
-            How are scores calculated? →
-          </button>
-          {profile && <SavedMatches matches={matches} profile={profile} />}
-        </section>
-      ) : (
-        <section>
-          <Card className="text-center py-10">
-            <div className="mb-4"><Map size={48} style={{ color: 'var(--color-text-tertiary)' }} /></div>
-            <h2
-              className="font-bold text-lg tracking-tight mb-2"
-              style={{ color: WARM_DARK }}
-            >
-              Start a new search to find your Texas match
-            </h2>
-            <p className="text-sm mb-6 max-w-xs mx-auto leading-relaxed" style={{ color: '#9A8E82' }}>
-              Your previous results aren&apos;t saved in this session. Run a quick search to regenerate your personalised city matches.
-            </p>
-            <Link
-              href="/explore"
-              className="inline-block px-6 py-3 rounded-xl font-bold text-sm text-white transition-opacity hover:opacity-90"
-              style={{ backgroundColor: GOLD }}
-            >
-              Start My Search →
-            </Link>
-          </Card>
-        </section>
-      )}
+      {/* Carousel wrap */}
+      <div style={{ position: 'relative', overflow: 'hidden', borderRadius: '12px', width: '100%' }}>
+        <div style={{
+          display: 'flex',
+          transform: `translateX(-${current * 100}%)`,
+          transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+          willChange: 'transform',
+        }}>
+          {visibleMatches.map((match, idx) => {
+            const city = match.location
+            const status = getCityAffordabilityStatus(match)
+            const isExpanded = expandedCards[idx]
+            const char = communityChar(city.personality.environment)
 
-      {/* Community Reports section break */}
-      {matches.length > 0 && (
-        <div style={{ marginTop: '32px', marginBottom: '24px' }}>
-          <hr style={{ border: 'none', borderTop: '1px solid var(--panel-border)', marginBottom: '24px' }} />
-          <div style={{ borderLeft: '3px solid var(--accent-gold)', paddingLeft: '16px' }}>
-            <h2 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 8px', lineHeight: 1.2 }}>
-              Your Community Reports
-            </h2>
-            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.65, margin: 0 }}>
-              Below are your full intelligence reports for each matched city. Select a tab to explore schools, housing costs, cost of living, lifestyle scores, and neighborhood character. These are the places the HavenQuest algorithm identified as your strongest matches — take your time and get to know them.
-            </p>
-          </div>
-        </div>
-      )}
+            const statusLabel = status === 'comfortable' ? 'Comfortable' : status === 'moderate' ? 'Moderate' : 'Stretched'
+            const statusStyle = status === 'comfortable'
+              ? { background: '#E8F5EE', color: '#1a6b35' }
+              : status === 'moderate'
+              ? { background: '#FAEEDA', color: '#633806' }
+              : { background: '#FCEBEB', color: '#A32D2D' }
 
-      {/* Tabbed city reports */}
-      {matches.length > 0 && (
-        <div style={{ marginTop: '8px', marginBottom: '0' }}>
+            const propTaxMonthly = Math.round(city.housing.medianHomePrice * (city.housing.propertyTaxRate ?? 0.018) / 12)
+            const costOfLiving = Math.round(city.housing.monthlyGroceries + city.housing.monthlyUtilities + city.housing.monthlyTransportation)
+            const yoy = city.market.priceYOY
 
-          {/* Tab row — 3 columns matching city cards grid above */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2px' }}>
-            {matches.slice(0, 3).map((match, i) => {
-              const isActive = activeReportIndex === i
-              return (
-                <button
-                  key={match.location.id}
-                  onClick={() => setActiveReportIndex(i)}
-                  style={isActive ? {
-                    borderTop: '1.5px solid #B8912A',
-                    borderLeft: '1.5px solid #B8912A',
-                    borderRight: '1.5px solid #B8912A',
-                    borderBottom: 'none',
-                    borderRadius: '8px 8px 0 0',
-                    background: 'var(--color-background-primary)',
-                    padding: '10px 12px',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    transition: 'all 0.15s',
-                  } : {
-                    borderTop: '1.5px solid var(--color-border-secondary)',
-                    borderLeft: '1.5px solid var(--color-border-secondary)',
-                    borderRight: '1.5px solid var(--color-border-secondary)',
-                    borderBottom: '1.5px solid #B8912A',
-                    borderRadius: '8px 8px 0 0',
-                    background: 'var(--color-background-secondary)',
-                    padding: '10px 12px',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    transition: 'all 0.15s',
-                  }}
-                >
-                  <p style={{
-                    fontSize: '10px', fontWeight: 500,
-                    color: isActive ? '#B8912A' : 'var(--color-text-tertiary)',
-                    textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '2px',
-                  }}>
-                    {['Top Pick', 'Runner-Up', 'Strong Alt'][i]}
-                  </p>
-                  <p style={{
-                    fontSize: '13px', fontWeight: 600,
-                    color: isActive ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
-                  }}>
-                    {match.location.name}
-                  </p>
-                </button>
-              )
-            })}
-          </div>
+            return (
+              <div key={city.id} style={{ minWidth: '100%', flexShrink: 0 }}>
+                <div style={{ background: '#fff', borderRadius: '12px', overflow: 'hidden' }}>
 
-          {/* Report content area */}
-          <div
-            id="report-section"
-            style={{
-              borderLeft: '1.5px solid #B8912A',
-              borderRight: '1.5px solid #B8912A',
-              borderBottom: '1.5px solid #B8912A',
-              borderTop: 'none',
-              borderRadius: '0 0 12px 12px',
-              padding: '24px',
-              background: 'var(--color-background-primary)',
-            }}
-          >
-            {matches[activeReportIndex] && profile && (
-              <div className="relative">
-                {(() => {
-                  const activeMatch = matches[activeReportIndex]
-                  const status = getCityAffordabilityStatus(
-                    activeMatch.location.housing.medianHomePrice,
-                    activeMatch.location.housing.propertyTaxRate ?? 0.018
-                  )
-                  const statusLabel = status === 'comfortable' ? 'Comfortable'
-                    : status === 'moderate' ? 'Moderate' : 'Stretched'
-                  const dotColor = status === 'comfortable' ? '#1D9E75'
-                    : status === 'moderate' ? '#C9A84C' : '#E53E3E'
-                  return (
-                    <>
-                      {/* Print / Download buttons — top-right, alone */}
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginBottom: '12px' }}>
-                        <button
-                          onClick={() => window.print()}
-                          style={{ padding: '6px 14px', fontSize: '12px', fontWeight: 500, border: '0.5px solid var(--color-border-tertiary)', borderRadius: '6px', background: 'transparent', color: 'var(--color-text-secondary)', cursor: 'pointer' }}
-                        >
-                          Print
-                        </button>
-                        <button
-                          onClick={() => window.open(`/report/${activeMatch.location.id}`, '_blank')}
-                          style={{ padding: '6px 14px', fontSize: '12px', fontWeight: 500, border: 'none', borderRadius: '6px', background: '#B8912A', color: '#fff', cursor: 'pointer' }}
-                        >
-                          Download ↓
-                        </button>
-                      </div>
-                      {/* Budget Fit indicator — left-aligned, above report body */}
-                      <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-start', padding: '6px 12px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)', background: 'var(--color-background-secondary)', marginBottom: '16px' }}>
-                        <p style={{ fontSize: '9px', fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '3px' }}>
-                          Budget Fit
-                        </p>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: dotColor }} />
-                          <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--color-text-primary)' }}>{statusLabel}</span>
+                  {/* Photo */}
+                  <div style={{ height: '180px', position: 'relative', background: '#2D4A6B', overflow: 'hidden' }}>
+                    <Image
+                      src={city.cityImageUrl ?? `/images/cities/${city.id}.jpg`}
+                      alt={city.name}
+                      fill
+                      className="object-cover"
+                      onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+                    />
+                    {/* Gradient */}
+                    <div style={{
+                      position: 'absolute', bottom: 0, left: 0, right: 0, height: '80px',
+                      background: 'linear-gradient(transparent, rgba(0,0,0,0.55))',
+                      pointerEvents: 'none',
+                    }} />
+                    {/* City name */}
+                    <p style={{ position: 'absolute', bottom: '10px', left: '12px', fontSize: '11px', color: 'rgba(255,255,255,0.65)', margin: 0 }}>
+                      {city.name}
+                    </p>
+                    {/* Rank pill */}
+                    <div style={{
+                      position: 'absolute', top: '12px', left: '12px',
+                      background: 'rgba(0,0,0,0.45)',
+                      backdropFilter: 'blur(8px)',
+                      borderRadius: '20px', padding: '4px 11px',
+                    }}>
+                      <span style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.07em', color: '#fff', textTransform: 'uppercase' }}>
+                        {RANK_LABELS[idx]}
+                      </span>
+                    </div>
+                    {/* Match pill */}
+                    <div style={{ position: 'absolute', top: '12px', right: '12px', background: '#C5B783', borderRadius: '20px', padding: '4px 11px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 600, color: '#0A1E3D' }}>
+                        {match.matchScore}% match
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Card body */}
+                  <div style={{ padding: '18px 20px' }}>
+                    <p style={{ fontSize: '20px', fontWeight: 500, color: '#0A1E3D', marginBottom: '2px' }}>{city.name}</p>
+                    <p style={{ fontSize: '11px', color: '#86868b', marginBottom: '12px' }}>
+                      {city.metroUsed} metro · {city.county} County · {char}
+                    </p>
+
+                    {/* Description */}
+                    <p style={{ fontSize: '12px', color: '#3a3a3a', lineHeight: 1.65, marginBottom: '14px' }}>
+                      {city.description}
+                    </p>
+
+                    {/* Tags */}
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '12px' }}>
+                      <span style={{ background: '#E8F0FE', color: '#1a4a8a', borderRadius: '14px', padding: '4px 10px', fontSize: '10px', fontWeight: 500 }}>
+                        {city.market.marketCondition}
+                      </span>
+                      <span style={{ background: '#E8F5EE', color: '#1a6b35', borderRadius: '14px', padding: '4px 10px', fontSize: '10px', fontWeight: 500 }}>
+                        {city.school.teaRating} Schools
+                      </span>
+                      <span style={{ background: '#FAEEDA', color: '#633806', borderRadius: '14px', padding: '4px 10px', fontSize: '10px', fontWeight: 500 }}>
+                        {char}
+                      </span>
+                    </div>
+
+                    {/* Stats grid */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px', marginBottom: '12px' }}>
+                      {[
+                        { label: 'Schools',     value: `${city.school.teaRating} rated` },
+                        { label: 'Median home', value: fmtK(city.housing.medianHomePrice) },
+                        { label: 'Safety',      value: city.scores.safety >= 7 ? 'Low risk' : city.scores.safety >= 4 ? 'Moderate' : 'Higher risk' },
+                      ].map(stat => (
+                        <div key={stat.label} style={{ background: '#F5F5F7', borderRadius: '7px', padding: '8px 10px' }}>
+                          <p style={{ fontSize: '9px', color: '#86868b', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '2px' }}>{stat.label}</p>
+                          <p style={{ fontSize: '12px', color: '#1d1d1f', fontWeight: 500, margin: 0 }}>{stat.value}</p>
                         </div>
+                      ))}
+                    </div>
+
+                    {/* Budget fit */}
+                    <div style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      background: '#F5F5F7', borderRadius: '7px', padding: '9px 12px',
+                      marginBottom: '14px',
+                    }}>
+                      <div>
+                        <p style={{ fontSize: '9px', color: '#86868b', margin: '0 0 2px' }}>Budget fit</p>
+                        <p style={{ fontSize: '12px', color: '#1d1d1f', fontWeight: 500, margin: 0 }}>
+                          Est. {fmtMoney(match.estimatedMonthlyHousing)}/mo
+                        </p>
                       </div>
-                    </>
-                  )
-                })()}
-                <FullReport
-                  match={matches[activeReportIndex]}
-                  profile={profile}
-                  rank={activeReportIndex}
-                />
-              </div>
-            )}
-          </div>
+                      <span style={{ ...statusStyle, borderRadius: '12px', padding: '3px 10px', fontSize: '10px', fontWeight: 500 }}>
+                        {statusLabel}
+                      </span>
+                    </div>
 
-        </div>
-      )}
+                    {/* Expand toggle */}
+                    <button
+                      type="button"
+                      onClick={() => toggleExpand(idx)}
+                      style={{
+                        width: '100%', border: '0.5px solid #D0CEC8', borderRadius: '8px',
+                        padding: '9px', fontSize: '12px', color: '#555',
+                        background: '#fff', cursor: 'pointer', textAlign: 'center',
+                        fontFamily: 'inherit',
+                      }}
+                    >
+                      {isExpanded ? 'Hide community report ↑' : 'View full community report ↓'}
+                    </button>
 
-      {/* Notes */}
-      {topCity && (
-        <section>
-          <div className="mt-6">
-            <p className="text-[10px] font-bold uppercase mb-2"
-               style={{ color: GOLD, letterSpacing: '0.18em' }}>
-              Your Notes
-            </p>
-            <p className="text-xs mb-3" style={{ color: '#9A8E82' }}>
-              Jot down questions, thoughts, or anything you want to remember.
-              Your Market Director will see these when they review your profile.
-            </p>
-            <Card>
-              <NotesArea initialNotes={initialNotes} />
-            </Card>
-          </div>
-        </section>
-      )}
+                    {/* Expanded section */}
+                    {isExpanded && (
+                      <div style={{ marginTop: '14px' }}>
+                        <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.07em', color: '#86868b', textTransform: 'uppercase', marginBottom: '12px' }}>
+                          Full Community Profile
+                        </p>
 
-      {/* Score explanation popup */}
-      {scorePopupOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
-          onClick={() => setScorePopupOpen(false)}
-        >
-          <div
-            className="rounded-2xl p-6 max-w-md w-full"
-            style={{ backgroundColor: '#FDFCFA' }}
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-base" style={{ color: '#16120D' }}>
-                Understanding Your Scores
-              </h3>
-              <button
-                onClick={() => setScorePopupOpen(false)}
-                className="text-sm"
-                style={{ color: '#9A8E82' }}
-              >
-                ✕
-              </button>
-            </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                          {[
+                            { label: 'Cost of living',  value: `${fmtMoney(costOfLiving)}/mo` },
+                            { label: 'Property tax',    value: `${fmtMoney(propTaxMonthly)}/mo` },
+                            { label: 'Days on market',  value: `${city.market.daysOnMarket} days` },
+                            { label: 'Community type',  value: char },
+                            { label: 'Price growth',    value: yoy >= 0 ? `+${yoy.toFixed(1)}% YOY` : `${yoy.toFixed(1)}% YOY` },
+                            { label: 'Lifestyle match', value: `${Math.round(match.functionalFitScore * 10)}%` },
+                          ].map(stat => (
+                            <div key={stat.label} style={{ background: '#F5F5F7', borderRadius: '8px', padding: '10px 12px' }}>
+                              <p style={{ fontSize: '9px', color: '#86868b', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '2px' }}>{stat.label}</p>
+                              <p style={{ fontSize: '12px', color: '#1d1d1f', fontWeight: 500, margin: 0 }}>{stat.value}</p>
+                            </div>
+                          ))}
+                        </div>
 
-            <p className="text-sm leading-relaxed mb-4" style={{ color: '#4B5563' }}>
-              Every category is scored from <strong>0 to 10</strong>. Higher is always better —
-              a 9 in Traffic means great traffic conditions, not bad ones. A 9 in Affordability
-              means housing is very affordable for your income.
-            </p>
-
-            <div className="space-y-2 mb-4">
-              {[
-                { label: 'Affordability', desc: 'How well housing costs fit your income' },
-                { label: 'Schools', desc: 'Public school district quality and TEA ratings' },
-                { label: 'Safety', desc: 'Crime rates — higher score means safer' },
-                { label: 'Walkability', desc: 'How much you can do on foot day to day' },
-                { label: 'Transit', desc: 'Bus, rail, and commute options available' },
-                { label: 'Nightlife', desc: 'Bars, music, restaurants, entertainment' },
-                { label: 'Outdoors', desc: 'Parks, trails, lakes, and nature access' },
-                { label: 'Family Friendly', desc: 'Overall environment for raising children' },
-                { label: 'Remote Work', desc: 'Broadband quality, tech culture, coworking' },
-                { label: 'Low Taxes', desc: 'Property tax rates — higher score means lower taxes' },
-                { label: 'Weather', desc: 'Climate comfort and sunshine' },
-                { label: 'Traffic', desc: 'Commute times — higher score means less congestion' },
-                { label: 'Healthcare', desc: 'Hospital access, specialists, medical quality' },
-              ].map(item => (
-                <div key={item.label} className="flex gap-3">
-                  <span className="text-xs font-semibold w-28 shrink-0" style={{ color: '#16120D' }}>
-                    {item.label}
-                  </span>
-                  <span className="text-xs" style={{ color: '#6B7280' }}>
-                    {item.desc}
-                  </span>
+                        <p style={{
+                          fontSize: '12px', color: '#86868b', lineHeight: 1.6,
+                          padding: '10px 12px', background: '#FAFAF8',
+                          borderRadius: '8px', border: '0.5px solid #E8E6E0',
+                          marginTop: '8px',
+                        }}>
+                          {city.cityNarrative ?? city.description}
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              ))}
-            </div>
-
-            <div className="rounded-xl p-3" style={{ backgroundColor: '#F0EDE6' }}>
-              <p className="text-xs leading-relaxed" style={{ color: '#4B5563' }}>
-                <strong>How priorities affect your match score:</strong> Categories you marked
-                as Must Have count 3× more than others. Important to Me counts 2×.
-                Would Be Nice counts 1×. Unassigned categories don&apos;t affect your score at all.
-              </p>
-            </div>
-          </div>
+              </div>
+            )
+          })}
         </div>
-      )}
+      </div>
 
-      <StickyAdvanceBar
-        checked={mm2ReadyChecked}
-        onCheckedChange={setMm2ReadyChecked}
-        checkboxLabel="I've reviewed my city matches and I'm ready to move forward."
-        onPrev={() => router.push('/portal/mm1')}
-        onNext={async () => {
-          if (email) {
-            try {
-              const supabase = createClient()
-              await supabase
-                .from('users')
-                .update({ current_milemarker: 3 })
-                .eq('email', email.toLowerCase())
-            } catch (err) {
-              console.error('[MM2→3] write failed:', err)
-            }
-          }
-          onAdvanceToDiscover()
-        }}
-        nextLabel="Continue to Refine →"
-      />
+      {/* Navigation row */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '14px' }}>
+        <button
+          type="button"
+          onClick={() => goTo(current - 1)}
+          disabled={current === 0}
+          style={{
+            border: '0.5px solid #D0CEC8', borderRadius: '7px',
+            padding: '7px 16px', fontSize: '12px', color: '#555',
+            background: '#fff', cursor: current === 0 ? 'default' : 'pointer',
+            opacity: current === 0 ? 0.3 : 1,
+            pointerEvents: current === 0 ? 'none' : 'auto',
+            fontFamily: 'inherit',
+          }}
+        >← Back</button>
+
+        {/* Dot indicator */}
+        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+          {visibleMatches.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => goTo(i)}
+              style={{
+                width: i === current ? '16px' : '6px',
+                height: '6px',
+                borderRadius: i === current ? '3px' : '50%',
+                background: i === current ? '#0A1E3D' : '#D0CEC8',
+                border: 'none', cursor: 'pointer', padding: 0,
+                transition: 'all 0.25s',
+                flexShrink: 0,
+              }}
+            />
+          ))}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => goTo(current + 1)}
+          disabled={current === visibleMatches.length - 1}
+          style={{
+            border: '0.5px solid #D0CEC8', borderRadius: '7px',
+            padding: '7px 16px', fontSize: '12px', color: '#555',
+            background: '#fff', cursor: current === visibleMatches.length - 1 ? 'default' : 'pointer',
+            opacity: current === visibleMatches.length - 1 ? 0.3 : 1,
+            pointerEvents: current === visibleMatches.length - 1 ? 'none' : 'auto',
+            fontFamily: 'inherit',
+          }}
+        >Next →</button>
+      </div>
+
+      {/* CTA */}
+      <div style={{ marginTop: '16px', textAlign: 'center' }}>
+        {hasSeenAll ? (
+          <>
+            <button
+              type="button"
+              onClick={handleAdvance}
+              disabled={advancing}
+              style={{
+                width: '100%', background: '#0A1E3D', color: '#fff',
+                border: 'none', borderRadius: '9px', padding: '12px',
+                fontSize: '13px', fontWeight: 500, marginTop: '12px',
+                cursor: advancing ? 'not-allowed' : 'pointer',
+                opacity: advancing ? 0.7 : 1,
+                fontFamily: 'inherit',
+              }}
+            >
+              {advancing ? 'Loading…' : 'Continue to Refine →'}
+            </button>
+            <p style={{ fontSize: '11px', color: '#B0ADA6', marginTop: '8px' }}>
+              Review all three communities before continuing
+            </p>
+          </>
+        ) : (
+          <p style={{ fontSize: '11px', color: '#B0ADA6' }}>
+            Review all three communities before continuing
+          </p>
+        )}
+      </div>
+
     </div>
   )
 }
