@@ -201,8 +201,11 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
       if (Array.isArray(data.chosen_communities) && data.chosen_communities.length > 0) {
         setPinnedCities(data.chosen_communities)
       }
-      if (data.origin_city) setOriginCity(data.origin_city)
-      if (data.origin_state) setOriginState(data.origin_state)
+      // Origin city fallback chain: users.origin_city → sessionStorage → null
+      const resolvedCity = data.origin_city || (typeof window !== 'undefined' ? sessionStorage.getItem('hq_origin_city') : null) || null
+      const resolvedState = data.origin_state || (typeof window !== 'undefined' ? sessionStorage.getItem('hq_origin_state') : null) || null
+      if (resolvedCity) setOriginCity(resolvedCity)
+      if (resolvedState) setOriginState(resolvedState)
     }
     load()
   }, [onAdvanceToConnect])
@@ -442,11 +445,12 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         <div style={{
           width: '220px', flexShrink: 0,
           background: '#0A1E3D',
-          padding: '20px 16px',
-          display: 'flex', flexDirection: 'column', gap: '18px',
+          display: 'flex', flexDirection: 'column',
           position: 'sticky', top: 0, height: '100vh',
-          overflowY: 'auto', alignSelf: 'flex-start',
+          overflow: 'hidden', alignSelf: 'flex-start',
         }}>
+          {/* Scrollable content area */}
+          <div style={{ flex: 1, overflowY: 'auto', padding: '18px 14px 14px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
           {/* Label */}
           <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.12em', color: '#C5B783', textTransform: 'uppercase', margin: 0 }}>
             Your Direction
@@ -605,8 +609,10 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
             })}
           </div>
 
-          {/* CTA */}
-          <div style={{ marginTop: 'auto' }}>
+          </div>{/* end scrollable content */}
+
+          {/* Fixed CTA at bottom */}
+          <div style={{ padding: '12px 14px 16px', borderTop: '0.5px solid rgba(255,255,255,0.08)', background: '#0A1E3D', flexShrink: 0 }}>
             <button
               type="button" onClick={handleCommit} disabled={committing}
               style={{
@@ -1023,13 +1029,25 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
               Click an item to move it between columns. City rankings update live as you adjust.
             </p>
 
+            {/* Progress indicator */}
+            <p style={{ fontSize: '11px', color: '#6B6A65', marginBottom: '10px' }}>
+              <span style={{ color: mustHaves.length >= 3 ? '#1a6b35' : undefined, fontWeight: mustHaves.length >= 3 ? 500 : undefined }}>
+                {mustHaves.length}/3 Must Haves{mustHaves.length >= 3 ? ' ✓' : ''}
+              </span>
+              {' · '}
+              {niceToHaves.length}/5 Important
+              {' · '}
+              {lessImportant.length} Would Be Nice
+            </p>
+
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
               {/* Must have */}
               <div style={{ background: '#fff', border: '0.5px solid #E0DED8', borderRadius: '8px', padding: '10px' }}>
-                <p style={{ fontSize: '10px', fontWeight: 700, color: '#0A1E3D', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Must have</p>
+                <p style={{ fontSize: '10px', fontWeight: 700, color: '#0A1E3D', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Must Have</p>
+                <p style={{ fontSize: '9px', color: '#86868b', margin: '0 0 8px' }}>Up to 3 · 3× weight</p>
                 {mustHaveError && (
-                  <p style={{ fontSize: '10px', color: '#F5A623', marginBottom: '6px', fontStyle: 'italic', margin: '0 0 6px' }}>
-                    Must have is limited to 3. Move one out first.
+                  <p style={{ fontSize: '10px', color: '#F5A623', fontStyle: 'italic', margin: '0 0 6px' }}>
+                    Must Have is limited to 3. Move one to Important to Me first.
                   </p>
                 )}
                 {mustHaves.length === 0 && <p style={{ fontSize: '11px', color: 'rgba(0,0,0,0.22)', fontStyle: 'italic', margin: 0 }}>Empty</p>}
@@ -1052,7 +1070,8 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
 
               {/* Nice to have */}
               <div style={{ background: '#fff', border: '0.5px solid #E0DED8', borderRadius: '8px', padding: '10px' }}>
-                <p style={{ fontSize: '10px', fontWeight: 700, color: '#6B6A65', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Nice to have</p>
+                <p style={{ fontSize: '10px', fontWeight: 700, color: '#6B6A65', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Important to Me</p>
+                <p style={{ fontSize: '9px', color: '#86868b', margin: '0 0 8px' }}>Up to 5 · 2× weight</p>
                 {niceToHaves.length === 0 && <p style={{ fontSize: '11px', color: 'rgba(0,0,0,0.22)', fontStyle: 'italic', margin: 0 }}>Empty</p>}
                 {niceToHaves.map(key => {
                   const cat = DNA_CATEGORIES.find(c => c.key === key)!
@@ -1078,7 +1097,8 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
 
               {/* Less important */}
               <div style={{ background: '#fff', border: '0.5px solid #E0DED8', borderRadius: '8px', padding: '10px' }}>
-                <p style={{ fontSize: '10px', fontWeight: 700, color: '#B0ADA6', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Less important</p>
+                <p style={{ fontSize: '10px', fontWeight: 700, color: '#B0ADA6', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Would Be Nice</p>
+                <p style={{ fontSize: '9px', color: '#86868b', margin: '0 0 8px' }}>1× weight</p>
                 {lessImportant.length === 0 && <p style={{ fontSize: '11px', color: 'rgba(0,0,0,0.22)', fontStyle: 'italic', margin: 0 }}>Empty</p>}
                 {lessImportant.map(key => {
                   const cat = DNA_CATEGORIES.find(c => c.key === key)!
