@@ -11,14 +11,7 @@ import Section3Employment from './sections/Section3Employment'
 import Section4TexasDirection from './sections/Section4TexasDirection'
 import Section5Notes from './sections/Section5Notes'
 
-const SECTION_LABELS = [
-  'Identity',
-  'Household',
-  'The Move',
-  'Employment',
-  'Direction',
-  'Notes',
-]
+const SECTION_COUNT = 6
 
 function parseHouseholdSize(hs: string | undefined): number {
   if (!hs) return 1
@@ -68,6 +61,8 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [chosenCommunities, setChosenCommunities] = useState<string[]>([])
   const [quizHouseholdSize, setQuizHouseholdSize] = useState<string | null>(null)
+  const [quizMovingTimeline, setQuizMovingTimeline] = useState<string | null>(null)
+  const [quizWorkSituation, setQuizWorkSituation] = useState<string | null>(null)
 
   const profileSeedApplied = useRef(false)
 
@@ -124,13 +119,19 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
             .maybeSingle(),
           supabase
             .from('users')
-            .select('chosen_communities, household_size, home_status, moving_timeline, annual_income_override, sandbox_profile, origin_city, origin_state')
+            .select('chosen_communities, household_size, home_status, moving_timeline, annual_income_override, sandbox_profile, origin_city, origin_state, origin_zip, work_situation')
             .eq('email', email)
             .maybeSingle(),
         ])
 
         if (userData?.household_size) {
           setQuizHouseholdSize(userData.household_size)
+        }
+        if (userData?.moving_timeline) {
+          setQuizMovingTimeline(userData.moving_timeline as string)
+        }
+        if (userData?.work_situation) {
+          setQuizWorkSituation(userData.work_situation as string)
         }
 
         // A3: prefer MM3 override values over quiz values
@@ -145,9 +146,10 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
           ? `$${userData.annual_income_override.toLocaleString('en-US')}`
           : null
 
-        // A4: prefer Supabase origin city/state over sessionStorage
+        // A4: prefer Supabase origin city/state/zip over sessionStorage
         const originCityFromDb = userData?.origin_city as string | null ?? null
         const originStateFromDb = userData?.origin_state as string | null ?? null
+        const originZipFromDb = userData?.origin_zip as string | null ?? null
 
         if (existing && !existing.submitted) {
           setFormData(prev => ({
@@ -158,6 +160,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
             income_range_confirmed: existing.income_range_confirmed || incomeFromSupabase || prev.income_range_confirmed,
             current_city: existing.current_city || originCityFromDb || prev.current_city,
             current_state: existing.current_state || originStateFromDb || prev.current_state,
+            current_zip: existing.current_zip || originZipFromDb || prev.current_zip,
           }))
           profileSeedApplied.current = true
           const resumed = typeof existing.last_completed_section === 'number'
@@ -175,6 +178,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
             income_range_confirmed: prev.income_range_confirmed || incomeFromSupabase || prev.income_range_confirmed,
             current_city: prev.current_city || originCityFromDb || prev.current_city,
             current_state: prev.current_state || originStateFromDb || prev.current_state,
+            current_zip: prev.current_zip || originZipFromDb || prev.current_zip,
           }))
         }
 
@@ -321,88 +325,43 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
     animation: `${direction === 'forward' ? 'mm4SlideInRight' : 'mm4SlideInLeft'} 280ms ease-out`,
   }
 
-  const pct = ((currentSection) / 6) * 100
+  const topMatchNames = matches.slice(0, 3).map(m => m.location.name)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
 
-      {/* Progress bar — full workspace width, above the inset card */}
-      <div style={{ marginBottom: '28px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0', marginBottom: '16px' }}>
-          {SECTION_LABELS.map((label, i) => {
-            const done = i < currentSection
-            const active = i === currentSection
-            return (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', flex: i < 5 ? 1 : 'none' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                  <div style={{
-                    width: '28px',
-                    height: '28px',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    transition: 'all 0.25s',
-                    backgroundColor: done ? '#0076B6' : active ? '#0076B6' : 'var(--card-bg)',
-                    border: `2px solid ${done || active ? '#0076B6' : 'var(--card-border)'}`,
-                    color: done || active ? '#ffffff' : 'var(--text-muted)',
-                    flexShrink: 0,
-                  }}>
-                    {done ? '✓' : i + 1}
-                  </div>
-                  <span style={{
-                    fontSize: '10px',
-                    fontWeight: active ? 600 : 400,
-                    color: active ? '#0076B6' : done ? 'rgba(10,30,61,0.55)' : 'rgba(10,30,61,0.4)',
-                    whiteSpace: 'nowrap',
-                    letterSpacing: '0.02em',
-                    transition: 'color 0.25s',
-                  }}>
-                    {label}
-                  </span>
-                </div>
-                {i < 5 && (
-                  <div style={{
-                    flex: 1,
-                    height: '2px',
-                    backgroundColor: done ? '#0076B6' : 'rgba(10,30,61,0.15)',
-                    marginBottom: '22px',
-                    marginLeft: '6px',
-                    marginRight: '6px',
-                    transition: 'background-color 0.25s',
-                  }} />
-                )}
-              </div>
-            )
-          })}
-        </div>
-
-        <div style={{ height: '3px', backgroundColor: 'rgba(10,30,61,0.12)', borderRadius: '2px', overflow: 'hidden' }}>
-          <div style={{
-            width: `${pct}%`,
-            height: '100%',
-            backgroundColor: '#0076B6',
-            borderRadius: '2px',
-            transition: 'width 0.35s ease',
-          }} />
-        </div>
-
-        {saving && (
-          <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginTop: '6px', textAlign: 'right' }}>
-            Saving…
-          </p>
-        )}
+      {/* Dot step indicator */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', marginBottom: '28px' }}>
+        {Array.from({ length: SECTION_COUNT }).map((_, i) => {
+          const done = i < currentSection
+          const active = i === currentSection
+          return (
+            <div
+              key={i}
+              style={{
+                width: active ? '18px' : '6px',
+                height: '6px',
+                borderRadius: '3px',
+                backgroundColor: (done || active) ? '#0A1E3D' : '#D1D1D6',
+                transition: 'all 0.25s',
+              }}
+            />
+          )
+        })}
       </div>
+
+      {saving && (
+        <p style={{ fontSize: '11px', color: 'rgba(10,30,61,0.4)', marginBottom: '8px', textAlign: 'right' }}>
+          Saving…
+        </p>
+      )}
 
       {/* Inset centered panel */}
       <div style={{
         maxWidth: '1200px',
         margin: '0 auto',
         width: '100%',
-        backgroundColor: '#FDFCFA',
-        border: '1px solid var(--card-border)',
+        backgroundColor: '#ffffff',
         borderRadius: '16px',
         padding: '32px',
         boxShadow: '0 1px 3px rgba(0,0,0,0.05), 0 4px 20px rgba(0,0,0,0.07)',
@@ -412,13 +371,29 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
             <Section1Identity data={formData} onChange={handleChange} errors={errors} />
           )}
           {currentSection === 1 && (
-            <Section2Household data={formData} onChange={handleChange} errors={errors} householdSize={quizHouseholdSize} />
+            <Section2Household
+              data={formData}
+              onChange={handleChange}
+              errors={errors}
+              householdSize={quizHouseholdSize}
+              movingTimeline={quizMovingTimeline}
+            />
           )}
           {currentSection === 2 && (
-            <Section2TheMove data={formData} onChange={handleChange} errors={errors} />
+            <Section2TheMove
+              data={formData}
+              onChange={handleChange}
+              errors={errors}
+              quizWorkSituation={quizWorkSituation}
+            />
           )}
           {currentSection === 3 && (
-            <Section3Employment data={formData} onChange={handleChange} errors={errors} />
+            <Section3Employment
+              data={formData}
+              onChange={handleChange}
+              errors={errors}
+              quizWorkSituation={quizWorkSituation}
+            />
           )}
           {currentSection === 4 && (
             <Section4TexasDirection
@@ -426,6 +401,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
               onChange={handleChange}
               errors={errors}
               chosenCommunities={chosenCommunities}
+              topMatchNames={topMatchNames}
             />
           )}
           {currentSection === 5 && (
@@ -440,7 +416,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
         </div>
       </div>
 
-      {/* Navigation buttons — below the inset panel, sticky at bottom */}
+      {/* Navigation buttons */}
       {currentSection < 5 && (
         <div style={{
           position: 'sticky',
@@ -478,30 +454,28 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
               ← Back
             </button>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <span style={{ fontSize: '12px', color: 'rgba(10,30,61,0.55)' }}>
-                Step {currentSection + 1} of 6
-              </span>
-              <button
-                type="button"
-                onClick={handleContinue}
-                disabled={saving}
-                style={{
-                  padding: '10px 28px',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  color: '#ffffff',
-                  backgroundColor: saving ? '#5BA8D0' : '#0076B6',
-                  border: 'none',
-                  cursor: saving ? 'not-allowed' : 'pointer',
-                  transition: 'background-color 0.15s',
-                  letterSpacing: '0.01em',
-                }}
-              >
-                {saving ? 'Saving…' : 'Continue →'}
-              </button>
-            </div>
+            <span style={{ fontSize: '12px', color: 'rgba(10,30,61,0.55)' }}>
+              Step {currentSection + 1} of 6
+            </span>
+
+            <button
+              type="button"
+              onClick={handleContinue}
+              disabled={saving}
+              style={{
+                padding: '10px 28px',
+                borderRadius: '10px',
+                fontSize: '15px',
+                fontWeight: 500,
+                color: '#ffffff',
+                backgroundColor: saving ? 'rgba(10,30,61,0.5)' : '#0A1E3D',
+                border: 'none',
+                cursor: saving ? 'not-allowed' : 'pointer',
+                transition: 'background-color 0.15s',
+              }}
+            >
+              {saving ? 'Saving…' : 'Continue →'}
+            </button>
           </div>
         </div>
       )}

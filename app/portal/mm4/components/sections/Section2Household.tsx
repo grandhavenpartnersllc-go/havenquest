@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import type { MM4Profile } from '../../../../../types'
+import ConfirmRow from '../ConfirmRow'
 
 interface Props {
   data: MM4Profile
   onChange: (updates: Partial<MM4Profile>) => void
   errors: Record<string, string>
   householdSize?: string | null
+  movingTimeline?: string | null
 }
 
 function Field({ label, required, error, hint, children }: {
@@ -19,11 +21,11 @@ function Field({ label, required, error, hint, children }: {
 }) {
   return (
     <div>
-      <label style={{ display: 'block', fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+      <label style={{ display: 'block', fontSize: '12px', color: '#86868b', marginBottom: '6px' }}>
         {label}
         {required && <span style={{ color: '#0076B6', marginLeft: '2px' }}>*</span>}
       </label>
-      {hint && <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '-2px 0 8px' }}>{hint}</p>}
+      {hint && <p style={{ fontSize: '12px', color: '#86868b', margin: '-2px 0 8px' }}>{hint}</p>}
       {children}
       {error && <p style={{ fontSize: '11px', color: '#DC2626', marginTop: '4px' }}>{error}</p>}
     </div>
@@ -32,7 +34,16 @@ function Field({ label, required, error, hint, children }: {
 
 const col2: React.CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }
 
-export default function Section2Household({ data, onChange, errors, householdSize }: Props) {
+function mapTimelineToLabel(t: string | null | undefined): string {
+  if (!t) return ''
+  if (t.startsWith('0-3') || t === 'asap') return 'ready to move within 3 months'
+  if (t.startsWith('3-6')) return 'moving within 6 months'
+  if (t.startsWith('6-12')) return 'moving within the year'
+  if (t.startsWith('12') || t === 'exploring') return 'exploring options'
+  return ''
+}
+
+export default function Section2Household({ data, onChange, errors, householdSize, movingTimeline }: Props) {
   const [adultsDisplay, setAdultsDisplay] = useState(String(data.num_adults ?? 1))
   const [childrenDisplay, setChildrenDisplay] = useState(String(data.num_children ?? 0))
 
@@ -44,25 +55,33 @@ export default function Section2Household({ data, onChange, errors, householdSiz
     setChildrenDisplay(String(data.num_children ?? 0))
   }, [data.num_children])
 
+  const timelineLabel = mapTimelineToLabel(movingTimeline)
+  const adultsCount = data.num_adults ?? 1
+  const householdConfirmValue = timelineLabel
+    ? `${adultsCount} adult${adultsCount !== 1 ? 's' : ''} · ${timelineLabel}`
+    : `${adultsCount} adult${adultsCount !== 1 ? 's' : ''}`
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
       <div style={{ marginBottom: '4px' }}>
-        <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#0A1E3D', margin: '0 0 4px' }}>
-          Your Household
+        <h2 style={{ fontSize: '22px', fontWeight: 500, color: '#1d1d1f', margin: '0 0 4px' }}>
+          Your household
         </h2>
-        <p style={{ fontSize: '13px', color: '#4a5568', margin: 0, lineHeight: 1.5 }}>
+        <p style={{ fontSize: '15px', color: '#86868b', margin: 0, lineHeight: 1.5 }}>
           Help your Market Director understand who&apos;s coming along on this move.
         </p>
       </div>
 
-      {/* Adults / Children counts only */}
+      <ConfirmRow label="Household" value={householdConfirmValue} />
+
+      {/* Adults / Children counts */}
       <div style={col2}>
         <Field
           label="Adults in household"
           required
           error={errors.num_adults}
-          hint={householdSize ? `You told us your household size was ${householdSize} when you started — let's get the exact breakdown here.` : undefined}
+          hint={householdSize ? `You told us your household size was ${householdSize} — let's get the exact breakdown.` : undefined}
         >
           <input
             className="mm4-input"

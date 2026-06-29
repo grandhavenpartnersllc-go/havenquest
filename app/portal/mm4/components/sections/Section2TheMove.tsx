@@ -2,11 +2,13 @@
 
 import { useMemo } from 'react'
 import type { MM4Profile } from '../../../../../types'
+import ConfirmRow from '../ConfirmRow'
 
 interface Props {
   data: MM4Profile
   onChange: (updates: Partial<MM4Profile>) => void
   errors: Record<string, string>
+  quizWorkSituation?: string | null
 }
 
 type TimelineFlexibility = MM4Profile['timeline_flexibility']
@@ -38,7 +40,7 @@ function PillGroup<T extends string>({
               borderRadius: '20px',
               fontSize: '13px',
               fontWeight: selected ? 500 : 400,
-              color: selected ? '#ffffff' : 'var(--text-secondary)',
+              color: selected ? '#ffffff' : '#86868b',
               backgroundColor: selected ? '#0076B6' : 'transparent',
               border: `1.5px solid ${selected ? '#0076B6' : 'var(--card-border)'}`,
               cursor: 'pointer',
@@ -63,26 +65,26 @@ function Field({ label, required, error, hint, children }: {
 }) {
   return (
     <div>
-      <label style={{ display: 'block', fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+      <label style={{ display: 'block', fontSize: '12px', color: '#86868b', marginBottom: '6px' }}>
         {label}
         {required && <span style={{ color: '#0076B6', marginLeft: '2px' }}>*</span>}
       </label>
-      {hint && <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '-2px 0 8px' }}>{hint}</p>}
+      {hint && <p style={{ fontSize: '12px', color: '#86868b', margin: '-2px 0 8px' }}>{hint}</p>}
       {children}
       {error && <p style={{ fontSize: '11px', color: '#DC2626', marginTop: '4px' }}>{error}</p>}
     </div>
   )
 }
 
-function MiniLabel({ children }: { children: React.ReactNode }) {
+function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
     <p style={{
-      fontSize: '10px',
-      fontWeight: 700,
-      letterSpacing: '0.1em',
+      fontSize: '12px',
+      fontWeight: 500,
+      letterSpacing: '0.05em',
+      color: '#86868b',
       textTransform: 'uppercase',
-      color: 'var(--text-muted)',
-      margin: '0 0 8px',
+      margin: '24px 0 10px',
     }}>
       {children}
     </p>
@@ -105,7 +107,33 @@ const EQUITY_OPTIONS = [
   'Not sure yet',
 ]
 
-export default function Section2TheMove({ data, onChange, errors }: Props) {
+function mapWorkSituationToLabel(ws: string | null | undefined): string {
+  switch (ws) {
+    case 'fully_remote': return 'fully remote'
+    case 'hybrid': return 'hybrid'
+    case 'in_office':
+    case 'on_site': return 'in-office'
+    case 'self_employed': return 'self-employed'
+    case 'retired':
+    case 'not_working': return ''
+    default: return ''
+  }
+}
+
+function mapIncomeToLabel(income: string | null | undefined): string {
+  switch (income) {
+    case 'under_50k': return 'Under $50K'
+    case '50_75k': return '$50K–$75K'
+    case '75_100k': return '$75K–$100K'
+    case '100_150k': return '$100K–$150K'
+    case '150_200k': return '$150K–$200K'
+    case '200_300k': return '$200K–$300K'
+    case '300k_plus': return '$300K+'
+    default: return income ?? ''
+  }
+}
+
+export default function Section2TheMove({ data, onChange, errors, quizWorkSituation }: Props) {
   const isSelling = data.origin_situation === 'selling'
 
   const moveOptions = useMemo(() => {
@@ -118,20 +146,28 @@ export default function Section2TheMove({ data, onChange, errors }: Props) {
     return opts
   }, [])
 
+  const incomeLabel = mapIncomeToLabel(data.income_range_confirmed)
+  const workLabel = mapWorkSituationToLabel(quizWorkSituation)
+  const financialConfirmValue = [incomeLabel, workLabel].filter(Boolean).join(' · ')
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <div>
-        <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#0A1E3D', margin: '0 0 6px' }}>
-          The Move
+        <h2 style={{ fontSize: '22px', fontWeight: 500, color: '#1d1d1f', margin: '0 0 6px' }}>
+          The move
         </h2>
-        <p style={{ fontSize: '13px', color: '#4a5568', margin: 0, lineHeight: 1.5 }}>
+        <p style={{ fontSize: '15px', color: '#86868b', margin: 0, lineHeight: 1.5 }}>
           Help us understand your motivation and timing so we can plan the right path forward.
         </p>
       </div>
 
-      {/* Timing — Target date / Timeline flexibility side by side */}
+      {financialConfirmValue && (
+        <ConfirmRow label="Financial picture" value={financialConfirmValue} />
+      )}
+
+      {/* Timing */}
       <div>
-        <MiniLabel>Timing</MiniLabel>
+        <SectionHeading>Timing</SectionHeading>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
           <Field label="Target move date">
             <select
@@ -166,7 +202,7 @@ export default function Section2TheMove({ data, onChange, errors }: Props) {
 
       {/* Current housing situation */}
       <div>
-        <MiniLabel>Current Housing Situation</MiniLabel>
+        <SectionHeading>Current Housing Situation</SectionHeading>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <Field
             label="What's your current housing situation?"
@@ -196,7 +232,6 @@ export default function Section2TheMove({ data, onChange, errors }: Props) {
 
           {isSelling && (
             <>
-              {/* Have you listed? / Equity side by side */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <Field label="Have you listed your home?">
                   <PillGroup

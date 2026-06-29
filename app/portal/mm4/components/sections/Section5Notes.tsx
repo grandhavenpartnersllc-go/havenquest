@@ -45,7 +45,7 @@ export default function Section5Notes({ data, onChange, onSubmit, submitting, su
         padding: '16px 20px',
       }}>
         <p style={{ fontSize: '13px', color: 'var(--text-primary)', lineHeight: 1.65, margin: 0 }}>
-          When you click <strong>Complete My Profile</strong>, your Market Director will be notified and will reach
+          When you click <strong>Submit my application</strong>, your Market Director will be notified and will reach
           out to schedule your Navigator Activation consultation. You'll also receive a confirmation email with
           next steps.
         </p>
@@ -75,14 +75,14 @@ export default function Section5Notes({ data, onChange, onSubmit, submitting, su
             fontSize: '14px',
             fontWeight: 600,
             color: submitting ? 'rgba(255,255,255,0.6)' : '#ffffff',
-            backgroundColor: submitting ? '#5BA8D0' : '#0076B6',
+            backgroundColor: submitting ? 'rgba(10,30,61,0.5)' : '#0A1E3D',
             border: 'none',
             cursor: submitting ? 'not-allowed' : 'pointer',
             transition: 'background-color 0.15s',
             letterSpacing: '0.01em',
           }}
         >
-          {submitting ? 'Submitting…' : 'Complete My Profile →'}
+          {submitting ? 'Submitting…' : 'Submit my application →'}
         </button>
       </div>
     </div>

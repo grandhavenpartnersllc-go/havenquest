@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import type { MM4Profile } from '../../../../../types'
+import ConfirmRow from '../ConfirmRow'
 
 interface Props {
   data: MM4Profile
   onChange: (updates: Partial<MM4Profile>) => void
   errors: Record<string, string>
+  quizWorkSituation?: string | null
 }
 
 type EmploymentStatus = MM4Profile['employment_status']
@@ -41,7 +43,7 @@ function PillGroup<T extends string>({
               borderRadius: '20px',
               fontSize: '13px',
               fontWeight: selected ? 500 : 400,
-              color: selected ? '#ffffff' : 'var(--text-secondary)',
+              color: selected ? '#ffffff' : '#86868b',
               backgroundColor: selected ? '#0076B6' : 'transparent',
               border: `1.5px solid ${selected ? '#0076B6' : 'var(--card-border)'}`,
               cursor: 'pointer',
@@ -66,42 +68,66 @@ function Field({ label, required, error, hint, children }: {
 }) {
   return (
     <div>
-      <label style={{ display: 'block', fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+      <label style={{ display: 'block', fontSize: '12px', color: '#86868b', marginBottom: '6px' }}>
         {label}
         {required && <span style={{ color: '#0076B6', marginLeft: '2px' }}>*</span>}
       </label>
-      {hint && <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '-2px 0 8px' }}>{hint}</p>}
+      {hint && <p style={{ fontSize: '12px', color: '#86868b', margin: '-2px 0 8px' }}>{hint}</p>}
       {children}
       {error && <p style={{ fontSize: '11px', color: '#DC2626', marginTop: '4px' }}>{error}</p>}
     </div>
   )
 }
 
-function MiniLabel({ children }: { children: React.ReactNode }) {
+function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
     <p style={{
-      fontSize: '10px',
-      fontWeight: 700,
-      letterSpacing: '0.1em',
+      fontSize: '12px',
+      fontWeight: 500,
+      letterSpacing: '0.05em',
+      color: '#86868b',
       textTransform: 'uppercase',
-      color: 'var(--text-muted)',
-      margin: '0 0 8px',
+      margin: '24px 0 10px',
     }}>
       {children}
     </p>
   )
 }
 
+function mapWorkSituationToLabel(ws: string | null | undefined): string {
+  switch (ws) {
+    case 'fully_remote': return 'Fully remote'
+    case 'hybrid': return 'Hybrid'
+    case 'in_office':
+    case 'on_site': return 'In-office'
+    case 'self_employed': return 'Self-employed'
+    default: return ''
+  }
+}
+
+function mapWorkSituationToArrangement(ws: string | null | undefined): WorkArrangement | undefined {
+  switch (ws) {
+    case 'fully_remote': return 'fully_remote'
+    case 'hybrid': return 'hybrid'
+    case 'in_office':
+    case 'on_site': return 'in_person'
+    default: return undefined
+  }
+}
+
 const isEmployed = (status: EmploymentStatus | undefined) =>
   status === 'employed_w2' || status === 'self_employed' || status === 'employer_relocation'
 
-export default function Section3Employment({ data, onChange, errors }: Props) {
+export default function Section3Employment({ data, onChange, errors, quizWorkSituation }: Props) {
   const showRelocation = data.employment_status === 'employer_relocation'
   const showWorkArrangement = isEmployed(data.employment_status)
 
+  const quizWorkLabel = mapWorkSituationToLabel(quizWorkSituation)
+  const quizWorkArrangement = mapWorkSituationToArrangement(quizWorkSituation)
+  const showWorkArrangementAsConfirm = showWorkArrangement && !!quizWorkLabel
+
   const [incomeDisplay, setIncomeDisplay] = useState(data.income_range_confirmed ?? '')
 
-  // Sync if parent updates income (e.g. from DB load)
   useEffect(() => {
     setIncomeDisplay(data.income_range_confirmed ?? '')
   }, [data.income_range_confirmed])
@@ -109,18 +135,18 @@ export default function Section3Employment({ data, onChange, errors }: Props) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <div>
-        <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#0A1E3D', margin: '0 0 6px' }}>
-          Employment &amp; Finances
+        <h2 style={{ fontSize: '22px', fontWeight: 500, color: '#1d1d1f', margin: '0 0 6px' }}>
+          Employment &amp; finances
         </h2>
-        <p style={{ fontSize: '13px', color: '#4a5568', margin: 0, lineHeight: 1.5 }}>
+        <p style={{ fontSize: '15px', color: '#86868b', margin: 0, lineHeight: 1.5 }}>
           This helps your Market Director understand your budget ceiling and workplace flexibility.
         </p>
       </div>
 
-      {/* Employment status (left) / Work arrangement (right) */}
+      {/* Employment */}
       <div>
-        <MiniLabel>Employment</MiniLabel>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+        <SectionHeading>Employment</SectionHeading>
+        <div style={{ display: 'grid', gridTemplateColumns: showWorkArrangementAsConfirm ? '1fr 1fr' : '1fr', gap: '16px' }}>
           <Field label="Employment status" required error={errors.employment_status}>
             <PillGroup
               options={[
@@ -142,7 +168,17 @@ export default function Section3Employment({ data, onChange, errors }: Props) {
             />
           </Field>
 
-          {showWorkArrangement ? (
+          {showWorkArrangementAsConfirm ? (
+            <div>
+              <ConfirmRow
+                label="Work arrangement"
+                value={quizWorkLabel}
+                onEdit={() => {
+                  onChange({ work_arrangement: quizWorkArrangement })
+                }}
+              />
+            </div>
+          ) : showWorkArrangement ? (
             <Field label="Work arrangement" required error={errors.work_arrangement}>
               <PillGroup
                 options={[
@@ -154,11 +190,11 @@ export default function Section3Employment({ data, onChange, errors }: Props) {
                 onSelect={v => onChange({ work_arrangement: v as WorkArrangement })}
               />
             </Field>
-          ) : <div />}
+          ) : null}
         </div>
       </div>
 
-      {/* Relocation package — full width, conditional */}
+      {/* Relocation package */}
       {showRelocation && (
         <Field
           label="Employer relocation package?"
@@ -175,9 +211,9 @@ export default function Section3Employment({ data, onChange, errors }: Props) {
         </Field>
       )}
 
-      {/* Income — full width */}
+      {/* Income */}
       <div>
-        <MiniLabel>Financial Context</MiniLabel>
+        <SectionHeading>Financial Context</SectionHeading>
         <Field
           label="Annual household income"
           hint="Pre-filled from your HavenQuest profile — update if anything has changed."

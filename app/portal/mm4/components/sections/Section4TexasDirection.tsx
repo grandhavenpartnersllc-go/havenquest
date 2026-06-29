@@ -2,12 +2,14 @@
 
 import type { MM4Profile } from '../../../../../types'
 import { getAllCities } from '../../../../../services/locationService'
+import ConfirmRow from '../ConfirmRow'
 
 interface Props {
   data: MM4Profile
   onChange: (updates: Partial<MM4Profile>) => void
   errors: Record<string, string>
   chosenCommunities?: string[]
+  topMatchNames?: string[]
 }
 
 function Field({ label, required, error, hint, children }: {
@@ -19,16 +21,31 @@ function Field({ label, required, error, hint, children }: {
 }) {
   return (
     <div>
-      <label style={{ display: 'block', fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+      <label style={{ display: 'block', fontSize: '12px', color: '#86868b', marginBottom: '6px' }}>
         {label}
         {required && <span style={{ color: '#0076B6', marginLeft: '2px' }}>*</span>}
       </label>
-      <p style={{ fontSize: '12px', color: hint ? 'var(--text-muted)' : 'transparent', margin: '-2px 0 8px' }}>
-        {hint || ' '}
+      <p style={{ fontSize: '12px', color: hint ? '#86868b' : 'transparent', margin: '-2px 0 8px' }}>
+        {hint || ' '}
       </p>
       {children}
       {error && <p style={{ fontSize: '11px', color: '#DC2626', marginTop: '4px' }}>{error}</p>}
     </div>
+  )
+}
+
+function SectionHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <p style={{
+      fontSize: '12px',
+      fontWeight: 500,
+      letterSpacing: '0.05em',
+      color: '#86868b',
+      textTransform: 'uppercase',
+      margin: '24px 0 10px',
+    }}>
+      {children}
+    </p>
   )
 }
 
@@ -57,7 +74,7 @@ function PillGroup<T extends string>({
               borderRadius: '20px',
               fontSize: '13px',
               fontWeight: selected ? 500 : 400,
-              color: selected ? '#ffffff' : 'var(--text-secondary)',
+              color: selected ? '#ffffff' : '#86868b',
               backgroundColor: selected ? '#0076B6' : 'transparent',
               border: `1.5px solid ${selected ? '#0076B6' : 'var(--card-border)'}`,
               cursor: 'pointer',
@@ -75,7 +92,7 @@ function PillGroup<T extends string>({
 
 const REASONING_KEYS = ['city1_reasoning', 'city2_reasoning', 'city3_reasoning'] as const
 
-export default function Section4TexasDirection({ data, onChange, errors, chosenCommunities }: Props) {
+export default function Section4TexasDirection({ data, onChange, errors, chosenCommunities, topMatchNames }: Props) {
   const allCities = getAllCities()
   const resolvedCities = (chosenCommunities ?? [])
     .slice(0, 3)
@@ -84,26 +101,33 @@ export default function Section4TexasDirection({ data, onChange, errors, chosenC
 
   const hasCityCards = resolvedCities.length > 0
 
+  const communityNames = resolvedCities.length > 0
+    ? resolvedCities.map(c => c.name)
+    : (topMatchNames ?? [])
+  const communitiesConfirmValue = communityNames.slice(0, 3).join(', ')
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
       <div>
-        <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#0A1E3D', margin: '0 0 6px' }}>
-          Your Texas Direction
+        <h2 style={{ fontSize: '22px', fontWeight: 500, color: '#1d1d1f', margin: '0 0 6px' }}>
+          Your Texas direction
         </h2>
-        <p style={{ fontSize: '13px', color: '#4a5568', margin: 0, lineHeight: 1.5 }}>
+        <p style={{ fontSize: '15px', color: '#86868b', margin: 0, lineHeight: 1.5 }}>
           Share what you&apos;ve already researched and where you&apos;re leaning — your MD will use this to sharpen your roadmap.
         </p>
       </div>
 
+      {communitiesConfirmValue && (
+        <ConfirmRow label="Target communities" value={communitiesConfirmValue} />
+      )}
+
       {/* Top Choice */}
       <div>
-        <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-          Top Choice
-        </p>
+        <SectionHeading>Top Choice</SectionHeading>
 
         {hasCityCards ? (
           <div>
-            <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 12px' }}>
+            <p style={{ fontSize: '13px', color: '#86868b', margin: '0 0 12px' }}>
               These are the communities you locked in during Refine. Tell us what draws you to each one.
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
@@ -113,10 +137,9 @@ export default function Section4TexasDirection({ data, onChange, errors, chosenC
                   <div
                     key={city.id}
                     style={{
-                      border: '1px solid var(--card-border)',
+                      background: '#F5F5F7',
                       borderRadius: '12px',
                       padding: '16px',
-                      backgroundColor: 'var(--card-bg)',
                       display: 'flex',
                       flexDirection: 'column',
                       gap: '10px',
@@ -133,16 +156,16 @@ export default function Section4TexasDirection({ data, onChange, errors, chosenC
                         }}>
                           #{index + 1}
                         </span>
-                        <span style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                        <span style={{ fontSize: '16px', fontWeight: 500, color: '#1d1d1f' }}>
                           {city.name}
                         </span>
                       </div>
-                      <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)' }}>
+                      <p style={{ margin: 0, fontSize: '13px', color: '#86868b' }}>
                         {city.metroUsed}
                       </p>
                     </div>
                     <div>
-                      <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px' }}>
+                      <label style={{ display: 'block', fontSize: '12px', color: '#86868b', marginBottom: '6px' }}>
                         Why does {city.name} appeal to you?
                       </label>
                       <textarea
@@ -176,16 +199,14 @@ export default function Section4TexasDirection({ data, onChange, errors, chosenC
           </Field>
         )}
 
-        <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic', margin: '12px 0 0' }}>
+        <p style={{ fontSize: '12px', color: '#86868b', fontStyle: 'italic', margin: '12px 0 0' }}>
           These selections reflect everything you&apos;ve shared so far — your Market Director may refine them as your conversation goes deeper.
         </p>
       </div>
 
       {/* Research */}
       <div>
-        <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-          Research &amp; Criteria
-        </p>
+        <SectionHeading>Research &amp; Criteria</SectionHeading>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
             <Field
