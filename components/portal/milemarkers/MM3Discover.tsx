@@ -47,6 +47,76 @@ function calcMonthly(principal: number, annualRate: number, termYears: number): 
   return Math.round(principal * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1))
 }
 
+interface OriginCityData {
+  medianHome: string
+  schoolRating: string
+  colIndex: number
+  safety: string
+  incomeTax: string
+  climate: string
+}
+
+const ORIGIN_CITY_DATA: Record<string, OriginCityData> = {
+  'Seattle':       { medianHome: '$825K', schoolRating: 'B+', colIndex: 152, safety: 'Moderate',   incomeTax: 'None (WA)',    climate: 'Cool/rainy' },
+  'San Francisco': { medianHome: '$1.2M', schoolRating: 'B',  colIndex: 194, safety: 'High crime', incomeTax: '9.3% (CA)',    climate: 'Mild/foggy' },
+  'Los Angeles':   { medianHome: '$950K', schoolRating: 'C+', colIndex: 173, safety: 'Moderate',   incomeTax: '9.3% (CA)',    climate: 'Warm/sunny' },
+  'Chicago':       { medianHome: '$340K', schoolRating: 'B-', colIndex: 107, safety: 'High crime', incomeTax: '4.95% (IL)',   climate: 'Cold/snowy' },
+  'New York':      { medianHome: '$780K', schoolRating: 'B',  colIndex: 187, safety: 'Moderate',   incomeTax: '6.85% (NY)',   climate: 'Cold/humid' },
+  'Denver':        { medianHome: '$565K', schoolRating: 'B',  colIndex: 128, safety: 'Moderate',   incomeTax: '4.4% (CO)',    climate: 'Sunny/cold winters' },
+  'Atlanta':       { medianHome: '$410K', schoolRating: 'C+', colIndex: 108, safety: 'High crime', incomeTax: '5.75% (GA)',   climate: 'Warm/humid' },
+  'Phoenix':       { medianHome: '$420K', schoolRating: 'C+', colIndex: 103, safety: 'Moderate',   incomeTax: '2.5% (AZ)',    climate: 'Hot/dry' },
+  'Minneapolis':   { medianHome: '$360K', schoolRating: 'B+', colIndex: 106, safety: 'Moderate',   incomeTax: '9.85% (MN)',   climate: 'Very cold' },
+  'Portland':      { medianHome: '$510K', schoolRating: 'B',  colIndex: 129, safety: 'Moderate',   incomeTax: '9.9% (OR)',    climate: 'Cool/rainy' },
+  'Nashville':     { medianHome: '$450K', schoolRating: 'B-', colIndex: 112, safety: 'Moderate',   incomeTax: 'None (TN)',    climate: 'Warm/humid' },
+  'Miami':         { medianHome: '$620K', schoolRating: 'C+', colIndex: 123, safety: 'Moderate',   incomeTax: 'None (FL)',    climate: 'Hot/humid' },
+  'Washington DC': { medianHome: '$680K', schoolRating: 'B',  colIndex: 153, safety: 'Moderate',   incomeTax: '8.5% (DC)',    climate: 'Humid/cold winters' },
+  'Boston':        { medianHome: '$780K', schoolRating: 'A-', colIndex: 162, safety: 'Low',        incomeTax: '5% (MA)',      climate: 'Cold/snowy' },
+  'San Diego':     { medianHome: '$875K', schoolRating: 'B+', colIndex: 156, safety: 'Low',        incomeTax: '9.3% (CA)',    climate: 'Perfect/mild' },
+  'Dallas':        { medianHome: '$380K', schoolRating: 'B',  colIndex: 104, safety: 'Moderate',   incomeTax: 'None (TX)',    climate: 'Warm/sunny' },
+  'Houston':       { medianHome: '$310K', schoolRating: 'B-', colIndex: 98,  safety: 'Moderate',   incomeTax: 'None (TX)',    climate: 'Hot/humid' },
+  'default':       { medianHome: 'Varies', schoolRating: 'Varies', colIndex: 100, safety: 'Varies', incomeTax: 'Varies',      climate: 'Varies' },
+}
+
+function lookupOriginCity(city: string): OriginCityData | null {
+  if (!city) return null
+  const key = Object.keys(ORIGIN_CITY_DATA).find(k =>
+    k !== 'default' && city.toLowerCase().includes(k.toLowerCase())
+  )
+  return key ? ORIGIN_CITY_DATA[key] : null
+}
+
+function txColIndex(metro: string): number {
+  if (metro.includes('Houston')) return 98
+  if (metro.includes('San Antonio')) return 97
+  if (metro.includes('Dallas') || metro.includes('DFW') || metro.includes('Fort Worth')) return 104
+  return 108 // Austin / default
+}
+
+function txClimate(metro: string): string {
+  if (metro.includes('Houston')) return 'Hot/humid'
+  return 'Warm/sunny'
+}
+
+function txSafety(score: number): string {
+  if (score >= 8) return 'Very low'
+  if (score >= 6) return 'Low'
+  if (score >= 4) return 'Moderate'
+  return 'Higher risk'
+}
+
+function parseHomePrice(s: string): number {
+  // Parses "$825K" or "$1.2M" to a number
+  const clean = s.replace(/[$,]/g, '')
+  if (clean.endsWith('M')) return parseFloat(clean) * 1_000_000
+  if (clean.endsWith('K')) return parseFloat(clean) * 1_000
+  return parseFloat(clean) || 0
+}
+
+function schoolGrade(r: string): number {
+  const map: Record<string, number> = { 'A+': 13, 'A': 12, 'A-': 11, 'B+': 10, 'B': 9, 'B-': 8, 'C+': 7, 'C': 6, 'C-': 5, 'D': 4, 'F': 3 }
+  return map[r] ?? 0
+}
+
 interface Props {
   matches: CityMatch[]
   profile: UserProfile | null
@@ -83,6 +153,9 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const [ctaError, setCtaError] = useState<string | null>(null)
   const [committing, setCommitting] = useState(false)
   const [reportMatch, setReportMatch] = useState<CityMatch | null>(null)
+  const [mustHaveError, setMustHaveError] = useState(false)
+  const [originCity, setOriginCity] = useState<string | null>(null)
+  const [originState, setOriginState] = useState<string | null>(null)
 
   const commSectionRef = useRef<HTMLDivElement>(null)
   const priorityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -96,7 +169,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
       if (!s?.user?.email) return
       const { data } = await supabase
         .from('users')
-        .select('sandbox_committed,sandbox_profile,chosen_communities,home_status,exact_home_proceeds,available_funds,annual_income_override,loan_term_preference')
+        .select('sandbox_committed,sandbox_profile,chosen_communities,home_status,exact_home_proceeds,available_funds,annual_income_override,loan_term_preference,origin_city,origin_state')
         .eq('email', s.user.email.toLowerCase())
         .maybeSingle()
       if (!data) return
@@ -128,6 +201,8 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
       if (Array.isArray(data.chosen_communities) && data.chosen_communities.length > 0) {
         setPinnedCities(data.chosen_communities)
       }
+      if (data.origin_city) setOriginCity(data.origin_city)
+      if (data.origin_state) setOriginState(data.origin_state)
     }
     load()
   }, [onAdvanceToConnect])
@@ -250,6 +325,14 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     setSandboxTouched(true)
     const inMH = mustHaves.includes(key)
     const inNH = niceToHaves.includes(key)
+
+    // Cap Must Have at 3
+    if (inNH && direction === 'up' && mustHaves.length >= 3) {
+      setMustHaveError(true)
+      setTimeout(() => setMustHaveError(false), 3000)
+      return
+    }
+
     let newMH = mustHaves.filter(k => k !== key)
     let newNH = niceToHaves.filter(k => k !== key)
     let newNP = notPriorities.filter(k => k !== key)
@@ -442,42 +525,84 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
             </div>
           )}
 
-          {/* Buying power */}
-          <div>
-            <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.1em', color: '#C5B783', textTransform: 'uppercase', margin: '0 0 6px' }}>
-              Buying power
-            </p>
-            <p style={{ fontSize: '22px', fontWeight: 500, color: '#fff', margin: '0 0 3px' }}>
+          {/* Sub-section 1 — Buying power */}
+          <div style={{ borderBottom: '0.5px solid rgba(255,255,255,0.08)', paddingBottom: '14px' }}>
+            <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.08em', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', margin: '0 0 6px' }}>Buying Power</p>
+            <p style={{ fontSize: '18px', fontWeight: 500, color: '#fff', margin: '0 0 3px' }}>
               {totalFunds > 0 ? fmtK(totalFunds) : '—'}
             </p>
             {totalFunds > 0 && (
-              <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', margin: '0 0 5px' }}>
+              <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', lineHeight: 1.5, margin: 0 }}>
                 {isSelling && proceedsNum > 0 ? fmtK(proceedsNum) + ' proceeds' : ''}
                 {isSelling && proceedsNum > 0 && savingsNum > 0 ? ' + ' : ''}
                 {savingsNum > 0 ? fmtK(savingsNum) + ' savings' : ''}
               </p>
             )}
-            {refMonthly > 0 && (
-              <p style={{ fontSize: '11px', color: '#C5B783', margin: 0 }}>
-                Est. ${refMonthly.toLocaleString()}/mo · {interestRate}% · {loanTerm}yr
-              </p>
-            )}
           </div>
 
-          {/* Rate slider */}
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-              <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)' }}>Rate</span>
-              <span style={{ fontSize: '11px', color: '#C5B783' }}>{interestRate}%</span>
-            </div>
-            <input
-              type="range" min={3} max={10} step={0.25} value={interestRate}
-              onChange={e => { setSandboxTouched(true); setInterestRate(parseFloat(e.target.value)) }}
-              style={{ width: '100%', accentColor: '#C5B783', cursor: 'pointer' }}
-            />
-            <p style={{ fontSize: '9px', color: 'rgba(255,255,255,0.18)', margin: '3px 0 0' }}>
-              Drag to see payment impact
+          {/* Sub-section 2 — Monthly estimate + rate slider */}
+          <div style={{ borderBottom: '0.5px solid rgba(255,255,255,0.08)', paddingBottom: '14px' }}>
+            <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.08em', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', margin: '0 0 6px' }}>Monthly Estimate</p>
+            <p style={{ fontSize: '14px', fontWeight: 500, color: '#C5B783', margin: '0 0 1px' }}>
+              {refMonthly > 0 ? `$${refMonthly.toLocaleString()}/mo` : '—'}
             </p>
+            <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', lineHeight: 1.5, margin: '0 0 8px' }}>
+              Principal + interest · {loanTerm}yr
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+              <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>Interest rate</span>
+              <span style={{ fontSize: '10px', color: '#C5B783', fontWeight: 500 }}>{interestRate}%</span>
+            </div>
+            {/* Custom rate slider with green market band */}
+            <div style={{ position: 'relative', height: '4px', background: 'rgba(255,255,255,0.15)', borderRadius: '2px', margin: '6px 0' }}>
+              <div style={{ position: 'absolute', height: '100%', background: '#34C759', opacity: 0.7, borderRadius: '2px', left: '46.4%', width: '7.1%' }} />
+              <input
+                type="range" min={3} max={10} step={0.25} value={interestRate}
+                onChange={e => { setSandboxTouched(true); setInterestRate(parseFloat(e.target.value)) }}
+                style={{ position: 'absolute', top: '-6px', left: 0, width: '100%', opacity: 0, cursor: 'pointer', height: '16px' }}
+              />
+              <div style={{
+                position: 'absolute', width: '14px', height: '14px',
+                background: '#C5B783', borderRadius: '50%', top: '-5px',
+                left: `calc(${(interestRate - 3) / 7 * 100}% - 7px)`,
+                pointerEvents: 'none', transition: 'left 0.1s',
+              }} />
+            </div>
+            <p style={{ fontSize: '9px', color: '#34C759', opacity: 0.8, margin: '3px 0 0' }}>● Current market: 6.25%–6.75%</p>
+          </div>
+
+          {/* Sub-section 3 — Annual income */}
+          <div style={{ borderBottom: '0.5px solid rgba(255,255,255,0.08)', paddingBottom: '14px' }}>
+            <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.08em', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', margin: '0 0 6px' }}>Annual Income</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+              <span style={{ fontSize: '11px', color: '#fff' }}>
+                {incomeDisplay || (profile?.annualIncome ? fmtCurrency(String(profile.annualIncome)) : '—')}
+              </span>
+              <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>household</span>
+            </div>
+          </div>
+
+          {/* Sub-section 4 — Affordability by community */}
+          <div>
+            <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.08em', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', margin: '0 0 6px' }}>Affordability by Community</p>
+            {pinnedCities.length === 0 ? (
+              <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)', fontStyle: 'italic', margin: 0 }}>
+                Pin communities to see affordability
+              </p>
+            ) : pinnedCities.map(cityId => {
+              const cd = getAllCities().find(c => c.id === cityId)
+              if (!cd) return null
+              const s = afStatus(cd.housing.medianHomePrice)
+              return (
+                <div key={cityId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+                  <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.65)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginRight: '6px' }}>{cd.name}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+                    <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: afColor(s) }} />
+                    <span style={{ fontSize: '10px', color: afColor(s) }}>{afLabel(s)}</span>
+                  </div>
+                </div>
+              )
+            })}
           </div>
 
           {/* CTA */}
@@ -632,6 +757,133 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                         {showAllCities ? 'Show less ↑' : `Show more cities ↓`}
                       </div>
                     )}
+
+                    {/* Origin comparison chart */}
+                    {(() => {
+                      const originData = originCity ? lookupOriginCity(originCity) : null
+                      if (!originData) return null
+                      const pinnedMatches = pinnedCities.map(id => getAllCities().find(c => c.id === id)).filter(Boolean)
+                      const displayOriginCity = originCity || ''
+
+                      const rows: { label: string; originVal: string; txVals: string[]; betterFn?: (tx: string, orig: string, idx: number) => boolean }[] = [
+                        {
+                          label: 'Median home price',
+                          originVal: originData.medianHome,
+                          txVals: pinnedMatches.map(c => fmtK(c!.housing.medianHomePrice)),
+                          betterFn: (_tx, _orig, idx) => pinnedMatches[idx] ? pinnedMatches[idx]!.housing.medianHomePrice < parseHomePrice(originData.medianHome) : false,
+                        },
+                        {
+                          label: 'School rating',
+                          originVal: originData.schoolRating,
+                          txVals: pinnedMatches.map(c => c!.school?.teaRating ?? '—'),
+                          betterFn: (_tx, _orig, idx) => {
+                            const txR = pinnedMatches[idx]?.school?.teaRating ?? ''
+                            return schoolGrade(txR) > schoolGrade(originData.schoolRating)
+                          },
+                        },
+                        {
+                          label: 'Cost of living',
+                          originVal: String(originData.colIndex),
+                          txVals: pinnedMatches.map(c => String(txColIndex(c!.metroUsed))),
+                          betterFn: (_tx, _orig, idx) => pinnedMatches[idx] ? txColIndex(pinnedMatches[idx]!.metroUsed) < originData.colIndex : false,
+                        },
+                        {
+                          label: 'Safety',
+                          originVal: originData.safety,
+                          txVals: pinnedMatches.map(c => txSafety(c!.scores.safety)),
+                          betterFn: (_tx, _orig, idx) => {
+                            const txS = pinnedMatches[idx] ? txSafety(pinnedMatches[idx]!.scores.safety) : ''
+                            const origBad = originData.safety === 'Moderate' || originData.safety === 'High crime'
+                            return origBad && (txS === 'Very low' || txS === 'Low')
+                          },
+                        },
+                        {
+                          label: 'State income tax',
+                          originVal: originData.incomeTax,
+                          txVals: pinnedMatches.map(() => 'None (TX)'),
+                          betterFn: (_tx, _orig) => originData.incomeTax !== 'None (TX)' && originData.incomeTax !== 'None (WA)' && originData.incomeTax !== 'None (TN)' && originData.incomeTax !== 'None (FL)',
+                        },
+                        {
+                          label: 'Climate',
+                          originVal: originData.climate,
+                          txVals: pinnedMatches.map(c => txClimate(c!.metroUsed)),
+                          // No green for climate — subjective
+                        },
+                        {
+                          label: 'Budget fit',
+                          originVal: '—',
+                          txVals: pinnedMatches.map(c => afLabel(afStatus(c!.housing.medianHomePrice))),
+                          // Color handled separately
+                        },
+                      ]
+
+                      return (
+                        <div style={{ borderTop: '0.5px solid #E8E6E2', paddingTop: '14px', marginTop: '8px' }}>
+                          <p style={{ fontSize: '12px', fontWeight: 500, color: '#0A1E3D', marginBottom: '4px' }}>
+                            How does Texas compare?
+                          </p>
+                          <p style={{ fontSize: '10px', color: '#86868b', marginBottom: '12px' }}>
+                            Your origin city vs. the communities you&apos;re exploring.
+                          </p>
+                          {pinnedCities.length === 0 ? (
+                            <p style={{ fontSize: '10px', color: '#86868b', fontStyle: 'italic' }}>
+                              Pin a community above to see how it compares to {displayOriginCity}.
+                            </p>
+                          ) : (
+                            <div style={{ background: '#fff', borderRadius: '8px', padding: '12px', border: '0.5px solid #E0DED8', overflowX: 'auto' }}>
+                              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10px' }}>
+                                <thead>
+                                  <tr>
+                                    <th style={{ textAlign: 'left', paddingRight: '12px', paddingBottom: '8px', minWidth: '110px' }}></th>
+                                    <th style={{ textAlign: 'right', paddingRight: '12px', paddingBottom: '8px', fontSize: '9px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#86868b', whiteSpace: 'nowrap' }}>
+                                      {displayOriginCity}
+                                      {originState ? `, ${originState}` : ''}
+                                    </th>
+                                    {pinnedMatches.map(c => (
+                                      <th key={c!.id} style={{ textAlign: 'right', paddingBottom: '8px', fontSize: '9px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#C5B783', whiteSpace: 'nowrap', paddingLeft: '8px' }}>
+                                        {c!.name}
+                                      </th>
+                                    ))}
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {rows.map((row, ri) => (
+                                    <tr key={row.label} style={{ borderTop: '0.5px solid #E8E6E2' }}>
+                                      <td style={{ textAlign: 'left', paddingRight: '12px', paddingTop: '6px', paddingBottom: '6px', fontSize: '11px', color: '#6B6A65', minWidth: '110px' }}>
+                                        {row.label}
+                                      </td>
+                                      <td style={{ textAlign: 'right', paddingRight: '12px', paddingTop: '6px', paddingBottom: '6px', color: '#6B6A65', whiteSpace: 'nowrap' }}>
+                                        {row.originVal}
+                                      </td>
+                                      {row.txVals.map((val, ci) => {
+                                        let color = '#1d1d1f'
+                                        let fontWeight: number | string = 400
+                                        if (row.label === 'Budget fit') {
+                                          if (val === 'Comfortable') { color = '#1a6b35'; fontWeight = 500 }
+                                          else if (val === 'Moderate') color = '#F5A623'
+                                          else if (val === 'Stretched') color = '#FF3B30'
+                                        } else if (row.betterFn?.(val, row.originVal, ci)) {
+                                          color = '#1a6b35'; fontWeight = 500
+                                        }
+                                        return (
+                                          <td key={ci} style={{ textAlign: 'right', paddingTop: '6px', paddingBottom: '6px', color, fontWeight, whiteSpace: 'nowrap', paddingLeft: '8px' }}>
+                                            {val}
+                                          </td>
+                                        )
+                                      })}
+                                      {/* Empty cells for missing pinned cities */}
+                                      {Array.from({ length: 3 - row.txVals.length }).map((_, ei) => (
+                                        <td key={`empty-${ri}-${ei}`} />
+                                      ))}
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })()}
                   </div>
 
                   {/* City preview pane */}
@@ -775,6 +1027,11 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
               {/* Must have */}
               <div style={{ background: '#fff', border: '0.5px solid #E0DED8', borderRadius: '8px', padding: '10px' }}>
                 <p style={{ fontSize: '10px', fontWeight: 700, color: '#0A1E3D', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Must have</p>
+                {mustHaveError && (
+                  <p style={{ fontSize: '10px', color: '#F5A623', marginBottom: '6px', fontStyle: 'italic', margin: '0 0 6px' }}>
+                    Must have is limited to 3. Move one out first.
+                  </p>
+                )}
                 {mustHaves.length === 0 && <p style={{ fontSize: '11px', color: 'rgba(0,0,0,0.22)', fontStyle: 'italic', margin: 0 }}>Empty</p>}
                 {mustHaves.map(key => {
                   const cat = DNA_CATEGORIES.find(c => c.key === key)!
@@ -964,10 +1221,22 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                   <span style={{ fontSize: '12px', color: '#1d1d1f', fontWeight: 500 }}>{interestRate}%</span>
                 </div>
               </div>
-              <input type="range" min={3} max={10} step={0.25} value={interestRate}
+              {/* Custom rate slider with green market band */}
+            <div style={{ position: 'relative', height: '4px', background: 'rgba(0,0,0,0.12)', borderRadius: '2px', margin: '6px 0' }}>
+              <div style={{ position: 'absolute', height: '100%', background: '#34C759', opacity: 0.7, borderRadius: '2px', left: '46.4%', width: '7.1%' }} />
+              <input
+                type="range" min={3} max={10} step={0.25} value={interestRate}
                 onChange={e => { setSandboxTouched(true); setInterestRate(parseFloat(e.target.value)) }}
-                style={{ width: '100%', accentColor: '#0A1E3D', cursor: 'pointer' }}
+                style={{ position: 'absolute', top: '-6px', left: 0, width: '100%', opacity: 0, cursor: 'pointer', height: '16px' }}
               />
+              <div style={{
+                position: 'absolute', width: '14px', height: '14px',
+                background: '#0A1E3D', borderRadius: '50%', top: '-5px',
+                left: `calc(${(interestRate - 3) / 7 * 100}% - 7px)`,
+                pointerEvents: 'none', transition: 'left 0.1s',
+              }} />
+            </div>
+            <p style={{ fontSize: '9px', color: '#34C759', opacity: 0.8, margin: '3px 0 0' }}>● Current market: 6.25%–6.75%</p>
             </div>
 
             {/* Loan term */}
