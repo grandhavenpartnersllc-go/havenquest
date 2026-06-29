@@ -8,6 +8,7 @@ import { DNA_CATEGORIES } from '../../../utils/constants'
 import { getAllCities } from '../../../services/locationService'
 import { getTopMatches } from '../../../services/matchingService'
 import { createClient } from '../../../lib/supabase/client'
+import { lookupZipCityState } from '../../../utils/zipLookup'
 
 const ALL_KEYS = DNA_CATEGORIES.map(c => c.key) as (keyof DNAScores)[]
 
@@ -169,7 +170,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
       if (!s?.user?.email) return
       const { data } = await supabase
         .from('users')
-        .select('sandbox_committed,sandbox_profile,chosen_communities,home_status,exact_home_proceeds,available_funds,annual_income_override,loan_term_preference,origin_city,origin_state')
+        .select('sandbox_committed,sandbox_profile,sandbox_committed_at,chosen_communities,home_status,exact_home_proceeds,available_funds,annual_income_override,loan_term_preference,origin_city,origin_state,origin_zip')
         .eq('email', s.user.email.toLowerCase())
         .maybeSingle()
       if (!data) return
@@ -180,12 +181,19 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
 
       if (data.sandbox_profile) {
         const sp: SandboxProfile = data.sandbox_profile
-        if (sp.mustHaves?.length) setMustHaves(sp.mustHaves)
-        if (sp.niceToHaves?.length) setNiceToHaves(sp.niceToHaves)
-        if (sp.notPriorities?.length) setNotPriorities(sp.notPriorities)
-        if (sp.unassigned !== undefined) setUnassigned(sp.unassigned)
+        const SANDBOX_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000
+        const sandboxAge = data.sandbox_committed_at
+          ? Date.now() - new Date(data.sandbox_committed_at).getTime()
+          : Infinity
+        const useSandboxPriorities = sandboxAge <= SANDBOX_MAX_AGE_MS
+        if (useSandboxPriorities) {
+          if (sp.mustHaves?.length) setMustHaves(sp.mustHaves)
+          if (sp.niceToHaves?.length) setNiceToHaves(sp.niceToHaves)
+          if (sp.notPriorities?.length) setNotPriorities(sp.notPriorities)
+          if (sp.unassigned !== undefined) setUnassigned(sp.unassigned)
+          setSandboxTouched(true)
+        }
         if (sp.interestRateOverride) setInterestRate(sp.interestRateOverride)
-        setSandboxTouched(true)
       }
 
       if (data.exact_home_proceeds) setProceeds(fmtCurrency(String(data.exact_home_proceeds)))
@@ -201,9 +209,15 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
       if (Array.isArray(data.chosen_communities) && data.chosen_communities.length > 0) {
         setPinnedCities(data.chosen_communities)
       }
-      // Origin city fallback chain: users.origin_city → sessionStorage → null
-      const resolvedCity = data.origin_city || (typeof window !== 'undefined' ? sessionStorage.getItem('hq_origin_city') : null) || null
-      const resolvedState = data.origin_state || (typeof window !== 'undefined' ? sessionStorage.getItem('hq_origin_state') : null) || null
+      // Origin city fallback chain: users.origin_city → sessionStorage → ZIP lookup → null
+      let resolvedCity: string | null = data.origin_city || (typeof window !== 'undefined' ? sessionStorage.getItem('hq_origin_city') : null) || null
+      let resolvedState: string | null = data.origin_state || (typeof window !== 'undefined' ? sessionStorage.getItem('hq_origin_state') : null) || null
+      if (!resolvedCity && data.origin_zip) {
+        try {
+          const zipResult = await lookupZipCityState(data.origin_zip)
+          if (zipResult?.city) { resolvedCity = zipResult.city; if (!resolvedState && zipResult.state) resolvedState = zipResult.state }
+        } catch {}
+      }
       if (resolvedCity) setOriginCity(resolvedCity)
       if (resolvedState) setOriginState(resolvedState)
     }
@@ -213,12 +227,18 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // Seed from profile
   useEffect(() => {
     if (!profile) return
-    if (mustHaves.length === 0 && profile.mustHaves?.length > 0) {
-      setMustHaves(profile.mustHaves)
-      const used = new Set([...profile.mustHaves, ...(profile.niceToHaves ?? []), ...(profile.notPriorities ?? [])])
-      setNiceToHaves(profile.niceToHaves ?? [])
-      setNotPriorities(profile.notPriorities ?? [])
-      setUnassigned(ALL_KEYS.filter(k => !used.has(k)))
+    if (mustHaves.length === 0 && niceToHaves.length === 0) {
+      if (profile.mustHaves?.length > 0 || profile.niceToHaves?.length > 0 || profile.notPriorities?.length > 0) {
+        setMustHaves(profile.mustHaves ?? [])
+        const used = new Set([...(profile.mustHaves ?? []), ...(profile.niceToHaves ?? []), ...(profile.notPriorities ?? [])])
+        setNiceToHaves(profile.niceToHaves ?? [])
+        setNotPriorities(profile.notPriorities ?? [])
+        setUnassigned(ALL_KEYS.filter(k => !used.has(k)))
+      } else {
+        // No quiz priority data at all — default all to Important to Me
+        setNiceToHaves(ALL_KEYS)
+        setUnassigned([])
+      }
     }
     if (!incomeDisplay && profile.annualIncome) {
       setIncomeVal(profile.annualIncome)
@@ -450,7 +470,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           overflow: 'hidden', alignSelf: 'flex-start',
         }}>
           {/* Scrollable content area */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '18px 14px 14px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
+          <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: '18px 14px 14px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
           {/* Label */}
           <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.12em', color: '#C5B783', textTransform: 'uppercase', margin: 0 }}>
             Your Direction
@@ -907,59 +927,53 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
 
                       return (
                         <>
-                          {/* Photo */}
-                          <div style={{ height: '110px', borderRadius: '8px', overflow: 'hidden', position: 'relative', marginBottom: '10px', background: '#2D4A6B' }}>
-                            <Image
-                              src={city.cityImageUrl ?? `/images/cities/${city.id}.jpg`}
-                              alt={city.name}
-                              fill
-                              className="object-cover"
-                              onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
-                            />
-                            <div style={{
-                              position: 'absolute', bottom: 0, left: 0, right: 0, height: '60px',
-                              background: 'linear-gradient(transparent, rgba(0,0,0,0.6))',
-                              pointerEvents: 'none',
-                            }} />
-                            <p style={{ position: 'absolute', bottom: '7px', left: '9px', fontSize: '9px', color: 'rgba(255,255,255,0.65)', margin: 0, zIndex: 1 }}>
-                              {city.name}
-                            </p>
-                            {/* Rank pill */}
-                            <div style={{ position: 'absolute', top: '8px', left: '8px', background: 'rgba(0,0,0,0.4)', borderRadius: '14px', padding: '3px 8px' }}>
-                              <span style={{ fontSize: '8px', fontWeight: 600, letterSpacing: '0.06em', color: '#fff', textTransform: 'uppercase' }}>
-                                {rankPillLabel(selectedRankIdx)}
-                              </span>
-                            </div>
-                            {/* Match pill */}
-                            <div style={{ position: 'absolute', top: '8px', right: '8px', background: '#C5B783', borderRadius: '14px', padding: '3px 8px' }}>
-                              <span style={{ fontSize: '9px', fontWeight: 600, color: '#0A1E3D' }}>{selectedMatch.matchScore}%</span>
-                            </div>
-                          </div>
-
-                          {/* City name + location */}
-                          <p style={{ fontSize: '13px', fontWeight: 500, color: '#0A1E3D', marginBottom: '1px' }}>{city.name}</p>
-                          <p style={{ fontSize: '9px', color: '#86868b', marginBottom: '7px' }}>
-                            {city.metroUsed} metro · {city.county} County
-                          </p>
-
-                          {/* Description */}
-                          <p style={{ fontSize: '10px', color: '#3a3a3a', lineHeight: 1.55, marginBottom: '8px' }}>
-                            {city.description}
-                          </p>
-
-                          {/* Stats 2×2 */}
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', marginBottom: '8px' }}>
-                            {[
-                              { label: 'Schools',   value: city.school?.teaRating ? `${city.school.teaRating} rated` : '—' },
-                              { label: 'Med home',  value: fmtK(city.housing.medianHomePrice) },
-                              { label: 'Safety',    value: city.scores.safety >= 7 ? 'Low risk' : city.scores.safety >= 4 ? 'Moderate' : 'Higher risk' },
-                              { label: 'Community', value: charLabel },
-                            ].map(stat => (
-                              <div key={stat.label} style={{ background: '#F5F5F7', borderRadius: '5px', padding: '5px 7px' }}>
-                                <p style={{ fontSize: '8px', color: '#86868b', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '1px' }}>{stat.label}</p>
-                                <p style={{ fontSize: '10px', color: '#1d1d1f', fontWeight: 500, margin: 0 }}>{stat.value}</p>
+                          {/* Two-column preview card */}
+                          <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', gap: '14px', padding: '14px', background: '#fff', borderRadius: '10px', border: '0.5px solid #E0DED8', marginBottom: '8px' }}>
+                            {/* Square photo */}
+                            <div style={{ width: '160px', height: '160px', borderRadius: '10px', overflow: 'hidden', position: 'relative', flexShrink: 0, background: '#2D4A6B' }}>
+                              <Image
+                                src={city.cityImageUrl ?? `/images/cities/${city.id}.jpg`}
+                                alt={city.name}
+                                fill
+                                style={{ objectFit: 'cover' }}
+                                onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+                              />
+                              <div style={{ position: 'absolute', top: '8px', left: '8px', background: 'rgba(0,0,0,0.45)', borderRadius: '14px', padding: '3px 7px' }}>
+                                <span style={{ fontSize: '8px', fontWeight: 600, letterSpacing: '0.05em', color: '#fff', textTransform: 'uppercase' }}>
+                                  {rankPillLabel(selectedRankIdx)}
+                                </span>
                               </div>
-                            ))}
+                              <div style={{ position: 'absolute', top: '8px', right: '8px', background: '#C5B783', borderRadius: '14px', padding: '3px 7px' }}>
+                                <span style={{ fontSize: '9px', fontWeight: 600, color: '#0A1E3D' }}>{selectedMatch.matchScore}%</span>
+                              </div>
+                            </div>
+
+                            {/* Content column */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: 0 }}>
+                              <div>
+                                <p style={{ fontSize: '15px', fontWeight: 500, color: '#0A1E3D', margin: '0 0 2px' }}>{city.name}</p>
+                                <p style={{ fontSize: '10px', color: '#86868b', margin: 0 }}>{city.metroUsed} metro · {city.county} County</p>
+                              </div>
+                              <p style={{
+                                fontSize: '11px', color: '#3a3a3a', lineHeight: 1.55, margin: 0,
+                                display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                              } as React.CSSProperties}>
+                                {city.description}
+                              </p>
+                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
+                                {[
+                                  { label: 'Schools',   value: city.school?.teaRating ? `${city.school.teaRating} rated` : '—' },
+                                  { label: 'Med home',  value: fmtK(city.housing.medianHomePrice) },
+                                  { label: 'Safety',    value: city.scores.safety >= 7 ? 'Low risk' : city.scores.safety >= 4 ? 'Moderate' : 'Higher risk' },
+                                  { label: 'Community', value: charLabel },
+                                ].map(stat => (
+                                  <div key={stat.label} style={{ background: '#F5F5F7', borderRadius: '5px', padding: '5px 7px' }}>
+                                    <p style={{ fontSize: '8px', color: '#86868b', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '1px' }}>{stat.label}</p>
+                                    <p style={{ fontSize: '10px', color: '#1d1d1f', fontWeight: 500, margin: 0 }}>{stat.value}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
                           </div>
 
                           {/* Budget fit */}
