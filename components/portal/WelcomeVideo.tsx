@@ -14,7 +14,7 @@ const SHARED_STYLE: CSSProperties = {
 export default function WelcomeVideo() {
   return (
     <video
-      src="/videos/navigator-intro.mp4"
+      src="/videos/Navigator-Into-Video-COM.mp4"
       controls
       playsInline
       style={SHARED_STYLE}
