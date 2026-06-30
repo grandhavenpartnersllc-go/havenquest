@@ -593,7 +593,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           width: '25%', flexShrink: 0,
           background: '#0A1E3D',
           display: 'flex', flexDirection: 'column',
-          position: 'sticky', top: 0, height: '100vh',
+          position: 'sticky', top: 0, height: '100%',
           overflow: 'hidden', alignSelf: 'flex-start',
         }}>
           {/* Scrollable content */}
@@ -913,7 +913,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
 
           {/* Communities frame */}
           <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: '10px', overflow: 'hidden', marginBottom: '10px' }}>
-            <div style={{ display: 'flex', minHeight: '280px' }}>
+            <div style={{ display: 'flex', minHeight: '280px', alignItems: 'stretch' }}>
 
               {/* Left: metro pills + city list (52%) */}
               <div style={{ width: '52%', borderRight: '0.5px solid #E8E6E2', display: 'flex', flexDirection: 'column' }}>
