@@ -40,9 +40,9 @@ function PillGroup<T extends string>({
               borderRadius: '20px',
               fontSize: '13px',
               fontWeight: selected ? 500 : 400,
-              color: selected ? '#ffffff' : '#86868b',
-              backgroundColor: selected ? '#0076B6' : 'transparent',
-              border: `1.5px solid ${selected ? '#0076B6' : 'var(--card-border)'}`,
+              color: selected ? '#FFFFFF' : 'rgba(10,30,61,0.55)',
+              backgroundColor: selected ? '#0A1E3D' : 'transparent',
+              border: `0.5px solid ${selected ? '#0A1E3D' : 'rgba(10,30,61,0.15)'}`,
               cursor: 'pointer',
               transition: 'all 0.15s',
               whiteSpace: 'nowrap',
@@ -65,11 +65,11 @@ function Field({ label, required, error, hint, children }: {
 }) {
   return (
     <div>
-      <label style={{ display: 'block', fontSize: '12px', color: '#86868b', marginBottom: '6px' }}>
+      <label style={{ display: 'block', fontSize: '12px', color: 'rgba(10,30,61,0.5)', marginBottom: '7px' }}>
         {label}
-        {required && <span style={{ color: '#0076B6', marginLeft: '2px' }}>*</span>}
+        {required && <span style={{ color: '#C5B783', marginLeft: '2px' }}>*</span>}
       </label>
-      {hint && <p style={{ fontSize: '12px', color: '#86868b', margin: '-2px 0 8px' }}>{hint}</p>}
+      {hint && <p style={{ fontSize: '12px', color: 'rgba(10,30,61,0.35)', margin: '-2px 0 8px' }}>{hint}</p>}
       {children}
       {error && <p style={{ fontSize: '11px', color: '#DC2626', marginTop: '4px' }}>{error}</p>}
     </div>
@@ -79,12 +79,12 @@ function Field({ label, required, error, hint, children }: {
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
     <p style={{
-      fontSize: '12px',
-      fontWeight: 500,
-      letterSpacing: '0.05em',
-      color: '#86868b',
+      fontSize: '10px',
+      fontWeight: 600,
+      letterSpacing: '1.5px',
+      color: 'rgba(197,183,131,0.9)',
       textTransform: 'uppercase',
-      margin: '24px 0 10px',
+      margin: '0 0 16px',
     }}>
       {children}
     </p>
@@ -153,10 +153,10 @@ export default function Section2TheMove({ data, onChange, errors, quizWorkSituat
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <div>
-        <h2 style={{ fontSize: '22px', fontWeight: 500, color: '#1d1d1f', margin: '0 0 6px' }}>
+        <h2 style={{ fontSize: '24px', fontWeight: 500, color: '#0A1E3D', letterSpacing: '-0.5px', margin: '0 0 6px' }}>
           The move
         </h2>
-        <p style={{ fontSize: '15px', color: '#86868b', margin: 0, lineHeight: 1.5 }}>
+        <p style={{ fontSize: '14px', color: 'rgba(10,30,61,0.45)', margin: 0, lineHeight: 1.6 }}>
           Help us understand your motivation and timing so we can plan the right path forward.
         </p>
       </div>

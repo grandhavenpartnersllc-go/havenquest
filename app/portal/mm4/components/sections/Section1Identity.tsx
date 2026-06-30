@@ -34,9 +34,9 @@ function PillGroup<T extends string>({
               borderRadius: '20px',
               fontSize: '13px',
               fontWeight: selected ? 500 : 400,
-              color: selected ? '#ffffff' : '#86868b',
-              backgroundColor: selected ? '#0076B6' : 'transparent',
-              border: `1.5px solid ${selected ? '#0076B6' : 'var(--card-border)'}`,
+              color: selected ? '#FFFFFF' : 'rgba(10,30,61,0.55)',
+              backgroundColor: selected ? '#0A1E3D' : 'transparent',
+              border: `0.5px solid ${selected ? '#0A1E3D' : 'rgba(10,30,61,0.15)'}`,
               cursor: 'pointer',
               transition: 'all 0.15s',
               whiteSpace: 'nowrap',
@@ -58,9 +58,9 @@ function Field({ label, required, error, children }: {
 }) {
   return (
     <div>
-      <label style={{ display: 'block', fontSize: '12px', color: '#86868b', marginBottom: '6px' }}>
+      <label style={{ display: 'block', fontSize: '12px', color: 'rgba(10,30,61,0.5)', marginBottom: '7px' }}>
         {label}
-        {required && <span style={{ color: '#0076B6', marginLeft: '2px' }}>*</span>}
+        {required && <span style={{ color: '#C5B783', marginLeft: '2px' }}>*</span>}
       </label>
       {children}
       {error && <p style={{ fontSize: '11px', color: '#DC2626', marginTop: '4px' }}>{error}</p>}
@@ -80,12 +80,12 @@ async function lookupZip(zip: string, onChange: (updates: Partial<MM4Profile>) =
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
     <p style={{
-      fontSize: '12px',
-      fontWeight: 500,
-      letterSpacing: '0.05em',
-      color: '#86868b',
+      fontSize: '10px',
+      fontWeight: 600,
+      letterSpacing: '1.5px',
+      color: 'rgba(197,183,131,0.9)',
       textTransform: 'uppercase',
-      margin: '24px 0 10px',
+      margin: '0 0 16px',
     }}>
       {children}
     </p>
@@ -104,10 +104,10 @@ export default function Section1Identity({ data, onChange, errors }: Props) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
       <div style={{ marginBottom: '4px' }}>
-        <h2 style={{ fontSize: '22px', fontWeight: 500, color: '#1d1d1f', margin: '0 0 4px' }}>
+        <h2 style={{ fontSize: '24px', fontWeight: 500, color: '#0A1E3D', letterSpacing: '-0.5px', margin: '0 0 6px' }}>
           Your information
         </h2>
-        <p style={{ fontSize: '15px', color: '#86868b', margin: 0, lineHeight: 1.5 }}>
+        <p style={{ fontSize: '14px', color: 'rgba(10,30,61,0.45)', margin: 0, lineHeight: 1.6 }}>
           Tell us who&apos;s making this move so your Market Director can reach you.
         </p>
       </div>

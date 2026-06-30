@@ -21,11 +21,11 @@ function Field({ label, required, error, hint, children }: {
 }) {
   return (
     <div>
-      <label style={{ display: 'block', fontSize: '12px', color: '#86868b', marginBottom: '6px' }}>
+      <label style={{ display: 'block', fontSize: '12px', color: 'rgba(10,30,61,0.5)', marginBottom: '7px' }}>
         {label}
-        {required && <span style={{ color: '#0076B6', marginLeft: '2px' }}>*</span>}
+        {required && <span style={{ color: '#C5B783', marginLeft: '2px' }}>*</span>}
       </label>
-      <p style={{ fontSize: '12px', color: hint ? '#86868b' : 'transparent', margin: '-2px 0 8px' }}>
+      <p style={{ fontSize: '12px', color: hint ? 'rgba(10,30,61,0.4)' : 'transparent', margin: '-2px 0 8px' }}>
         {hint || ' '}
       </p>
       {children}
@@ -37,12 +37,12 @@ function Field({ label, required, error, hint, children }: {
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
     <p style={{
-      fontSize: '12px',
-      fontWeight: 500,
-      letterSpacing: '0.05em',
-      color: '#86868b',
+      fontSize: '10px',
+      fontWeight: 600,
+      letterSpacing: '1.5px',
+      color: 'rgba(197,183,131,0.9)',
       textTransform: 'uppercase',
-      margin: '24px 0 10px',
+      margin: '0 0 16px',
     }}>
       {children}
     </p>
@@ -74,9 +74,9 @@ function PillGroup<T extends string>({
               borderRadius: '20px',
               fontSize: '13px',
               fontWeight: selected ? 500 : 400,
-              color: selected ? '#ffffff' : '#86868b',
-              backgroundColor: selected ? '#0076B6' : 'transparent',
-              border: `1.5px solid ${selected ? '#0076B6' : 'var(--card-border)'}`,
+              color: selected ? '#FFFFFF' : 'rgba(10,30,61,0.55)',
+              backgroundColor: selected ? '#0A1E3D' : 'transparent',
+              border: `0.5px solid ${selected ? '#0A1E3D' : 'rgba(10,30,61,0.15)'}`,
               cursor: 'pointer',
               transition: 'all 0.15s',
               whiteSpace: 'nowrap',
@@ -109,10 +109,10 @@ export default function Section4TexasDirection({ data, onChange, errors, chosenC
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
       <div>
-        <h2 style={{ fontSize: '22px', fontWeight: 500, color: '#1d1d1f', margin: '0 0 6px' }}>
+        <h2 style={{ fontSize: '24px', fontWeight: 500, color: '#0A1E3D', letterSpacing: '-0.5px', margin: '0 0 6px' }}>
           Your Texas direction
         </h2>
-        <p style={{ fontSize: '15px', color: '#86868b', margin: 0, lineHeight: 1.5 }}>
+        <p style={{ fontSize: '14px', color: 'rgba(10,30,61,0.45)', margin: 0, lineHeight: 1.6 }}>
           Share what you&apos;ve already researched and where you&apos;re leaning — your MD will use this to sharpen your roadmap.
         </p>
       </div>
@@ -127,7 +127,7 @@ export default function Section4TexasDirection({ data, onChange, errors, chosenC
 
         {hasCityCards ? (
           <div>
-            <p style={{ fontSize: '13px', color: '#86868b', margin: '0 0 12px' }}>
+            <p style={{ fontSize: '13px', color: 'rgba(10,30,61,0.4)', margin: '0 0 12px' }}>
               These are the communities you locked in during Refine. Tell us what draws you to each one.
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
@@ -137,7 +137,8 @@ export default function Section4TexasDirection({ data, onChange, errors, chosenC
                   <div
                     key={city.id}
                     style={{
-                      background: '#F5F5F7',
+                      background: 'rgba(197,183,131,0.08)',
+                      border: '0.5px solid rgba(197,183,131,0.3)',
                       borderRadius: '12px',
                       padding: '16px',
                       display: 'flex',
@@ -150,22 +151,22 @@ export default function Section4TexasDirection({ data, onChange, errors, chosenC
                         <span style={{
                           fontSize: '10px',
                           fontWeight: 700,
-                          color: '#0076B6',
+                          color: 'rgba(197,183,131,0.9)',
                           textTransform: 'uppercase',
                           letterSpacing: '0.08em',
                         }}>
                           #{index + 1}
                         </span>
-                        <span style={{ fontSize: '16px', fontWeight: 500, color: '#1d1d1f' }}>
+                        <span style={{ fontSize: '16px', fontWeight: 500, color: '#0A1E3D' }}>
                           {city.name}
                         </span>
                       </div>
-                      <p style={{ margin: 0, fontSize: '13px', color: '#86868b' }}>
+                      <p style={{ margin: 0, fontSize: '13px', color: 'rgba(10,30,61,0.45)' }}>
                         {city.metroUsed}
                       </p>
                     </div>
                     <div>
-                      <label style={{ display: 'block', fontSize: '12px', color: '#86868b', marginBottom: '6px' }}>
+                      <label style={{ display: 'block', fontSize: '12px', color: 'rgba(10,30,61,0.5)', marginBottom: '7px' }}>
                         Why does {city.name} appeal to you?
                       </label>
                       <textarea
@@ -199,7 +200,7 @@ export default function Section4TexasDirection({ data, onChange, errors, chosenC
           </Field>
         )}
 
-        <p style={{ fontSize: '12px', color: '#86868b', fontStyle: 'italic', margin: '12px 0 0' }}>
+        <p style={{ fontSize: '12px', color: 'rgba(10,30,61,0.4)', fontStyle: 'italic', margin: '12px 0 0' }}>
           These selections reflect everything you&apos;ve shared so far — your Market Director may refine them as your conversation goes deeper.
         </p>
       </div>

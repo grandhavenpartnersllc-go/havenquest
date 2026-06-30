@@ -21,11 +21,11 @@ function Field({ label, required, error, hint, children }: {
 }) {
   return (
     <div>
-      <label style={{ display: 'block', fontSize: '12px', color: '#86868b', marginBottom: '6px' }}>
+      <label style={{ display: 'block', fontSize: '12px', color: 'rgba(10,30,61,0.5)', marginBottom: '7px' }}>
         {label}
-        {required && <span style={{ color: '#0076B6', marginLeft: '2px' }}>*</span>}
+        {required && <span style={{ color: '#C5B783', marginLeft: '2px' }}>*</span>}
       </label>
-      {hint && <p style={{ fontSize: '12px', color: '#86868b', margin: '-2px 0 8px' }}>{hint}</p>}
+      {hint && <p style={{ fontSize: '12px', color: 'rgba(10,30,61,0.35)', margin: '-2px 0 8px' }}>{hint}</p>}
       {children}
       {error && <p style={{ fontSize: '11px', color: '#DC2626', marginTop: '4px' }}>{error}</p>}
     </div>
@@ -65,10 +65,10 @@ export default function Section2Household({ data, onChange, errors, householdSiz
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
       <div style={{ marginBottom: '4px' }}>
-        <h2 style={{ fontSize: '22px', fontWeight: 500, color: '#1d1d1f', margin: '0 0 4px' }}>
+        <h2 style={{ fontSize: '24px', fontWeight: 500, color: '#0A1E3D', letterSpacing: '-0.5px', margin: '0 0 6px' }}>
           Your household
         </h2>
-        <p style={{ fontSize: '15px', color: '#86868b', margin: 0, lineHeight: 1.5 }}>
+        <p style={{ fontSize: '14px', color: 'rgba(10,30,61,0.45)', margin: 0, lineHeight: 1.6 }}>
           Help your Market Director understand who&apos;s coming along on this move.
         </p>
       </div>

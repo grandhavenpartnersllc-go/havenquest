@@ -326,185 +326,184 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
   }
 
   const topMatchNames = matches.slice(0, 3).map(m => m.location.name)
+  const isLastSection = currentSection === 5
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+    <div style={{ width: '100%', maxWidth: '580px' }}>
 
-      {/* Dot step indicator */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', marginBottom: '28px' }}>
-        {Array.from({ length: SECTION_COUNT }).map((_, i) => {
-          const done = i < currentSection
-          const active = i === currentSection
-          return (
-            <div
-              key={i}
-              style={{
-                width: active ? '18px' : '6px',
-                height: '6px',
-                borderRadius: '3px',
-                backgroundColor: (done || active) ? '#0A1E3D' : '#D1D1D6',
-                transition: 'all 0.25s',
-              }}
-            />
-          )
-        })}
-      </div>
-
-      {saving && (
-        <p style={{ fontSize: '11px', color: 'rgba(10,30,61,0.4)', marginBottom: '8px', textAlign: 'right' }}>
-          Saving…
-        </p>
-      )}
-
-      {/* Inset centered panel */}
+      {/* White card */}
       <div style={{
-        maxWidth: '1200px',
-        margin: '0 auto',
+        backgroundColor: '#FFFFFF',
+        border: '0.5px solid rgba(0,0,0,0.08)',
+        borderRadius: '20px',
         width: '100%',
-        backgroundColor: '#ffffff',
-        borderRadius: '16px',
-        padding: '32px',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.05), 0 4px 20px rgba(0,0,0,0.07)',
+        overflow: 'hidden',
       }}>
-        <div key={animKey} style={animStyle}>
-          {currentSection === 0 && (
-            <Section1Identity data={formData} onChange={handleChange} errors={errors} />
-          )}
-          {currentSection === 1 && (
-            <Section2Household
-              data={formData}
-              onChange={handleChange}
-              errors={errors}
-              householdSize={quizHouseholdSize}
-              movingTimeline={quizMovingTimeline}
-            />
-          )}
-          {currentSection === 2 && (
-            <Section2TheMove
-              data={formData}
-              onChange={handleChange}
-              errors={errors}
-              quizWorkSituation={quizWorkSituation}
-            />
-          )}
-          {currentSection === 3 && (
-            <Section3Employment
-              data={formData}
-              onChange={handleChange}
-              errors={errors}
-              quizWorkSituation={quizWorkSituation}
-            />
-          )}
-          {currentSection === 4 && (
-            <Section4TexasDirection
-              data={formData}
-              onChange={handleChange}
-              errors={errors}
-              chosenCommunities={chosenCommunities}
-              topMatchNames={topMatchNames}
-            />
-          )}
-          {currentSection === 5 && (
-            <Section5Notes
-              data={formData}
-              onChange={handleChange}
-              onSubmit={handleSubmit}
-              submitting={submitting}
-              submitError={submitError}
-            />
+
+        {/* Card header */}
+        <div style={{ padding: '36px 40px 0' }}>
+          {/* Step progress dots */}
+          <div style={{ display: 'flex', gap: '7px', marginBottom: '28px' }}>
+            {Array.from({ length: SECTION_COUNT }).map((_, i) => {
+              const done = i < currentSection
+              const active = i === currentSection
+              return (
+                <div
+                  key={i}
+                  style={{
+                    width: active ? '22px' : '7px',
+                    height: '7px',
+                    borderRadius: active ? '4px' : '50%',
+                    backgroundColor: active
+                      ? '#0A1E3D'
+                      : done
+                        ? 'rgba(197,183,131,0.7)'
+                        : 'rgba(10,30,61,0.15)',
+                    transition: 'all 0.25s',
+                  }}
+                />
+              )
+            })}
+          </div>
+
+          {saving && (
+            <p style={{ fontSize: '11px', color: 'rgba(10,30,61,0.4)', marginBottom: '8px', textAlign: 'right' }}>
+              Saving…
+            </p>
           )}
         </div>
-      </div>
 
-      {/* Navigation buttons */}
-      {currentSection < 5 && (
+        {/* Divider */}
+        <div style={{ height: '0.5px', background: 'rgba(10,30,61,0.08)', margin: '24px 0 0' }} />
+
+        {/* Card body */}
+        <div style={{ padding: '32px 40px' }}>
+          <div key={animKey} style={animStyle}>
+            {currentSection === 0 && (
+              <Section1Identity data={formData} onChange={handleChange} errors={errors} />
+            )}
+            {currentSection === 1 && (
+              <Section2Household
+                data={formData}
+                onChange={handleChange}
+                errors={errors}
+                householdSize={quizHouseholdSize}
+                movingTimeline={quizMovingTimeline}
+              />
+            )}
+            {currentSection === 2 && (
+              <Section2TheMove
+                data={formData}
+                onChange={handleChange}
+                errors={errors}
+                quizWorkSituation={quizWorkSituation}
+              />
+            )}
+            {currentSection === 3 && (
+              <Section3Employment
+                data={formData}
+                onChange={handleChange}
+                errors={errors}
+                quizWorkSituation={quizWorkSituation}
+              />
+            )}
+            {currentSection === 4 && (
+              <Section4TexasDirection
+                data={formData}
+                onChange={handleChange}
+                errors={errors}
+                chosenCommunities={chosenCommunities}
+                topMatchNames={topMatchNames}
+              />
+            )}
+            {currentSection === 5 && (
+              <Section5Notes
+                data={formData}
+                onChange={handleChange}
+                onSubmit={handleSubmit}
+                submitting={submitting}
+                submitError={submitError}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Card footer */}
         <div style={{
-          position: 'sticky',
-          bottom: 0,
-          zIndex: 10,
-          backgroundColor: 'var(--portal-bg)',
-          borderTop: '1px solid rgba(255,255,255,0.12)',
-          marginTop: '24px',
-          padding: '16px 0',
+          padding: '20px 40px 32px',
+          borderTop: '0.5px solid rgba(10,30,61,0.07)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
         }}>
-          <div style={{
-            maxWidth: '1200px',
-            margin: '0 auto',
-            width: '100%',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}>
-            <button
-              type="button"
-              onClick={handleBack}
-              disabled={currentSection === 0}
-              style={{
-                padding: '10px 20px',
-                borderRadius: '8px',
-                fontSize: '14px',
-                fontWeight: 500,
-                color: currentSection === 0 ? 'rgba(10,30,61,0.3)' : 'rgba(10,30,61,0.7)',
-                backgroundColor: 'transparent',
-                border: `1.5px solid ${currentSection === 0 ? 'rgba(10,30,61,0.15)' : 'rgba(10,30,61,0.3)'}`,
-                cursor: currentSection === 0 ? 'not-allowed' : 'pointer',
-                transition: 'all 0.15s',
-              }}
-            >
-              ← Back
-            </button>
+          {/* Back button */}
+          <button
+            type="button"
+            onClick={handleBack}
+            disabled={currentSection === 0}
+            style={{
+              fontSize: '13px',
+              color: currentSection === 0 ? 'rgba(10,30,61,0.15)' : 'rgba(10,30,61,0.3)',
+              background: 'none',
+              border: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              cursor: currentSection === 0 ? 'default' : 'pointer',
+              padding: 0,
+              fontFamily: 'inherit',
+              transition: 'color 0.15s',
+            }}
+            onMouseEnter={e => {
+              if (currentSection > 0) (e.currentTarget as HTMLButtonElement).style.color = 'rgba(10,30,61,0.6)'
+            }}
+            onMouseLeave={e => {
+              if (currentSection > 0) (e.currentTarget as HTMLButtonElement).style.color = 'rgba(10,30,61,0.3)'
+            }}
+          >
+            ← Back
+          </button>
 
-            <span style={{ fontSize: '12px', color: 'rgba(10,30,61,0.55)' }}>
-              Step {currentSection + 1} of 6
-            </span>
+          {/* Step count */}
+          <span style={{ fontSize: '12px', color: 'rgba(10,30,61,0.25)' }}>
+            Step {currentSection + 1} of 6
+          </span>
 
+          {/* Continue button (hidden on last section — Section5Notes has its own submit) */}
+          {!isLastSection ? (
             <button
               type="button"
               onClick={handleContinue}
               disabled={saving}
               style={{
-                padding: '10px 28px',
-                borderRadius: '10px',
-                fontSize: '15px',
-                fontWeight: 500,
-                color: '#ffffff',
-                backgroundColor: saving ? 'rgba(10,30,61,0.5)' : '#0A1E3D',
+                background: saving ? 'rgba(10,30,61,0.5)' : '#0A1E3D',
+                color: '#C5B783',
                 border: 'none',
+                borderRadius: '10px',
+                padding: '12px 28px',
+                fontSize: '14px',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '7px',
                 cursor: saving ? 'not-allowed' : 'pointer',
-                transition: 'background-color 0.15s',
+                transition: 'background 0.15s',
+                fontFamily: 'inherit',
+              }}
+              onMouseEnter={e => {
+                if (!saving) (e.currentTarget as HTMLButtonElement).style.background = '#112954'
+              }}
+              onMouseLeave={e => {
+                if (!saving) (e.currentTarget as HTMLButtonElement).style.background = '#0A1E3D'
               }}
             >
               {saving ? 'Saving…' : 'Continue →'}
             </button>
-          </div>
+          ) : (
+            <div style={{ width: '120px' }} />
+          )}
         </div>
-      )}
-
-      {currentSection === 5 && (
-        <div style={{
-          maxWidth: '1200px',
-          margin: '24px auto 0',
-          width: '100%',
-        }}>
-          <button
-            type="button"
-            onClick={handleBack}
-            style={{
-              padding: '10px 20px',
-              borderRadius: '8px',
-              fontSize: '14px',
-              fontWeight: 500,
-              color: 'rgba(10,30,61,0.7)',
-              backgroundColor: 'transparent',
-              border: '1.5px solid rgba(10,30,61,0.3)',
-              cursor: 'pointer',
-            }}
-          >
-            ← Back
-          </button>
-        </div>
-      )}
-
+      </div>
     </div>
   )
 }

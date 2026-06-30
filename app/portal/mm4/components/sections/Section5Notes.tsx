@@ -14,17 +14,17 @@ export default function Section5Notes({ data, onChange, onSubmit, submitting, su
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
       <div>
-        <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#0A1E3D', margin: '0 0 6px' }}>
+        <h2 style={{ fontSize: '24px', fontWeight: 500, color: '#0A1E3D', letterSpacing: '-0.5px', margin: '0 0 6px' }}>
           Anything Else?
         </h2>
-        <p style={{ fontSize: '13px', color: '#4a5568', margin: 0, lineHeight: 1.5 }}>
+        <p style={{ fontSize: '14px', color: 'rgba(10,30,61,0.45)', margin: 0, lineHeight: 1.6 }}>
           This is your open field. Share anything that didn&apos;t fit the earlier sections — circumstances, concerns,
           context, or anything you want your Market Director to know before your consultation.
         </p>
       </div>
 
       <div>
-        <label style={{ display: 'block', fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+        <label style={{ display: 'block', fontSize: '12px', color: 'rgba(10,30,61,0.5)', marginBottom: '7px' }}>
           Notes for your Market Director
         </label>
         <textarea
@@ -39,12 +39,12 @@ export default function Section5Notes({ data, onChange, onSubmit, submitting, su
 
       {/* Submit callout */}
       <div style={{
-        backgroundColor: 'rgba(0, 118, 182, 0.06)',
-        border: '1px solid rgba(0, 118, 182, 0.2)',
+        backgroundColor: 'rgba(197,183,131,0.08)',
+        border: '0.5px solid rgba(197,183,131,0.35)',
         borderRadius: '10px',
         padding: '16px 20px',
       }}>
-        <p style={{ fontSize: '13px', color: 'var(--text-primary)', lineHeight: 1.65, margin: 0 }}>
+        <p style={{ fontSize: '13px', color: '#0A1E3D', lineHeight: 1.65, margin: 0 }}>
           When you click <strong>Submit my application</strong>, your Market Director will be notified and will reach
           out to schedule your Navigator Activation consultation. You'll also receive a confirmation email with
           next steps.
@@ -70,16 +70,16 @@ export default function Section5Notes({ data, onChange, onSubmit, submitting, su
           onClick={onSubmit}
           disabled={submitting}
           style={{
-            padding: '12px 32px',
-            borderRadius: '8px',
+            padding: '12px 28px',
+            borderRadius: '10px',
             fontSize: '14px',
             fontWeight: 600,
-            color: submitting ? 'rgba(255,255,255,0.6)' : '#ffffff',
+            color: '#C5B783',
             backgroundColor: submitting ? 'rgba(10,30,61,0.5)' : '#0A1E3D',
             border: 'none',
             cursor: submitting ? 'not-allowed' : 'pointer',
-            transition: 'background-color 0.15s',
-            letterSpacing: '0.01em',
+            transition: 'background 0.15s',
+            fontFamily: 'inherit',
           }}
         >
           {submitting ? 'Submitting…' : 'Submit my application →'}

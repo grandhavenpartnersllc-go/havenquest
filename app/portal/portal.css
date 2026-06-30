@@ -14,60 +14,81 @@
 
 .mm4-input {
   width: 100%;
-  height: 40px;
-  padding: 0 12px;
-  font-size: 15px;
-  color: #1d1d1f;
-  background-color: #F5F5F7;
-  border: none;
-  border-radius: 8px;
+  height: 42px;
+  padding: 0 16px;
+  font-size: 14px;
+  color: #0A1E3D;
+  background-color: #F9F8F6;
+  border: 0.5px solid rgba(10,30,61,0.12);
+  border-radius: 10px;
   outline: none;
   font-family: inherit;
+  box-sizing: border-box;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.mm4-input::placeholder {
+  color: rgba(10,30,61,0.2);
 }
 
 .mm4-input:focus {
-  outline: 2px solid #0076B6;
-  outline-offset: 0;
+  border-color: #0A1E3D;
+  background-color: #FFFFFF;
+  outline: none;
+}
+
+.mm4-input[data-filled="true"] {
+  border-color: rgba(197,183,131,0.5);
 }
 
 .mm4-textarea {
   width: 100%;
   min-height: 100px;
-  padding: 10px 12px;
-  font-size: 15px;
-  color: #1d1d1f;
-  background-color: #F5F5F7;
-  border: none;
-  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #0A1E3D;
+  background-color: #F9F8F6;
+  border: 0.5px solid rgba(10,30,61,0.12);
+  border-radius: 10px;
   outline: none;
   resize: vertical;
   line-height: 1.55;
   font-family: inherit;
+  box-sizing: border-box;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.mm4-textarea::placeholder {
+  color: rgba(10,30,61,0.2);
 }
 
 .mm4-textarea:focus {
-  outline: 2px solid #0076B6;
-  outline-offset: 0;
+  border-color: #0A1E3D;
+  background-color: #FFFFFF;
+  outline: none;
 }
 
 .mm4-select {
   width: 100%;
-  height: 40px;
-  padding: 0 12px;
-  font-size: 15px;
-  color: #1d1d1f;
-  background-color: #F5F5F7;
-  border: none;
-  border-radius: 8px;
+  height: 42px;
+  padding: 0 16px;
+  font-size: 14px;
+  color: #0A1E3D;
+  background-color: #F9F8F6;
+  border: 0.5px solid rgba(10,30,61,0.12);
+  border-radius: 10px;
   outline: none;
   appearance: none;
   cursor: pointer;
   font-family: inherit;
+  box-sizing: border-box;
+  transition: border-color 0.15s, background-color 0.15s;
 }
 
 .mm4-select:focus {
-  outline: 2px solid #0076B6;
-  outline-offset: 0;
+  border-color: #0A1E3D;
+  background-color: #FFFFFF;
+  outline: none;
 }
 
 @keyframes shimmer {
