@@ -329,7 +329,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
   const isLastSection = currentSection === 5
 
   return (
-    <div style={{ width: '100%', maxWidth: '580px' }}>
+    <div style={{ width: '100%', maxWidth: '860px' }}>
 
       {/* White card */}
       <div style={{
@@ -337,7 +337,6 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
         border: '0.5px solid rgba(0,0,0,0.08)',
         borderRadius: '20px',
         width: '100%',
-        overflow: 'hidden',
       }}>
 
         {/* Card header */}

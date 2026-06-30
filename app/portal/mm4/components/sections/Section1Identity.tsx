@@ -3,7 +3,6 @@
 import type { MM4Profile } from '../../../../../types'
 import { formatPhone } from '../../../../../utils/formatters'
 import { lookupZipCityState } from '../../../../../utils/zipLookup'
-import ConfirmRow from '../ConfirmRow'
 
 interface Props {
   data: MM4Profile
@@ -40,6 +39,7 @@ function PillGroup<T extends string>({
               cursor: 'pointer',
               transition: 'all 0.15s',
               whiteSpace: 'nowrap',
+              fontFamily: 'inherit',
             }}
           >
             {opt.label}
@@ -94,11 +94,45 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
 
 const col2: React.CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }
 
+// Combined pre-filled summary block: Name (left) + Origin (right) + optional Edit
+function SummaryBlock({ name, origin, onEditName }: { name: string; origin: string; onEditName?: () => void }) {
+  if (!name && !origin) return null
+  return (
+    <div style={{
+      background: 'rgba(197,183,131,0.12)',
+      border: '0.5px solid rgba(197,183,131,0.4)',
+      borderRadius: '12px',
+      padding: '14px 18px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: '4px',
+    }}>
+      <div style={{ display: 'flex', gap: '40px', flex: 1 }}>
+        {name && (
+          <div>
+            <p style={{ fontSize: '11px', color: 'rgba(10,30,61,0.4)', margin: '0 0 2px', letterSpacing: '0.6px' }}>Name</p>
+            <p style={{ fontSize: '14px', fontWeight: 500, color: '#0A1E3D', margin: 0 }}>{name}</p>
+          </div>
+        )}
+        {origin && (
+          <div>
+            <p style={{ fontSize: '11px', color: 'rgba(10,30,61,0.4)', margin: '0 0 2px', letterSpacing: '0.6px' }}>Origin</p>
+            <p style={{ fontSize: '14px', fontWeight: 500, color: '#0A1E3D', margin: 0 }}>{origin}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function Section1Identity({ data, onChange, errors }: Props) {
   const originValue = [data.current_city, data.current_state, data.current_zip]
     .filter(Boolean)
     .join(', ')
     .replace(/, (\d{5})$/, ' $1')
+
+  const showSummary = !!(data.primary_first_name || originValue)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -112,18 +146,11 @@ export default function Section1Identity({ data, onChange, errors }: Props) {
         </p>
       </div>
 
-      {/* Confirm rows */}
-      {data.primary_first_name && (
-        <ConfirmRow
-          label="First name"
-          value={data.primary_first_name}
-          onEdit={v => onChange({ primary_first_name: v })}
-        />
-      )}
-      {originValue && (
-        <ConfirmRow
-          label="Origin"
-          value={originValue}
+      {/* Combined pre-filled summary block */}
+      {showSummary && (
+        <SummaryBlock
+          name={data.primary_first_name ?? ''}
+          origin={originValue}
         />
       )}
 
@@ -175,19 +202,19 @@ export default function Section1Identity({ data, onChange, errors }: Props) {
         </Field>
       </div>
 
-      {/* Current location */}
+      {/* Current location — address full width, then City / State+ZIP 50/50 */}
       <SectionHeading>Current Location</SectionHeading>
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.5fr 60px 100px', gap: '10px' }}>
-        <Field label="Street address">
-          <input
-            className="mm4-input"
-            type="text"
-            value={data.current_address ?? ''}
-            onChange={e => onChange({ current_address: e.target.value })}
-            placeholder="123 Main Street"
-            autoComplete="street-address"
-          />
-        </Field>
+      <Field label="Street address">
+        <input
+          className="mm4-input"
+          type="text"
+          value={data.current_address ?? ''}
+          onChange={e => onChange({ current_address: e.target.value })}
+          placeholder="123 Main Street"
+          autoComplete="street-address"
+        />
+      </Field>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 120px', gap: '12px' }}>
         <Field label="City">
           <input
             className="mm4-input"
@@ -198,7 +225,7 @@ export default function Section1Identity({ data, onChange, errors }: Props) {
             autoComplete="address-level2"
           />
         </Field>
-        <Field label="St">
+        <Field label="State">
           <input
             className="mm4-input"
             type="text"
@@ -226,9 +253,9 @@ export default function Section1Identity({ data, onChange, errors }: Props) {
         </Field>
       </div>
 
-      {/* Contact */}
+      {/* Contact — Phone + Preferred method 50/50, then Best time full width below */}
       <SectionHeading>Contact</SectionHeading>
-      <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr 1fr', gap: '16px' }}>
+      <div style={col2}>
         <Field label="Phone number" required error={errors.phone}>
           <input
             className="mm4-input"
@@ -250,19 +277,19 @@ export default function Section1Identity({ data, onChange, errors }: Props) {
             onSelect={v => onChange({ preferred_contact: v as MM4Profile['preferred_contact'] })}
           />
         </Field>
-        <Field label="Best time to reach you">
-          <PillGroup
-            options={[
-              { label: 'Morning', value: 'morning' },
-              { label: 'Afternoon', value: 'afternoon' },
-              { label: 'Evening', value: 'evening' },
-              { label: 'Anytime', value: 'anytime' },
-            ]}
-            value={data.best_time_to_reach}
-            onSelect={v => onChange({ best_time_to_reach: v as MM4Profile['best_time_to_reach'] })}
-          />
-        </Field>
       </div>
+      <Field label="Best time to reach you">
+        <PillGroup
+          options={[
+            { label: 'Morning', value: 'morning' },
+            { label: 'Afternoon', value: 'afternoon' },
+            { label: 'Evening', value: 'evening' },
+            { label: 'Anytime', value: 'anytime' },
+          ]}
+          value={data.best_time_to_reach}
+          onSelect={v => onChange({ best_time_to_reach: v as MM4Profile['best_time_to_reach'] })}
+        />
+      </Field>
 
     </div>
   )

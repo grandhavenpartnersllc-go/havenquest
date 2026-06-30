@@ -120,7 +120,7 @@ export default function MM4Page() {
         alignItems: 'center',
       }}>
         {pageState === 'confirmation' ? (
-          <div style={{ width: '100%', maxWidth: '580px' }}>
+          <div style={{ width: '100%', maxWidth: '860px' }}>
             <MM4Confirmation
               data={submittedData ?? { email: session.email }}
               email={session.email}
