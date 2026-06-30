@@ -233,14 +233,31 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         setPinnedCities(data.chosen_communities)
       }
 
-      // Origin city fallback chain: users.origin_city → sessionStorage → ZIP lookup
+      // Origin city fallback chain: users.origin_city → sessionStorage → ZIP lookup → write-back to DB
       let resolvedCity: string | null = data.origin_city || (typeof window !== 'undefined' ? sessionStorage.getItem('hq_origin_city') : null) || null
       let resolvedState: string | null = data.origin_state || (typeof window !== 'undefined' ? sessionStorage.getItem('hq_origin_state') : null) || null
       if (!resolvedCity && data.origin_zip) {
         try {
+          console.log('[ZipLookup] fetching zip:', data.origin_zip)
           const zipResult = await lookupZipCityState(data.origin_zip)
-          if (zipResult?.city) { resolvedCity = zipResult.city; if (!resolvedState && zipResult.state) resolvedState = zipResult.state }
-        } catch {}
+          console.log('[ZipLookup] result:', zipResult)
+          if (zipResult?.city) {
+            resolvedCity = zipResult.city
+            if (!resolvedState && zipResult.state) resolvedState = zipResult.state
+            // Cache in sessionStorage
+            if (typeof window !== 'undefined') {
+              sessionStorage.setItem('hq_origin_city', zipResult.city)
+              if (zipResult.state) sessionStorage.setItem('hq_origin_state', zipResult.state)
+            }
+            // Write back to DB so this only resolves once
+            await supabase.from('users').update({
+              origin_city: zipResult.city,
+              origin_state: zipResult.state ?? null,
+            }).eq('email', s.user.email.toLowerCase())
+          }
+        } catch (err) {
+          console.error('[ZipLookup] failed:', err)
+        }
       }
       if (resolvedCity) setOriginCity(resolvedCity)
       if (resolvedState) setOriginState(resolvedState)
@@ -487,7 +504,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
 
         {/* ── NAVY DASHBOARD — 40% ── */}
         <div style={{
-          width: '40%', flexShrink: 0,
+          width: '25%', flexShrink: 0,
           background: '#0A1E3D',
           display: 'flex', flexDirection: 'column',
           position: 'sticky', top: 0, height: '100vh',
@@ -884,8 +901,8 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                 </div>
               </div>
 
-              {/* Right: preview card */}
-              <div style={{ flex: 1, padding: '12px', overflowY: 'auto', minWidth: 0 }}>
+              {/* Right: preview card — 50/50 square photo + info */}
+              <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
                 {selectedMatch ? (() => {
                   const city = selectedMatch.location
                   const isPinned = pinnedCities.includes(city.id)
@@ -897,99 +914,104 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                     : { bg: '#FCEBEB', color: '#A32D2D' }
 
                   return (
-                    <>
-                      {/* Photo */}
-                      <div style={{ width: '100%', height: '90px', borderRadius: '8px', overflow: 'hidden', position: 'relative', background: '#2D4A6B', marginBottom: '8px' }}>
+                    <div style={{ display: 'flex', height: '100%', minHeight: '220px' }}>
+                      {/* Left: square photo (50%) */}
+                      <div style={{ width: '50%', flexShrink: 0, position: 'relative', overflow: 'hidden', background: '#2D4A6B' }}>
                         <Image
                           src={city.cityImageUrl ?? `/images/cities/${city.id}.jpg`}
                           alt={city.name} fill style={{ objectFit: 'cover' }}
                           onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
                         />
-                        <div style={{ position: 'absolute', bottom: '6px', left: '8px' }}>
-                          <span style={{ background: 'rgba(0,0,0,0.5)', borderRadius: '10px', padding: '2px 7px', fontSize: '8px', color: '#fff', fontWeight: 600 }}>
+                        <div style={{ position: 'absolute', bottom: '8px', left: '8px', display: 'flex', gap: '5px', alignItems: 'center' }}>
+                          <span style={{ fontSize: '9px', fontWeight: 500, background: '#C5B783', color: '#0A1E3D', padding: '2px 6px', borderRadius: '4px' }}>
                             {rankPillLabel(selectedRankIdx)}
                           </span>
-                        </div>
-                        <div style={{ position: 'absolute', bottom: '6px', right: '8px' }}>
-                          <span style={{ background: '#C5B783', borderRadius: '10px', padding: '2px 7px', fontSize: '9px', color: '#0A1E3D', fontWeight: 600 }}>
+                          <span style={{ fontSize: '11px', fontWeight: 500, color: '#fff' }}>
                             {selectedMatch.matchScore}%
                           </span>
                         </div>
                       </div>
 
-                      <p style={{ fontSize: '14px', fontWeight: 500, color: '#0A1E3D', margin: '0 0 1px' }}>{city.name}</p>
-                      <p style={{ fontSize: '9px', color: '#86868b', margin: '0 0 8px' }}>{city.metroUsed} metro · {city.county} County</p>
+                      {/* Right: info (50%) */}
+                      <div style={{ flex: 1, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: '5px', overflowY: 'auto' }}>
+                        <div>
+                          <p style={{ fontSize: '13px', fontWeight: 500, color: '#0A1E3D', margin: 0 }}>{city.name}</p>
+                          <p style={{ fontSize: '9px', color: '#86868b', margin: '1px 0 0' }}>{city.metroUsed} · {city.county} County</p>
+                        </div>
 
-                      <p style={{
-                        fontSize: '10px', color: '#3a3a3a', lineHeight: 1.55, margin: '0 0 8px',
-                        display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
-                      } as React.CSSProperties}>
-                        {city.description}
-                      </p>
+                        <p style={{
+                          fontSize: '10px', color: '#3a3a3a', lineHeight: 1.5, margin: 0,
+                          display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                        } as React.CSSProperties}>
+                          {city.description}
+                        </p>
 
-                      {/* 2×2 stat grid */}
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', marginBottom: '8px' }}>
-                        {[
-                          { label: 'Schools',   value: city.school?.teaRating ? `${city.school.teaRating} rated` : '—' },
-                          { label: 'Med home',  value: fmtK(city.housing.medianHomePrice) },
-                          { label: 'Safety',    value: city.scores.safety >= 7 ? 'Low risk' : city.scores.safety >= 4 ? 'Moderate' : 'Higher risk' },
-                          { label: 'Community', value: communityCharLabel(city.personality.environment) },
-                        ].map(stat => (
-                          <div key={stat.label} style={{ background: '#F5F5F7', borderRadius: '5px', padding: '4px 6px' }}>
-                            <p style={{ fontSize: '8px', color: '#86868b', textTransform: 'uppercase', letterSpacing: '0.04em', margin: '0 0 1px' }}>{stat.label}</p>
-                            <p style={{ fontSize: '10px', color: '#1d1d1f', fontWeight: 500, margin: 0 }}>{stat.value}</p>
-                          </div>
-                        ))}
+                        {/* 2×2 stat grid */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
+                          {[
+                            { label: 'Schools',   value: city.school?.teaRating ? `${city.school.teaRating} rated` : '—' },
+                            { label: 'Med home',  value: fmtK(city.housing.medianHomePrice) },
+                            { label: 'Safety',    value: city.scores.safety >= 7 ? 'Low risk' : city.scores.safety >= 4 ? 'Moderate' : 'Higher risk' },
+                            { label: 'Community', value: communityCharLabel(city.personality.environment) },
+                          ].map(stat => (
+                            <div key={stat.label} style={{ background: '#F5F4F1', borderRadius: '5px', padding: '4px 6px' }}>
+                              <p style={{ fontSize: '8px', color: '#86868b', textTransform: 'uppercase', letterSpacing: '0.04em', margin: '0 0 1px' }}>{stat.label}</p>
+                              <p style={{ fontSize: '10px', color: '#1d1d1f', fontWeight: 500, margin: 0 }}>{stat.value}</p>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Budget fit */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '10px', color: '#86868b' }}>Budget fit</span>
+                          <span style={{ background: statusBadge.bg, color: statusBadge.color, borderRadius: '12px', padding: '2px 8px', fontSize: '9px', fontWeight: 500 }}>
+                            {afLabel(status)}
+                          </span>
+                        </div>
+
+                        {/* Buttons */}
+                        <div style={{ display: 'flex', gap: '5px', marginTop: 'auto' }}>
+                          <button type="button"
+                            onClick={() => isPinned ? unpinCity(city.id) : pinCity(city.id)}
+                            disabled={!isPinned && pinnedCities.length >= 3}
+                            style={{
+                              flex: 1, background: isPinned ? 'rgba(197,183,131,0.15)' : '#0A1E3D',
+                              color: isPinned ? '#C5B783' : '#fff',
+                              border: isPinned ? '0.5px solid rgba(197,183,131,0.4)' : 'none',
+                              borderRadius: '6px', padding: '6px', fontSize: '9px', fontWeight: 500,
+                              cursor: (!isPinned && pinnedCities.length >= 3) ? 'not-allowed' : 'pointer',
+                              opacity: !isPinned && pinnedCities.length >= 3 ? 0.5 : 1,
+                              fontFamily: 'inherit', textAlign: 'center',
+                            }}>
+                            {isPinned ? 'Pinned ✓' : 'Pin'}
+                          </button>
+                          <button type="button"
+                            onClick={() => setReportMatch(selectedMatch)}
+                            style={{
+                              flex: 1, border: '0.5px solid #0A1E3D', borderRadius: '6px',
+                              padding: '6px', fontSize: '9px', color: '#0A1E3D',
+                              background: '#fff', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'center',
+                            }}>
+                            Full report →
+                          </button>
+                        </div>
                       </div>
-
-                      {/* Budget fit */}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <span style={{ fontSize: '10px', color: '#86868b' }}>Budget fit</span>
-                        <span style={{ background: statusBadge.bg, color: statusBadge.color, borderRadius: '12px', padding: '2px 8px', fontSize: '9px', fontWeight: 500 }}>
-                          {afLabel(status)}
-                        </span>
-                      </div>
-
-                      {/* Buttons */}
-                      <div style={{ display: 'flex', gap: '5px' }}>
-                        <button type="button"
-                          onClick={() => isPinned ? unpinCity(city.id) : pinCity(city.id)}
-                          disabled={!isPinned && pinnedCities.length >= 3}
-                          style={{
-                            flex: 1, background: isPinned ? 'rgba(197,183,131,0.15)' : '#0A1E3D',
-                            color: isPinned ? '#C5B783' : '#fff',
-                            border: isPinned ? '0.5px solid rgba(197,183,131,0.4)' : 'none',
-                            borderRadius: '6px', padding: '6px', fontSize: '9px', fontWeight: 500,
-                            cursor: (!isPinned && pinnedCities.length >= 3) ? 'not-allowed' : 'pointer',
-                            opacity: !isPinned && pinnedCities.length >= 3 ? 0.5 : 1,
-                            fontFamily: 'inherit', textAlign: 'center',
-                          }}>
-                          {isPinned ? 'Pinned ✓' : 'Pin this community'}
-                        </button>
-                        <button type="button"
-                          onClick={() => setReportMatch(selectedMatch)}
-                          style={{
-                            flex: 1, border: '0.5px solid #0A1E3D', borderRadius: '6px',
-                            padding: '6px', fontSize: '9px', color: '#0A1E3D',
-                            background: '#fff', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'center',
-                          }}>
-                          Full report →
-                        </button>
-                      </div>
-                    </>
+                    </div>
                   )
                 })() : (
-                  <p style={{ fontSize: '11px', color: '#86868b', margin: 0 }}>Select a city to preview.</p>
+                  <div style={{ padding: '12px' }}>
+                    <p style={{ fontSize: '11px', color: '#86868b', margin: 0 }}>Select a city to preview.</p>
+                  </div>
                 )}
               </div>
             </div>
           </div>
 
           {/* Lower 2-column grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', alignItems: 'stretch' }}>
 
             {/* PRIORITIES PANEL */}
-            <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: '10px', padding: '12px' }}>
+            <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: '10px', overflow: 'hidden', padding: '12px' }}>
               <p style={{ fontSize: '12px', fontWeight: 500, color: '#0A1E3D', margin: '0 0 2px' }}>Your priorities</p>
               <p style={{ fontSize: '10px', color: '#888', margin: '0 0 8px' }}>Click to move between columns</p>
 
@@ -1006,33 +1028,33 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                 </p>
               )}
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px' }}>
-                {/* Must Have */}
-                <div>
-                  <p style={{ fontSize: '9px', fontWeight: 700, color: '#0A1E3D', margin: '0 0 3px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Must Have</p>
-                  <p style={{ fontSize: '8px', color: '#86868b', margin: '0 0 5px' }}>3× wt</p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0', margin: '0 -12px -12px' }}>
+                {/* Must Have — warm tint */}
+                <div style={{ background: '#FDFAF4', borderRight: '0.5px solid rgba(0,0,0,0.08)', padding: '10px 8px' }}>
+                  <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.06em', color: '#8a6f00', textTransform: 'uppercase', margin: '0 0 2px' }}>Must have</p>
+                  <p style={{ fontSize: '8px', color: '#aaa', margin: '0 0 8px' }}>Up to 3 · 3× weight</p>
                   {mustHaves.length === 0 && <p style={{ fontSize: '10px', color: 'rgba(0,0,0,0.22)', fontStyle: 'italic', margin: 0 }}>Empty</p>}
                   {mustHaves.map(key => {
                     const cat = DNA_CATEGORIES.find(c => c.key === key)!
                     return (
                       <div key={key} onClick={() => movePriority(key, 'down')}
-                        style={{ background: '#F5F5F7', borderRadius: '4px', padding: '4px 6px', marginBottom: '3px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', gap: '3px' }}>
-                        <span style={{ fontSize: '9px', color: '#1d1d1f', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cat.icon} {cat.label}</span>
+                        style={{ background: 'rgba(197,183,131,0.15)', borderRadius: '4px', padding: '4px 6px', marginBottom: '3px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', gap: '3px', border: '0.5px solid rgba(197,183,131,0.3)' }}>
+                        <span style={{ fontSize: '9px', color: '#5a4a00', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cat.icon} {cat.label}</span>
                         <span style={{ color: '#0076B6', fontSize: '9px', flexShrink: 0 }}>→</span>
                       </div>
                     )
                   })}
                 </div>
 
-                {/* Important to Me */}
-                <div>
-                  <p style={{ fontSize: '9px', fontWeight: 700, color: '#6B6A65', margin: '0 0 3px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Important</p>
-                  <p style={{ fontSize: '8px', color: '#86868b', margin: '0 0 5px' }}>2× wt</p>
+                {/* Important to Me — neutral */}
+                <div style={{ background: '#FAFAFA', borderRight: '0.5px solid rgba(0,0,0,0.08)', padding: '10px 8px' }}>
+                  <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.06em', color: '#444', textTransform: 'uppercase', margin: '0 0 2px' }}>Important to me</p>
+                  <p style={{ fontSize: '8px', color: '#aaa', margin: '0 0 8px' }}>Up to 5 · 2× weight</p>
                   {niceToHaves.length === 0 && <p style={{ fontSize: '10px', color: 'rgba(0,0,0,0.22)', fontStyle: 'italic', margin: 0 }}>Empty</p>}
                   {niceToHaves.map(key => {
                     const cat = DNA_CATEGORIES.find(c => c.key === key)!
                     return (
-                      <div key={key} style={{ background: '#F5F5F7', borderRadius: '4px', padding: '3px 4px', marginBottom: '3px', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                      <div key={key} style={{ background: '#F0F0F0', borderRadius: '4px', padding: '3px 4px', marginBottom: '3px', display: 'flex', alignItems: 'center', gap: '2px' }}>
                         <button type="button" onClick={() => movePriority(key, 'up')}
                           style={{ color: '#0076B6', fontSize: '9px', background: 'none', border: 'none', cursor: 'pointer', padding: '0 1px', lineHeight: 1, flexShrink: 0 }}>←</button>
                         <span style={{ flex: 1, fontSize: '9px', color: '#1d1d1f', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cat.icon} {cat.label}</span>
@@ -1043,15 +1065,15 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                   })}
                 </div>
 
-                {/* Would Be Nice */}
-                <div>
-                  <p style={{ fontSize: '9px', fontWeight: 700, color: '#B0ADA6', margin: '0 0 3px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Nice</p>
-                  <p style={{ fontSize: '8px', color: '#86868b', margin: '0 0 5px' }}>1× wt</p>
+                {/* Would Be Nice — lightest */}
+                <div style={{ background: '#F7F7F7', padding: '10px 8px' }}>
+                  <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.06em', color: '#666', textTransform: 'uppercase', margin: '0 0 2px' }}>Would be nice</p>
+                  <p style={{ fontSize: '8px', color: '#aaa', margin: '0 0 8px' }}>1× weight</p>
                   {lessImportant.length === 0 && <p style={{ fontSize: '10px', color: 'rgba(0,0,0,0.22)', fontStyle: 'italic', margin: 0 }}>Empty</p>}
                   {lessImportant.map(key => {
                     const cat = DNA_CATEGORIES.find(c => c.key === key)!
                     return (
-                      <div key={key} style={{ background: '#F5F5F7', borderRadius: '4px', padding: '3px 4px', marginBottom: '3px', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                      <div key={key} style={{ background: 'rgba(0,0,0,0.04)', borderRadius: '4px', padding: '3px 4px', marginBottom: '3px', display: 'flex', alignItems: 'center', gap: '2px' }}>
                         <button type="button" onClick={() => movePriority(key, 'up')}
                           style={{ color: '#0076B6', fontSize: '9px', background: 'none', border: 'none', cursor: 'pointer', padding: '0 1px', lineHeight: 1, flexShrink: 0 }}>←</button>
                         <span style={{ flex: 1, fontSize: '9px', color: '#1d1d1f', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cat.icon} {cat.label}</span>
@@ -1063,7 +1085,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
             </div>
 
             {/* NUMBERS PANEL */}
-            <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: '10px', padding: '12px' }}>
+            <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: '10px', overflow: 'hidden', padding: '12px' }}>
               <p style={{ fontSize: '12px', fontWeight: 500, color: '#0A1E3D', margin: '0 0 2px' }}>Your numbers</p>
               <p style={{ fontSize: '10px', color: '#888', margin: '0 0 10px' }}>Adjust to update buying power live</p>
 
