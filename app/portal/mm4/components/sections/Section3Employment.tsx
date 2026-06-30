@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import type { MM4Profile } from '../../../../../types'
 import ConfirmRow from '../ConfirmRow'
 
@@ -14,11 +13,6 @@ interface Props {
 type EmploymentStatus = MM4Profile['employment_status']
 type WorkArrangement = MM4Profile['work_arrangement']
 
-function formatIncome(raw: string): string {
-  const digits = raw.replace(/[^0-9]/g, '')
-  if (!digits) return ''
-  return '$' + parseInt(digits, 10).toLocaleString('en-US')
-}
 
 function PillGroup<T extends string>({
   options,
@@ -126,11 +120,7 @@ export default function Section3Employment({ data, onChange, errors, quizWorkSit
   const quizWorkArrangement = mapWorkSituationToArrangement(quizWorkSituation)
   const showWorkArrangementAsConfirm = showWorkArrangement && !!quizWorkLabel
 
-  const [incomeDisplay, setIncomeDisplay] = useState(data.income_range_confirmed ?? '')
-
-  useEffect(() => {
-    setIncomeDisplay(data.income_range_confirmed ?? '')
-  }, [data.income_range_confirmed])
+  // income field removed — shown as pre-filled block on Step 3 (The Move)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -211,28 +201,6 @@ export default function Section3Employment({ data, onChange, errors, quizWorkSit
         </Field>
       )}
 
-      {/* Income */}
-      <div>
-        <SectionHeading>Financial Context</SectionHeading>
-        <Field
-          label="Annual household income"
-          hint="Pre-filled from your HavenQuest profile — update if anything has changed."
-        >
-          <input
-            className="mm4-input"
-            type="text"
-            value={incomeDisplay}
-            onChange={e => setIncomeDisplay(e.target.value)}
-            onFocus={() => setIncomeDisplay(incomeDisplay.replace(/[^0-9]/g, ''))}
-            onBlur={() => {
-              const formatted = formatIncome(incomeDisplay)
-              setIncomeDisplay(formatted)
-              onChange({ income_range_confirmed: formatted })
-            }}
-            placeholder="e.g. $125,000"
-          />
-        </Field>
-      </div>
     </div>
   )
 }

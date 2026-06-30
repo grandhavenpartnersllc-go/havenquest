@@ -75,8 +75,8 @@ export default function Section2Household({ data, onChange, errors, householdSiz
 
       <ConfirmRow label="Household" value={householdConfirmValue} />
 
-      {/* Adults / Children counts */}
-      <div style={col2}>
+      {/* Adults / Children counts — flex-end so inputs align at bottom despite hint text diff */}
+      <div style={{ ...col2, alignItems: 'flex-end' }}>
         <Field
           label="Adults in household"
           required

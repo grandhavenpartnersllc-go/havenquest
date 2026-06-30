@@ -9,9 +9,10 @@ import Section2Household from './sections/Section2Household'
 import Section2TheMove from './sections/Section2TheMove'
 import Section3Employment from './sections/Section3Employment'
 import Section4TexasDirection from './sections/Section4TexasDirection'
+import Section6Research from './sections/Section6Research'
 import Section5Notes from './sections/Section5Notes'
 
-const SECTION_COUNT = 6
+const SECTION_COUNT = 7
 
 function parseHouseholdSize(hs: string | undefined): number {
   if (!hs) return 1
@@ -164,7 +165,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
           }))
           profileSeedApplied.current = true
           const resumed = typeof existing.last_completed_section === 'number'
-            ? Math.min(existing.last_completed_section, 5)
+            ? Math.min(existing.last_completed_section, 6)
             : 0
           if (resumed > 0) {
             setCurrentSection(resumed)
@@ -289,7 +290,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
         email: session.email.toLowerCase(),
         submitted: true,
         submitted_at: now,
-        last_completed_section: 6,
+        last_completed_section: 7,
         ...(supaSession?.user?.id ? { user_id: supaSession.user.id } : {}),
         ...(quizSessionId ? { quiz_session_id: quizSessionId } : {}),
       }
@@ -326,7 +327,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
   }
 
   const topMatchNames = matches.slice(0, 3).map(m => m.location.name)
-  const isLastSection = currentSection === 5
+  const isLastSection = currentSection === 6
 
   return (
     <div style={{ width: '100%', maxWidth: '860px' }}>
@@ -416,6 +417,13 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
               />
             )}
             {currentSection === 5 && (
+              <Section6Research
+                data={formData}
+                onChange={handleChange}
+                errors={errors}
+              />
+            )}
+            {currentSection === 6 && (
               <Section5Notes
                 data={formData}
                 onChange={handleChange}
@@ -465,7 +473,7 @@ export default function MM4IntakeForm({ onSubmitted }: Props) {
 
           {/* Step count */}
           <span style={{ fontSize: '12px', color: 'rgba(10,30,61,0.25)' }}>
-            Step {currentSection + 1} of 6
+            Step {currentSection + 1} of 7
           </span>
 
           {/* Continue button (hidden on last section — Section5Notes has its own submit) */}

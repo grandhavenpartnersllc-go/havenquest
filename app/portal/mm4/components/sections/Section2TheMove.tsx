@@ -2,7 +2,6 @@
 
 import { useMemo } from 'react'
 import type { MM4Profile } from '../../../../../types'
-import ConfirmRow from '../ConfirmRow'
 
 interface Props {
   data: MM4Profile
@@ -12,22 +11,18 @@ interface Props {
 }
 
 type TimelineFlexibility = MM4Profile['timeline_flexibility']
-type OriginSituation = MM4Profile['origin_situation']
-type PurchaseContingent = MM4Profile['purchase_contingent']
 
 function PillGroup<T extends string>({
   options,
   value,
   onSelect,
-  wrap = true,
 }: {
   options: { label: string; value: T }[]
   value: T | undefined
   onSelect: (v: T) => void
-  wrap?: boolean
 }) {
   return (
-    <div style={{ display: 'flex', gap: '8px', flexWrap: wrap ? 'wrap' : 'nowrap' }}>
+    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
       {options.map(opt => {
         const selected = value === opt.value
         return (
@@ -46,6 +41,7 @@ function PillGroup<T extends string>({
               cursor: 'pointer',
               transition: 'all 0.15s',
               whiteSpace: 'nowrap',
+              fontFamily: 'inherit',
             }}
           >
             {opt.label}
@@ -91,32 +87,47 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
   )
 }
 
+function PreFilledBlock({ label, value, onEdit }: { label: string; value: string; onEdit?: () => void }) {
+  return (
+    <div style={{
+      background: 'rgba(197,183,131,0.12)',
+      border: '0.5px solid rgba(197,183,131,0.4)',
+      borderRadius: '12px',
+      padding: '14px 18px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: '4px',
+    }}>
+      <div>
+        <p style={{ fontSize: '11px', color: 'rgba(10,30,61,0.4)', margin: '0 0 2px', letterSpacing: '0.6px' }}>{label}</p>
+        <p style={{ fontSize: '14px', fontWeight: 500, color: '#0A1E3D', margin: 0 }}>{value}</p>
+      </div>
+      {onEdit && (
+        <button
+          type="button"
+          onClick={onEdit}
+          style={{ fontSize: '12px', fontWeight: 500, color: '#0A1E3D', textDecoration: 'underline', cursor: 'pointer', background: 'none', border: 'none', padding: 0, flexShrink: 0, marginLeft: '12px', fontFamily: 'inherit' }}
+        >
+          Edit
+        </button>
+      )}
+    </div>
+  )
+}
+
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December',
 ]
 
-const EQUITY_OPTIONS = [
-  'Less than $50K',
-  '$50K – $100K',
-  '$100K – $200K',
-  '$200K – $350K',
-  '$350K – $500K',
-  '$500K – $750K',
-  'Over $750K',
-  'Not sure yet',
-]
-
-function mapWorkSituationToLabel(ws: string | null | undefined): string {
-  switch (ws) {
-    case 'fully_remote': return 'fully remote'
-    case 'hybrid': return 'hybrid'
-    case 'in_office':
-    case 'on_site': return 'in-office'
-    case 'self_employed': return 'self-employed'
-    case 'retired':
-    case 'not_working': return ''
-    default: return ''
+function originSituationLabel(s: MM4Profile['origin_situation']): string {
+  switch (s) {
+    case 'selling': return 'Selling my home'
+    case 'renting': return 'Currently renting'
+    case 'own_no_sale': return 'Own — not selling'
+    case 'other': return 'Other'
+    default: return 'Not specified'
   }
 }
 
@@ -133,9 +144,7 @@ function mapIncomeToLabel(income: string | null | undefined): string {
   }
 }
 
-export default function Section2TheMove({ data, onChange, errors, quizWorkSituation }: Props) {
-  const isSelling = data.origin_situation === 'selling'
-
+export default function Section2TheMove({ data, onChange, errors }: Props) {
   const moveOptions = useMemo(() => {
     const today = new Date()
     const opts: string[] = []
@@ -146,9 +155,22 @@ export default function Section2TheMove({ data, onChange, errors, quizWorkSituat
     return opts
   }, [])
 
-  const incomeLabel = mapIncomeToLabel(data.income_range_confirmed)
-  const workLabel = mapWorkSituationToLabel(quizWorkSituation)
-  const financialConfirmValue = [incomeLabel, workLabel].filter(Boolean).join(' · ')
+  // Housing situation summary (pre-filled, read-only)
+  const housingSummaryParts: string[] = []
+  if (data.origin_situation) housingSummaryParts.push(originSituationLabel(data.origin_situation))
+  if (data.origin_situation === 'selling') {
+    if (data.home_listed === true) housingSummaryParts.push('Listed and active')
+    else if (data.home_listed === false) housingSummaryParts.push('Not yet listed')
+    if (data.approximate_equity) housingSummaryParts.push(`Est. equity ${data.approximate_equity}`)
+    if (data.purchase_contingent) {
+      const contingentMap: Record<string, string> = { yes: 'Contingent: Yes', no: 'Contingent: No', possibly: 'Contingent: Possibly', na: '' }
+      const label = contingentMap[data.purchase_contingent]
+      if (label) housingSummaryParts.push(label)
+    }
+  }
+  const housingSummary = housingSummaryParts.join(' · ') || 'Not specified'
+
+  const incomeLabel = mapIncomeToLabel(data.income_range_confirmed) || data.income_range_confirmed || 'Not specified'
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -161,14 +183,23 @@ export default function Section2TheMove({ data, onChange, errors, quizWorkSituat
         </p>
       </div>
 
-      {financialConfirmValue && (
-        <ConfirmRow label="Financial picture" value={financialConfirmValue} />
-      )}
+      {/* Household income — pre-filled summary with Edit */}
+      <PreFilledBlock
+        label="Household income"
+        value={incomeLabel}
+        onEdit={() => {/* navigated inline — user edits on Step 4 */}}
+      />
 
-      {/* Timing */}
+      {/* Housing situation — pre-filled summary */}
+      <PreFilledBlock
+        label="Housing situation"
+        value={housingSummary}
+      />
+
+      {/* Timing — 50/50 grid, top-aligned */}
       <div>
         <SectionHeading>Timing</SectionHeading>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', alignItems: 'start' }}>
           <Field label="Target move date">
             <select
               className="mm4-select"
@@ -197,80 +228,6 @@ export default function Section2TheMove({ data, onChange, errors, quizWorkSituat
               onSelect={v => onChange({ timeline_flexibility: v as TimelineFlexibility })}
             />
           </Field>
-        </div>
-      </div>
-
-      {/* Current housing situation */}
-      <div>
-        <SectionHeading>Current Housing Situation</SectionHeading>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <Field
-            label="What's your current housing situation?"
-            required
-            error={errors.origin_situation}
-            hint="Pre-filled from your HavenQuest profile — update if anything has changed."
-          >
-            <PillGroup
-              options={[
-                { label: 'Selling my home', value: 'selling' },
-                { label: 'Currently renting', value: 'renting' },
-                { label: 'Own — not selling', value: 'own_no_sale' },
-                { label: 'Other', value: 'other' },
-              ]}
-              value={data.origin_situation}
-              onSelect={v => {
-                const updates: Partial<MM4Profile> = { origin_situation: v as OriginSituation }
-                if (v !== 'selling') {
-                  updates.home_listed = undefined
-                  updates.approximate_equity = undefined
-                  updates.purchase_contingent = undefined
-                }
-                onChange(updates)
-              }}
-            />
-          </Field>
-
-          {isSelling && (
-            <>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <Field label="Have you listed your home?">
-                  <PillGroup
-                    options={[
-                      { label: 'Not yet listed', value: 'false' },
-                      { label: 'Listed and active', value: 'true' },
-                    ]}
-                    value={data.home_listed === undefined ? undefined : String(data.home_listed) as 'true' | 'false'}
-                    onSelect={v => onChange({ home_listed: v === 'true' })}
-                  />
-                </Field>
-                <Field label="Approximate equity or expected proceeds">
-                  <select
-                    className="mm4-select"
-                    value={data.approximate_equity ?? ''}
-                    onChange={e => onChange({ approximate_equity: e.target.value })}
-                  >
-                    <option value="">Select a range</option>
-                    {EQUITY_OPTIONS.map(opt => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </select>
-                </Field>
-              </div>
-
-              <Field label="Will your Texas purchase be contingent on selling?">
-                <PillGroup
-                  options={[
-                    { label: 'Yes', value: 'yes' },
-                    { label: 'No', value: 'no' },
-                    { label: 'Possibly', value: 'possibly' },
-                    { label: 'Not applicable', value: 'na' },
-                  ]}
-                  value={data.purchase_contingent}
-                  onSelect={v => onChange({ purchase_contingent: v as PurchaseContingent })}
-                />
-              </Field>
-            </>
-          )}
         </div>
       </div>
     </div>
