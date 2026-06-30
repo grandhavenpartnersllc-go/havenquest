@@ -245,10 +245,11 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
       if (!s?.user?.email) return
       const { data } = await supabase
         .from('users')
-        .select('sandbox_committed,sandbox_profile,sandbox_committed_at,chosen_communities,home_status,exact_home_proceeds,available_funds,annual_income_override,loan_term_preference,origin_city,origin_state,origin_zip,growth_profile,lifestyle_orientation,environment,pace')
+        .select('sandbox_committed,sandbox_profile,sandbox_committed_at,home_status,exact_home_proceeds,available_funds,annual_income_override,loan_term_preference,origin_city,origin_state,origin_zip,growth_profile,lifestyle_orientation,environment,pace')
         .eq('email', s.user.email.toLowerCase())
         .maybeSingle()
       if (!data) return
+      console.log('[OriginDebug] origin_city:', data.origin_city, 'origin_zip:', data.origin_zip)
 
       if (data.sandbox_committed) { onAdvanceToConnect(); return }
 
@@ -291,8 +292,10 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
       if (data.loan_term_preference === 15 || data.loan_term_preference === 30) {
         setLoanTerm(data.loan_term_preference)
       }
-      if (Array.isArray(data.chosen_communities) && data.chosen_communities.length > 0) {
-        setPinnedCities(data.chosen_communities)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const dataCommunities = (data as any).chosen_communities
+      if (Array.isArray(dataCommunities) && dataCommunities.length > 0) {
+        setPinnedCities(dataCommunities)
       }
 
       // Origin city fallback chain: users.origin_city → sessionStorage → ZIP lookup → write-back to DB
