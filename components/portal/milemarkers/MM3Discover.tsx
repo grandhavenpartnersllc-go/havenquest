@@ -621,7 +621,21 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                         border: `0.5px solid ${isFirst ? '#C5B783' : 'rgba(255,255,255,0.12)'}`,
                         borderRadius: '8px', padding: '8px 10px',
                         display: 'flex', alignItems: 'center', gap: '8px',
+                        position: 'relative',
                       }}>
+                        <button
+                          type="button"
+                          onClick={() => unpinCity(cityId)}
+                          style={{
+                            position: 'absolute', top: '4px', right: '6px',
+                            background: 'none', border: 'none', cursor: 'pointer',
+                            color: 'rgba(255,255,255,0.35)', fontSize: '12px', lineHeight: 1,
+                            padding: '2px 3px', fontFamily: 'inherit',
+                          }}
+                          aria-label={`Unpin ${cityLoc.name}`}
+                        >
+                          ✕
+                        </button>
                         <div style={{ width: '40px', height: '40px', borderRadius: '6px', overflow: 'hidden', position: 'relative', flexShrink: 0, background: '#1a3558' }}>
                           <Image
                             src={cityLoc.cityImageUrl ?? `/images/cities/${cityLoc.id}.jpg`}
@@ -629,7 +643,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                             onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
                           />
                         </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ flex: 1, minWidth: 0, paddingRight: '12px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <p style={{ fontSize: '13px', color: '#fff', fontWeight: 500, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {cityLoc.name}
