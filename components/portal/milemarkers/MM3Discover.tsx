@@ -207,7 +207,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const [selectedCityId, setSelectedCityId] = useState<string | null>(null)
   const [showAllCities, setShowAllCities] = useState(false)
   const [selectedMetro, setSelectedMetro] = useState(initialMetro ?? 'State')
-  const [sandboxTouched, setSandboxTouched] = useState(false)
+  const [sandboxTouched, setSandboxTouched] = useState(true)
 
   // UI
   const [ctaError, setCtaError] = useState<string | null>(null)
