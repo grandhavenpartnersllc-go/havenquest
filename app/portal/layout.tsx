@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import ThemeProvider from './providers/ThemeProvider'
 import PortalDataProvider from './providers/PortalDataProvider'
 import TopCommandBar from './components/TopCommandBar'
-import JourneyRail from './components/JourneyRail'
+import ConditionalJourneyRail from './components/ConditionalJourneyRail'
 import WorkspacePanel from './components/WorkspacePanel'
 import CommandCenter from './components/CommandCenter'
 import './portal.css'
@@ -72,7 +72,7 @@ export default async function PortalLayout({ children }: { children: ReactNode }
               <div style={{ flex: 1, overflowY: 'auto' }}>{children}</div>
             ) : (
               <>
-                <JourneyRail />
+                <ConditionalJourneyRail />
                 <WorkspacePanel>{children}</WorkspacePanel>
                 <CommandCenter />
               </>

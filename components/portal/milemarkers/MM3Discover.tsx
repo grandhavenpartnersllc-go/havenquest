@@ -13,14 +13,13 @@ import { lookupZipCityState } from '../../../utils/zipLookup'
 const ALL_KEYS = DNA_CATEGORIES.map(c => c.key) as (keyof DNAScores)[]
 
 const RATE_DEFAULT = 6.5
-const RATE_MARKET_AVG = 6.53
 
 const METRO_FILTERS = [
-  { label: 'All Texas', value: 'State' },
-  { label: 'Austin',     value: 'Austin' },
-  { label: 'DFW',        value: 'Dallas' },
-  { label: 'Houston',    value: 'Houston' },
-  { label: 'San Antonio', value: 'San Antonio' },
+  { label: 'All Texas',    value: 'State' },
+  { label: 'Austin',       value: 'Austin' },
+  { label: 'DFW',          value: 'Dallas' },
+  { label: 'Houston',      value: 'Houston' },
+  { label: 'San Antonio',  value: 'San Antonio' },
 ]
 
 function fmtCurrency(raw: string): string {
@@ -90,12 +89,7 @@ function txColIndex(metro: string): number {
   if (metro.includes('Houston')) return 98
   if (metro.includes('San Antonio')) return 97
   if (metro.includes('Dallas') || metro.includes('DFW') || metro.includes('Fort Worth')) return 104
-  return 108 // Austin / default
-}
-
-function txClimate(metro: string): string {
-  if (metro.includes('Houston')) return 'Hot/humid'
-  return 'Warm/sunny'
+  return 108
 }
 
 function txSafety(score: number): string {
@@ -105,17 +99,44 @@ function txSafety(score: number): string {
   return 'Higher risk'
 }
 
+function txPropertyTax(metro: string): string {
+  if (metro.includes('Houston')) return '2.0%'
+  if (metro.includes('San Antonio')) return '2.3%'
+  if (metro.includes('Dallas') || metro.includes('DFW') || metro.includes('Fort Worth')) return '2.1%'
+  return '1.9%'
+}
+
+function txJobMarket(metro: string): string {
+  if (metro.includes('Houston') || metro.includes('San Antonio')) return 'Moderate'
+  return 'Strong'
+}
+
+function txClimateV2(metro: string): string {
+  if (metro.includes('Houston')) return 'Humid subtropical'
+  if (metro.includes('Dallas') || metro.includes('DFW') || metro.includes('Fort Worth')) return 'Hot & stormy'
+  if (metro.includes('San Antonio')) return 'Hot & dry'
+  return 'Hot summers'
+}
+
 function parseHomePrice(s: string): number {
-  // Parses "$825K" or "$1.2M" to a number
   const clean = s.replace(/[$,]/g, '')
   if (clean.endsWith('M')) return parseFloat(clean) * 1_000_000
   if (clean.endsWith('K')) return parseFloat(clean) * 1_000
   return parseFloat(clean) || 0
 }
 
-function schoolGrade(r: string): number {
-  const map: Record<string, number> = { 'A+': 13, 'A': 12, 'A-': 11, 'B+': 10, 'B': 9, 'B-': 8, 'C+': 7, 'C': 6, 'C-': 5, 'D': 4, 'F': 3 }
-  return map[r] ?? 0
+function rankPillLabel(idx: number): string {
+  if (idx === 0) return '⭐ Top pick'
+  if (idx === 1) return 'Runner-up'
+  if (idx === 2) return 'Strong alt'
+  return `#${idx + 1}`
+}
+
+function communityCharLabel(env: number): string {
+  if (env <= 3) return 'Urban'
+  if (env <= 6) return 'Suburban'
+  if (env <= 8) return 'Small Town'
+  return 'Rural'
 }
 
 interface Props {
@@ -158,9 +179,11 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const [originCity, setOriginCity] = useState<string | null>(null)
   const [originState, setOriginState] = useState<string | null>(null)
 
-  const commSectionRef = useRef<HTMLDivElement>(null)
   const priorityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const incomeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Suppress unused import warning — session is required by parent contract
+  void session
 
   // Load DB state
   useEffect(() => {
@@ -209,7 +232,8 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
       if (Array.isArray(data.chosen_communities) && data.chosen_communities.length > 0) {
         setPinnedCities(data.chosen_communities)
       }
-      // Origin city fallback chain: users.origin_city → sessionStorage → ZIP lookup → null
+
+      // Origin city fallback chain: users.origin_city → sessionStorage → ZIP lookup
       let resolvedCity: string | null = data.origin_city || (typeof window !== 'undefined' ? sessionStorage.getItem('hq_origin_city') : null) || null
       let resolvedState: string | null = data.origin_state || (typeof window !== 'undefined' ? sessionStorage.getItem('hq_origin_state') : null) || null
       if (!resolvedCity && data.origin_zip) {
@@ -235,7 +259,6 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         setNotPriorities(profile.notPriorities ?? [])
         setUnassigned(ALL_KEYS.filter(k => !used.has(k)))
       } else {
-        // No quiz priority data at all — default all to Important to Me
         setNiceToHaves(ALL_KEYS)
         setUnassigned([])
       }
@@ -276,7 +299,6 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
 
   const { topMatches: rankedCities } = getTopMatches(activeProfile, metroCities, 20, 'hard')
 
-  // Affordability — brief formula: full price / (income/12 × 0.28)
   function afStatus(medianPrice: number): 'comfortable' | 'moderate' | 'stretched' {
     const income = incomeVal || profile?.annualIncome || 0
     if (income <= 0) return 'stretched'
@@ -295,14 +317,12 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const afLabel = (s: 'comfortable' | 'moderate' | 'stretched') =>
     s === 'comfortable' ? 'Comfortable' : s === 'moderate' ? 'Moderate' : 'Stretched'
 
-  // Buying power monthly estimate (first pinned city or $385K reference)
   const refCityData = getAllCities().find(c => c.id === pinnedCities[0])
   const refPrice = refCityData?.housing.medianHomePrice ?? 385000
   const refBalance = Math.max(0, refPrice - totalFunds)
   const refRate = loanTerm === 15 ? Math.max(interestRate - 0.5, 2) : interestRate
   const refMonthly = calcMonthly(refBalance, refRate, loanTerm)
 
-  // Helpers
   function findMatch(cityId: string): CityMatch | undefined {
     return rankedCities.find(m => m.location.id === cityId) ?? matches.find(m => m.location.id === cityId)
   }
@@ -349,7 +369,6 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     const inMH = mustHaves.includes(key)
     const inNH = niceToHaves.includes(key)
 
-    // Cap Must Have at 3
     if (inNH && direction === 'up' && mustHaves.length >= 3) {
       setMustHaveError(true)
       setTimeout(() => setMustHaveError(false), 3000)
@@ -359,12 +378,12 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     let newMH = mustHaves.filter(k => k !== key)
     let newNH = niceToHaves.filter(k => k !== key)
     let newNP = notPriorities.filter(k => k !== key)
-    let newUA = unassigned.filter(k => k !== key)
+    const newUA = unassigned.filter(k => k !== key)
 
     if (inMH && direction === 'down') newNH = [...newNH, key]
     else if (inNH && direction === 'up') newMH = [...newMH, key]
     else if (inNH && direction === 'down') newNP = [...newNP, key]
-    else newNH = [...newNH, key] // less/unassigned always goes to nice
+    else newNH = [...newNH, key]
 
     setMustHaves(newMH); setNiceToHaves(newNH); setNotPriorities(newNP); setUnassigned(newUA)
     debounceSavePriorities(newMH, newNH, newNP, newUA)
@@ -428,6 +447,11 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
 
   const lessImportant = [...notPriorities, ...unassigned]
 
+  const effectiveSelectedId = selectedCityId ?? rankedCities[0]?.location.id
+  const selectedMatch = rankedCities.find(m => m.location.id === effectiveSelectedId)
+  const selectedRankIdx = rankedCities.findIndex(m => m.location.id === effectiveSelectedId)
+  const displayedCities = showAllCities ? rankedCities : rankedCities.slice(0, 5)
+
   // ──────────────────────────────────────────────────────────
   // RENDER
   // ──────────────────────────────────────────────────────────
@@ -458,198 +482,303 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         </div>
       )}
 
-      {/* Two-panel layout */}
-      <div style={{ display: 'flex', flex: 1, minHeight: '100vh' }}>
+      {/* 40/60 dashboard layout */}
+      <div style={{ display: 'flex', minHeight: '100%' }}>
 
-        {/* ── LEFT PANEL ── */}
+        {/* ── NAVY DASHBOARD — 40% ── */}
         <div style={{
-          width: '220px', flexShrink: 0,
+          width: '40%', flexShrink: 0,
           background: '#0A1E3D',
           display: 'flex', flexDirection: 'column',
           position: 'sticky', top: 0, height: '100vh',
           overflow: 'hidden', alignSelf: 'flex-start',
         }}>
-          {/* Scrollable content area */}
-          <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: '18px 14px 14px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
-          {/* Label */}
-          <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.12em', color: '#C5B783', textTransform: 'uppercase', margin: 0 }}>
-            Your Direction
-          </p>
+          {/* Scrollable content */}
+          <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-          {/* City slots */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
-            {[0, 1, 2].map(i => {
-              const cityId = pinnedCities[i]
-              const match = cityId ? findMatch(cityId) : undefined
-              const cityLoc = match?.location ?? (cityId ? getAllCities().find(c => c.id === cityId) : undefined)
-              const status = cityLoc ? afStatus(cityLoc.housing.medianHomePrice) : null
+            {/* YOUR DIRECTION */}
+            <div>
+              <p style={{ fontSize: '9px', fontWeight: 500, letterSpacing: '0.1em', color: '#C5B783', textTransform: 'uppercase', margin: '0 0 8px' }}>
+                Your direction
+              </p>
 
-              if (cityLoc) {
-                return (
-                  <div key={cityId} style={{
-                    background: 'rgba(197,183,131,0.12)',
-                    border: '0.5px solid rgba(197,183,131,0.3)',
-                    borderRadius: '8px', padding: '10px 11px',
-                  }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
-                      <p style={{ fontSize: '13px', color: '#fff', fontWeight: 500, margin: 0, lineHeight: 1.2 }}>{cityLoc.name}</p>
-                      <button type="button" onClick={() => {
-                        setSelectedCityId(cityId)
-                        commSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                      }} style={{ fontSize: '10px', color: '#C5B783', cursor: 'pointer', background: 'none', border: 'none', padding: 0, textDecoration: 'underline', textUnderlineOffset: '2px', flexShrink: 0, marginLeft: '6px' }}>
-                        Report →
-                      </button>
+              {/* 3 pinned city slots */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {[0, 1, 2].map(i => {
+                  const cityId = pinnedCities[i]
+                  const match = cityId ? findMatch(cityId) : undefined
+                  const cityLoc = match?.location ?? (cityId ? getAllCities().find(c => c.id === cityId) : undefined)
+                  const status = cityLoc ? afStatus(cityLoc.housing.medianHomePrice) : null
+                  const isFirst = i === 0
+
+                  if (cityLoc) {
+                    return (
+                      <div key={cityId} style={{
+                        background: 'rgba(255,255,255,0.07)',
+                        border: `0.5px solid ${isFirst ? '#C5B783' : 'rgba(255,255,255,0.12)'}`,
+                        borderRadius: '8px', padding: '8px 10px',
+                        display: 'flex', alignItems: 'center', gap: '8px',
+                      }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '6px', overflow: 'hidden', position: 'relative', flexShrink: 0, background: '#1a3558' }}>
+                          <Image
+                            src={cityLoc.cityImageUrl ?? `/images/cities/${cityLoc.id}.jpg`}
+                            alt={cityLoc.name} fill style={{ objectFit: 'cover' }}
+                            onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+                          />
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <p style={{ fontSize: '13px', color: '#fff', fontWeight: 500, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {cityLoc.name}
+                            </p>
+                            {match && (
+                              <span style={{ fontSize: '11px', color: '#C5B783', fontWeight: 500, flexShrink: 0, marginLeft: '4px' }}>
+                                {match.matchScore}%
+                              </span>
+                            )}
+                          </div>
+                          <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', margin: '2px 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {cityLoc.metroUsed}
+                          </p>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '3px' }}>
+                            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: afColor(status!), flexShrink: 0 }} />
+                            <span style={{ fontSize: '9px', color: afColor(status!) }}>{afLabel(status!)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  }
+
+                  return (
+                    <div key={i} style={{ border: '0.5px dashed rgba(255,255,255,0.14)', borderRadius: '8px', padding: '10px 12px' }}>
+                      <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.22)', fontStyle: 'italic', margin: 0 }}>
+                        + Pin a community →
+                      </p>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: afColor(status!), flexShrink: 0 }} />
-                      <span style={{ fontSize: '10px', color: afColor(status!) }}>{afLabel(status!)}</span>
-                      {match && <span style={{ fontSize: '11px', color: '#C5B783', marginLeft: 'auto' }}>{match.matchScore}%</span>}
-                    </div>
-                    <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', margin: '3px 0 0' }}>{cityLoc.metroUsed}</p>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* PRIORITIES SUMMARY */}
+            {(mustHaves.length > 0 || niceToHaves.length > 0) && (
+              <div>
+                <p style={{ fontSize: '9px', fontWeight: 500, letterSpacing: '0.1em', color: '#C5B783', textTransform: 'uppercase', margin: '0 0 6px' }}>
+                  What matters most
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                  {mustHaves.slice(0, 3).map(key => {
+                    const cat = DNA_CATEGORIES.find(c => c.key === key)
+                    if (!cat) return null
+                    return (
+                      <span key={key} style={{
+                        background: 'rgba(197,183,131,0.2)', color: '#C5B783',
+                        border: '0.5px solid rgba(197,183,131,0.4)',
+                        borderRadius: '12px', padding: '3px 8px', fontSize: '10px',
+                      }}>
+                        {cat.icon} {cat.label}
+                      </span>
+                    )
+                  })}
+                  {niceToHaves.slice(0, 3).map(key => {
+                    const cat = DNA_CATEGORIES.find(c => c.key === key)
+                    if (!cat) return null
+                    return (
+                      <span key={key} style={{
+                        background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.6)',
+                        border: '0.5px solid rgba(255,255,255,0.15)',
+                        borderRadius: '12px', padding: '3px 8px', fontSize: '10px',
+                      }}>
+                        {cat.icon} {cat.label}
+                      </span>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* BUYING POWER 2×2 GRID */}
+            <div>
+              <p style={{ fontSize: '9px', fontWeight: 500, letterSpacing: '0.1em', color: '#C5B783', textTransform: 'uppercase', margin: '0 0 8px' }}>
+                Buying power
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                {[
+                  {
+                    label: 'Est. budget',
+                    value: totalFunds > 0 ? fmtK(totalFunds) : '—',
+                    sub: isSelling ? 'Proceeds + savings' : 'Available funds',
+                    subColor: undefined as string | undefined,
+                  },
+                  {
+                    label: 'Monthly est.',
+                    value: refMonthly > 0 ? `$${refMonthly.toLocaleString()}` : '—',
+                    sub: `${loanTerm}yr P+I`,
+                    subColor: undefined as string | undefined,
+                  },
+                  {
+                    label: 'Annual income',
+                    value: incomeDisplay || (profile?.annualIncome ? fmtCurrency(String(profile.annualIncome)) : '—'),
+                    sub: 'Household',
+                    subColor: undefined as string | undefined,
+                  },
+                  {
+                    label: 'Interest rate',
+                    value: `${interestRate}%`,
+                    sub: interestRate >= 6.25 && interestRate <= 6.75 ? '● In market band' : 'Market: 6.25–6.75%',
+                    subColor: interestRate >= 6.25 && interestRate <= 6.75 ? '#48c78e' : undefined,
+                  },
+                ].map(cell => (
+                  <div key={cell.label} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '6px', padding: '7px 9px' }}>
+                    <p style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', margin: '0 0 3px' }}>{cell.label}</p>
+                    <p style={{ fontSize: '15px', fontWeight: 500, color: '#fff', margin: '0 0 2px', lineHeight: 1.1 }}>{cell.value}</p>
+                    <p style={{ fontSize: '9px', color: cell.subColor ?? 'rgba(255,255,255,0.4)', margin: 0 }}>{cell.sub}</p>
                   </div>
-                )
+                ))}
+              </div>
+            </div>
+
+            {/* COMPARISON CHART */}
+            {(() => {
+              console.log('[ComparisonChart] pinnedCities:', pinnedCities)
+              console.log('[ComparisonChart] originCity resolved to:', originCity)
+              console.log('[ComparisonChart] should render:', pinnedCities.length > 0 && !!originCity)
+
+              if (pinnedCities.length === 0 || !originCity) return null
+
+              const originData = lookupOriginCity(originCity)
+              if (!originData) {
+                console.log('[ComparisonChart] no lookup match for:', originCity)
+                return null
               }
 
+              const pinnedMatches = pinnedCities.map(id => getAllCities().find(c => c.id === id)).filter(Boolean)
+
+              const chartRows: {
+                label: string
+                originVal: string
+                txVals: string[]
+                better?: (txVal: string, idx: number) => boolean
+                alwaysGreen?: boolean
+                prefix?: string
+              }[] = [
+                {
+                  label: 'COL Index',
+                  originVal: String(originData.colIndex),
+                  txVals: pinnedMatches.map(c => String(txColIndex(c!.metroUsed))),
+                  better: (txVal) => parseInt(txVal) < originData.colIndex,
+                  prefix: '↓',
+                },
+                {
+                  label: 'Median Home',
+                  originVal: originData.medianHome,
+                  txVals: pinnedMatches.map(c => fmtK(c!.housing.medianHomePrice)),
+                  better: (_txVal, idx) => pinnedMatches[idx] ? pinnedMatches[idx]!.housing.medianHomePrice < parseHomePrice(originData.medianHome) : false,
+                  prefix: '↓',
+                },
+                {
+                  label: 'Property Tax',
+                  originVal: '—',
+                  txVals: pinnedMatches.map(c => txPropertyTax(c!.metroUsed)),
+                },
+                {
+                  label: 'State Inc. Tax',
+                  originVal: originData.incomeTax,
+                  txVals: pinnedMatches.map(() => 'None (TX)'),
+                  alwaysGreen: true,
+                },
+                {
+                  label: 'Schools',
+                  originVal: originData.schoolRating,
+                  txVals: pinnedMatches.map(c => c!.school?.teaRating ?? '—'),
+                },
+                {
+                  label: 'Crime/Safety',
+                  originVal: originData.safety,
+                  txVals: pinnedMatches.map(c => txSafety(c!.scores.safety)),
+                },
+                {
+                  label: 'Job Market',
+                  originVal: '—',
+                  txVals: pinnedMatches.map(c => txJobMarket(c!.metroUsed)),
+                },
+                {
+                  label: 'Climate',
+                  originVal: originData.climate,
+                  txVals: pinnedMatches.map(c => txClimateV2(c!.metroUsed)),
+                },
+              ]
+
               return (
-                <div key={i} style={{
-                  border: '0.5px dashed rgba(255,255,255,0.14)',
-                  borderRadius: '8px', padding: '10px 11px',
-                }}>
-                  <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.22)', fontStyle: 'italic', margin: 0 }}>
-                    Pin a community →
+                <div>
+                  <p style={{ fontSize: '9px', fontWeight: 500, letterSpacing: '0.1em', color: '#C5B783', textTransform: 'uppercase', margin: '0 0 8px' }}>
+                    Texas vs. {originCity}{originState ? `, ${originState}` : ''}
                   </p>
-                </div>
-              )
-            })}
-          </div>
-
-          {/* What matters most */}
-          {mustHaves.length > 0 && (
-            <div>
-              <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.1em', color: '#C5B783', textTransform: 'uppercase', margin: '0 0 7px' }}>
-                What matters most
-              </p>
-              {mustHaves.slice(0, 3).map((key, i) => {
-                const cat = DNA_CATEGORIES.find(c => c.key === key)
-                if (!cat) return null
-                return (
-                  <div key={key} style={{
-                    background: 'rgba(255,255,255,0.07)',
-                    borderRadius: '16px', padding: '5px 10px',
-                    fontSize: '11px', color: 'rgba(255,255,255,0.7)',
-                    display: 'flex', alignItems: 'center', gap: '6px',
-                    marginBottom: '4px',
-                  }}>
-                    <span style={{ fontSize: '9px', color: '#C5B783', fontWeight: 700, width: '12px' }}>{i + 1}</span>
-                    <span>{cat.icon}</span>
-                    <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cat.label}</span>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-
-          {/* Sub-section 1 — Buying power */}
-          <div style={{ borderBottom: '0.5px solid rgba(255,255,255,0.08)', paddingBottom: '14px' }}>
-            <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.08em', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', margin: '0 0 6px' }}>Buying Power</p>
-            <p style={{ fontSize: '18px', fontWeight: 500, color: '#fff', margin: '0 0 3px' }}>
-              {totalFunds > 0 ? fmtK(totalFunds) : '—'}
-            </p>
-            {totalFunds > 0 && (
-              <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', lineHeight: 1.5, margin: 0 }}>
-                {isSelling && proceedsNum > 0 ? fmtK(proceedsNum) + ' proceeds' : ''}
-                {isSelling && proceedsNum > 0 && savingsNum > 0 ? ' + ' : ''}
-                {savingsNum > 0 ? fmtK(savingsNum) + ' savings' : ''}
-              </p>
-            )}
-          </div>
-
-          {/* Sub-section 2 — Monthly estimate + rate slider */}
-          <div style={{ borderBottom: '0.5px solid rgba(255,255,255,0.08)', paddingBottom: '14px' }}>
-            <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.08em', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', margin: '0 0 6px' }}>Monthly Estimate</p>
-            <p style={{ fontSize: '14px', fontWeight: 500, color: '#C5B783', margin: '0 0 1px' }}>
-              {refMonthly > 0 ? `$${refMonthly.toLocaleString()}/mo` : '—'}
-            </p>
-            <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', lineHeight: 1.5, margin: '0 0 8px' }}>
-              Principal + interest · {loanTerm}yr
-            </p>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-              <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>Interest rate</span>
-              <span style={{ fontSize: '10px', color: '#C5B783', fontWeight: 500 }}>{interestRate}%</span>
-            </div>
-            {/* Custom rate slider with green market band */}
-            <div style={{ position: 'relative', height: '4px', background: 'rgba(255,255,255,0.15)', borderRadius: '2px', margin: '6px 0' }}>
-              <div style={{ position: 'absolute', height: '100%', background: '#34C759', opacity: 0.7, borderRadius: '2px', left: '46.4%', width: '7.1%' }} />
-              <input
-                type="range" min={3} max={10} step={0.25} value={interestRate}
-                onChange={e => { setSandboxTouched(true); setInterestRate(parseFloat(e.target.value)) }}
-                style={{ position: 'absolute', top: '-6px', left: 0, width: '100%', opacity: 0, cursor: 'pointer', height: '16px' }}
-              />
-              <div style={{
-                position: 'absolute', width: '14px', height: '14px',
-                background: '#C5B783', borderRadius: '50%', top: '-5px',
-                left: `calc(${(interestRate - 3) / 7 * 100}% - 7px)`,
-                pointerEvents: 'none', transition: 'left 0.1s',
-              }} />
-            </div>
-            <p style={{ fontSize: '9px', color: '#34C759', opacity: 0.8, margin: '3px 0 0' }}>● Current market: 6.25%–6.75%</p>
-          </div>
-
-          {/* Sub-section 3 — Annual income */}
-          <div style={{ borderBottom: '0.5px solid rgba(255,255,255,0.08)', paddingBottom: '14px' }}>
-            <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.08em', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', margin: '0 0 6px' }}>Annual Income</p>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-              <span style={{ fontSize: '11px', color: '#fff' }}>
-                {incomeDisplay || (profile?.annualIncome ? fmtCurrency(String(profile.annualIncome)) : '—')}
-              </span>
-              <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>household</span>
-            </div>
-          </div>
-
-          {/* Sub-section 4 — Affordability by community */}
-          <div>
-            <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.08em', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', margin: '0 0 6px' }}>Affordability by Community</p>
-            {pinnedCities.length === 0 ? (
-              <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)', fontStyle: 'italic', margin: 0 }}>
-                Pin communities to see affordability
-              </p>
-            ) : pinnedCities.map(cityId => {
-              const cd = getAllCities().find(c => c.id === cityId)
-              if (!cd) return null
-              const s = afStatus(cd.housing.medianHomePrice)
-              return (
-                <div key={cityId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
-                  <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.65)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginRight: '6px' }}>{cd.name}</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
-                    <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: afColor(s) }} />
-                    <span style={{ fontSize: '10px', color: afColor(s) }}>{afLabel(s)}</span>
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr>
+                          <th style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', padding: '4px 6px', textAlign: 'left', fontWeight: 400 }}></th>
+                          <th style={{ fontSize: '9px', color: 'rgba(255,255,255,0.5)', padding: '4px 6px', textAlign: 'right', fontWeight: 400, whiteSpace: 'nowrap' }}>
+                            {originCity}
+                          </th>
+                          {pinnedMatches.map(c => (
+                            <th key={c!.id} style={{ fontSize: '9px', color: '#C5B783', padding: '4px 6px', textAlign: 'right', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                              {c!.name}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {chartRows.map(row => (
+                          <tr key={row.label} style={{ borderTop: '0.5px solid rgba(255,255,255,0.08)' }}>
+                            <td style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', padding: '5px 6px', whiteSpace: 'nowrap' }}>{row.label}</td>
+                            <td style={{ fontSize: '10px', color: 'rgba(255,255,255,0.7)', padding: '5px 6px', textAlign: 'right', whiteSpace: 'nowrap' }}>{row.originVal}</td>
+                            {row.txVals.map((val, ci) => {
+                              const isBetter = row.alwaysGreen === true || (row.better ? row.better(val, ci) : false)
+                              return (
+                                <td key={ci} style={{
+                                  fontSize: '10px',
+                                  color: isBetter ? '#48c78e' : 'rgba(255,255,255,0.7)',
+                                  fontWeight: isBetter ? 500 : 400,
+                                  padding: '5px 6px',
+                                  textAlign: 'right',
+                                  whiteSpace: 'nowrap',
+                                }}>
+                                  {isBetter && row.prefix ? `${row.prefix} ` : ''}{val}
+                                </td>
+                              )
+                            })}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               )
-            })}
-          </div>
+            })()}
 
           </div>{/* end scrollable content */}
 
-          {/* Fixed CTA at bottom */}
-          <div style={{ padding: '12px 14px 16px', borderTop: '0.5px solid rgba(255,255,255,0.08)', background: '#0A1E3D', flexShrink: 0 }}>
+          {/* Fixed CTA */}
+          <div style={{ flexShrink: 0, padding: '12px 16px 16px', borderTop: '0.5px solid rgba(255,255,255,0.1)', background: '#0A1E3D' }}>
+            {ctaError && (
+              <p style={{ fontSize: '10px', color: '#FF6B6B', margin: '0 0 6px', textAlign: 'center', lineHeight: 1.4 }}>
+                {ctaError}
+              </p>
+            )}
             <button
               type="button" onClick={handleCommit} disabled={committing}
               style={{
                 width: '100%', background: '#C5B783', color: '#0A1E3D',
-                border: 'none', borderRadius: '8px', padding: '11px',
-                fontSize: '12px', fontWeight: 700,
+                border: 'none', borderRadius: '8px', padding: '12px',
+                fontWeight: 500, fontSize: '14px',
                 cursor: committing ? 'not-allowed' : 'pointer',
-                opacity: committing ? 0.7 : 1,
+                opacity: committing ? 0.7 : 1, fontFamily: 'inherit',
               }}
             >
               {committing ? 'Saving…' : 'Schedule a Consultation →'}
             </button>
-            {ctaError && (
-              <p style={{ fontSize: '10px', color: '#FF6B6B', margin: '6px 0 0', textAlign: 'center', lineHeight: 1.4 }}>
-                {ctaError}
-              </p>
-            )}
             {!ctaError && (
               <p style={{ fontSize: '9px', color: 'rgba(255,255,255,0.18)', textAlign: 'center', margin: '5px 0 0', lineHeight: 1.4 }}>
                 Pin at least one community first
@@ -658,691 +787,398 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           </div>
         </div>
 
-        {/* ── RIGHT PANEL ── */}
-        <div style={{ flex: 1, background: '#F2F1EE', minWidth: 0 }}>
+        {/* ── TOOLBOX — 60% ── */}
+        <div style={{ flex: 1, background: '#F2F1EE', minWidth: 0, padding: '16px', overflowY: 'auto' }}>
 
-          {/* SECTION 1 — Communities */}
-          <div ref={commSectionRef} style={{ padding: '18px 20px 0', borderBottom: '0.5px solid #D5D0C9' }}>
-            <p style={{ fontSize: '14px', fontWeight: 500, color: '#0A1E3D', margin: '0 0 3px' }}>Your communities</p>
-            <p style={{ fontSize: '11px', color: '#86868b', margin: '0 0 10px' }}>
-              Rankings update live as you adjust priorities. Pin up to 3 communities. Click any city to preview.
-            </p>
+          {/* Communities heading */}
+          <p style={{ fontSize: '12px', fontWeight: 500, color: '#0A1E3D', margin: '0 0 2px' }}>Your communities</p>
+          <p style={{ fontSize: '10px', color: '#888', margin: '0 0 10px' }}>Click any city to preview. Pin up to 3.</p>
 
-            {/* Metro filter */}
-            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '10px' }}>
-              {METRO_FILTERS.map(f => {
-                const active = selectedMetro === f.value
-                return (
-                  <button key={f.value} type="button" onClick={() => { setSelectedMetro(f.value); setSelectedCityId(null); setShowAllCities(false) }} style={{
-                    padding: '4px 11px', borderRadius: '20px', fontSize: '11px',
-                    fontWeight: active ? 500 : 400,
-                    background: active ? '#0A1E3D' : '#fff',
-                    color: active ? '#fff' : '#6B6A65',
-                    border: `0.5px solid ${active ? '#0A1E3D' : '#D0CEC8'}`,
-                    cursor: 'pointer', transition: 'all 0.15s',
-                  }}>{f.label}</button>
-                )
-              })}
-            </div>
+          {/* Communities frame */}
+          <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: '10px', overflow: 'hidden', marginBottom: '10px' }}>
+            <div style={{ display: 'flex', minHeight: '280px' }}>
 
-            {/* Master-detail body */}
-            {rankedCities.length === 0 ? (
-              <p style={{ fontSize: '13px', color: '#86868b', padding: '12px 0' }}>No communities in this metro.</p>
-            ) : (() => {
-              const effectiveSelectedId = selectedCityId ?? rankedCities[0]?.location.id
-              const selectedMatch = rankedCities.find(m => m.location.id === effectiveSelectedId)
-              const selectedRankIdx = rankedCities.findIndex(m => m.location.id === effectiveSelectedId)
-              const displayedCities = showAllCities ? rankedCities : rankedCities.slice(0, 5)
-
-              function rankPillLabel(idx: number): string {
-                if (idx === 0) return '⭐ Top pick'
-                if (idx === 1) return 'Runner-up'
-                if (idx === 2) return 'Strong alt'
-                return `#${idx + 1}`
-              }
-
-              function communityCharLabel(env: number): string {
-                if (env <= 3) return 'Urban'
-                if (env <= 6) return 'Suburban'
-                if (env <= 8) return 'Small Town'
-                return 'Rural'
-              }
-
-              return (
-                <div style={{
-                  display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0,
-                  borderTop: '0.5px solid #E8E6E2',
-                }}>
-                  {/* City list column */}
-                  <div style={{ borderRight: '0.5px solid #E8E6E2', padding: '12px 14px 14px 0', overflowY: 'auto' }}>
-                    {displayedCities.map((match, idx) => {
-                      const city = match.location
-                      const isPinned = pinnedCities.includes(city.id)
-                      const isSelected = city.id === effectiveSelectedId
-                      const status = afStatus(city.housing.medianHomePrice)
-                      const overallIdx = rankedCities.findIndex(m => m.location.id === city.id)
-
-                      let rowBg = '#fff'
-                      let rowBorder = 'transparent'
-                      if (isPinned) { rowBg = '#FEFDF8'; rowBorder = '#C5B783' }
-                      else if (isSelected) { rowBg = '#F0F3F8'; rowBorder = '#0A1E3D' }
-
-                      return (
-                        <div
-                          key={city.id}
-                          onClick={() => setSelectedCityId(city.id)}
-                          style={{
-                            background: rowBg,
-                            border: `0.5px solid ${rowBorder}`,
-                            borderRadius: '6px', padding: '7px 8px',
-                            display: 'flex', alignItems: 'center', gap: '6px',
-                            marginBottom: '2px', cursor: 'pointer',
-                          }}
-                          onMouseEnter={e => { if (!isSelected && !isPinned) (e.currentTarget as HTMLDivElement).style.borderColor = '#D0CEC8' }}
-                          onMouseLeave={e => { if (!isSelected && !isPinned) (e.currentTarget as HTMLDivElement).style.borderColor = 'transparent' }}
-                        >
-                          <span style={{ fontSize: '9px', color: '#86868b', width: '18px', flexShrink: 0 }}>#{overallIdx + 1}</span>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <p style={{ fontSize: '11px', color: '#1d1d1f', fontWeight: 500, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{city.name}</p>
-                            <p style={{ fontSize: '9px', color: '#86868b', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{city.metroUsed}</p>
-                          </div>
-                          <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: afColor(status), flexShrink: 0 }} />
-                          <span style={{ fontSize: '10px', color: '#C5B783', fontWeight: 500, flexShrink: 0 }}>{match.matchScore}%</span>
-                          <button
-                            type="button"
-                            onClick={e => { e.stopPropagation(); isPinned ? unpinCity(city.id) : pinCity(city.id) }}
-                            disabled={!isPinned && pinnedCities.length >= 3}
-                            style={{
-                              fontSize: '9px',
-                              color: isPinned ? '#C5B783' : '#0076B6',
-                              padding: '2px 5px', borderRadius: '8px',
-                              border: isPinned ? '0.5px solid rgba(197,183,131,0.4)' : '0.5px solid #C8E0F5',
-                              background: isPinned ? 'rgba(197,183,131,0.1)' : '#F0F7FF',
-                              cursor: (!isPinned && pinnedCities.length >= 3) ? 'not-allowed' : 'pointer',
-                              flexShrink: 0,
-                              opacity: !isPinned && pinnedCities.length >= 3 ? 0.38 : 1,
-                            }}
-                          >
-                            {isPinned ? '✓' : 'Pin'}
-                          </button>
-                        </div>
-                      )
-                    })}
-
-                    {/* Show more / less toggle */}
-                    {rankedCities.length > 5 && (
-                      <div
-                        onClick={() => setShowAllCities(v => !v)}
+              {/* Left: metro pills + city list (52%) */}
+              <div style={{ width: '52%', borderRight: '0.5px solid #E8E6E2', display: 'flex', flexDirection: 'column' }}>
+                {/* Metro pills */}
+                <div style={{ padding: '10px 12px 8px', display: 'flex', gap: '5px', flexWrap: 'wrap', borderBottom: '0.5px solid #F0EEE9' }}>
+                  {METRO_FILTERS.map(f => {
+                    const active = selectedMetro === f.value
+                    return (
+                      <button key={f.value} type="button"
+                        onClick={() => { setSelectedMetro(f.value); setSelectedCityId(null); setShowAllCities(false) }}
                         style={{
-                          textAlign: 'center', padding: '6px',
-                          fontSize: '10px', color: '#0076B6',
+                          padding: '3px 9px', borderRadius: '20px', fontSize: '10px',
+                          fontWeight: active ? 500 : 400,
+                          background: active ? '#0A1E3D' : 'transparent',
+                          color: active ? '#fff' : '#6B6A65',
+                          border: `0.5px solid ${active ? '#0A1E3D' : '#D0CEC8'}`,
                           cursor: 'pointer',
-                          borderTop: '0.5px solid #E8E6E2', marginTop: '4px',
-                        }}
-                      >
-                        {showAllCities ? 'Show less ↑' : `Show more cities ↓`}
-                      </div>
-                    )}
+                        }}>{f.label}</button>
+                    )
+                  })}
+                </div>
 
-                    {/* Origin comparison chart */}
-                    {(() => {
-                      const originData = originCity ? lookupOriginCity(originCity) : null
-                      if (!originData) return null
-                      const pinnedMatches = pinnedCities.map(id => getAllCities().find(c => c.id === id)).filter(Boolean)
-                      const displayOriginCity = originCity || ''
+                {/* City list */}
+                <div style={{ flex: 1, overflowY: 'auto', padding: '8px 12px 12px' }}>
+                  {rankedCities.length === 0 ? (
+                    <p style={{ fontSize: '12px', color: '#86868b', margin: '12px 0' }}>No communities in this metro.</p>
+                  ) : (
+                    <>
+                      {displayedCities.map(match => {
+                        const city = match.location
+                        const isPinned = pinnedCities.includes(city.id)
+                        const isSelected = city.id === effectiveSelectedId
+                        const status = afStatus(city.housing.medianHomePrice)
+                        const overallIdx = rankedCities.findIndex(m => m.location.id === city.id)
 
-                      const rows: { label: string; originVal: string; txVals: string[]; betterFn?: (tx: string, orig: string, idx: number) => boolean }[] = [
-                        {
-                          label: 'Median home price',
-                          originVal: originData.medianHome,
-                          txVals: pinnedMatches.map(c => fmtK(c!.housing.medianHomePrice)),
-                          betterFn: (_tx, _orig, idx) => pinnedMatches[idx] ? pinnedMatches[idx]!.housing.medianHomePrice < parseHomePrice(originData.medianHome) : false,
-                        },
-                        {
-                          label: 'School rating',
-                          originVal: originData.schoolRating,
-                          txVals: pinnedMatches.map(c => c!.school?.teaRating ?? '—'),
-                          betterFn: (_tx, _orig, idx) => {
-                            const txR = pinnedMatches[idx]?.school?.teaRating ?? ''
-                            return schoolGrade(txR) > schoolGrade(originData.schoolRating)
-                          },
-                        },
-                        {
-                          label: 'Cost of living',
-                          originVal: String(originData.colIndex),
-                          txVals: pinnedMatches.map(c => String(txColIndex(c!.metroUsed))),
-                          betterFn: (_tx, _orig, idx) => pinnedMatches[idx] ? txColIndex(pinnedMatches[idx]!.metroUsed) < originData.colIndex : false,
-                        },
-                        {
-                          label: 'Safety',
-                          originVal: originData.safety,
-                          txVals: pinnedMatches.map(c => txSafety(c!.scores.safety)),
-                          betterFn: (_tx, _orig, idx) => {
-                            const txS = pinnedMatches[idx] ? txSafety(pinnedMatches[idx]!.scores.safety) : ''
-                            const origBad = originData.safety === 'Moderate' || originData.safety === 'High crime'
-                            return origBad && (txS === 'Very low' || txS === 'Low')
-                          },
-                        },
-                        {
-                          label: 'State income tax',
-                          originVal: originData.incomeTax,
-                          txVals: pinnedMatches.map(() => 'None (TX)'),
-                          betterFn: (_tx, _orig) => originData.incomeTax !== 'None (TX)' && originData.incomeTax !== 'None (WA)' && originData.incomeTax !== 'None (TN)' && originData.incomeTax !== 'None (FL)',
-                        },
-                        {
-                          label: 'Climate',
-                          originVal: originData.climate,
-                          txVals: pinnedMatches.map(c => txClimate(c!.metroUsed)),
-                          // No green for climate — subjective
-                        },
-                        {
-                          label: 'Budget fit',
-                          originVal: '—',
-                          txVals: pinnedMatches.map(c => afLabel(afStatus(c!.housing.medianHomePrice))),
-                          // Color handled separately
-                        },
-                      ]
+                        let rowBg = 'transparent'
+                        let rowBorder = 'transparent'
+                        if (isPinned) { rowBg = '#FEFDF8'; rowBorder = '#C5B783' }
+                        else if (isSelected) { rowBg = '#F0F3F8'; rowBorder = '#0A1E3D' }
 
-                      return (
-                        <div style={{ borderTop: '0.5px solid #E8E6E2', paddingTop: '14px', marginTop: '8px' }}>
-                          <p style={{ fontSize: '12px', fontWeight: 500, color: '#0A1E3D', marginBottom: '4px' }}>
-                            How does Texas compare?
-                          </p>
-                          <p style={{ fontSize: '10px', color: '#86868b', marginBottom: '12px' }}>
-                            Your origin city vs. the communities you&apos;re exploring.
-                          </p>
-                          {pinnedCities.length === 0 ? (
-                            <p style={{ fontSize: '10px', color: '#86868b', fontStyle: 'italic' }}>
-                              Pin a community above to see how it compares to {displayOriginCity}.
-                            </p>
-                          ) : (
-                            <div style={{ background: '#fff', borderRadius: '8px', padding: '12px', border: '0.5px solid #E0DED8', overflowX: 'auto' }}>
-                              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10px' }}>
-                                <thead>
-                                  <tr>
-                                    <th style={{ textAlign: 'left', paddingRight: '12px', paddingBottom: '8px', minWidth: '110px' }}></th>
-                                    <th style={{ textAlign: 'right', paddingRight: '12px', paddingBottom: '8px', fontSize: '9px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#86868b', whiteSpace: 'nowrap' }}>
-                                      {displayOriginCity}
-                                      {originState ? `, ${originState}` : ''}
-                                    </th>
-                                    {pinnedMatches.map(c => (
-                                      <th key={c!.id} style={{ textAlign: 'right', paddingBottom: '8px', fontSize: '9px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#C5B783', whiteSpace: 'nowrap', paddingLeft: '8px' }}>
-                                        {c!.name}
-                                      </th>
-                                    ))}
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {rows.map((row, ri) => (
-                                    <tr key={row.label} style={{ borderTop: '0.5px solid #E8E6E2' }}>
-                                      <td style={{ textAlign: 'left', paddingRight: '12px', paddingTop: '6px', paddingBottom: '6px', fontSize: '11px', color: '#6B6A65', minWidth: '110px' }}>
-                                        {row.label}
-                                      </td>
-                                      <td style={{ textAlign: 'right', paddingRight: '12px', paddingTop: '6px', paddingBottom: '6px', color: '#6B6A65', whiteSpace: 'nowrap' }}>
-                                        {row.originVal}
-                                      </td>
-                                      {row.txVals.map((val, ci) => {
-                                        let color = '#1d1d1f'
-                                        let fontWeight: number | string = 400
-                                        if (row.label === 'Budget fit') {
-                                          if (val === 'Comfortable') { color = '#1a6b35'; fontWeight = 500 }
-                                          else if (val === 'Moderate') color = '#F5A623'
-                                          else if (val === 'Stretched') color = '#FF3B30'
-                                        } else if (row.betterFn?.(val, row.originVal, ci)) {
-                                          color = '#1a6b35'; fontWeight = 500
-                                        }
-                                        return (
-                                          <td key={ci} style={{ textAlign: 'right', paddingTop: '6px', paddingBottom: '6px', color, fontWeight, whiteSpace: 'nowrap', paddingLeft: '8px' }}>
-                                            {val}
-                                          </td>
-                                        )
-                                      })}
-                                      {/* Empty cells for missing pinned cities */}
-                                      {Array.from({ length: 3 - row.txVals.length }).map((_, ei) => (
-                                        <td key={`empty-${ri}-${ei}`} />
-                                      ))}
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
+                        return (
+                          <div key={city.id} onClick={() => setSelectedCityId(city.id)}
+                            style={{
+                              background: rowBg, border: `0.5px solid ${rowBorder}`,
+                              borderRadius: '6px', padding: '6px 8px',
+                              display: 'flex', alignItems: 'center', gap: '6px',
+                              marginBottom: '2px', cursor: 'pointer',
+                            }}
+                            onMouseEnter={e => { if (!isSelected && !isPinned) (e.currentTarget as HTMLDivElement).style.background = '#F5F5F7' }}
+                            onMouseLeave={e => { if (!isSelected && !isPinned) (e.currentTarget as HTMLDivElement).style.background = 'transparent' }}
+                          >
+                            <span style={{ fontSize: '9px', color: '#86868b', width: '18px', flexShrink: 0 }}>#{overallIdx + 1}</span>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <p style={{ fontSize: '11px', color: '#1d1d1f', fontWeight: 500, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{city.name}</p>
+                              <p style={{ fontSize: '9px', color: '#86868b', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{city.metroUsed}</p>
                             </div>
-                          )}
-                        </div>
-                      )
-                    })()}
-                  </div>
-
-                  {/* City preview pane */}
-                  <div style={{ padding: '12px 0 14px 14px', overflowY: 'auto' }}>
-                    {selectedMatch ? (() => {
-                      const city = selectedMatch.location
-                      const isPinned = pinnedCities.includes(city.id)
-                      const status = afStatus(city.housing.medianHomePrice)
-                      const charLabel = communityCharLabel(city.personality.environment)
-                      const statusBadge = status === 'comfortable'
-                        ? { bg: '#E8F5EE', color: '#1a6b35' }
-                        : status === 'moderate'
-                        ? { bg: '#FAEEDA', color: '#633806' }
-                        : { bg: '#FCEBEB', color: '#A32D2D' }
-
-                      return (
-                        <>
-                          {/* Two-column preview card */}
-                          <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', gap: '14px', padding: '14px', background: '#fff', borderRadius: '10px', border: '0.5px solid #E0DED8', marginBottom: '8px' }}>
-                            {/* Square photo */}
-                            <div style={{ width: '160px', height: '160px', borderRadius: '10px', overflow: 'hidden', position: 'relative', flexShrink: 0, background: '#2D4A6B' }}>
-                              <Image
-                                src={city.cityImageUrl ?? `/images/cities/${city.id}.jpg`}
-                                alt={city.name}
-                                fill
-                                style={{ objectFit: 'cover' }}
-                                onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
-                              />
-                              <div style={{ position: 'absolute', top: '8px', left: '8px', background: 'rgba(0,0,0,0.45)', borderRadius: '14px', padding: '3px 7px' }}>
-                                <span style={{ fontSize: '8px', fontWeight: 600, letterSpacing: '0.05em', color: '#fff', textTransform: 'uppercase' }}>
-                                  {rankPillLabel(selectedRankIdx)}
-                                </span>
-                              </div>
-                              <div style={{ position: 'absolute', top: '8px', right: '8px', background: '#C5B783', borderRadius: '14px', padding: '3px 7px' }}>
-                                <span style={{ fontSize: '9px', fontWeight: 600, color: '#0A1E3D' }}>{selectedMatch.matchScore}%</span>
-                              </div>
-                            </div>
-
-                            {/* Content column */}
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: 0 }}>
-                              <div>
-                                <p style={{ fontSize: '15px', fontWeight: 500, color: '#0A1E3D', margin: '0 0 2px' }}>{city.name}</p>
-                                <p style={{ fontSize: '10px', color: '#86868b', margin: 0 }}>{city.metroUsed} metro · {city.county} County</p>
-                              </div>
-                              <p style={{
-                                fontSize: '11px', color: '#3a3a3a', lineHeight: 1.55, margin: 0,
-                                display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden',
-                              } as React.CSSProperties}>
-                                {city.description}
-                              </p>
-                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
-                                {[
-                                  { label: 'Schools',   value: city.school?.teaRating ? `${city.school.teaRating} rated` : '—' },
-                                  { label: 'Med home',  value: fmtK(city.housing.medianHomePrice) },
-                                  { label: 'Safety',    value: city.scores.safety >= 7 ? 'Low risk' : city.scores.safety >= 4 ? 'Moderate' : 'Higher risk' },
-                                  { label: 'Community', value: charLabel },
-                                ].map(stat => (
-                                  <div key={stat.label} style={{ background: '#F5F5F7', borderRadius: '5px', padding: '5px 7px' }}>
-                                    <p style={{ fontSize: '8px', color: '#86868b', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '1px' }}>{stat.label}</p>
-                                    <p style={{ fontSize: '10px', color: '#1d1d1f', fontWeight: 500, margin: 0 }}>{stat.value}</p>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Budget fit */}
-                          <div style={{
-                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                            background: '#F5F5F7', borderRadius: '6px', padding: '6px 8px', marginBottom: '8px',
-                          }}>
-                            <div>
-                              <p style={{ fontSize: '8px', color: '#86868b', margin: '0 0 1px' }}>Budget fit</p>
-                              <p style={{ fontSize: '10px', color: '#1d1d1f', fontWeight: 500, margin: 0 }}>
-                                Est. ${selectedMatch.estimatedMonthlyHousing.toLocaleString()}/mo
-                              </p>
-                            </div>
-                            <span style={{
-                              background: statusBadge.bg, color: statusBadge.color,
-                              borderRadius: '12px', padding: '3px 8px', fontSize: '9px', fontWeight: 500,
-                            }}>{afLabel(status)}</span>
-                          </div>
-
-                          {/* Action buttons */}
-                          <div style={{ display: 'flex', gap: '5px' }}>
-                            <button
-                              type="button"
-                              onClick={() => isPinned ? unpinCity(city.id) : pinCity(city.id)}
+                            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: afColor(status), flexShrink: 0 }} />
+                            <span style={{ fontSize: '10px', color: '#C5B783', fontWeight: 500, flexShrink: 0 }}>{match.matchScore}%</span>
+                            <button type="button"
+                              onClick={e => { e.stopPropagation(); isPinned ? unpinCity(city.id) : pinCity(city.id) }}
                               disabled={!isPinned && pinnedCities.length >= 3}
                               style={{
-                                flex: 1,
-                                background: isPinned ? 'rgba(197,183,131,0.15)' : '#0A1E3D',
-                                color: isPinned ? '#C5B783' : '#fff',
-                                border: isPinned ? '0.5px solid rgba(197,183,131,0.4)' : 'none',
-                                borderRadius: '6px', padding: '7px',
-                                fontSize: '10px', fontWeight: 500,
+                                fontSize: '9px', color: isPinned ? '#C5B783' : '#0076B6',
+                                padding: '2px 5px', borderRadius: '8px',
+                                border: isPinned ? '0.5px solid rgba(197,183,131,0.4)' : '0.5px solid #C8E0F5',
+                                background: isPinned ? 'rgba(197,183,131,0.1)' : '#F0F7FF',
                                 cursor: (!isPinned && pinnedCities.length >= 3) ? 'not-allowed' : 'pointer',
-                                opacity: !isPinned && pinnedCities.length >= 3 ? 0.5 : 1,
-                                textAlign: 'center', fontFamily: 'inherit',
-                              }}
-                            >
-                              {isPinned ? 'Pinned ✓' : 'Pin this community'}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setReportMatch(selectedMatch)}
-                              style={{
-                                flex: 1, border: '0.5px solid #D0CEC8', borderRadius: '6px',
-                                padding: '7px', fontSize: '10px', color: '#555',
-                                background: '#fff', cursor: 'pointer', textAlign: 'center', fontFamily: 'inherit',
-                              }}
-                            >
-                              Full report →
+                                flexShrink: 0,
+                                opacity: !isPinned && pinnedCities.length >= 3 ? 0.38 : 1,
+                              }}>
+                              {isPinned ? '✓' : 'Pin'}
                             </button>
                           </div>
-                        </>
-                      )
-                    })() : (
-                      <p style={{ fontSize: '11px', color: '#86868b', padding: '12px 0' }}>Select a city to preview.</p>
-                    )}
-                  </div>
+                        )
+                      })}
+
+                      {rankedCities.length > 5 && (
+                        <div onClick={() => setShowAllCities(v => !v)}
+                          style={{ textAlign: 'center', padding: '6px', fontSize: '10px', color: '#0076B6', cursor: 'pointer', borderTop: '0.5px solid #E8E6E2', marginTop: '4px' }}>
+                          {showAllCities ? 'Show less ↑' : 'Show more ↓'}
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
-              )
-            })()}
-          </div>
+              </div>
 
-          {/* SECTION 2 — Priorities */}
-          <div style={{ padding: '18px 20px', borderBottom: '0.5px solid #D5D0C9' }}>
-            <p style={{ fontSize: '14px', fontWeight: 500, color: '#0A1E3D', margin: '0 0 3px' }}>Your priorities</p>
-            <p style={{ fontSize: '11px', color: '#86868b', margin: '0 0 12px' }}>
-              Click an item to move it between columns. City rankings update live as you adjust.
-            </p>
+              {/* Right: preview card */}
+              <div style={{ flex: 1, padding: '12px', overflowY: 'auto', minWidth: 0 }}>
+                {selectedMatch ? (() => {
+                  const city = selectedMatch.location
+                  const isPinned = pinnedCities.includes(city.id)
+                  const status = afStatus(city.housing.medianHomePrice)
+                  const statusBadge = status === 'comfortable'
+                    ? { bg: '#E8F5EE', color: '#1a6b35' }
+                    : status === 'moderate'
+                    ? { bg: '#FAEEDA', color: '#633806' }
+                    : { bg: '#FCEBEB', color: '#A32D2D' }
 
-            {/* Progress indicator */}
-            <p style={{ fontSize: '11px', color: '#6B6A65', marginBottom: '10px' }}>
-              <span style={{ color: mustHaves.length >= 3 ? '#1a6b35' : undefined, fontWeight: mustHaves.length >= 3 ? 500 : undefined }}>
-                {mustHaves.length}/3 Must Haves{mustHaves.length >= 3 ? ' ✓' : ''}
-              </span>
-              {' · '}
-              {niceToHaves.length}/5 Important
-              {' · '}
-              {lessImportant.length} Would Be Nice
-            </p>
+                  return (
+                    <>
+                      {/* Photo */}
+                      <div style={{ width: '100%', height: '90px', borderRadius: '8px', overflow: 'hidden', position: 'relative', background: '#2D4A6B', marginBottom: '8px' }}>
+                        <Image
+                          src={city.cityImageUrl ?? `/images/cities/${city.id}.jpg`}
+                          alt={city.name} fill style={{ objectFit: 'cover' }}
+                          onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+                        />
+                        <div style={{ position: 'absolute', bottom: '6px', left: '8px' }}>
+                          <span style={{ background: 'rgba(0,0,0,0.5)', borderRadius: '10px', padding: '2px 7px', fontSize: '8px', color: '#fff', fontWeight: 600 }}>
+                            {rankPillLabel(selectedRankIdx)}
+                          </span>
+                        </div>
+                        <div style={{ position: 'absolute', bottom: '6px', right: '8px' }}>
+                          <span style={{ background: '#C5B783', borderRadius: '10px', padding: '2px 7px', fontSize: '9px', color: '#0A1E3D', fontWeight: 600 }}>
+                            {selectedMatch.matchScore}%
+                          </span>
+                        </div>
+                      </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
-              {/* Must have */}
-              <div style={{ background: '#fff', border: '0.5px solid #E0DED8', borderRadius: '8px', padding: '10px' }}>
-                <p style={{ fontSize: '10px', fontWeight: 700, color: '#0A1E3D', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Must Have</p>
-                <p style={{ fontSize: '9px', color: '#86868b', margin: '0 0 8px' }}>Up to 3 · 3× weight</p>
-                {mustHaveError && (
-                  <p style={{ fontSize: '10px', color: '#F5A623', fontStyle: 'italic', margin: '0 0 6px' }}>
-                    Must Have is limited to 3. Move one to Important to Me first.
-                  </p>
+                      <p style={{ fontSize: '14px', fontWeight: 500, color: '#0A1E3D', margin: '0 0 1px' }}>{city.name}</p>
+                      <p style={{ fontSize: '9px', color: '#86868b', margin: '0 0 8px' }}>{city.metroUsed} metro · {city.county} County</p>
+
+                      <p style={{
+                        fontSize: '10px', color: '#3a3a3a', lineHeight: 1.55, margin: '0 0 8px',
+                        display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                      } as React.CSSProperties}>
+                        {city.description}
+                      </p>
+
+                      {/* 2×2 stat grid */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', marginBottom: '8px' }}>
+                        {[
+                          { label: 'Schools',   value: city.school?.teaRating ? `${city.school.teaRating} rated` : '—' },
+                          { label: 'Med home',  value: fmtK(city.housing.medianHomePrice) },
+                          { label: 'Safety',    value: city.scores.safety >= 7 ? 'Low risk' : city.scores.safety >= 4 ? 'Moderate' : 'Higher risk' },
+                          { label: 'Community', value: communityCharLabel(city.personality.environment) },
+                        ].map(stat => (
+                          <div key={stat.label} style={{ background: '#F5F5F7', borderRadius: '5px', padding: '4px 6px' }}>
+                            <p style={{ fontSize: '8px', color: '#86868b', textTransform: 'uppercase', letterSpacing: '0.04em', margin: '0 0 1px' }}>{stat.label}</p>
+                            <p style={{ fontSize: '10px', color: '#1d1d1f', fontWeight: 500, margin: 0 }}>{stat.value}</p>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Budget fit */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <span style={{ fontSize: '10px', color: '#86868b' }}>Budget fit</span>
+                        <span style={{ background: statusBadge.bg, color: statusBadge.color, borderRadius: '12px', padding: '2px 8px', fontSize: '9px', fontWeight: 500 }}>
+                          {afLabel(status)}
+                        </span>
+                      </div>
+
+                      {/* Buttons */}
+                      <div style={{ display: 'flex', gap: '5px' }}>
+                        <button type="button"
+                          onClick={() => isPinned ? unpinCity(city.id) : pinCity(city.id)}
+                          disabled={!isPinned && pinnedCities.length >= 3}
+                          style={{
+                            flex: 1, background: isPinned ? 'rgba(197,183,131,0.15)' : '#0A1E3D',
+                            color: isPinned ? '#C5B783' : '#fff',
+                            border: isPinned ? '0.5px solid rgba(197,183,131,0.4)' : 'none',
+                            borderRadius: '6px', padding: '6px', fontSize: '9px', fontWeight: 500,
+                            cursor: (!isPinned && pinnedCities.length >= 3) ? 'not-allowed' : 'pointer',
+                            opacity: !isPinned && pinnedCities.length >= 3 ? 0.5 : 1,
+                            fontFamily: 'inherit', textAlign: 'center',
+                          }}>
+                          {isPinned ? 'Pinned ✓' : 'Pin this community'}
+                        </button>
+                        <button type="button"
+                          onClick={() => setReportMatch(selectedMatch)}
+                          style={{
+                            flex: 1, border: '0.5px solid #0A1E3D', borderRadius: '6px',
+                            padding: '6px', fontSize: '9px', color: '#0A1E3D',
+                            background: '#fff', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'center',
+                          }}>
+                          Full report →
+                        </button>
+                      </div>
+                    </>
+                  )
+                })() : (
+                  <p style={{ fontSize: '11px', color: '#86868b', margin: 0 }}>Select a city to preview.</p>
                 )}
-                {mustHaves.length === 0 && <p style={{ fontSize: '11px', color: 'rgba(0,0,0,0.22)', fontStyle: 'italic', margin: 0 }}>Empty</p>}
-                {mustHaves.map(key => {
-                  const cat = DNA_CATEGORIES.find(c => c.key === key)!
-                  return (
-                    <div key={key} onClick={() => movePriority(key, 'down')}
-                      style={{
-                        background: '#F5F5F7', borderRadius: '5px', padding: '6px 8px',
-                        fontSize: '11px', color: '#1d1d1f', marginBottom: '4px',
-                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                        cursor: 'pointer',
-                      }}>
-                      <span>{cat.icon} {cat.label}</span>
-                      <span style={{ color: '#0076B6', fontSize: '10px' }}>→</span>
-                    </div>
-                  )
-                })}
-              </div>
-
-              {/* Nice to have */}
-              <div style={{ background: '#fff', border: '0.5px solid #E0DED8', borderRadius: '8px', padding: '10px' }}>
-                <p style={{ fontSize: '10px', fontWeight: 700, color: '#6B6A65', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Important to Me</p>
-                <p style={{ fontSize: '9px', color: '#86868b', margin: '0 0 8px' }}>Up to 5 · 2× weight</p>
-                {niceToHaves.length === 0 && <p style={{ fontSize: '11px', color: 'rgba(0,0,0,0.22)', fontStyle: 'italic', margin: 0 }}>Empty</p>}
-                {niceToHaves.map(key => {
-                  const cat = DNA_CATEGORIES.find(c => c.key === key)!
-                  return (
-                    <div key={key} style={{
-                      background: '#F5F5F7', borderRadius: '5px', padding: '5px 6px',
-                      fontSize: '11px', color: '#1d1d1f', marginBottom: '4px',
-                      display: 'flex', alignItems: 'center', gap: '4px',
-                    }}>
-                      <button type="button" onClick={() => movePriority(key, 'up')}
-                        style={{ color: '#0076B6', fontSize: '10px', background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px', lineHeight: 1 }}>
-                        ←
-                      </button>
-                      <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cat.icon} {cat.label}</span>
-                      <button type="button" onClick={() => movePriority(key, 'down')}
-                        style={{ color: '#0076B6', fontSize: '10px', background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px', lineHeight: 1 }}>
-                        →
-                      </button>
-                    </div>
-                  )
-                })}
-              </div>
-
-              {/* Less important */}
-              <div style={{ background: '#fff', border: '0.5px solid #E0DED8', borderRadius: '8px', padding: '10px' }}>
-                <p style={{ fontSize: '10px', fontWeight: 700, color: '#B0ADA6', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Would Be Nice</p>
-                <p style={{ fontSize: '9px', color: '#86868b', margin: '0 0 8px' }}>1× weight</p>
-                {lessImportant.length === 0 && <p style={{ fontSize: '11px', color: 'rgba(0,0,0,0.22)', fontStyle: 'italic', margin: 0 }}>Empty</p>}
-                {lessImportant.map(key => {
-                  const cat = DNA_CATEGORIES.find(c => c.key === key)!
-                  return (
-                    <div key={key}
-                      style={{
-                        background: '#F5F5F7', borderRadius: '5px', padding: '5px 6px',
-                        fontSize: '11px', color: '#1d1d1f', marginBottom: '4px',
-                        display: 'flex', alignItems: 'center', gap: '4px',
-                      }}>
-                      <button type="button" onClick={() => movePriority(key, 'up')}
-                        style={{ color: '#0076B6', fontSize: '10px', background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px', lineHeight: 1, flexShrink: 0 }}>
-                        ←
-                      </button>
-                      <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cat.icon} {cat.label}</span>
-                    </div>
-                  )
-                })}
               </div>
             </div>
           </div>
 
-          {/* SECTION 3 — Numbers */}
-          <div style={{ padding: '18px 20px' }}>
-            <p style={{ fontSize: '14px', fontWeight: 500, color: '#0A1E3D', margin: '0 0 3px' }}>Your numbers</p>
-            <p style={{ fontSize: '11px', color: '#86868b', margin: '0 0 16px' }}>
-              Adjust to see how your buying power affects each community in real time.
-            </p>
+          {/* Lower 2-column grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
 
-            {/* Selling toggle */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-              <span style={{ fontSize: '13px', color: '#1d1d1f' }}>Selling a home?</span>
-              {(['Yes', 'No'] as const).map(v => {
-                const active = (v === 'Yes') === isSelling
-                return (
-                  <button key={v} type="button" onClick={() => { setIsSelling(v === 'Yes'); setSandboxTouched(true) }}
-                    style={{
-                      padding: '5px 14px', borderRadius: '20px', fontSize: '12px',
-                      background: active ? '#0A1E3D' : '#fff',
-                      color: active ? '#fff' : '#6B6A65',
-                      border: `0.5px solid ${active ? '#0A1E3D' : '#D0CEC8'}`,
-                      cursor: 'pointer',
-                    }}>{v}</button>
-                )
-              })}
+            {/* PRIORITIES PANEL */}
+            <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: '10px', padding: '12px' }}>
+              <p style={{ fontSize: '12px', fontWeight: 500, color: '#0A1E3D', margin: '0 0 2px' }}>Your priorities</p>
+              <p style={{ fontSize: '10px', color: '#888', margin: '0 0 8px' }}>Click to move between columns</p>
+
+              <p style={{ fontSize: '10px', color: '#6B6A65', margin: '0 0 8px' }}>
+                <span style={{ color: mustHaves.length >= 3 ? '#1a6b35' : undefined, fontWeight: mustHaves.length >= 3 ? 500 : undefined }}>
+                  {mustHaves.length}/3 Must Haves{mustHaves.length >= 3 ? ' ✓' : ''}
+                </span>
+                {' · '}{niceToHaves.length} Important{' · '}{lessImportant.length} Nice
+              </p>
+
+              {mustHaveError && (
+                <p style={{ fontSize: '10px', color: '#F5A623', fontStyle: 'italic', margin: '0 0 6px' }}>
+                  Must Have is limited to 3. Move one first.
+                </p>
+              )}
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px' }}>
+                {/* Must Have */}
+                <div>
+                  <p style={{ fontSize: '9px', fontWeight: 700, color: '#0A1E3D', margin: '0 0 3px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Must Have</p>
+                  <p style={{ fontSize: '8px', color: '#86868b', margin: '0 0 5px' }}>3× wt</p>
+                  {mustHaves.length === 0 && <p style={{ fontSize: '10px', color: 'rgba(0,0,0,0.22)', fontStyle: 'italic', margin: 0 }}>Empty</p>}
+                  {mustHaves.map(key => {
+                    const cat = DNA_CATEGORIES.find(c => c.key === key)!
+                    return (
+                      <div key={key} onClick={() => movePriority(key, 'down')}
+                        style={{ background: '#F5F5F7', borderRadius: '4px', padding: '4px 6px', marginBottom: '3px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', gap: '3px' }}>
+                        <span style={{ fontSize: '9px', color: '#1d1d1f', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cat.icon} {cat.label}</span>
+                        <span style={{ color: '#0076B6', fontSize: '9px', flexShrink: 0 }}>→</span>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* Important to Me */}
+                <div>
+                  <p style={{ fontSize: '9px', fontWeight: 700, color: '#6B6A65', margin: '0 0 3px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Important</p>
+                  <p style={{ fontSize: '8px', color: '#86868b', margin: '0 0 5px' }}>2× wt</p>
+                  {niceToHaves.length === 0 && <p style={{ fontSize: '10px', color: 'rgba(0,0,0,0.22)', fontStyle: 'italic', margin: 0 }}>Empty</p>}
+                  {niceToHaves.map(key => {
+                    const cat = DNA_CATEGORIES.find(c => c.key === key)!
+                    return (
+                      <div key={key} style={{ background: '#F5F5F7', borderRadius: '4px', padding: '3px 4px', marginBottom: '3px', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                        <button type="button" onClick={() => movePriority(key, 'up')}
+                          style={{ color: '#0076B6', fontSize: '9px', background: 'none', border: 'none', cursor: 'pointer', padding: '0 1px', lineHeight: 1, flexShrink: 0 }}>←</button>
+                        <span style={{ flex: 1, fontSize: '9px', color: '#1d1d1f', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cat.icon} {cat.label}</span>
+                        <button type="button" onClick={() => movePriority(key, 'down')}
+                          style={{ color: '#0076B6', fontSize: '9px', background: 'none', border: 'none', cursor: 'pointer', padding: '0 1px', lineHeight: 1, flexShrink: 0 }}>→</button>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* Would Be Nice */}
+                <div>
+                  <p style={{ fontSize: '9px', fontWeight: 700, color: '#B0ADA6', margin: '0 0 3px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Nice</p>
+                  <p style={{ fontSize: '8px', color: '#86868b', margin: '0 0 5px' }}>1× wt</p>
+                  {lessImportant.length === 0 && <p style={{ fontSize: '10px', color: 'rgba(0,0,0,0.22)', fontStyle: 'italic', margin: 0 }}>Empty</p>}
+                  {lessImportant.map(key => {
+                    const cat = DNA_CATEGORIES.find(c => c.key === key)!
+                    return (
+                      <div key={key} style={{ background: '#F5F5F7', borderRadius: '4px', padding: '3px 4px', marginBottom: '3px', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                        <button type="button" onClick={() => movePriority(key, 'up')}
+                          style={{ color: '#0076B6', fontSize: '9px', background: 'none', border: 'none', cursor: 'pointer', padding: '0 1px', lineHeight: 1, flexShrink: 0 }}>←</button>
+                        <span style={{ flex: 1, fontSize: '9px', color: '#1d1d1f', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cat.icon} {cat.label}</span>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
             </div>
 
-            {/* Proceeds + Savings */}
-            <div style={{ display: 'grid', gridTemplateColumns: isSelling ? '1fr 1fr' : '1fr', gap: '12px', marginBottom: '12px' }}>
+            {/* NUMBERS PANEL */}
+            <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: '10px', padding: '12px' }}>
+              <p style={{ fontSize: '12px', fontWeight: 500, color: '#0A1E3D', margin: '0 0 2px' }}>Your numbers</p>
+              <p style={{ fontSize: '10px', color: '#888', margin: '0 0 10px' }}>Adjust to update buying power live</p>
+
+              {/* Selling toggle */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                <span style={{ fontSize: '11px', color: '#1d1d1f' }}>Selling a home?</span>
+                {(['Yes', 'No'] as const).map(v => {
+                  const active = (v === 'Yes') === isSelling
+                  return (
+                    <button key={v} type="button" onClick={() => { setIsSelling(v === 'Yes'); setSandboxTouched(true) }}
+                      style={{ padding: '3px 10px', borderRadius: '20px', fontSize: '11px', background: active ? '#0A1E3D' : '#fff', color: active ? '#fff' : '#6B6A65', border: `0.5px solid ${active ? '#0A1E3D' : '#D0CEC8'}`, cursor: 'pointer' }}>
+                      {v}
+                    </button>
+                  )
+                })}
+              </div>
+
+              {/* Proceeds */}
               {isSelling && (
-                <div>
-                  <p style={{ fontSize: '11px', color: '#86868b', margin: '0 0 4px' }}>Expected sale proceeds</p>
+                <div style={{ marginBottom: '8px' }}>
+                  <p style={{ fontSize: '10px', color: '#86868b', margin: '0 0 3px' }}>Expected sale proceeds</p>
                   <div style={{ display: 'flex', alignItems: 'center', background: '#fff', border: '0.5px solid #E0DED8', borderRadius: '7px', overflow: 'hidden' }}>
-                    <span style={{ padding: '7px 8px', fontSize: '12px', color: '#86868b', borderRight: '0.5px solid #E0DED8', background: '#FAFAF8', flexShrink: 0 }}>$</span>
-                    <input type="text"
-                      value={proceeds.replace(/^\$/, '')}
+                    <span style={{ padding: '5px 7px', fontSize: '11px', color: '#86868b', borderRight: '0.5px solid #E0DED8', background: '#FAFAF8', flexShrink: 0 }}>$</span>
+                    <input type="text" value={proceeds.replace(/^\$/, '')}
                       onChange={e => { setProceeds(fmtCurrency(e.target.value)); setSandboxTouched(true) }}
                       onBlur={() => persistNumbers({ exact_home_proceeds: proceedsNum || null })}
                       placeholder="340,000"
-                      style={{ border: 'none', padding: '7px 9px', fontSize: '13px', color: '#1d1d1f', background: '#fff', outline: 'none', width: '100%', fontFamily: 'inherit' }}
-                    />
+                      style={{ border: 'none', padding: '5px 8px', fontSize: '12px', color: '#1d1d1f', background: '#fff', outline: 'none', width: '100%', fontFamily: 'inherit' }} />
                   </div>
-                  <p style={{ fontSize: '10px', color: '#86868b', margin: '3px 0 0' }}>After paying off your mortgage</p>
                 </div>
               )}
-              <div>
-                <p style={{ fontSize: '11px', color: '#86868b', margin: '0 0 4px' }}>
-                  {isSelling ? 'Additional savings or funds' : 'Savings or funds available'}
-                </p>
+
+              {/* Savings */}
+              <div style={{ marginBottom: '8px' }}>
+                <p style={{ fontSize: '10px', color: '#86868b', margin: '0 0 3px' }}>{isSelling ? 'Additional savings' : 'Available savings'}</p>
                 <div style={{ display: 'flex', alignItems: 'center', background: '#fff', border: '0.5px solid #E0DED8', borderRadius: '7px', overflow: 'hidden' }}>
-                  <span style={{ padding: '7px 8px', fontSize: '12px', color: '#86868b', borderRight: '0.5px solid #E0DED8', background: '#FAFAF8', flexShrink: 0 }}>$</span>
-                  <input type="text"
-                    value={savings.replace(/^\$/, '')}
+                  <span style={{ padding: '5px 7px', fontSize: '11px', color: '#86868b', borderRight: '0.5px solid #E0DED8', background: '#FAFAF8', flexShrink: 0 }}>$</span>
+                  <input type="text" value={savings.replace(/^\$/, '')}
                     onChange={e => { setSavings(fmtCurrency(e.target.value)); setSandboxTouched(true) }}
                     onBlur={() => persistNumbers({ exact_down_payment: savingsNum || null })}
                     placeholder="75,000"
-                    style={{ border: 'none', padding: '7px 9px', fontSize: '13px', color: '#1d1d1f', background: '#fff', outline: 'none', width: '100%', fontFamily: 'inherit' }}
-                  />
-                </div>
-                <p style={{ fontSize: '10px', color: '#86868b', margin: '3px 0 0' }}>Savings, investments, gifts</p>
-              </div>
-            </div>
-
-            {/* Total bar */}
-            <div style={{
-              background: '#0A1E3D', borderRadius: '7px', padding: '10px 14px',
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              marginBottom: '16px',
-            }}>
-              <div>
-                <p style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', margin: '0 0 2px', letterSpacing: '0.06em' }}>Total available</p>
-                {totalFunds > 0 && (
-                  <p style={{ fontSize: '10px', color: '#C5B783', margin: 0 }}>
-                    {isSelling && proceedsNum > 0 ? fmtK(proceedsNum) : ''}
-                    {isSelling && proceedsNum > 0 && savingsNum > 0 ? ' + ' : ''}
-                    {savingsNum > 0 ? fmtK(savingsNum) : ''}
-                  </p>
-                )}
-              </div>
-              <p style={{ fontSize: '17px', fontWeight: 500, color: '#fff', margin: 0 }}>
-                {totalFunds > 0 ? fmtK(totalFunds) : '$0'}
-              </p>
-            </div>
-
-            {/* Income */}
-            <div style={{ marginBottom: '16px' }}>
-              <p style={{ fontSize: '11px', color: '#86868b', margin: '0 0 4px' }}>Annual household income</p>
-              <div style={{ display: 'flex', alignItems: 'center', background: '#fff', border: '0.5px solid #E0DED8', borderRadius: '7px', overflow: 'hidden' }}>
-                <span style={{ padding: '7px 8px', fontSize: '12px', color: '#86868b', borderRight: '0.5px solid #E0DED8', background: '#FAFAF8', flexShrink: 0 }}>$</span>
-                <input type="text"
-                  value={incomeDisplay.replace(/^\$/, '')}
-                  onChange={e => {
-                    setIncomeDisplay(fmtCurrency(e.target.value))
-                    setSandboxTouched(true)
-                    const parsed = parseMoney(e.target.value)
-                    if (incomeTimerRef.current) clearTimeout(incomeTimerRef.current)
-                    incomeTimerRef.current = setTimeout(() => { if (parsed > 0) setIncomeVal(parsed) }, 400)
-                  }}
-                  onBlur={() => {
-                    const parsed = parseMoney(incomeDisplay)
-                    if (parsed > 0) {
-                      setIncomeVal(parsed)
-                      persistNumbers({ annual_income_override: parsed })
-                    }
-                  }}
-                  placeholder="100,000"
-                  style={{ border: 'none', padding: '7px 9px', fontSize: '13px', color: '#1d1d1f', background: '#fff', outline: 'none', width: '100%', fontFamily: 'inherit' }}
-                />
-              </div>
-            </div>
-
-            {/* Rate slider */}
-            <div style={{ marginBottom: '16px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                <p style={{ fontSize: '11px', color: '#86868b', margin: 0 }}>Interest rate</p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '10px', background: '#E8F5EE', color: '#1a6b35', padding: '2px 7px', borderRadius: '10px' }}>
-                    {RATE_MARKET_AVG}% avg
-                  </span>
-                  <span style={{ fontSize: '12px', color: '#1d1d1f', fontWeight: 500 }}>{interestRate}%</span>
+                    style={{ border: 'none', padding: '5px 8px', fontSize: '12px', color: '#1d1d1f', background: '#fff', outline: 'none', width: '100%', fontFamily: 'inherit' }} />
                 </div>
               </div>
-              {/* Custom rate slider with green market band */}
-            <div style={{ position: 'relative', height: '4px', background: 'rgba(0,0,0,0.12)', borderRadius: '2px', margin: '6px 0' }}>
-              <div style={{ position: 'absolute', height: '100%', background: '#34C759', opacity: 0.7, borderRadius: '2px', left: '46.4%', width: '7.1%' }} />
-              <input
-                type="range" min={3} max={10} step={0.25} value={interestRate}
-                onChange={e => { setSandboxTouched(true); setInterestRate(parseFloat(e.target.value)) }}
-                style={{ position: 'absolute', top: '-6px', left: 0, width: '100%', opacity: 0, cursor: 'pointer', height: '16px' }}
-              />
-              <div style={{
-                position: 'absolute', width: '14px', height: '14px',
-                background: '#0A1E3D', borderRadius: '50%', top: '-5px',
-                left: `calc(${(interestRate - 3) / 7 * 100}% - 7px)`,
-                pointerEvents: 'none', transition: 'left 0.1s',
-              }} />
-            </div>
-            <p style={{ fontSize: '9px', color: '#34C759', opacity: 0.8, margin: '3px 0 0' }}>● Current market: 6.25%–6.75%</p>
-            </div>
 
-            {/* Loan term */}
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-              {([30, 15] as const).map(term => {
-                const active = loanTerm === term
-                return (
-                  <button key={term} type="button" onClick={() => {
-                    setLoanTerm(term); setSandboxTouched(true)
-                    persistNumbers({ loan_term_preference: term })
-                  }} style={{
-                    padding: '6px 16px', borderRadius: '20px', fontSize: '12px',
-                    background: active ? '#0A1E3D' : '#fff',
-                    color: active ? '#fff' : '#6B6A65',
-                    border: `0.5px solid ${active ? '#0A1E3D' : '#D0CEC8'}`,
-                    cursor: 'pointer',
-                  }}>{term} year</button>
-                )
-              })}
-            </div>
-
-            {/* Monthly estimate */}
-            <div style={{
-              background: '#EDF2FF', borderRadius: '7px', padding: '10px 14px',
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              marginBottom: '16px',
-            }}>
-              <div>
-                <p style={{ fontSize: '10px', color: '#0076B6', margin: '0 0 1px' }}>Estimated monthly payment</p>
-                <p style={{ fontSize: '10px', color: '#86868b', margin: 0 }}>Principal + interest only</p>
+              {/* Annual income */}
+              <div style={{ marginBottom: '8px' }}>
+                <p style={{ fontSize: '10px', color: '#86868b', margin: '0 0 3px' }}>Annual household income</p>
+                <div style={{ display: 'flex', alignItems: 'center', background: '#fff', border: '0.5px solid #E0DED8', borderRadius: '7px', overflow: 'hidden' }}>
+                  <span style={{ padding: '5px 7px', fontSize: '11px', color: '#86868b', borderRight: '0.5px solid #E0DED8', background: '#FAFAF8', flexShrink: 0 }}>$</span>
+                  <input type="text" value={incomeDisplay.replace(/^\$/, '')}
+                    onChange={e => {
+                      setIncomeDisplay(fmtCurrency(e.target.value)); setSandboxTouched(true)
+                      const parsed = parseMoney(e.target.value)
+                      if (incomeTimerRef.current) clearTimeout(incomeTimerRef.current)
+                      incomeTimerRef.current = setTimeout(() => { if (parsed > 0) setIncomeVal(parsed) }, 400)
+                    }}
+                    onBlur={() => {
+                      const parsed = parseMoney(incomeDisplay)
+                      if (parsed > 0) { setIncomeVal(parsed); persistNumbers({ annual_income_override: parsed }) }
+                    }}
+                    placeholder="100,000"
+                    style={{ border: 'none', padding: '5px 8px', fontSize: '12px', color: '#1d1d1f', background: '#fff', outline: 'none', width: '100%', fontFamily: 'inherit' }} />
+                </div>
               </div>
-              <p style={{ fontSize: '17px', fontWeight: 500, color: '#0A1E3D', margin: 0 }}>
-                {refMonthly > 0 ? `$${refMonthly.toLocaleString()}` : '—'}
-              </p>
-            </div>
 
-            {/* Affordability per pinned city */}
-            <div>
-              <p style={{ fontSize: '11px', color: '#86868b', margin: '0 0 8px' }}>Affordability per pinned community</p>
-              {pinnedCities.length === 0 ? (
-                <p style={{ fontSize: '12px', color: '#B0ADA6', fontStyle: 'italic' }}>Pin communities above to see affordability</p>
-              ) : (
-                pinnedCities.map(cityId => {
-                  const cd = getAllCities().find(c => c.id === cityId)
-                  if (!cd) return null
-                  const s = afStatus(cd.housing.medianHomePrice)
-                  const badge = s === 'comfortable'
-                    ? { bg: '#E8F5EE', color: '#1a6b35' }
-                    : s === 'moderate'
-                    ? { bg: '#FAEEDA', color: '#633806' }
-                    : { bg: '#FCEBEB', color: '#A32D2D' }
+              {/* Rate slider */}
+              <div style={{ marginBottom: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <p style={{ fontSize: '10px', color: '#86868b', margin: 0 }}>Interest rate</p>
+                  <span style={{ fontSize: '11px', color: '#1d1d1f', fontWeight: 500 }}>{interestRate}%</span>
+                </div>
+                <div style={{ position: 'relative', height: '4px', background: 'rgba(0,0,0,0.12)', borderRadius: '2px', margin: '4px 0' }}>
+                  <div style={{ position: 'absolute', height: '100%', background: '#34C759', opacity: 0.7, borderRadius: '2px', left: '46.4%', width: '7.1%' }} />
+                  <input type="range" min={3} max={10} step={0.25} value={interestRate}
+                    onChange={e => { setSandboxTouched(true); setInterestRate(parseFloat(e.target.value)) }}
+                    style={{ position: 'absolute', top: '-6px', left: 0, width: '100%', opacity: 0, cursor: 'pointer', height: '16px' }} />
+                  <div style={{
+                    position: 'absolute', width: '12px', height: '12px',
+                    background: '#0A1E3D', borderRadius: '50%', top: '-4px',
+                    left: `calc(${(interestRate - 3) / 7 * 100}% - 6px)`,
+                    pointerEvents: 'none', transition: 'left 0.1s',
+                  }} />
+                </div>
+                <p style={{ fontSize: '9px', color: '#34C759', opacity: 0.8, margin: '2px 0 0' }}>● Current market: 6.25%–6.75%</p>
+              </div>
+
+              {/* Loan term */}
+              <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
+                {([30, 15] as const).map(term => {
+                  const active = loanTerm === term
                   return (
-                    <div key={cityId} style={{
-                      background: '#fff', border: '0.5px solid #E0DED8',
-                      borderRadius: '7px', padding: '8px 10px',
-                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                      marginBottom: '5px',
-                    }}>
-                      <p style={{ fontSize: '12px', color: '#1d1d1f', margin: 0 }}>
-                        {cd.name} · {fmtK(cd.housing.medianHomePrice)} median
-                      </p>
-                      <span style={{
-                        ...badge, fontSize: '11px', fontWeight: 500,
-                        padding: '3px 9px', borderRadius: '12px', flexShrink: 0,
-                      }}>{afLabel(s)}</span>
-                    </div>
+                    <button key={term} type="button"
+                      onClick={() => { setLoanTerm(term); setSandboxTouched(true); persistNumbers({ loan_term_preference: term }) }}
+                      style={{ padding: '4px 12px', borderRadius: '20px', fontSize: '11px', background: active ? '#0A1E3D' : '#fff', color: active ? '#fff' : '#6B6A65', border: `0.5px solid ${active ? '#0A1E3D' : '#D0CEC8'}`, cursor: 'pointer' }}>
+                      {term} year
+                    </button>
                   )
-                })
-              )}
+                })}
+              </div>
+
+              {/* Monthly estimate */}
+              <div style={{ background: '#EDF2FF', borderRadius: '7px', padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <p style={{ fontSize: '9px', color: '#0076B6', margin: '0 0 1px' }}>Est. monthly payment</p>
+                  <p style={{ fontSize: '9px', color: '#86868b', margin: 0 }}>Principal + interest only</p>
+                </div>
+                <p style={{ fontSize: '16px', fontWeight: 500, color: '#0A1E3D', margin: 0 }}>
+                  {refMonthly > 0 ? `$${refMonthly.toLocaleString()}` : '—'}
+                </p>
+              </div>
             </div>
-          </div>
-        </div>
+
+          </div>{/* end lower 2-col grid */}
+        </div>{/* end toolbox */}
       </div>
     </>
   )
