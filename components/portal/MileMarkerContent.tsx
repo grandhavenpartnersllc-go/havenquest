@@ -92,23 +92,6 @@ export default function MileMarkerContent({
         )
       }
       if (selectedMileMarker === currentMileMarker) {
-        const hqPath = typeof window !== 'undefined'
-          ? sessionStorage.getItem('hq_path')
-          : null
-
-        if (hqPath === 'explore') {
-          return (
-            <MM3Discover
-              matches={matches}
-              profile={profile}
-              session={session}
-              onAdvanceToConnect={onAdvanceToConnect}
-              initialMetro="State"
-              initialCityIndex={0}
-            />
-          )
-        }
-
         // hq_metro stores lowercase IDs ('austin', 'dallas', 'houston', 'sanAntonio')
         // Read it first (most reliable), then fall back to top match's metroUsed
         const sessionMetro = typeof window !== 'undefined' ? sessionStorage.getItem('hq_metro') : null

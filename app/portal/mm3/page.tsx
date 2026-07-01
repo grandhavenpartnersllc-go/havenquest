@@ -39,7 +39,6 @@ export default function MM3Page() {
 
   if (!session) return null
 
-  const hqPath = typeof window !== 'undefined' ? sessionStorage.getItem('hq_path') : null
   const sessionMetro = typeof window !== 'undefined' ? sessionStorage.getItem('hq_metro') : null
 
   // hq_metro stores lowercase IDs ('austin', 'dallas', 'houston', 'sanAntonio')
@@ -52,9 +51,7 @@ export default function MM3Page() {
   }
 
   let initialMetro: string
-  if (hqPath === 'explore') {
-    initialMetro = 'State'
-  } else if (sessionMetro && METRO_ID_TO_LABEL[sessionMetro]) {
+  if (sessionMetro && METRO_ID_TO_LABEL[sessionMetro]) {
     initialMetro = METRO_ID_TO_LABEL[sessionMetro]
   } else {
     const topMetro = matches[0]?.location?.metroUsed ?? ''

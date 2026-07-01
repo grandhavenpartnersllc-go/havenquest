@@ -362,7 +362,13 @@ export default function BeginPage() {
     sessionStorage.setItem(SESSION_PROFILE_KEY, JSON.stringify(profile))
     sessionStorage.removeItem(SESSION_MATCHES_KEY)
 
-    const metroId = finalAnswers.targetMetro ? METRO_TO_ID[finalAnswers.targetMetro] : null
+    let metroId = finalAnswers.targetMetro ? METRO_TO_ID[finalAnswers.targetMetro] : null
+    // For instate/exploring/explorer paths: no metro capture screen, but card 10 may
+    // have captured a single metroPreference. Use it to write hq_metro when unambiguous.
+    if (!metroId && finalAnswers.metroPreference?.length === 1) {
+      const prefLabel = finalAnswers.metroPreference[0] as MetroCaptureValue
+      metroId = METRO_TO_ID[prefLabel] ?? null
+    }
     if (metroId) sessionStorage.setItem(SESSION_METRO_KEY, metroId)
     else sessionStorage.removeItem(SESSION_METRO_KEY)
 
