@@ -53,17 +53,12 @@ export default function SessionResultsPage({ params }: { params: Promise<{ sessi
     const metro = sessionStorage.getItem(SESSION_METRO_KEY)
     const cities = metro ? getCitiesByMetro(metro) : getAllCities()
 
-    // Always compute fresh filtered matches for DB accuracy — never trust the cache for DB saves
+    // Always compute fresh metro-filtered matches — used for display, cache, and DB save
     const freshResult = getTopMatches(prof, cities, 4)
-    const freshMatches = freshResult.topMatches
+    const topMatches = freshResult.topMatches
     setOtherStrongMatches(freshResult.otherStrongMatches)
 
-    // Use cached for display only if available (faster revisit UX)
-    const cachedRaw = sessionStorage.getItem(SESSION_MATCHES_KEY)
-    const topMatches: CityMatch[] = cachedRaw ? JSON.parse(cachedRaw) : freshMatches
-
-    // Always update cache and save fresh filtered results to DB
-    sessionStorage.setItem(SESSION_MATCHES_KEY, JSON.stringify(freshMatches))
+    sessionStorage.setItem(SESSION_MATCHES_KEY, JSON.stringify(topMatches))
     try {
       const sessRaw = localStorage.getItem(LOCAL_SESSION_KEY)
       if (sessRaw) {
@@ -74,7 +69,7 @@ export default function SessionResultsPage({ params }: { params: Promise<{ sessi
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               email,
-              topCityMatches: freshMatches.slice(0, 4).map(m => ({
+              topCityMatches: topMatches.slice(0, 4).map(m => ({
                 cityId: m.location.id,
                 cityName: m.location.name,
                 matchScore: m.matchScore,
