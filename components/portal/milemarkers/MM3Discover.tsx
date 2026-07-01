@@ -576,7 +576,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const effectiveSelectedId = selectedCityId ?? rankedCities[0]?.location.id
   const selectedMatch = rankedCities.find(m => m.location.id === effectiveSelectedId)
   const selectedRankIdx = rankedCities.findIndex(m => m.location.id === effectiveSelectedId)
-  const displayedCities = showAllCities ? rankedCities : rankedCities.slice(0, 5)
+  const displayedCities = showAllCities ? rankedCities.slice(0, 10) : rankedCities.slice(0, 5)
 
   // ──────────────────────────────────────────────────────────
   // RENDER
@@ -1009,10 +1009,10 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                         )
                       })}
 
-                      {rankedCities.length > 5 && (
-                        <div onClick={() => setShowAllCities(v => !v)}
+                      {rankedCities.length > 5 && !showAllCities && (
+                        <div onClick={() => setShowAllCities(true)}
                           style={{ textAlign: 'center', padding: '6px', fontSize: '10px', color: '#0076B6', cursor: 'pointer', borderTop: '0.5px solid #E8E6E2', marginTop: '4px' }}>
-                          {showAllCities ? 'Show less ↑' : 'Show more ↓'}
+                          Show more ↓
                         </div>
                       )}
                     </>
