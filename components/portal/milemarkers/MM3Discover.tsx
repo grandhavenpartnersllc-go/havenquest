@@ -616,14 +616,14 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           width: '25%', flexShrink: 0,
           background: '#0A1E3D',
           display: 'flex', flexDirection: 'column',
-          position: 'sticky', top: 0, height: '100%',
-          overflow: 'hidden', alignSelf: 'flex-start',
+          position: 'sticky', top: 0, alignSelf: 'stretch',
+          overflow: 'hidden',
         }}>
           {/* Scrollable content */}
           <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-            {/* YOUR DIRECTION */}
-            <div>
+            {/* YOUR DIRECTION — flex: 1 so it absorbs extra vertical space in the sidebar */}
+            <div style={{ flex: 1 }}>
               <p style={{ fontSize: '9px', fontWeight: 500, letterSpacing: '0.1em', color: '#C5B783', textTransform: 'uppercase', margin: '0 0 8px' }}>
                 Your Direction
               </p>
