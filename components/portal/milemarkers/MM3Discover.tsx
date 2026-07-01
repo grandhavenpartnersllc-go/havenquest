@@ -1018,6 +1018,121 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                     </>
                   )}
                 </div>
+
+                {/* YOUR FINANCIALS */}
+                <div style={{ marginTop: '10px', background: '#fff', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: '10px', overflow: 'hidden', padding: '12px' }}>
+                  <p style={{ fontSize: '12px', fontWeight: 500, color: '#0A1E3D', margin: '0 0 2px' }}>Your Financials</p>
+                  <p style={{ fontSize: '10px', color: '#888', margin: '0 0 10px' }}>Adjust to update buying power live</p>
+
+                  {/* Selling toggle */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                    <span style={{ fontSize: '11px', color: '#1d1d1f' }}>Selling a home?</span>
+                    {(['Yes', 'No'] as const).map(v => {
+                      const active = (v === 'Yes') === isSelling
+                      return (
+                        <button key={v} type="button" onClick={() => { setIsSelling(v === 'Yes'); setSandboxTouched(true) }}
+                          style={{ padding: '3px 10px', borderRadius: '20px', fontSize: '11px', background: active ? '#0A1E3D' : '#fff', color: active ? '#fff' : '#6B6A65', border: `0.5px solid ${active ? '#0A1E3D' : '#D0CEC8'}`, cursor: 'pointer' }}>
+                          {v}
+                        </button>
+                      )
+                    })}
+                  </div>
+
+                  {/* Proceeds */}
+                  {isSelling && (
+                    <div style={{ marginBottom: '8px' }}>
+                      <p style={{ fontSize: '10px', color: '#86868b', margin: '0 0 3px' }}>Expected sale proceeds</p>
+                      <div style={{ display: 'flex', alignItems: 'center', background: '#fff', border: '0.5px solid #E0DED8', borderRadius: '7px', overflow: 'hidden' }}>
+                        <span style={{ padding: '5px 7px', fontSize: '11px', color: '#86868b', borderRight: '0.5px solid #E0DED8', background: '#FAFAF8', flexShrink: 0 }}>$</span>
+                        <input type="text" value={proceeds.replace(/^\$/, '')}
+                          onChange={e => { setProceeds(fmtCurrency(e.target.value)); setSandboxTouched(true) }}
+                          onBlur={() => persistNumbers({ exact_home_proceeds: proceedsNum || null })}
+                          placeholder="340,000"
+                          style={{ border: 'none', padding: '5px 8px', fontSize: '12px', color: '#1d1d1f', background: '#fff', outline: 'none', width: '100%', fontFamily: 'inherit' }} />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Savings */}
+                  <div style={{ marginBottom: '8px' }}>
+                    <p style={{ fontSize: '10px', color: '#86868b', margin: '0 0 3px' }}>{isSelling ? 'Additional savings' : 'Available savings'}</p>
+                    <div style={{ display: 'flex', alignItems: 'center', background: '#fff', border: '0.5px solid #E0DED8', borderRadius: '7px', overflow: 'hidden' }}>
+                      <span style={{ padding: '5px 7px', fontSize: '11px', color: '#86868b', borderRight: '0.5px solid #E0DED8', background: '#FAFAF8', flexShrink: 0 }}>$</span>
+                      <input type="text" value={savings.replace(/^\$/, '')}
+                        onChange={e => { setSavings(fmtCurrency(e.target.value)); setSandboxTouched(true) }}
+                        onBlur={() => persistNumbers({ exact_down_payment: savingsNum || null })}
+                        placeholder="75,000"
+                        style={{ border: 'none', padding: '5px 8px', fontSize: '12px', color: '#1d1d1f', background: '#fff', outline: 'none', width: '100%', fontFamily: 'inherit' }} />
+                    </div>
+                  </div>
+
+                  {/* Annual income */}
+                  <div style={{ marginBottom: '8px' }}>
+                    <p style={{ fontSize: '10px', color: '#86868b', margin: '0 0 3px' }}>Annual household income</p>
+                    <div style={{ display: 'flex', alignItems: 'center', background: '#fff', border: '0.5px solid #E0DED8', borderRadius: '7px', overflow: 'hidden' }}>
+                      <span style={{ padding: '5px 7px', fontSize: '11px', color: '#86868b', borderRight: '0.5px solid #E0DED8', background: '#FAFAF8', flexShrink: 0 }}>$</span>
+                      <input type="text" value={incomeDisplay.replace(/^\$/, '')}
+                        onChange={e => {
+                          setIncomeDisplay(fmtCurrency(e.target.value)); setSandboxTouched(true)
+                          const parsed = parseMoney(e.target.value)
+                          if (incomeTimerRef.current) clearTimeout(incomeTimerRef.current)
+                          incomeTimerRef.current = setTimeout(() => { if (parsed > 0) setIncomeVal(parsed) }, 400)
+                        }}
+                        onBlur={() => {
+                          const parsed = parseMoney(incomeDisplay)
+                          if (parsed > 0) { setIncomeVal(parsed); persistNumbers({ annual_income_override: parsed }) }
+                        }}
+                        placeholder="100,000"
+                        style={{ border: 'none', padding: '5px 8px', fontSize: '12px', color: '#1d1d1f', background: '#fff', outline: 'none', width: '100%', fontFamily: 'inherit' }} />
+                    </div>
+                  </div>
+
+                  {/* Rate slider */}
+                  <div style={{ marginBottom: '10px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                      <p style={{ fontSize: '10px', color: '#86868b', margin: 0 }}>Interest rate</p>
+                      <span style={{ fontSize: '11px', color: '#1d1d1f', fontWeight: 500 }}>{interestRate}%</span>
+                    </div>
+                    <div style={{ position: 'relative', height: '4px', background: 'rgba(0,0,0,0.12)', borderRadius: '2px', margin: '4px 0' }}>
+                      <div style={{ position: 'absolute', height: '100%', background: '#34C759', opacity: 0.7, borderRadius: '2px', left: '46.4%', width: '7.1%' }} />
+                      <input type="range" min={3} max={10} step={0.25} value={interestRate}
+                        onChange={e => { setSandboxTouched(true); setInterestRate(parseFloat(e.target.value)) }}
+                        style={{ position: 'absolute', top: '-6px', left: 0, width: '100%', opacity: 0, cursor: 'pointer', height: '16px' }} />
+                      <div style={{
+                        position: 'absolute', width: '12px', height: '12px',
+                        background: '#0A1E3D', borderRadius: '50%', top: '-4px',
+                        left: `calc(${(interestRate - 3) / 7 * 100}% - 6px)`,
+                        pointerEvents: 'none', transition: 'left 0.1s',
+                      }} />
+                    </div>
+                    <p style={{ fontSize: '9px', color: '#34C759', opacity: 0.8, margin: '2px 0 0' }}>● Current market: 6.25%–6.75%</p>
+                  </div>
+
+                  {/* Loan term */}
+                  <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
+                    {([30, 15] as const).map(term => {
+                      const active = loanTerm === term
+                      return (
+                        <button key={term} type="button"
+                          onClick={() => { setLoanTerm(term); setSandboxTouched(true); persistNumbers({ loan_term_preference: term }) }}
+                          style={{ padding: '4px 12px', borderRadius: '20px', fontSize: '11px', background: active ? '#0A1E3D' : '#fff', color: active ? '#fff' : '#6B6A65', border: `0.5px solid ${active ? '#0A1E3D' : '#D0CEC8'}`, cursor: 'pointer' }}>
+                          {term} year
+                        </button>
+                      )
+                    })}
+                  </div>
+
+                  {/* Monthly estimate */}
+                  <div style={{ background: '#EDF2FF', borderRadius: '7px', padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <p style={{ fontSize: '9px', color: '#0076B6', margin: '0 0 1px' }}>Est. monthly payment</p>
+                      <p style={{ fontSize: '9px', color: '#86868b', margin: 0 }}>Principal + interest only</p>
+                    </div>
+                    <p style={{ fontSize: '16px', fontWeight: 500, color: '#0A1E3D', margin: 0 }}>
+                      {refMonthly > 0 ? `$${refMonthly.toLocaleString()}` : '—'}
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* Right: preview card + Your Lifestyle */}
@@ -1221,120 +1336,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
             </div>
           </div>
 
-          {/* YOUR FINANCIALS — constrained to left (Communities) column width */}
-          <div style={{ marginTop: '10px', background: '#fff', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: '10px', overflow: 'hidden', padding: '12px', width: '52%' }}>
-            <p style={{ fontSize: '12px', fontWeight: 500, color: '#0A1E3D', margin: '0 0 2px' }}>Your Financials</p>
-            <p style={{ fontSize: '10px', color: '#888', margin: '0 0 10px' }}>Adjust to update buying power live</p>
 
-              {/* Selling toggle */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                <span style={{ fontSize: '11px', color: '#1d1d1f' }}>Selling a home?</span>
-                {(['Yes', 'No'] as const).map(v => {
-                  const active = (v === 'Yes') === isSelling
-                  return (
-                    <button key={v} type="button" onClick={() => { setIsSelling(v === 'Yes'); setSandboxTouched(true) }}
-                      style={{ padding: '3px 10px', borderRadius: '20px', fontSize: '11px', background: active ? '#0A1E3D' : '#fff', color: active ? '#fff' : '#6B6A65', border: `0.5px solid ${active ? '#0A1E3D' : '#D0CEC8'}`, cursor: 'pointer' }}>
-                      {v}
-                    </button>
-                  )
-                })}
-              </div>
-
-              {/* Proceeds */}
-              {isSelling && (
-                <div style={{ marginBottom: '8px' }}>
-                  <p style={{ fontSize: '10px', color: '#86868b', margin: '0 0 3px' }}>Expected sale proceeds</p>
-                  <div style={{ display: 'flex', alignItems: 'center', background: '#fff', border: '0.5px solid #E0DED8', borderRadius: '7px', overflow: 'hidden' }}>
-                    <span style={{ padding: '5px 7px', fontSize: '11px', color: '#86868b', borderRight: '0.5px solid #E0DED8', background: '#FAFAF8', flexShrink: 0 }}>$</span>
-                    <input type="text" value={proceeds.replace(/^\$/, '')}
-                      onChange={e => { setProceeds(fmtCurrency(e.target.value)); setSandboxTouched(true) }}
-                      onBlur={() => persistNumbers({ exact_home_proceeds: proceedsNum || null })}
-                      placeholder="340,000"
-                      style={{ border: 'none', padding: '5px 8px', fontSize: '12px', color: '#1d1d1f', background: '#fff', outline: 'none', width: '100%', fontFamily: 'inherit' }} />
-                  </div>
-                </div>
-              )}
-
-              {/* Savings */}
-              <div style={{ marginBottom: '8px' }}>
-                <p style={{ fontSize: '10px', color: '#86868b', margin: '0 0 3px' }}>{isSelling ? 'Additional savings' : 'Available savings'}</p>
-                <div style={{ display: 'flex', alignItems: 'center', background: '#fff', border: '0.5px solid #E0DED8', borderRadius: '7px', overflow: 'hidden' }}>
-                  <span style={{ padding: '5px 7px', fontSize: '11px', color: '#86868b', borderRight: '0.5px solid #E0DED8', background: '#FAFAF8', flexShrink: 0 }}>$</span>
-                  <input type="text" value={savings.replace(/^\$/, '')}
-                    onChange={e => { setSavings(fmtCurrency(e.target.value)); setSandboxTouched(true) }}
-                    onBlur={() => persistNumbers({ exact_down_payment: savingsNum || null })}
-                    placeholder="75,000"
-                    style={{ border: 'none', padding: '5px 8px', fontSize: '12px', color: '#1d1d1f', background: '#fff', outline: 'none', width: '100%', fontFamily: 'inherit' }} />
-                </div>
-              </div>
-
-              {/* Annual income */}
-              <div style={{ marginBottom: '8px' }}>
-                <p style={{ fontSize: '10px', color: '#86868b', margin: '0 0 3px' }}>Annual household income</p>
-                <div style={{ display: 'flex', alignItems: 'center', background: '#fff', border: '0.5px solid #E0DED8', borderRadius: '7px', overflow: 'hidden' }}>
-                  <span style={{ padding: '5px 7px', fontSize: '11px', color: '#86868b', borderRight: '0.5px solid #E0DED8', background: '#FAFAF8', flexShrink: 0 }}>$</span>
-                  <input type="text" value={incomeDisplay.replace(/^\$/, '')}
-                    onChange={e => {
-                      setIncomeDisplay(fmtCurrency(e.target.value)); setSandboxTouched(true)
-                      const parsed = parseMoney(e.target.value)
-                      if (incomeTimerRef.current) clearTimeout(incomeTimerRef.current)
-                      incomeTimerRef.current = setTimeout(() => { if (parsed > 0) setIncomeVal(parsed) }, 400)
-                    }}
-                    onBlur={() => {
-                      const parsed = parseMoney(incomeDisplay)
-                      if (parsed > 0) { setIncomeVal(parsed); persistNumbers({ annual_income_override: parsed }) }
-                    }}
-                    placeholder="100,000"
-                    style={{ border: 'none', padding: '5px 8px', fontSize: '12px', color: '#1d1d1f', background: '#fff', outline: 'none', width: '100%', fontFamily: 'inherit' }} />
-                </div>
-              </div>
-
-              {/* Rate slider */}
-              <div style={{ marginBottom: '10px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <p style={{ fontSize: '10px', color: '#86868b', margin: 0 }}>Interest rate</p>
-                  <span style={{ fontSize: '11px', color: '#1d1d1f', fontWeight: 500 }}>{interestRate}%</span>
-                </div>
-                <div style={{ position: 'relative', height: '4px', background: 'rgba(0,0,0,0.12)', borderRadius: '2px', margin: '4px 0' }}>
-                  <div style={{ position: 'absolute', height: '100%', background: '#34C759', opacity: 0.7, borderRadius: '2px', left: '46.4%', width: '7.1%' }} />
-                  <input type="range" min={3} max={10} step={0.25} value={interestRate}
-                    onChange={e => { setSandboxTouched(true); setInterestRate(parseFloat(e.target.value)) }}
-                    style={{ position: 'absolute', top: '-6px', left: 0, width: '100%', opacity: 0, cursor: 'pointer', height: '16px' }} />
-                  <div style={{
-                    position: 'absolute', width: '12px', height: '12px',
-                    background: '#0A1E3D', borderRadius: '50%', top: '-4px',
-                    left: `calc(${(interestRate - 3) / 7 * 100}% - 6px)`,
-                    pointerEvents: 'none', transition: 'left 0.1s',
-                  }} />
-                </div>
-                <p style={{ fontSize: '9px', color: '#34C759', opacity: 0.8, margin: '2px 0 0' }}>● Current market: 6.25%–6.75%</p>
-              </div>
-
-              {/* Loan term */}
-              <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
-                {([30, 15] as const).map(term => {
-                  const active = loanTerm === term
-                  return (
-                    <button key={term} type="button"
-                      onClick={() => { setLoanTerm(term); setSandboxTouched(true); persistNumbers({ loan_term_preference: term }) }}
-                      style={{ padding: '4px 12px', borderRadius: '20px', fontSize: '11px', background: active ? '#0A1E3D' : '#fff', color: active ? '#fff' : '#6B6A65', border: `0.5px solid ${active ? '#0A1E3D' : '#D0CEC8'}`, cursor: 'pointer' }}>
-                      {term} year
-                    </button>
-                  )
-                })}
-              </div>
-
-              {/* Monthly estimate */}
-              <div style={{ background: '#EDF2FF', borderRadius: '7px', padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <p style={{ fontSize: '9px', color: '#0076B6', margin: '0 0 1px' }}>Est. monthly payment</p>
-                  <p style={{ fontSize: '9px', color: '#86868b', margin: 0 }}>Principal + interest only</p>
-                </div>
-                <p style={{ fontSize: '16px', fontWeight: 500, color: '#0A1E3D', margin: 0 }}>
-                  {refMonthly > 0 ? `$${refMonthly.toLocaleString()}` : '—'}
-                </p>
-              </div>
-            </div>
 
         </div>{/* end toolbox */}
       </div>
