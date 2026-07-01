@@ -109,8 +109,19 @@ export default function MileMarkerContent({
           )
         }
 
+        // hq_metro stores lowercase IDs ('austin', 'dallas', 'houston', 'sanAntonio')
+        // Read it first (most reliable), then fall back to top match's metroUsed
+        const sessionMetro = typeof window !== 'undefined' ? sessionStorage.getItem('hq_metro') : null
+        const METRO_ID_TO_LABEL: Record<string, string> = {
+          austin: 'Austin',
+          dallas: 'Dallas',
+          houston: 'Houston',
+          sanAntonio: 'San Antonio',
+        }
         const topMetro = matches[0]?.location.metroUsed ?? ''
-        const initialMetro = ['Dallas', 'Houston', 'San Antonio', 'Austin'].find(v => topMetro.includes(v))
+        const initialMetro = (sessionMetro && METRO_ID_TO_LABEL[sessionMetro])
+          ? METRO_ID_TO_LABEL[sessionMetro]
+          : (['Dallas', 'Houston', 'San Antonio', 'Austin'].find(v => topMetro.includes(v)) ?? 'Austin')
         return (
           <MM3Discover
             matches={matches}
