@@ -381,14 +381,15 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const baseProfile = (!sandboxTouched && profile) ? profile : sandboxProfile
   const activeProfile: UserProfile = { ...baseProfile, personalityPreference }
 
-  // Use saved MM2 results as the ranked city list; fall back to live recompute when
-  // (a) no saved results exist or (b) the selected metro has none of the saved cities.
+  // Use saved MM2 results as the ranked city list; fall back to live recompute when:
+  // (a) no saved results exist, (b) the selected metro has fewer than 5 saved cities
+  // (prevents stale thin results from blocking a full live recompute), or (c) the tab
+  // is 'State' (All Texas) — saved matches are always metro-filtered so they can never
+  // represent a genuine statewide ranking; always recompute statewide.
   const rankedCities = useMemo(() => {
-    if (matches && matches.length > 0) {
-      const filtered = selectedMetro === 'State'
-        ? matches
-        : matches.filter(m => m.location?.metroUsed?.includes(selectedMetro))
-      if (filtered.length > 0) return filtered
+    if (selectedMetro !== 'State' && matches && matches.length > 0) {
+      const filtered = matches.filter(m => m.location?.metroUsed?.includes(selectedMetro))
+      if (filtered.length >= 5) return filtered
     }
     const metroCities = selectedMetro === 'State'
       ? getAllCities()
@@ -1013,6 +1014,12 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                         <div onClick={() => setShowAllCities(true)}
                           style={{ textAlign: 'center', padding: '6px', fontSize: '10px', color: '#0076B6', cursor: 'pointer', borderTop: '0.5px solid #E8E6E2', marginTop: '4px' }}>
                           Show more ↓
+                        </div>
+                      )}
+                      {showAllCities && (
+                        <div onClick={() => setShowAllCities(false)}
+                          style={{ textAlign: 'center', padding: '6px', fontSize: '10px', color: '#0076B6', cursor: 'pointer', borderTop: '0.5px solid #E8E6E2', marginTop: '4px' }}>
+                          Show less ↑
                         </div>
                       )}
                     </>
