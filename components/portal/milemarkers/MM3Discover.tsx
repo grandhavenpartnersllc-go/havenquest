@@ -778,12 +778,10 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
               </div>
             </div>
 
-            {/* COMPARISON CHART */}
+            {/* COMPARISON CHART — always visible; origin column shows placeholders if city unknown */}
             {(() => {
-              if (!originCity) return null
-
-              const originData = lookupOriginCity(originCity)
-              if (!originData) return null
+              const originLabel = originCity ?? 'Your Origin'
+              const originData = originCity ? lookupOriginCity(originCity) : null
 
               const col0 = pinnedCities[0] ? (getAllCities().find(c => c.id === pinnedCities[0]) ?? null) : null
               const col1 = pinnedCities[1] ? (getAllCities().find(c => c.id === pinnedCities[1]) ?? null) : null
@@ -801,16 +799,16 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
               }[] = [
                 {
                   label: 'COL Index',
-                  originVal: String(originData.colIndex),
+                  originVal: originData ? String(originData.colIndex) : '—',
                   txVals: pinnedCols.map(c => c ? String(txColIndex(c.metroUsed)) : '—'),
-                  better: (txVal) => txVal !== '—' && parseInt(txVal) < originData.colIndex,
+                  better: (txVal) => !!originData && txVal !== '—' && parseInt(txVal) < originData.colIndex,
                   prefix: '↓',
                 },
                 {
                   label: 'Median Home',
-                  originVal: originData.medianHome,
+                  originVal: originData?.medianHome ?? '—',
                   txVals: pinnedCols.map(c => c ? fmtK(c.housing.medianHomePrice) : '—'),
-                  better: (_txVal, idx) => !!pinnedCols[idx] && pinnedCols[idx]!.housing.medianHomePrice < parseHomePrice(originData.medianHome),
+                  better: (_txVal, idx) => !!originData && !!pinnedCols[idx] && pinnedCols[idx]!.housing.medianHomePrice < parseHomePrice(originData.medianHome),
                   prefix: '↓',
                 },
                 {
@@ -820,18 +818,18 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                 },
                 {
                   label: 'State Inc. Tax',
-                  originVal: originData.incomeTax,
+                  originVal: originData?.incomeTax ?? '—',
                   txVals: pinnedCols.map(c => c ? 'None (TX)' : '—'),
                   alwaysGreen: true,
                 },
                 {
                   label: 'Schools',
-                  originVal: originData.schoolRating,
+                  originVal: originData?.schoolRating ?? '—',
                   txVals: pinnedCols.map(c => c ? (c.school?.teaRating ?? '—') : '—'),
                 },
                 {
                   label: 'Crime/Safety',
-                  originVal: originData.safety,
+                  originVal: originData?.safety ?? '—',
                   txVals: pinnedCols.map(c => c ? txSafety(c.scores.safety) : '—'),
                 },
                 {
@@ -841,7 +839,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                 },
                 {
                   label: 'Climate',
-                  originVal: originData.climate,
+                  originVal: originData?.climate ?? '—',
                   txVals: pinnedCols.map(c => c ? txClimateV2(c.metroUsed) : '—'),
                 },
               ]
@@ -849,7 +847,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
               return (
                 <div>
                   <p style={{ fontSize: '9px', fontWeight: 500, letterSpacing: '0.1em', color: '#C5B783', textTransform: 'uppercase', margin: '0 0 8px' }}>
-                    Texas vs. {originCity}{originState ? `, ${originState}` : ''}
+                    Texas vs. {originLabel}{originData && originState ? `, ${originState}` : ''}
                   </p>
                   <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -857,7 +855,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                         <tr>
                           <th style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', padding: '4px 6px', textAlign: 'left', fontWeight: 400 }}></th>
                           <th style={{ fontSize: '9px', color: 'rgba(255,255,255,0.5)', padding: '4px 6px', textAlign: 'right', fontWeight: 400, whiteSpace: 'nowrap' }}>
-                            {originCity}
+                            {originLabel}
                           </th>
                           {pinnedCols.map((c, i) => (
                             <th key={i} style={{ fontSize: '9px', color: c ? '#C5B783' : 'rgba(255,255,255,0.2)', padding: '4px 6px', textAlign: 'right', fontWeight: 500, whiteSpace: 'nowrap' }}>
