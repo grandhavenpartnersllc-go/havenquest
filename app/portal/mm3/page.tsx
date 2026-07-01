@@ -40,14 +40,22 @@ export default function MM3Page() {
   if (!session) return null
 
   const hqPath = typeof window !== 'undefined' ? sessionStorage.getItem('hq_path') : null
-  // hq_metro is stored by the quiz flow (SESSION_METRO_KEY) and is the most reliable source
   const sessionMetro = typeof window !== 'undefined' ? sessionStorage.getItem('hq_metro') : null
+
+  // hq_metro stores lowercase IDs ('austin', 'dallas', 'houston', 'sanAntonio')
+  // Map to the display labels used by METRO_FILTERS tab values in MM3Discover
+  const METRO_ID_TO_LABEL: Record<string, string> = {
+    austin: 'Austin',
+    dallas: 'Dallas',
+    houston: 'Houston',
+    sanAntonio: 'San Antonio',
+  }
 
   let initialMetro: string
   if (hqPath === 'explore') {
     initialMetro = 'State'
-  } else if (sessionMetro && ['Austin', 'Dallas', 'Houston', 'San Antonio'].includes(sessionMetro)) {
-    initialMetro = sessionMetro
+  } else if (sessionMetro && METRO_ID_TO_LABEL[sessionMetro]) {
+    initialMetro = METRO_ID_TO_LABEL[sessionMetro]
   } else {
     const topMetro = matches[0]?.location?.metroUsed ?? ''
     initialMetro = ['Dallas', 'Houston', 'San Antonio', 'Austin'].find(v => topMetro.includes(v)) ?? 'Austin'
