@@ -44,12 +44,12 @@ export default function MM3Page() {
     ? sessionStorage.getItem('hq_path')
     : null
 
-  let initialMetro: string | undefined
+  let initialMetro: string
   if (hqPath === 'explore') {
     initialMetro = 'State'
   } else {
     const topMetro = matches[0]?.location.metroUsed ?? ''
-    initialMetro = ['Dallas', 'Houston', 'San Antonio', 'Austin'].find(v => topMetro.includes(v))
+    initialMetro = ['Dallas', 'Houston', 'San Antonio', 'Austin'].find(v => topMetro.includes(v)) ?? 'Austin'
   }
 
   return (

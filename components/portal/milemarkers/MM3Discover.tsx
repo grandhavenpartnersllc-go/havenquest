@@ -206,7 +206,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const [pinnedCities, setPinnedCities] = useState<string[]>([])
   const [selectedCityId, setSelectedCityId] = useState<string | null>(null)
   const [showAllCities, setShowAllCities] = useState(false)
-  const [selectedMetro, setSelectedMetro] = useState(initialMetro ?? 'State')
+  const [selectedMetro, setSelectedMetro] = useState(initialMetro ?? 'Austin')
   const [sandboxTouched, setSandboxTouched] = useState(true)
 
   // UI
@@ -249,7 +249,6 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         .eq('email', s.user.email.toLowerCase())
         .maybeSingle()
       if (!data) return
-      console.log('[OriginDebug] origin_city:', data.origin_city, 'origin_zip:', data.origin_zip)
 
       if (data.sandbox_committed) { onAdvanceToConnect(); return }
 
@@ -602,7 +601,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
             {/* YOUR DIRECTION */}
             <div>
               <p style={{ fontSize: '9px', fontWeight: 500, letterSpacing: '0.1em', color: '#C5B783', textTransform: 'uppercase', margin: '0 0 8px' }}>
-                Your direction
+                Your Direction
               </p>
 
               {/* 3 pinned city slots */}
@@ -667,8 +666,8 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                   }
 
                   return (
-                    <div key={i} style={{ border: '0.5px dashed rgba(255,255,255,0.14)', borderRadius: '8px', padding: '10px 12px' }}>
-                      <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.22)', fontStyle: 'italic', margin: 0 }}>
+                    <div key={i} style={{ border: '0.5px dashed rgba(197,183,131,0.3)', borderRadius: '8px', padding: '10px 12px' }}>
+                      <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.6)', fontStyle: 'italic', margin: 0 }}>
                         + Pin a community →
                       </p>
                     </div>
@@ -681,7 +680,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
             {(mustHaves.length > 0 || niceToHaves.length > 0) && (
               <div>
                 <p style={{ fontSize: '9px', fontWeight: 500, letterSpacing: '0.1em', color: '#C5B783', textTransform: 'uppercase', margin: '0 0 6px' }}>
-                  What matters most
+                  What Matters Most
                 </p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                   {mustHaves.slice(0, 3).map(key => {
@@ -717,7 +716,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
             {/* BUYING POWER 2×2 GRID */}
             <div>
               <p style={{ fontSize: '9px', fontWeight: 500, letterSpacing: '0.1em', color: '#C5B783', textTransform: 'uppercase', margin: '0 0 8px' }}>
-                Buying power
+                Your Buying Power
               </p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
                 {[
@@ -757,19 +756,16 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
 
             {/* COMPARISON CHART */}
             {(() => {
-              console.log('[ComparisonChart] pinnedCities:', pinnedCities)
-              console.log('[ComparisonChart] originCity resolved to:', originCity)
-              console.log('[ComparisonChart] should render:', pinnedCities.length > 0 && !!originCity)
-
-              if (pinnedCities.length === 0 || !originCity) return null
+              if (!originCity) return null
 
               const originData = lookupOriginCity(originCity)
-              if (!originData) {
-                console.log('[ComparisonChart] no lookup match for:', originCity)
-                return null
-              }
+              if (!originData) return null
 
-              const pinnedMatches = pinnedCities.map(id => getAllCities().find(c => c.id === id)).filter(Boolean)
+              const col0 = pinnedCities[0] ? (getAllCities().find(c => c.id === pinnedCities[0]) ?? null) : null
+              const col1 = pinnedCities[1] ? (getAllCities().find(c => c.id === pinnedCities[1]) ?? null) : null
+              const col2 = pinnedCities[2] ? (getAllCities().find(c => c.id === pinnedCities[2]) ?? null) : null
+              const pinnedCols = [col0, col1, col2]
+              const pinnedMatches = pinnedCols.filter((c): c is NonNullable<typeof c> => c !== null)
 
               const chartRows: {
                 label: string
@@ -782,47 +778,47 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                 {
                   label: 'COL Index',
                   originVal: String(originData.colIndex),
-                  txVals: pinnedMatches.map(c => String(txColIndex(c!.metroUsed))),
-                  better: (txVal) => parseInt(txVal) < originData.colIndex,
+                  txVals: pinnedCols.map(c => c ? String(txColIndex(c.metroUsed)) : '—'),
+                  better: (txVal) => txVal !== '—' && parseInt(txVal) < originData.colIndex,
                   prefix: '↓',
                 },
                 {
                   label: 'Median Home',
                   originVal: originData.medianHome,
-                  txVals: pinnedMatches.map(c => fmtK(c!.housing.medianHomePrice)),
-                  better: (_txVal, idx) => pinnedMatches[idx] ? pinnedMatches[idx]!.housing.medianHomePrice < parseHomePrice(originData.medianHome) : false,
+                  txVals: pinnedCols.map(c => c ? fmtK(c.housing.medianHomePrice) : '—'),
+                  better: (_txVal, idx) => !!pinnedCols[idx] && pinnedCols[idx]!.housing.medianHomePrice < parseHomePrice(originData.medianHome),
                   prefix: '↓',
                 },
                 {
                   label: 'Property Tax',
                   originVal: '—',
-                  txVals: pinnedMatches.map(c => txPropertyTax(c!.metroUsed)),
+                  txVals: pinnedCols.map(c => c ? txPropertyTax(c.metroUsed) : '—'),
                 },
                 {
                   label: 'State Inc. Tax',
                   originVal: originData.incomeTax,
-                  txVals: pinnedMatches.map(() => 'None (TX)'),
+                  txVals: pinnedCols.map(c => c ? 'None (TX)' : '—'),
                   alwaysGreen: true,
                 },
                 {
                   label: 'Schools',
                   originVal: originData.schoolRating,
-                  txVals: pinnedMatches.map(c => c!.school?.teaRating ?? '—'),
+                  txVals: pinnedCols.map(c => c ? (c.school?.teaRating ?? '—') : '—'),
                 },
                 {
                   label: 'Crime/Safety',
                   originVal: originData.safety,
-                  txVals: pinnedMatches.map(c => txSafety(c!.scores.safety)),
+                  txVals: pinnedCols.map(c => c ? txSafety(c.scores.safety) : '—'),
                 },
                 {
                   label: 'Job Market',
                   originVal: '—',
-                  txVals: pinnedMatches.map(c => txJobMarket(c!.metroUsed)),
+                  txVals: pinnedCols.map(c => c ? txJobMarket(c.metroUsed) : '—'),
                 },
                 {
                   label: 'Climate',
                   originVal: originData.climate,
-                  txVals: pinnedMatches.map(c => txClimateV2(c!.metroUsed)),
+                  txVals: pinnedCols.map(c => c ? txClimateV2(c.metroUsed) : '—'),
                 },
               ]
 
@@ -839,9 +835,9 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                           <th style={{ fontSize: '9px', color: 'rgba(255,255,255,0.5)', padding: '4px 6px', textAlign: 'right', fontWeight: 400, whiteSpace: 'nowrap' }}>
                             {originCity}
                           </th>
-                          {pinnedMatches.map(c => (
-                            <th key={c!.id} style={{ fontSize: '9px', color: '#C5B783', padding: '4px 6px', textAlign: 'right', fontWeight: 500, whiteSpace: 'nowrap' }}>
-                              {c!.name}
+                          {pinnedCols.map((c, i) => (
+                            <th key={i} style={{ fontSize: '9px', color: c ? '#C5B783' : 'rgba(255,255,255,0.2)', padding: '4px 6px', textAlign: 'right', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                              {c ? c.name : 'Pin a city'}
                             </th>
                           ))}
                         </tr>
@@ -852,17 +848,18 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                             <td style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', padding: '5px 6px', whiteSpace: 'nowrap' }}>{row.label}</td>
                             <td style={{ fontSize: '10px', color: 'rgba(255,255,255,0.7)', padding: '5px 6px', textAlign: 'right', whiteSpace: 'nowrap' }}>{row.originVal}</td>
                             {row.txVals.map((val, ci) => {
-                              const isBetter = row.alwaysGreen === true || (row.better ? row.better(val, ci) : false)
+                              const isEmpty = val === '—' && !pinnedCols[ci]
+                              const isBetter = !isEmpty && (row.alwaysGreen === true || (row.better ? row.better(val, ci) : false))
                               return (
                                 <td key={ci} style={{
                                   fontSize: '10px',
-                                  color: isBetter ? '#48c78e' : 'rgba(255,255,255,0.7)',
+                                  color: isEmpty ? 'rgba(255,255,255,0.2)' : isBetter ? '#48c78e' : 'rgba(255,255,255,0.7)',
                                   fontWeight: isBetter ? 500 : 400,
                                   padding: '5px 6px',
                                   textAlign: 'right',
                                   whiteSpace: 'nowrap',
                                 }}>
-                                  {isBetter && row.prefix ? `${row.prefix} ` : ''}{val}
+                                  {isBetter && row.prefix && !isEmpty ? `${row.prefix} ` : ''}{val}
                                 </td>
                               )
                             })}
@@ -908,7 +905,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         <div style={{ flex: 1, background: '#F2F1EE', minWidth: 0, padding: '16px', overflowY: 'auto' }}>
 
           {/* Communities heading */}
-          <p style={{ fontSize: '12px', fontWeight: 500, color: '#0A1E3D', margin: '0 0 2px' }}>Your communities</p>
+          <p style={{ fontSize: '12px', fontWeight: 500, color: '#0A1E3D', margin: '0 0 2px' }}>Your Communities</p>
           <p style={{ fontSize: '10px', color: '#888', margin: '0 0 10px' }}>Click any city to preview. Pin up to 3.</p>
 
           {/* Communities frame */}
@@ -1001,8 +998,8 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                 </div>
               </div>
 
-              {/* Right: preview card — 50/50 square photo + info */}
-              <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+              {/* Right: preview card + Your Lifestyle */}
+              <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                 {selectedMatch ? (() => {
                   const city = selectedMatch.location
                   const isPinned = pinnedCities.includes(city.id)
@@ -1014,7 +1011,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                     : { bg: '#FCEBEB', color: '#A32D2D' }
 
                   return (
-                    <div style={{ display: 'flex', height: '100%', minHeight: '220px' }}>
+                    <div style={{ display: 'flex', minHeight: '220px' }}>
                       {/* Left: square photo (50%) */}
                       <div style={{ width: '50%', flexShrink: 0, position: 'relative', overflow: 'hidden', background: '#2D4A6B' }}>
                         <Image
@@ -1103,123 +1100,109 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                     <p style={{ fontSize: '11px', color: '#86868b', margin: 0 }}>Select a city to preview.</p>
                   </div>
                 )}
+
+                {/* YOUR LIFESTYLE */}
+                <div style={{ borderTop: '0.5px solid rgba(0,0,0,0.08)', padding: '12px' }}>
+                  <p style={{ fontSize: '12px', fontWeight: 500, color: '#0A1E3D', margin: '0 0 2px' }}>Your Lifestyle</p>
+                  <p style={{ fontSize: '10px', color: '#888', margin: '0 0 8px' }}>Click to move between columns</p>
+
+                  <p style={{ fontSize: '10px', color: '#6B6A65', margin: '0 0 8px' }}>
+                    <span style={{ color: mustHaves.length >= 3 ? '#1a6b35' : undefined, fontWeight: mustHaves.length >= 3 ? 500 : undefined }}>
+                      {mustHaves.length}/3 Must Haves{mustHaves.length >= 3 ? ' ✓' : ''}
+                    </span>
+                    {' · '}{niceToHaves.length} Important{' · '}{lessImportant.length} Nice
+                  </p>
+
+                  {mustHaveError && (
+                    <p style={{ fontSize: '10px', color: '#F5A623', fontStyle: 'italic', margin: '0 0 6px' }}>
+                      Must Have is limited to 3. Move one first.
+                    </p>
+                  )}
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0', margin: '0 -12px 0' }}>
+                    {/* Must Have — warm tint */}
+                    <div style={{ background: '#FDFAF4', borderRight: '0.5px solid rgba(0,0,0,0.08)', padding: '10px 8px' }}>
+                      <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.06em', color: '#8a6f00', textTransform: 'uppercase', margin: '0 0 2px' }}>Must have</p>
+                      <p style={{ fontSize: '8px', color: '#aaa', margin: '0 0 8px' }}>Up to 3 · 3× weight</p>
+                      {mustHaves.length === 0 && <p style={{ fontSize: '10px', color: 'rgba(0,0,0,0.22)', fontStyle: 'italic', margin: 0 }}>Empty</p>}
+                      {mustHaves.map(key => {
+                        const cat = DNA_CATEGORIES.find(c => c.key === key)!
+                        return (
+                          <div key={key} onClick={() => movePriority(key, 'down')}
+                            style={{ background: 'rgba(197,183,131,0.15)', borderRadius: '4px', padding: '4px 6px', marginBottom: '3px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', gap: '3px', border: '0.5px solid rgba(197,183,131,0.3)' }}>
+                            <span style={{ fontSize: '9px', color: '#5a4a00', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cat.icon} {cat.label}</span>
+                            <span style={{ color: '#0076B6', fontSize: '9px', flexShrink: 0 }}>→</span>
+                          </div>
+                        )
+                      })}
+                    </div>
+
+                    {/* Important to Me — neutral */}
+                    <div style={{ background: '#FAFAFA', borderRight: '0.5px solid rgba(0,0,0,0.08)', padding: '10px 8px' }}>
+                      <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.06em', color: '#444', textTransform: 'uppercase', margin: '0 0 2px' }}>Important to me</p>
+                      <p style={{ fontSize: '8px', color: '#aaa', margin: '0 0 8px' }}>Up to 5 · 2× weight</p>
+                      {niceToHaves.length === 0 && <p style={{ fontSize: '10px', color: 'rgba(0,0,0,0.22)', fontStyle: 'italic', margin: 0 }}>Empty</p>}
+                      {niceToHaves.map(key => {
+                        const cat = DNA_CATEGORIES.find(c => c.key === key)!
+                        return (
+                          <div key={key} style={{ background: '#F0F0F0', borderRadius: '4px', padding: '3px 4px', marginBottom: '3px', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                            <button type="button" onClick={() => movePriority(key, 'up')}
+                              style={{ color: '#0076B6', fontSize: '9px', background: 'none', border: 'none', cursor: 'pointer', padding: '0 1px', lineHeight: 1, flexShrink: 0 }}>←</button>
+                            <span style={{ flex: 1, fontSize: '9px', color: '#1d1d1f', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cat.icon} {cat.label}</span>
+                            <button type="button" onClick={() => movePriority(key, 'down')}
+                              style={{ color: '#0076B6', fontSize: '9px', background: 'none', border: 'none', cursor: 'pointer', padding: '0 1px', lineHeight: 1, flexShrink: 0 }}>→</button>
+                          </div>
+                        )
+                      })}
+                    </div>
+
+                    {/* Would Be Nice — lightest */}
+                    <div style={{ background: '#F7F7F7', padding: '10px 8px' }}>
+                      <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.06em', color: '#666', textTransform: 'uppercase', margin: '0 0 2px' }}>Would be nice</p>
+                      <p style={{ fontSize: '8px', color: '#aaa', margin: '0 0 8px' }}>1× weight</p>
+                      {lessImportant.length === 0 && <p style={{ fontSize: '10px', color: 'rgba(0,0,0,0.22)', fontStyle: 'italic', margin: 0 }}>Empty</p>}
+                      {lessImportant.map(key => {
+                        const cat = DNA_CATEGORIES.find(c => c.key === key)!
+                        return (
+                          <div key={key} style={{ background: 'rgba(0,0,0,0.04)', borderRadius: '4px', padding: '3px 4px', marginBottom: '3px', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                            <button type="button" onClick={() => movePriority(key, 'up')}
+                              style={{ color: '#0076B6', fontSize: '9px', background: 'none', border: 'none', cursor: 'pointer', padding: '0 1px', lineHeight: 1, flexShrink: 0 }}>←</button>
+                            <span style={{ flex: 1, fontSize: '9px', color: '#1d1d1f', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cat.icon} {cat.label}</span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Personality sliders */}
+                  <div style={{ borderTop: '0.5px solid rgba(0,0,0,0.08)', padding: '12px 0 4px', marginTop: '4px' }}>
+                    <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.08em', color: '#666', textTransform: 'uppercase', marginBottom: '10px' }}>
+                      Your Personality
+                    </p>
+                    {([
+                      { key: 'growthProfile', left: 'Established', right: 'Up-and-Coming' },
+                      { key: 'lifestyleOrientation', left: 'Practical', right: 'Upscale & Aspirational' },
+                      { key: 'environment', left: 'Urban', right: 'Rural' },
+                      { key: 'pace', left: 'Relaxed', right: 'Fast-paced' },
+                    ] as const).map(({ key, left, right }) => (
+                      <SliderRow
+                        key={key}
+                        leftLabel={left}
+                        rightLabel={right}
+                        value={personalityPreference[key]}
+                        onChange={(v) => handlePersonalityChange(key, v)}
+                      />
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Lower 2-column grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', alignItems: 'stretch' }}>
-
-            {/* PRIORITIES PANEL */}
-            <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: '10px', overflow: 'hidden', padding: '12px' }}>
-              <p style={{ fontSize: '12px', fontWeight: 500, color: '#0A1E3D', margin: '0 0 2px' }}>Your priorities</p>
-              <p style={{ fontSize: '10px', color: '#888', margin: '0 0 8px' }}>Click to move between columns</p>
-
-              <p style={{ fontSize: '10px', color: '#6B6A65', margin: '0 0 8px' }}>
-                <span style={{ color: mustHaves.length >= 3 ? '#1a6b35' : undefined, fontWeight: mustHaves.length >= 3 ? 500 : undefined }}>
-                  {mustHaves.length}/3 Must Haves{mustHaves.length >= 3 ? ' ✓' : ''}
-                </span>
-                {' · '}{niceToHaves.length} Important{' · '}{lessImportant.length} Nice
-              </p>
-
-              {mustHaveError && (
-                <p style={{ fontSize: '10px', color: '#F5A623', fontStyle: 'italic', margin: '0 0 6px' }}>
-                  Must Have is limited to 3. Move one first.
-                </p>
-              )}
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0', margin: '0 -12px -12px' }}>
-                {/* Must Have — warm tint */}
-                <div style={{ background: '#FDFAF4', borderRight: '0.5px solid rgba(0,0,0,0.08)', padding: '10px 8px' }}>
-                  <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.06em', color: '#8a6f00', textTransform: 'uppercase', margin: '0 0 2px' }}>Must have</p>
-                  <p style={{ fontSize: '8px', color: '#aaa', margin: '0 0 8px' }}>Up to 3 · 3× weight</p>
-                  {mustHaves.length === 0 && <p style={{ fontSize: '10px', color: 'rgba(0,0,0,0.22)', fontStyle: 'italic', margin: 0 }}>Empty</p>}
-                  {mustHaves.map(key => {
-                    const cat = DNA_CATEGORIES.find(c => c.key === key)!
-                    return (
-                      <div key={key} onClick={() => movePriority(key, 'down')}
-                        style={{ background: 'rgba(197,183,131,0.15)', borderRadius: '4px', padding: '4px 6px', marginBottom: '3px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', gap: '3px', border: '0.5px solid rgba(197,183,131,0.3)' }}>
-                        <span style={{ fontSize: '9px', color: '#5a4a00', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cat.icon} {cat.label}</span>
-                        <span style={{ color: '#0076B6', fontSize: '9px', flexShrink: 0 }}>→</span>
-                      </div>
-                    )
-                  })}
-                </div>
-
-                {/* Important to Me — neutral */}
-                <div style={{ background: '#FAFAFA', borderRight: '0.5px solid rgba(0,0,0,0.08)', padding: '10px 8px' }}>
-                  <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.06em', color: '#444', textTransform: 'uppercase', margin: '0 0 2px' }}>Important to me</p>
-                  <p style={{ fontSize: '8px', color: '#aaa', margin: '0 0 8px' }}>Up to 5 · 2× weight</p>
-                  {niceToHaves.length === 0 && <p style={{ fontSize: '10px', color: 'rgba(0,0,0,0.22)', fontStyle: 'italic', margin: 0 }}>Empty</p>}
-                  {niceToHaves.map(key => {
-                    const cat = DNA_CATEGORIES.find(c => c.key === key)!
-                    return (
-                      <div key={key} style={{ background: '#F0F0F0', borderRadius: '4px', padding: '3px 4px', marginBottom: '3px', display: 'flex', alignItems: 'center', gap: '2px' }}>
-                        <button type="button" onClick={() => movePriority(key, 'up')}
-                          style={{ color: '#0076B6', fontSize: '9px', background: 'none', border: 'none', cursor: 'pointer', padding: '0 1px', lineHeight: 1, flexShrink: 0 }}>←</button>
-                        <span style={{ flex: 1, fontSize: '9px', color: '#1d1d1f', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cat.icon} {cat.label}</span>
-                        <button type="button" onClick={() => movePriority(key, 'down')}
-                          style={{ color: '#0076B6', fontSize: '9px', background: 'none', border: 'none', cursor: 'pointer', padding: '0 1px', lineHeight: 1, flexShrink: 0 }}>→</button>
-                      </div>
-                    )
-                  })}
-                </div>
-
-                {/* Would Be Nice — lightest */}
-                <div style={{ background: '#F7F7F7', padding: '10px 8px' }}>
-                  <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.06em', color: '#666', textTransform: 'uppercase', margin: '0 0 2px' }}>Would be nice</p>
-                  <p style={{ fontSize: '8px', color: '#aaa', margin: '0 0 8px' }}>1× weight</p>
-                  {lessImportant.length === 0 && <p style={{ fontSize: '10px', color: 'rgba(0,0,0,0.22)', fontStyle: 'italic', margin: 0 }}>Empty</p>}
-                  {lessImportant.map(key => {
-                    const cat = DNA_CATEGORIES.find(c => c.key === key)!
-                    return (
-                      <div key={key} style={{ background: 'rgba(0,0,0,0.04)', borderRadius: '4px', padding: '3px 4px', marginBottom: '3px', display: 'flex', alignItems: 'center', gap: '2px' }}>
-                        <button type="button" onClick={() => movePriority(key, 'up')}
-                          style={{ color: '#0076B6', fontSize: '9px', background: 'none', border: 'none', cursor: 'pointer', padding: '0 1px', lineHeight: 1, flexShrink: 0 }}>←</button>
-                        <span style={{ flex: 1, fontSize: '9px', color: '#1d1d1f', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cat.icon} {cat.label}</span>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-
-              {/* Personality sliders */}
-              <div style={{
-                borderTop: '0.5px solid rgba(0,0,0,0.08)',
-                padding: '12px 12px 4px',
-                marginTop: '4px',
-              }}>
-                <p style={{
-                  fontSize: '9px',
-                  fontWeight: 600,
-                  letterSpacing: '0.08em',
-                  color: '#666',
-                  textTransform: 'uppercase',
-                  marginBottom: '10px',
-                }}>
-                  Your personality
-                </p>
-                {([
-                  { key: 'growthProfile', left: 'Established', right: 'Up-and-Coming' },
-                  { key: 'lifestyleOrientation', left: 'Practical', right: 'Upscale & Aspirational' },
-                  { key: 'environment', left: 'Urban', right: 'Rural' },
-                  { key: 'pace', left: 'Relaxed', right: 'Fast-paced' },
-                ] as const).map(({ key, left, right }) => (
-                  <SliderRow
-                    key={key}
-                    leftLabel={left}
-                    rightLabel={right}
-                    value={personalityPreference[key]}
-                    onChange={(v) => handlePersonalityChange(key, v)}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* NUMBERS PANEL */}
-            <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: '10px', overflow: 'hidden', padding: '12px' }}>
-              <p style={{ fontSize: '12px', fontWeight: 500, color: '#0A1E3D', margin: '0 0 2px' }}>Your numbers</p>
-              <p style={{ fontSize: '10px', color: '#888', margin: '0 0 10px' }}>Adjust to update buying power live</p>
+          {/* YOUR FINANCIALS */}
+          <div style={{ marginTop: '10px', background: '#fff', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: '10px', overflow: 'hidden', padding: '12px' }}>
+            <p style={{ fontSize: '12px', fontWeight: 500, color: '#0A1E3D', margin: '0 0 2px' }}>Your Financials</p>
+            <p style={{ fontSize: '10px', color: '#888', margin: '0 0 10px' }}>Adjust to update buying power live</p>
 
               {/* Selling toggle */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
@@ -1331,7 +1314,6 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
               </div>
             </div>
 
-          </div>{/* end lower 2-col grid */}
         </div>{/* end toolbox */}
       </div>
     </>
