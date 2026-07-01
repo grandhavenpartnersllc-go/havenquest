@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import Image from 'next/image'
 import { CityMatch, UserProfile, UserSession, SandboxProfile, DNAScores } from '../../../types'
 import FullReport from '../../results/FullReport'
@@ -207,6 +207,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const [selectedCityId, setSelectedCityId] = useState<string | null>(null)
   const [showAllCities, setShowAllCities] = useState(false)
   const [selectedMetro, setSelectedMetro] = useState(initialMetro ?? 'Austin')
+  const [userHasChangedMetro, setUserHasChangedMetro] = useState(false)
   const [sandboxTouched, setSandboxTouched] = useState(true)
 
   // UI
@@ -348,6 +349,13 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     }
   }, [profile]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Sync metro when correct initialMetro loads (race condition fix)
+  useEffect(() => {
+    if (!userHasChangedMetro && initialMetro) {
+      setSelectedMetro(initialMetro)
+    }
+  }, [initialMetro]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // Computed
   const proceedsNum = parseMoney(proceeds)
   const savingsNum = parseMoney(savings)
@@ -373,11 +381,20 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const baseProfile = (!sandboxTouched && profile) ? profile : sandboxProfile
   const activeProfile: UserProfile = { ...baseProfile, personalityPreference }
 
-  const metroCities = selectedMetro === 'State'
-    ? getAllCities()
-    : getAllCities().filter(c => c.metroUsed.includes(selectedMetro))
-
-  const { topMatches: rankedCities } = getTopMatches(activeProfile, metroCities, 20, 'hard')
+  // Use saved MM2 results as the ranked city list; fall back to live recompute when
+  // (a) no saved results exist or (b) the selected metro has none of the saved cities.
+  const rankedCities = useMemo(() => {
+    if (matches && matches.length > 0) {
+      const filtered = selectedMetro === 'State'
+        ? matches
+        : matches.filter(m => m.location?.metroUsed?.includes(selectedMetro))
+      if (filtered.length > 0) return filtered
+    }
+    const metroCities = selectedMetro === 'State'
+      ? getAllCities()
+      : getAllCities().filter(c => c.metroUsed.includes(selectedMetro))
+    return getTopMatches(activeProfile, metroCities, 20, 'hard').topMatches
+  }, [matches, selectedMetro, activeProfile])
 
   function afStatus(medianPrice: number): 'comfortable' | 'moderate' | 'stretched' {
     const income = incomeVal || profile?.annualIncome || 0
@@ -489,6 +506,13 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         }
       } catch {}
     }, 800)
+  }
+
+  function handleMetroChange(metro: string) {
+    setUserHasChangedMetro(true)
+    setSelectedMetro(metro)
+    setSelectedCityId(null)
+    setShowAllCities(false)
   }
 
   async function pinCity(cityId: string) {
@@ -920,7 +944,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                     const active = selectedMetro === f.value
                     return (
                       <button key={f.value} type="button"
-                        onClick={() => { setSelectedMetro(f.value); setSelectedCityId(null); setShowAllCities(false) }}
+                        onClick={() => handleMetroChange(f.value)}
                         style={{
                           padding: '3px 9px', borderRadius: '20px', fontSize: '10px',
                           fontWeight: active ? 500 : 400,

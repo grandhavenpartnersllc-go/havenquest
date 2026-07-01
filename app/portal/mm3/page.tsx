@@ -39,16 +39,17 @@ export default function MM3Page() {
 
   if (!session) return null
 
-  // Preserve the hq_path routing logic from MileMarkerContent
-  const hqPath = typeof window !== 'undefined'
-    ? sessionStorage.getItem('hq_path')
-    : null
+  const hqPath = typeof window !== 'undefined' ? sessionStorage.getItem('hq_path') : null
+  // hq_metro is stored by the quiz flow (SESSION_METRO_KEY) and is the most reliable source
+  const sessionMetro = typeof window !== 'undefined' ? sessionStorage.getItem('hq_metro') : null
 
   let initialMetro: string
   if (hqPath === 'explore') {
     initialMetro = 'State'
+  } else if (sessionMetro && ['Austin', 'Dallas', 'Houston', 'San Antonio'].includes(sessionMetro)) {
+    initialMetro = sessionMetro
   } else {
-    const topMetro = matches[0]?.location.metroUsed ?? ''
+    const topMetro = matches[0]?.location?.metroUsed ?? ''
     initialMetro = ['Dallas', 'Houston', 'San Antonio', 'Austin'].find(v => topMetro.includes(v)) ?? 'Austin'
   }
 
