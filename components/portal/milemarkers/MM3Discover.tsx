@@ -1221,8 +1221,8 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
             </div>
           </div>
 
-          {/* YOUR FINANCIALS */}
-          <div style={{ marginTop: '10px', background: '#fff', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: '10px', overflow: 'hidden', padding: '12px' }}>
+          {/* YOUR FINANCIALS — constrained to left (Communities) column width */}
+          <div style={{ marginTop: '10px', background: '#fff', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: '10px', overflow: 'hidden', padding: '12px', width: '52%' }}>
             <p style={{ fontSize: '12px', fontWeight: 500, color: '#0A1E3D', margin: '0 0 2px' }}>Your Financials</p>
             <p style={{ fontSize: '10px', color: '#888', margin: '0 0 10px' }}>Adjust to update buying power live</p>
 
