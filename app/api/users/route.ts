@@ -69,7 +69,7 @@ async function sendWelcomeAndRespond(
 
 export async function PATCH(request: NextRequest) {
   try {
-    const { email, topCityMatches, archetype, mustHaves, niceToHaves, notPriorities } = await request.json()
+    const { email, topCityMatches, archetype, mustHaves, niceToHaves, notPriorities, personalityPreference } = await request.json()
     if (!email || !Array.isArray(topCityMatches)) {
       return NextResponse.json({ error: 'email and topCityMatches required' }, { status: 400 })
     }
@@ -77,7 +77,17 @@ export async function PATCH(request: NextRequest) {
     const supabase = getSupabase()
     await supabase
       .from('users')
-      .update({ top_city_matches: topCityMatches, dna_weighting_profile: weightingProfile })
+      .update({
+        top_city_matches: topCityMatches,
+        dna_weighting_profile: weightingProfile,
+        ...(personalityPreference && {
+          growth_profile: personalityPreference.growthProfile ?? null,
+          pace: personalityPreference.pace ?? null,
+          culture: personalityPreference.culture ?? null,
+          environment: personalityPreference.environment ?? null,
+          lifestyle_orientation: personalityPreference.lifestyleOrientation ?? null,
+        }),
+      })
       .eq('email', (email as string).toLowerCase())
     return NextResponse.json({ ok: true })
   } catch (err) {
@@ -104,6 +114,7 @@ export async function POST(request: NextRequest) {
       topCityMatches,
       buyerProfile,
       financialPicture,
+      personalityPreference,
     } = body
 
     const isActiveBuyer =
@@ -188,6 +199,13 @@ export async function POST(request: NextRequest) {
           financial_picture: financialPicture
             ? { ...financialPicture, is_active_buyer: isActiveBuyer }
             : null,
+          ...(personalityPreference && {
+            growth_profile: personalityPreference.growthProfile ?? null,
+            pace: personalityPreference.pace ?? null,
+            culture: personalityPreference.culture ?? null,
+            environment: personalityPreference.environment ?? null,
+            lifestyle_orientation: personalityPreference.lifestyleOrientation ?? null,
+          }),
           ...(authUserId ? { auth_id: authUserId } : {}),
         },
         { onConflict: 'email', ignoreDuplicates: false }
@@ -220,6 +238,13 @@ export async function POST(request: NextRequest) {
               financial_picture: financialPicture
                 ? { ...financialPicture, is_active_buyer: isActiveBuyer }
                 : null,
+              ...(personalityPreference && {
+                growth_profile: personalityPreference.growthProfile ?? null,
+                pace: personalityPreference.pace ?? null,
+                culture: personalityPreference.culture ?? null,
+                environment: personalityPreference.environment ?? null,
+                lifestyle_orientation: personalityPreference.lifestyleOrientation ?? null,
+              }),
             },
             { onConflict: 'email', ignoreDuplicates: false }
           )

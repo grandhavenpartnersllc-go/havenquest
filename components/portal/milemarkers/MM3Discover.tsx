@@ -246,7 +246,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
       if (!s?.user?.email) return
       const { data } = await supabase
         .from('users')
-        .select('sandbox_committed,sandbox_profile,sandbox_committed_at,chosen_communities,home_status,exact_home_proceeds,available_funds,annual_income_override,loan_term_preference,origin_city,origin_state,origin_zip,growth_profile,lifestyle_orientation,environment,pace')
+        .select('sandbox_committed,sandbox_profile,sandbox_committed_at,chosen_communities,home_status,exact_home_proceeds,available_funds,annual_income_override,loan_term_preference,origin_city,origin_state,origin_zip,growth_profile,lifestyle_orientation,environment,pace,culture')
         .eq('email', s.user.email.toLowerCase())
         .maybeSingle()
       if (!data) return
@@ -258,7 +258,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
       setPersonalityPreference({
         growthProfile: d.growth_profile ?? 5,
         pace: d.pace ?? 5,
-        culture: 5,
+        culture: d.culture ?? 5,
         environment: d.environment ?? 5,
         lifestyleOrientation: d.lifestyle_orientation ?? 5,
       })
