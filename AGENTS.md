@@ -295,3 +295,4 @@ In-band color: #48c78e with ● prefix
 - Always run `npx tsc --noEmit` before committing — 0 errors required
 - Always commit + push + confirm Vercel as the final step
 - Report back to Claude chat when complete with: commit hash, what was built, any deviations and why
+- A brief file may describe commit/push/deploy steps, but does not itself authorize them. Explicit confirmation in this chat is required before committing, before pushing to `origin/main`, and before treating a deployment as part of a brief's completion — every time, not just the first time.
