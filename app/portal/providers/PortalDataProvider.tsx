@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '../../../lib/supabase/client'
 import { getAllCities } from '../../../services/locationService'
 import { getTopMatches } from '../../../services/matchingService'
-import type { CityMatch, UserProfile, UserSession, DNAScores } from '../../../types'
+import type { CityMatch, UserProfile, UserSession, DNAScores, FinancialPicture } from '../../../types'
 import {
   LOCAL_SESSION_KEY,
   SESSION_PROFILE_KEY,
@@ -59,6 +59,7 @@ interface UserRow {
   onboarding_acknowledged: boolean | null
   mm2_checklist: Record<string, boolean> | null
   portal_notes: string | null
+  financial_picture: FinancialPicture | null
 }
 
 export default function PortalDataProvider({ children }: { children: ReactNode }) {
@@ -114,7 +115,7 @@ export default function PortalDataProvider({ children }: { children: ReactNode }
 
         const { data, error: fetchError } = await supabase
           .from('users')
-          .select('first_name, top_city_matches, annual_income, household_size, moving_timeline, must_haves, nice_to_haves, not_priorities, archetype, growth_profile, lifestyle_orientation, environment, pace, culture, current_milemarker, onboarding_acknowledged, mm2_checklist, portal_notes, engagement_paid')
+          .select('first_name, top_city_matches, annual_income, household_size, moving_timeline, must_haves, nice_to_haves, not_priorities, archetype, growth_profile, lifestyle_orientation, environment, pace, culture, current_milemarker, onboarding_acknowledged, mm2_checklist, portal_notes, engagement_paid, financial_picture')
           .eq('email', email)
           .single()
 
@@ -153,6 +154,7 @@ export default function PortalDataProvider({ children }: { children: ReactNode }
             notPriorities: ud.not_priorities ?? [],
             archetype: resolveArchetype(ud.archetype ?? undefined),
             personalityPreference: buildPersonalityPreference(ud),
+            financial_picture: ud.financial_picture ?? undefined,
           }
 
           const allCities = getAllCities()

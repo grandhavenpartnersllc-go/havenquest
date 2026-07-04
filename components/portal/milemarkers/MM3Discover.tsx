@@ -6,7 +6,7 @@ import { CityMatch, UserProfile, UserSession, SandboxProfile, DNAScores } from '
 import FullReport from '../../results/FullReport'
 import { DNA_CATEGORIES } from '../../../utils/constants'
 import { getAllCities } from '../../../services/locationService'
-import { getTopMatches } from '../../../services/matchingService'
+import { getTopMatches, getDownPaymentMidpoint, getProceedsMidpoint } from '../../../services/matchingService'
 import { createClient } from '../../../lib/supabase/client'
 import { lookupZipCityState } from '../../../utils/zipLookup'
 
@@ -263,7 +263,15 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         lifestyleOrientation: d.lifestyle_orientation ?? 5,
       })
 
-      if (data.home_status === 'selling') setIsSelling(true)
+      // Sandbox override takes priority when present (home_status is only ever
+      // written once a user edits these fields inside MM3 itself — Brief: fix_mm3_
+      // financial_hydration). Falls back to the quiz's real financial_picture for
+      // first-time visitors, who never have a sandbox override yet.
+      if (data.home_status === 'selling') {
+        setIsSelling(true)
+      } else if (!data.home_status && profile?.financial_picture?.is_homeowner) {
+        setIsSelling(true)
+      }
 
       if (data.sandbox_profile) {
         const sp: SandboxProfile = data.sandbox_profile
@@ -282,8 +290,23 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         if (sp.interestRateOverride) setInterestRate(sp.interestRateOverride)
       }
 
-      if (data.exact_home_proceeds) setProceeds(fmtCurrency(String(data.exact_home_proceeds)))
-      if (data.available_funds) setSavings(fmtCurrency(String(data.available_funds)))
+      if (data.exact_home_proceeds) {
+        setProceeds(fmtCurrency(String(data.exact_home_proceeds)))
+      } else {
+        const fp = profile?.financial_picture
+        if (fp?.is_homeowner && fp.home_sale_proceeds) {
+          setProceeds(fmtCurrency(String(getProceedsMidpoint(fp.home_sale_proceeds))))
+        }
+      }
+
+      if (data.available_funds) {
+        setSavings(fmtCurrency(String(data.available_funds)))
+      } else {
+        const fp = profile?.financial_picture
+        if (fp?.down_payment_available) {
+          setSavings(fmtCurrency(String(getDownPaymentMidpoint(fp.down_payment_available))))
+        }
+      }
 
       if (data.annual_income_override) {
         setIncomeVal(data.annual_income_override)
@@ -326,7 +349,9 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
       if (resolvedState) setOriginState(resolvedState)
     }
     load()
-  }, [onAdvanceToConnect])
+    // profile is stable by mount time (parent gates rendering on `ready`); intentionally
+    // run once, same as the rest of this effect's existing dependency list.
+  }, [onAdvanceToConnect]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Seed from profile
   useEffect(() => {
