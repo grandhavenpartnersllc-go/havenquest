@@ -30,6 +30,13 @@ export const texasMetros = {
       'hutto-tx',
       'taylor-tx',
       'manor-tx',
+      'elgin-tx',
+      'smithville-tx',
+      'cedar-creek-tx',
+      'jarrell-tx',
+      'west-lake-hills-tx',
+      'lago-vista-tx',
+      'jonestown-tx',
     ],
   },
   dallas: {
