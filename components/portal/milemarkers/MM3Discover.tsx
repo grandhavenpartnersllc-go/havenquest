@@ -419,7 +419,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     const metroCities = selectedMetro === 'State'
       ? getAllCities()
       : getAllCities().filter(c => c.metroUsed.includes(selectedMetro))
-    return getTopMatches(activeProfile, metroCities, 20, 'hard').topMatches
+    return getTopMatches(activeProfile, metroCities, 20).topMatches
   }, [matches, selectedMetro, activeProfile])
 
   function afStatus(medianPrice: number): 'comfortable' | 'moderate' | 'stretched' {

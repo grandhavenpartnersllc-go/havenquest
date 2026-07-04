@@ -160,9 +160,12 @@ export function getTopMatches(
   profile: UserProfile,
   cities: Location[],
   limit = 3,
-  // 'soft' for real client matching (Card 3 blends, never zeroes a category).
-  // 'hard' for MM3's internal sandbox only, where an MD can demonstrate a
-  // category dropping to zero influence (Brief 2a Part 7).
+  // 'soft' is the standard mode everywhere (Card 3 blends, never zeroes a category) —
+  // locked decision, per fix_mm3_ranking_consistency: the reveal and MM3 must always
+  // produce the same ranking for the same inputs. 'hard' (full zero-out of an
+  // unassigned category) has no active call site as of this fix; kept in the type
+  // for now rather than removed, since Brief 2a Part 7 originally introduced it for
+  // a possible future MD-facing sandbox demonstration.
   mode: 'soft' | 'hard' = 'soft'
 ): { topMatches: CityMatch[]; otherStrongMatches: CityMatch[] } {
   const archetype: ArchetypeKey = profile.archetype ?? 'general'

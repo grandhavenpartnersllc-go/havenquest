@@ -45,6 +45,7 @@ export const texasMetros = {
       'mueller-tx',
       'tarrytown-clarksville-tx',
       'northwest-hills-tx',
+      'lockhart-tx',
     ],
   },
   dallas: {
@@ -136,7 +137,6 @@ export const texasMetros = {
       'fair-oaks-ranch-tx',
       'leon-valley-tx',
       'canyon-lake-tx',
-      'lockhart-tx',
     ],
   },
 }
