@@ -15,7 +15,23 @@ export function calculateMonthlyPayment(principal: number): number {
     (Math.pow(1 + monthlyRate, numPayments) - 1)
 }
 
+// A raw, unranged dollar figure (e.g. "$75,000", from MM3's sandbox override fields
+// via fmtCurrency) vs. a quiz bucket-range label (e.g. "$50,000 – $100,000") are
+// distinguished by the presence of a range separator/second $ sign. MM3 already has
+// the client's exact figure -- short-circuit straight to it rather than losing that
+// precision by forcing it through the bucket-label switch below, where it would
+// silently miss every case and fall to a wrong hardcoded default
+// (fix_mm3_financial_midpoint_fallback). Bucket labels never match this pattern, so
+// the quiz/reveal path's behavior below is completely unaffected.
+function parseRawDollarAmount(selection: string): number | null {
+  if (!/^\$[\d,]+$/.test(selection)) return null
+  const n = parseInt(selection.replace(/[^0-9]/g, ''), 10)
+  return isNaN(n) ? null : n
+}
+
 export function getDownPaymentMidpoint(selection: string): number {
+  const raw = parseRawDollarAmount(selection)
+  if (raw !== null) return raw
   switch (selection) {
     case 'Under $20,000':         return 10_000
     case '$20,000 – $50,000':    return 35_000
@@ -30,6 +46,8 @@ export function getDownPaymentMidpoint(selection: string): number {
 
 export function getProceedsMidpoint(selection: string | null): number {
   if (!selection) return 0
+  const raw = parseRawDollarAmount(selection)
+  if (raw !== null) return raw
   switch (selection) {
     case 'Under $50,000':         return 25_000
     case '$50,000 – $100,000':   return 75_000
