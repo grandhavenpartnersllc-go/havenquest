@@ -104,6 +104,7 @@ export interface Location {
   county: string
   type: 'city' | 'neighborhood'
   tier: 'tier1' | 'tier2' | 'tier3'
+  character?: string
   parentId: string | null
   scores: LifestyleScores
   housing: HousingData

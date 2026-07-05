@@ -78,7 +78,7 @@ export default async function CityReportPage(
                 <h1 className="text-3xl font-bold text-white tracking-tight">
                   {city.name}, {city.state}
                 </h1>
-                <p className="text-white/40 text-sm mt-1.5">{city.county} County · {TIER_LABELS[city.tier]}</p>
+                <p className="text-white/40 text-sm mt-1.5">{city.county} County · {city.character ?? TIER_LABELS[city.tier]}</p>
               </div>
               <TEARatingBadge rating={city.school.teaRating} size="lg" />
             </div>

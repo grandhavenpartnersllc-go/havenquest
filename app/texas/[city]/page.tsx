@@ -11,6 +11,14 @@ import TEARatingBadge from '../../../components/shared/TEARatingBadge'
 import ScoreBar from '../../../components/shared/ScoreBar'
 import StrengthWeaknessGrid from '../../../components/results/StrengthWeaknessGrid'
 
+// city.name is "City" for standalone cities, or "City: Subarea" for neighborhoods
+// (per the Austin dedup/labeling fix) — reorder into "Moving to City, TX[: Subarea]"
+function movingToLabel(name: string): string {
+  const sep = name.indexOf(': ')
+  if (sep === -1) return `Moving to ${name}, TX`
+  return `Moving to ${name.slice(0, sep)}, TX: ${name.slice(sep + 2)}`
+}
+
 export async function generateStaticParams() {
   return getAllCities().map(city => ({ city: city.id }))
 }
@@ -22,10 +30,10 @@ export async function generateMetadata(
   const city = getCityBySlug(citySlug)
   if (!city) return { title: 'City Not Found | HavenQuest' }
   return {
-    title: `Moving to ${city.name}, Texas — Relocation Guide | HavenQuest`,
+    title: `${movingToLabel(city.name)} — Relocation Guide | HavenQuest`,
     description: `Everything you need to know about moving to ${city.name}, TX — cost of living, best neighborhoods, school districts, housing market, and top realtors.`,
     openGraph: {
-      title: `Moving to ${city.name}, Texas | HavenQuest`,
+      title: `${movingToLabel(city.name)} | HavenQuest`,
       description: `Cost of living, schools, and housing data for ${city.name}, TX.`,
       url: `https://havenquest.co/texas/${citySlug}`,
       siteName: 'HavenQuest',
@@ -33,7 +41,7 @@ export async function generateMetadata(
     },
     twitter: {
       card: 'summary_large_image',
-      title: `Moving to ${city.name}, Texas | HavenQuest`,
+      title: `${movingToLabel(city.name)} | HavenQuest`,
       description: `Texas relocation guide for ${city.name}.`,
     },
   }
@@ -58,16 +66,16 @@ export default async function CityPage(
             <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest mb-5">
               <Link href="/" className="text-blue-400/50 hover:text-blue-400/70 transition-colors">HavenQuest</Link>
               <span className="text-white/20">·</span>
-              <Link href="/explore" className="text-blue-400/50 hover:text-blue-400/70 transition-colors">Texas Cities</Link>
+              <Link href="/explore" className="text-blue-400/50 hover:text-blue-400/70 transition-colors">Texas</Link>
               <span className="text-white/20">·</span>
               <span className="text-white/40">{city.name}</span>
             </div>
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <h1 className="text-3xl font-bold text-white tracking-tight">
-                  Moving to {city.name}, Texas
+                  {movingToLabel(city.name)}
                 </h1>
-                <p className="text-white/40 text-sm mt-1.5">{city.county} County · {TIER_LABELS[city.tier]}</p>
+                <p className="text-white/40 text-sm mt-1.5">{city.county} County · {city.character ?? TIER_LABELS[city.tier]}</p>
               </div>
               <TEARatingBadge rating={city.school.teaRating} size="lg" />
             </div>
