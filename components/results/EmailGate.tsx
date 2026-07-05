@@ -59,6 +59,7 @@ export default function EmailGate({ matches, profile, sessionId, onSuccess, onCl
           mustHaves: profile.mustHaves,
           niceToHaves: profile.niceToHaves,
           notPriorities: profile.notPriorities,
+          unassignedPriorities: profile.unassignedPriorities,
           archetype: profile.archetype,
           buyerProfile: profile.buyerProfile ?? null,
           financialPicture: profile.financial_picture ?? null,

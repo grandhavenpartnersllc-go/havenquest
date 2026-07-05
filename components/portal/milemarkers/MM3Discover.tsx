@@ -359,10 +359,12 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     if (mustHaves.length === 0 && niceToHaves.length === 0) {
       if (profile.mustHaves?.length > 0 || profile.niceToHaves?.length > 0 || profile.notPriorities?.length > 0) {
         setMustHaves(profile.mustHaves ?? [])
-        const used = new Set([...(profile.mustHaves ?? []), ...(profile.niceToHaves ?? []), ...(profile.notPriorities ?? [])])
         setNiceToHaves(profile.niceToHaves ?? [])
         setNotPriorities(profile.notPriorities ?? [])
-        setUnassigned(ALL_KEYS.filter(k => !used.has(k)))
+        // profile.unassignedPriorities is the real, quiz-sourced "never touched" set
+        // (fix_priorities_and_interim_weighting). Falls back to [] for pre-fix accounts,
+        // whose old merged notPriorities data can't be retroactively split.
+        setUnassigned(profile.unassignedPriorities ?? [])
       } else {
         setNiceToHaves(ALL_KEYS)
         setUnassigned([])
@@ -393,6 +395,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     mustHaves,
     niceToHaves,
     notPriorities,
+    unassignedPriorities: unassigned,
     financial_picture: {
       is_homeowner: isSelling,
       home_sale_proceeds: isSelling ? (proceeds || null) : null,
@@ -597,7 +600,10 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     }
   }
 
-  const lessImportant = [...notPriorities, ...unassigned]
+  // "Would Be Nice" shows only genuine quiz/sandbox picks — never-touched categories
+  // (fix_priorities_and_interim_weighting) are not surfaced anywhere in this panel,
+  // per Craig's confirmed display decision.
+  const lessImportant = notPriorities
 
   const effectiveSelectedId = selectedCityId ?? rankedCities[0]?.location.id
   const selectedMatch = rankedCities.find(m => m.location.id === effectiveSelectedId)

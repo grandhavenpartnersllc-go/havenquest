@@ -121,7 +121,7 @@ export function calculateFunctionalFitScore(
   const fullBuckets = clientBuckets ?? (Object.keys(BASE_DNA_WEIGHTS) as (keyof DNAScores)[])
     .reduce((acc, k) => ({ ...acc, [k]: 'would_be_nice' as DNABucket }), {} as Record<keyof DNAScores, DNABucket>)
 
-  const weightingProfile = applyClientWeighting(archetype, fullBuckets, 'soft')
+  const weightingProfile = applyClientWeighting(archetype, fullBuckets)
   const raw = weightedDNASum(city, weightingProfile.activeWeights)
   return { score: Math.round(raw * 10) / 10, weightingProfile }
 }
@@ -133,17 +133,19 @@ function weightedDNASum(city: Location, weights: Record<keyof DNAScores, number>
   )
 }
 
-// notPriorities (Card 3) conflates "Would Be Nice" and never-touched categories into
-// one array, so there's no way to recover that distinction here — mapped to
-// 'unassigned' as the closer semantic match. Categories absent from all three arrays
-// (shouldn't happen given Card 3's logic always places every category in exactly one
-// of them, but handled defensively) default to 'would_be_nice' per the brief.
+// As of fix_priorities_and_interim_weighting, notPriorities holds only genuine
+// "Would Be Nice" picks — the never-touched set now lives in its own
+// unassignedPriorities field (Card 3 no longer merges the two). Categories absent
+// from all four arrays (shouldn't happen given Card 3's logic always places every
+// category in exactly one of them, but handled defensively) default to
+// 'would_be_nice' per the brief.
 export function buildClientBuckets(profile: UserProfile): Record<keyof DNAScores, DNABucket> {
   const buckets = (Object.keys(BASE_DNA_WEIGHTS) as (keyof DNAScores)[])
     .reduce((acc, k) => ({ ...acc, [k]: 'would_be_nice' as DNABucket }), {} as Record<keyof DNAScores, DNABucket>)
   profile.mustHaves.forEach(k => { buckets[k] = 'must_have' })
   profile.niceToHaves.forEach(k => { buckets[k] = 'important' })
-  profile.notPriorities.forEach(k => { buckets[k] = 'unassigned' })
+  profile.notPriorities.forEach(k => { buckets[k] = 'would_be_nice' })
+  ;(profile.unassignedPriorities ?? []).forEach(k => { buckets[k] = 'unassigned' })
   return buckets
 }
 
@@ -159,14 +161,7 @@ export function calculateEmotionalFitScore(city: Location, preference: Personali
 export function getTopMatches(
   profile: UserProfile,
   cities: Location[],
-  limit = 3,
-  // 'soft' is the standard mode everywhere (Card 3 blends, never zeroes a category) —
-  // locked decision, per fix_mm3_ranking_consistency: the reveal and MM3 must always
-  // produce the same ranking for the same inputs. 'hard' (full zero-out of an
-  // unassigned category) has no active call site as of this fix; kept in the type
-  // for now rather than removed, since Brief 2a Part 7 originally introduced it for
-  // a possible future MD-facing sandbox demonstration.
-  mode: 'soft' | 'hard' = 'soft'
+  limit = 3
 ): { topMatches: CityMatch[]; otherStrongMatches: CityMatch[] } {
   const archetype: ArchetypeKey = profile.archetype ?? 'general'
   const { dnaWeight, personalityWeight } = ARCHETYPE_WEIGHTS[archetype]
@@ -177,7 +172,7 @@ export function getTopMatches(
   // Hoisted out of the per-city loop (Brief 2a Part 5) — the weighting profile only
   // depends on archetype + this client's Card 3 buckets, identical across all cities.
   const clientBuckets = buildClientBuckets(profile)
-  const weightingProfile = applyClientWeighting(archetype, clientBuckets, mode)
+  const weightingProfile = applyClientWeighting(archetype, clientBuckets)
 
   const scored = cities.map(city => {
     const { financialModifier, financialFitScore, segment } = calculateFinancialFit(

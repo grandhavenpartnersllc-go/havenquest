@@ -53,6 +53,7 @@ export async function updateSessionStep(
         ...(data.mustHaves !== undefined && { must_haves: data.mustHaves }),
         ...(data.niceToHaves !== undefined && { nice_to_haves: data.niceToHaves }),
         ...(data.notPriorities !== undefined && { not_priorities: data.notPriorities }),
+        ...(data.unassignedPriorities !== undefined && { unassigned_priorities: data.unassignedPriorities }),
         ...(data.buyerProfile !== undefined && { buyer_profile: data.buyerProfile }),
         ...(data.entryPath !== undefined && { entry_path: data.entryPath }),
         ...(data.archetype !== undefined && { archetype: data.archetype }),

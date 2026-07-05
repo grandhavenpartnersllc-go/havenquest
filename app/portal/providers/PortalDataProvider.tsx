@@ -49,6 +49,7 @@ interface UserRow {
   must_haves: Array<keyof DNAScores> | null
   nice_to_haves: Array<keyof DNAScores> | null
   not_priorities: Array<keyof DNAScores> | null
+  unassigned_priorities: Array<keyof DNAScores> | null
   archetype: string | null
   growth_profile: number | null
   lifestyle_orientation: number | null
@@ -115,7 +116,7 @@ export default function PortalDataProvider({ children }: { children: ReactNode }
 
         const { data, error: fetchError } = await supabase
           .from('users')
-          .select('first_name, top_city_matches, annual_income, household_size, moving_timeline, must_haves, nice_to_haves, not_priorities, archetype, growth_profile, lifestyle_orientation, environment, pace, culture, current_milemarker, onboarding_acknowledged, mm2_checklist, portal_notes, engagement_paid, financial_picture')
+          .select('first_name, top_city_matches, annual_income, household_size, moving_timeline, must_haves, nice_to_haves, not_priorities, unassigned_priorities, archetype, growth_profile, lifestyle_orientation, environment, pace, culture, current_milemarker, onboarding_acknowledged, mm2_checklist, portal_notes, engagement_paid, financial_picture')
           .eq('email', email)
           .single()
 
@@ -152,6 +153,7 @@ export default function PortalDataProvider({ children }: { children: ReactNode }
             mustHaves: ud.must_haves ?? [],
             niceToHaves: ud.nice_to_haves ?? [],
             notPriorities: ud.not_priorities ?? [],
+            unassignedPriorities: ud.unassigned_priorities ?? [],
             archetype: resolveArchetype(ud.archetype ?? undefined),
             personalityPreference: buildPersonalityPreference(ud),
             financial_picture: ud.financial_picture ?? undefined,

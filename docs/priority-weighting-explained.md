@@ -1,5 +1,15 @@
 # How Priority Tiers Change a City's Match Score
 
+> **Update, July 2026 — decision shipped, this doc now describes history, not current behavior.**
+> Everything below Section 1 was written *before* the decision was made, to inform it — it describes the *old* additive percentage-point-shift system, which has since been replaced. What actually shipped (`fix_priorities_and_interim_weighting.md`):
+> - **Multiplicative, not additive:** effective weight = archetype-adjusted baseline importance × a tier multiplier (`TIER_MULTIPLIERS` in `services/archetypeService.ts`), not baseline + a percentage-point shift.
+> - **Gentler curve:** Must Have **1.5×**, Important **1.25×**, Would Be Nice / Unassigned **1.0×** (both get the same "baseline preserved" treatment) — replacing the old 3x/2x/1x framing described below.
+> - **One correction to the reasoning that followed this doc:** the gentler curve was initially believed to *prevent* unassigned categories from "swamping" a user's actual selections. That reasoning was wrong and has been retracted — a smaller multiplier gives a selected category *less* relative pull against baseline-preserved unassigned categories, not more (verified with the same worked numbers below). The real justification for the gentler curve is **noise amplification**: large multipliers turn small, subjective 1-point differences in human-scored DNA data into outsized swings in the final ranking. Swamping from many baseline-preserved unassigned categories is real and not something the multiplier size can fix — it's an accepted, known cost of not yet being able to distinguish "no opinion" from "actively rejected," deferred to the future Dynamic Zero-Out model (quiz redesign).
+> - **Unassigned = 1.0× (baseline preserved), not −5pp shifted or zeroed** — the old 'soft'/'hard' mode distinction described below no longer exists; there's only one mode now.
+> - The final "renormalize to a fixed 100% pie" step is gone as a *separate, additive, two-stage* operation — the new model computes effective weights independently (as products, not cumulative shifts), then does one clean division by the sum of those effective weights at the very end, which is mathematically a standard weighted average and stays naturally bounded to the same 0–10 range as before.
+>
+> The worked numbers in Sections 3–4 below are still accurate for the *old* system and are kept for historical reference — see the new worked example at the bottom of this doc for what the numbers look like under the model that's actually live now.
+
 This explains, with real numbers, exactly how a client's Must Have / Important to Me / Would Be Nice / Unassigned selections change which cities rank higher or lower — and lays out the three options for how "Unassigned" (categories a client never touched) should be treated, ahead of that decision.
 
 No code was changed to produce this document — it's a plain-language trace of what the code in `services/archetypeService.ts` and `services/matchingService.ts` actually does today.
@@ -167,3 +177,37 @@ New total: 32+23+21+21+11+13+9 = **130%**. Renormalize (÷1.30):
 - **True neutral (not yet built):** not picking something still costs it *some* credit — just less than soft mode, and purely as an unavoidable side effect of your other choices getting a boost, not as an intentional penalty. Feels the closest to "I have no opinion on this" while still being mathematically honest that *something* has to give when other categories get boosted.
 
 None of the three options can make an untouched category's influence stay perfectly unchanged relative to categories you did pick — that would require the total to exceed 100%, which the system (correctly) never allows.
+
+---
+
+## 6. What actually shipped — the same worked example, under the real formula
+
+Using the identical example from Section 3 (School Quality + Outdoor Lifestyle = Must Have, Family Lifestyle + Career Access = Important, Dining & Entertainment = Would Be Nice, Growth Potential + Luxury Lifestyle = untouched):
+
+**Step 1 — effective weight = baseline × multiplier (no shift, no intermediate renormalization):**
+
+| Category | Baseline | Tier | Multiplier | Effective weight |
+|---|---|---|---|---|
+| School Quality | 22% | Must Have | 1.5× | 0.330 |
+| Outdoor Lifestyle | 13% | Must Have | 1.5× | 0.195 |
+| Family Lifestyle | 16% | Important | 1.25× | 0.200 |
+| Career Access | 16% | Important | 1.25× | 0.200 |
+| Dining & Entertainment | 11% | Would Be Nice | 1.0× | 0.110 |
+| Growth Potential | 13% | Unassigned (never touched) | 1.0× | 0.130 |
+| Luxury Lifestyle | 9% | Unassigned (never touched) | 1.0× | 0.090 |
+
+**Step 2 — one final division (sum = 1.255), producing the actual weights used:**
+
+| Category | Final weight | Old (soft mode) weight, for comparison |
+|---|---|---|
+| School Quality | **26.3%** | 26.7% |
+| Outdoor Lifestyle | **15.5%** | 19.2% |
+| Family Lifestyle | **15.9%** | 17.5% |
+| Career Access | **15.9%** | 17.5% |
+| Dining & Entertainment | **8.8%** | 9.2% |
+| Growth Potential | **10.4%** | 6.7% |
+| Luxury Lifestyle | **7.2%** | 3.3% |
+
+**The real, intended effect of this change is right there in the last two rows:** the two never-touched categories now carry meaningfully *more* influence than they did before (Growth Potential 10.4% vs. 6.7%; Luxury Lifestyle 7.2% vs. 3.3%, more than double) — because they're no longer penalized with a −5-percentage-point shift, just carried at their honest baseline importance. That's the actual, deliberate behavior change here, not a side effect.
+
+**Combined with Austin's real DNA scores**, this produces a functional-fit score of **7.3** — landing in the same 0–10 range as the old system for this example, confirming the single final division does its job as a scaling step without needing anything extra bolted on.

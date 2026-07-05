@@ -73,41 +73,53 @@ export function getWeightedDNACategories(archetype: ArchetypeKey): Record<keyof 
   return adjusted
 }
 
-export const WEIGHTING_MODEL_VERSION = '1.0'
+export const WEIGHTING_MODEL_VERSION = '2.0'
 
-// Deliberate implementation choice, not derived from an external spec — see Brief 2a background.
-const SOFT_BUCKET_SHIFT: Record<DNABucket, number> = {
-  must_have: 10,
-  important: 5,
-  would_be_nice: 0,
-  unassigned: -5,
+// Interim weighting model (fix_priorities_and_interim_weighting, July 2026).
+// Effective weight per category = archetype-adjusted baseline importance × tier
+// multiplier — independent values, not additive percentage-point shifts forced to
+// renormalize mid-calculation. Unassigned (never-touched) categories are
+// deliberately preserved at their full baseline importance (1.0×), not penalized —
+// the quiz can't yet distinguish "no opinion" from "actively rejected," so this is
+// the conservative default until that distinction exists (see
+// build_priorities_fourth_bucket.md). The gentler 1.5/1.25/1.0 curve (replacing the
+// old, much more aggressive 3x/2x/1x framing) exists to limit noise amplification —
+// large multipliers turn small, subjective 1-point differences in human-scored DNA
+// data into outsized swings in the final ranking; gentler multipliers keep rankings
+// more stable against that noise. It is not intended to (and cannot) prevent a
+// category with a large combined baseline importance across several untouched
+// categories from outweighing a single boosted selection — that's an accepted,
+// known cost of preserving baseline weight for unassigned categories, deferred to
+// the future Dynamic Zero-Out model (quiz redesign) to address properly.
+export const TIER_MULTIPLIERS: Record<DNABucket, number> = {
+  must_have: 1.5,
+  important: 1.25,
+  would_be_nice: 1.0,
+  unassigned: 1.0,
 }
 
 export function applyClientWeighting(
   archetype: ArchetypeKey,
-  clientBuckets: Record<keyof DNAScores, DNABucket>,
-  mode: 'soft' | 'hard'
+  clientBuckets: Record<keyof DNAScores, DNABucket>
 ): WeightingProfile {
   const archetypeWeights = getWeightedDNACategories(archetype)
   const clientAdjustments: Record<keyof DNAScores, number> = {} as Record<keyof DNAScores, number>
-  const shifted: Record<keyof DNAScores, number> = { ...archetypeWeights }
+  const effectiveWeights: Record<keyof DNAScores, number> = {} as Record<keyof DNAScores, number>
 
   for (const key of Object.keys(archetypeWeights) as (keyof DNAScores)[]) {
     const bucket = clientBuckets[key] ?? 'would_be_nice'
-    if (mode === 'hard' && bucket === 'unassigned') {
-      clientAdjustments[key] = -shifted[key] * 100 // effectively zeroes this category out
-      shifted[key] = 0
-    } else {
-      const shiftPp = SOFT_BUCKET_SHIFT[bucket]
-      clientAdjustments[key] = shiftPp
-      shifted[key] = Math.max(0, shifted[key] + shiftPp / 100)
-    }
+    const multiplier = TIER_MULTIPLIERS[bucket]
+    clientAdjustments[key] = multiplier
+    effectiveWeights[key] = archetypeWeights[key] * multiplier
   }
 
-  const total = Object.values(shifted).reduce((sum, w) => sum + w, 0)
+  // Single final scaling step — a true weighted average, naturally bounded to the
+  // same 0-10 range as before. This replaces the old system's two-stage shift-then-
+  // renormalize dance with one clean division, right at the end.
+  const total = Object.values(effectiveWeights).reduce((sum, w) => sum + w, 0)
   const activeWeights: Record<keyof DNAScores, number> = {} as Record<keyof DNAScores, number>
-  for (const key of Object.keys(shifted) as (keyof DNAScores)[]) {
-    activeWeights[key] = total > 0 ? shifted[key] / total : 0
+  for (const key of Object.keys(effectiveWeights) as (keyof DNAScores)[]) {
+    activeWeights[key] = total > 0 ? effectiveWeights[key] / total : 0
   }
 
   return {

@@ -13,7 +13,8 @@ function computeWeightingProfile(
   archetype: string | undefined,
   mustHaves: (keyof DNAScores)[] | undefined,
   niceToHaves: (keyof DNAScores)[] | undefined,
-  notPriorities: (keyof DNAScores)[] | undefined
+  notPriorities: (keyof DNAScores)[] | undefined,
+  unassignedPriorities: (keyof DNAScores)[] | undefined
 ) {
   const validArchetypes: ArchetypeKey[] = ['family', 'firsttime', 'executive', 'luxury', 'retiree', 'youngpro', 'general']
   const resolvedArchetype: ArchetypeKey = (validArchetypes as string[]).includes(archetype ?? '')
@@ -26,6 +27,7 @@ function computeWeightingProfile(
     mustHaves: mustHaves ?? [],
     niceToHaves: niceToHaves ?? [],
     notPriorities: notPriorities ?? [],
+    unassignedPriorities: unassignedPriorities ?? [],
   })
   const anyCity = getAllCities()[0]
   return calculateFunctionalFitScore(anyCity, resolvedArchetype, buckets).weightingProfile
@@ -69,11 +71,11 @@ async function sendWelcomeAndRespond(
 
 export async function PATCH(request: NextRequest) {
   try {
-    const { email, topCityMatches, archetype, mustHaves, niceToHaves, notPriorities, personalityPreference } = await request.json()
+    const { email, topCityMatches, archetype, mustHaves, niceToHaves, notPriorities, unassignedPriorities, personalityPreference } = await request.json()
     if (!email || !Array.isArray(topCityMatches)) {
       return NextResponse.json({ error: 'email and topCityMatches required' }, { status: 400 })
     }
-    const weightingProfile = computeWeightingProfile(archetype, mustHaves, niceToHaves, notPriorities)
+    const weightingProfile = computeWeightingProfile(archetype, mustHaves, niceToHaves, notPriorities, unassignedPriorities)
     const supabase = getSupabase()
     await supabase
       .from('users')
@@ -110,6 +112,7 @@ export async function POST(request: NextRequest) {
       mustHaves,
       niceToHaves,
       notPriorities,
+      unassignedPriorities,
       archetype,
       topCityMatches,
       buyerProfile,
@@ -121,7 +124,7 @@ export async function POST(request: NextRequest) {
       financialPicture?.purchase_timeline === '0-3months' ||
       financialPicture?.purchase_timeline === '3-6months'
 
-    const weightingProfile = computeWeightingProfile(archetype, mustHaves, niceToHaves, notPriorities)
+    const weightingProfile = computeWeightingProfile(archetype, mustHaves, niceToHaves, notPriorities, unassignedPriorities)
 
     if (!firstName || !email) {
       return NextResponse.json({ error: 'First name and email are required' }, { status: 400 })
@@ -192,6 +195,7 @@ export async function POST(request: NextRequest) {
           must_haves: mustHaves,
           nice_to_haves: niceToHaves,
           not_priorities: notPriorities,
+          unassigned_priorities: unassignedPriorities,
           archetype: archetype ?? null,
           dna_weighting_profile: weightingProfile,
           top_city_matches: topCityMatches,
@@ -231,6 +235,7 @@ export async function POST(request: NextRequest) {
               must_haves: mustHaves,
               nice_to_haves: niceToHaves,
               not_priorities: notPriorities,
+              unassigned_priorities: unassignedPriorities,
               archetype: archetype ?? null,
               dna_weighting_profile: weightingProfile,
               top_city_matches: topCityMatches,

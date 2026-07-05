@@ -329,6 +329,7 @@ export default function BeginPage() {
     const mustHaves = finalAnswers.card3?.mustHaves ?? []
     const niceToHaves = finalAnswers.card3?.niceToHaves ?? []
     const notPriorities = finalAnswers.card3?.notPriorities ?? []
+    const unassignedPriorities = finalAnswers.card3?.unassignedPriorities ?? []
     const annualIncome = finalAnswers.card9 ? incomeRangeMidpoint(finalAnswers.card9.incomeRange) : 162_500
     const financial_picture = finalAnswers.card9
       ? buildFinancialPicture(finalAnswers.card9, moveTimeline)
@@ -355,6 +356,7 @@ export default function BeginPage() {
       mustHaves,
       niceToHaves,
       notPriorities,
+      unassignedPriorities,
       financial_picture,
       archetype,
       personalityPreference,

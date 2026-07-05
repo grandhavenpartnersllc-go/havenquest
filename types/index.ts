@@ -152,6 +152,7 @@ export interface UserProfile {
   mustHaves: (keyof DNAScores)[]
   niceToHaves: (keyof DNAScores)[]
   notPriorities: (keyof DNAScores)[]
+  unassignedPriorities?: (keyof DNAScores)[]
   buyerProfile?: BuyerProfile
   financial_picture?: FinancialPicture
   archetype?: ArchetypeKey
@@ -256,6 +257,7 @@ export interface QuizSessionData {
   mustHaves?: string[]
   niceToHaves?: string[]
   notPriorities?: string[]
+  unassignedPriorities?: string[]
   buyerProfile?: BuyerProfile
   email?: string
   completed?: boolean

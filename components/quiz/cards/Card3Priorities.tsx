@@ -17,6 +17,7 @@ export interface Card3Result {
   mustHaves: (keyof DNAScores)[]
   niceToHaves: (keyof DNAScores)[]
   notPriorities: (keyof DNAScores)[]
+  unassignedPriorities: (keyof DNAScores)[]
 }
 
 interface Card3PrioritiesProps {
@@ -68,7 +69,8 @@ export default function Card3Priorities({ initialValue, onComplete }: Card3Prior
       priorities: buildPriorities(mustHaves, niceToHaves, notPriorities),
       mustHaves,
       niceToHaves,
-      notPriorities: [...notPriorities, ...unassigned],
+      notPriorities,
+      unassignedPriorities: unassigned,
     })
   }
 
@@ -81,7 +83,8 @@ export default function Card3Priorities({ initialValue, onComplete }: Card3Prior
       priorities: buildPriorities(mustHaves, niceToHaves, wouldBeNice),
       mustHaves,
       niceToHaves,
-      notPriorities: [...wouldBeNice, ...unassigned],
+      notPriorities: wouldBeNice,
+      unassignedPriorities: unassigned,
     })
   }
 

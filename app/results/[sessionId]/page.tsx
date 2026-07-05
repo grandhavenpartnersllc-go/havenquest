@@ -78,6 +78,7 @@ export default function SessionResultsPage({ params }: { params: Promise<{ sessi
               mustHaves: prof.mustHaves,
               niceToHaves: prof.niceToHaves,
               notPriorities: prof.notPriorities,
+              unassignedPriorities: prof.unassignedPriorities,
               personalityPreference: prof.personalityPreference ?? null,
             }),
           }).catch(() => {})
