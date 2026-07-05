@@ -11,7 +11,6 @@ export const texasMetros = {
   austin: {
     name: 'Austin Metro',
     cityIds: [
-      'austin-tx',
       'round-rock-tx',
       'cedar-park-tx',
       'georgetown-tx',
