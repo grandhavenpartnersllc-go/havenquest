@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     const { data: ud, error: dbErr } = await supabase
       .from('users')
-      .select('first_name, report_emailed, annual_income, household_size, housing_preference, moving_timeline, must_haves, nice_to_haves, not_priorities, archetype, growth_profile, lifestyle_orientation, environment, pace, culture')
+      .select('first_name, report_emailed, annual_income, household_size, housing_preference, moving_timeline, must_haves, nice_to_haves, not_priorities, unassigned_priorities, archetype, growth_profile, lifestyle_orientation, environment, pace, culture, financial_picture')
       .eq('email', email)
       .single()
 
@@ -65,8 +65,10 @@ export async function POST(request: NextRequest) {
       mustHaves: ud.must_haves ?? [],
       niceToHaves: ud.nice_to_haves ?? [],
       notPriorities: ud.not_priorities ?? [],
+      unassignedPriorities: ud.unassigned_priorities ?? [],
       archetype: resolveArchetype(ud.archetype),
       personalityPreference: buildPersonalityPreference(ud),
+      financial_picture: ud.financial_picture ?? undefined,
     }
 
     const { topMatches: matches } = getTopMatches(profile, getAllCities(), 3)
