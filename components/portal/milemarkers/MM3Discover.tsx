@@ -613,18 +613,31 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         citiesLocked: true,
       }
 
-      await supabase.from('users').update({
+      // exact_down_payment does not exist on users (confirmed via information_schema —
+      // migration 20260604_users_exact_financials.sql never actually landed it, only
+      // exact_home_proceeds from that same statement did). available_funds is the real
+      // column MM3's load effect already reads this value from. financials_locked also
+      // does not exist and has no migration or any read-site anywhere in the codebase —
+      // removed outright rather than remapped. Postgres rejects this whole UPDATE
+      // atomically when any referenced column is invalid, so either bad column silently
+      // failed the entire commit while onAdvanceToConnect() fired regardless.
+      const { error } = await supabase.from('users').update({
         current_milemarker: 4,
         sandbox_profile: sandboxData,
         sandbox_committed: true,
         sandbox_committed_at: new Date().toISOString(),
         chosen_communities: pinnedCities,
         exact_home_proceeds: isSelling ? (proceedsNum || null) : null,
-        exact_down_payment: savingsNum || null,
+        available_funds: savingsNum || null,
         loan_term_preference: loanTerm,
-        financials_locked: true,
         annual_income_override: incomeVal || null,
       }).eq('email', s.user.email.toLowerCase())
+
+      if (error) {
+        console.error('[MM3] commit update failed:', error)
+        setCtaError('Something went wrong saving your plan — please try again.')
+        return
+      }
 
       onAdvanceToConnect()
     } catch (err) {
@@ -826,7 +839,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           <span style={{ padding: '5px 7px', fontSize: '11px', color: '#86868b', borderRight: '0.5px solid #E0DED8', background: '#FAFAF8', flexShrink: 0 }}>$</span>
           <input type="text" value={savings.replace(/^\$/, '')}
             onChange={e => { setSavings(fmtCurrency(e.target.value)); setSandboxTouched(true) }}
-            onBlur={() => persistNumbers({ exact_down_payment: savingsNum || null })}
+            onBlur={() => persistNumbers({ available_funds: savingsNum || null })}
             placeholder="75,000"
             style={{ border: 'none', padding: '5px 8px', fontSize: '12px', color: '#1d1d1f', background: '#fff', outline: 'none', width: '100%', fontFamily: 'inherit' }} />
         </div>
