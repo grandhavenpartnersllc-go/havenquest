@@ -180,9 +180,10 @@ Do not use neutral defaults — always fetch and use real values.
   notPriorities: string[]
   unassigned: string[]
   interestRateOverride: number | null
-  citiesLocked: string[]     // pinned city IDs
+  citiesLocked: boolean      // locks/unlocks the city-pinning section — does NOT store IDs
 }
 ```
+Pinned community IDs are stored separately, in the `chosen_communities` column (see table above) — not inside `sandbox_profile`.
 
 ### Sandbox age check
 If `sandbox_committed_at` is >30 days old, ignore sandbox data and fall through to quiz values. Always check before reading sandbox_profile.
