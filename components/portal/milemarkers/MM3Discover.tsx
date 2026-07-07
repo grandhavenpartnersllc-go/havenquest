@@ -9,6 +9,8 @@ import { getAllCities } from '../../../services/locationService'
 import { getTopMatches, getDownPaymentMidpoint, getProceedsMidpoint } from '../../../services/matchingService'
 import { createClient } from '../../../lib/supabase/client'
 import { lookupZipCityState } from '../../../utils/zipLookup'
+import { ChevronRight } from 'lucide-react'
+import CompareModal from '../../results/CompareModal'
 
 const ALL_KEYS = DNA_CATEGORIES.map(c => c.key) as (keyof DNAScores)[]
 
@@ -230,6 +232,17 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const [activePanel, setActivePanel] = useState<'lifestyle' | 'financials'>('lifestyle')
   const [isMobile, setIsMobile] = useState(false)
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
+
+  // Communities section (layout amendment) — independent collapsible toggle,
+  // not part of the Lifestyle/Financials mutual-exclusion pair, defaulting open
+  // since it's now the top/most-prominent section in the Control Panel.
+  const [communitiesExpanded, setCommunitiesExpanded] = useState(true)
+
+  // Pinned-card Compare (placeholder wiring) — reuses the existing CompareModal/
+  // createCompareDocument logic as-is. Pairs the clicked pinned card against
+  // pinned slot #1 (or slot #2, if #1 itself was clicked); needs >=2 pinned
+  // cities to have a partner.
+  const [compareCityId, setCompareCityId] = useState<string | null>(null)
 
   const priorityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const incomeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -473,6 +486,15 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     return rankedCities.find(m => m.location.id === cityId) ?? matches.find(m => m.location.id === cityId)
   }
 
+  // Pinned-card Compare pairing (interim placeholder, per Craig): clicking Compare
+  // on pinned slot #1 pairs it against slot #2; clicking it on slot #2 or #3 pairs
+  // against slot #1. Requires >=2 pinned cities to have a partner at all.
+  function getComparePartnerId(clickedId: string): string | null {
+    if (pinnedCities.length < 2) return null
+    if (clickedId === pinnedCities[0]) return pinnedCities[1] ?? null
+    return pinnedCities[0]
+  }
+
   async function persistPinned(ids: string[]) {
     try {
       const supabase = createClient()
@@ -659,21 +681,29 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const displayedCities = showAllCities ? rankedCities.slice(0, 10) : rankedCities.slice(0, 5)
 
   // ──────────────────────────────────────────────────────────
-  // Section header for the Adaptive Control Panel accordion
+  // Section header for the Adaptive Control Panel accordion. Generalized to take
+  // expanded/onClick directly so it can drive both the mutually-exclusive
+  // Lifestyle/Financials pair (shared activePanel state, unchanged from Phase B)
+  // and Communities' own independent open/closed toggle, with identical
+  // affordance: rotating chevron + stronger active-state visual treatment.
   // ──────────────────────────────────────────────────────────
-  const PanelHeader = ({ label, panelKey }: { label: string; panelKey: 'lifestyle' | 'financials' }) => (
+  const PanelHeader = ({ label, expanded, onClick }: { label: string; expanded: boolean; onClick: () => void }) => (
     <button
       type="button"
-      onClick={() => setActivePanel(panelKey)}
+      onClick={onClick}
       style={{
         width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        background: activePanel === panelKey ? '#F5F4F1' : '#fff',
-        border: 'none', borderBottom: '0.5px solid rgba(0,0,0,0.08)',
-        padding: '14px 16px', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
+        background: expanded ? '#F5F4F1' : '#fff',
+        borderWidth: '0', borderBottomWidth: '0.5px', borderStyle: 'solid', borderColor: 'rgba(0,0,0,0.08)',
+        borderLeft: expanded ? '3px solid #C5B783' : '3px solid transparent',
+        padding: '14px 16px 14px 13px', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
       }}
     >
-      <span style={{ fontSize: '13px', fontWeight: 500, color: '#0A1E3D' }}>{label}</span>
-      <span style={{ fontSize: '11px', color: '#86868b', transition: 'transform 0.2s ease', transform: activePanel === panelKey ? 'rotate(90deg)' : 'rotate(0deg)' }}>▸</span>
+      <span style={{ fontSize: '13px', fontWeight: 600, color: '#0A1E3D' }}>{label}</span>
+      <ChevronRight
+        size={15}
+        style={{ color: expanded ? '#C5B783' : '#86868b', transition: 'transform 0.2s ease', transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)', flexShrink: 0 }}
+      />
     </button>
   )
 
@@ -1013,6 +1043,19 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '3px' }}>
                       <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: afColor(status!), flexShrink: 0 }} />
                       <span style={{ fontSize: '9px', color: afColor(status!) }}>{afLabel(status!)}</span>
+                      {pinnedCities.length >= 2 && (
+                        <button
+                          type="button"
+                          onClick={() => setCompareCityId(cityId)}
+                          style={{
+                            marginLeft: 'auto', fontSize: '9px', color: '#C5B783',
+                            background: 'rgba(197,183,131,0.12)', border: '0.5px solid rgba(197,183,131,0.35)',
+                            borderRadius: '8px', padding: '1px 6px', cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0,
+                          }}
+                        >
+                          Compare
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1233,7 +1276,6 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const communitiesFrame = (
     <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: '10px', overflow: 'hidden' }}>
       <div style={{ padding: '12px 12px 0' }}>
-        <p style={{ fontSize: '12px', fontWeight: 500, color: '#0A1E3D', margin: '0 0 2px' }}>Your Communities</p>
         <p style={{ fontSize: '10px', color: '#888', margin: '0 0 10px' }}>Click any city to preview. Pin up to 3.</p>
       </div>
       <div style={{ display: 'flex', minHeight: '280px', alignItems: 'stretch', borderTop: '0.5px solid #F0EEE9' }}>
@@ -1440,13 +1482,21 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const controlPanelAccordion = (
     <>
       <div>
-        <PanelHeader label="Your Lifestyle" panelKey="lifestyle" />
+        <PanelHeader label="Your Communities" expanded={communitiesExpanded} onClick={() => setCommunitiesExpanded(v => !v)} />
+        <div style={{ maxHeight: communitiesExpanded ? '3000px' : '0px', overflow: 'hidden', transition: 'max-height 0.3s ease' }}>
+          <div style={{ padding: '12px 16px' }}>
+            {communitiesFrame}
+          </div>
+        </div>
+      </div>
+      <div>
+        <PanelHeader label="Your Lifestyle" expanded={activePanel === 'lifestyle'} onClick={() => setActivePanel('lifestyle')} />
         <div style={{ maxHeight: activePanel === 'lifestyle' ? '3000px' : '0px', overflow: 'hidden', transition: 'max-height 0.3s ease' }}>
           {lifestyleContent}
         </div>
       </div>
       <div>
-        <PanelHeader label="Your Financials" panelKey="financials" />
+        <PanelHeader label="Your Financials" expanded={activePanel === 'financials'} onClick={() => setActivePanel('financials')} />
         <div style={{ maxHeight: activePanel === 'financials' ? '3000px' : '0px', overflow: 'hidden', transition: 'max-height 0.3s ease' }}>
           {financialsContent}
         </div>
@@ -1484,6 +1534,23 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         </div>
       )}
 
+      {/* Pinned-card Compare (placeholder wiring) — reuses the existing CompareModal
+          as-is; interim only, not the full Phase D comparison-report build. */}
+      {compareCityId && (() => {
+        const partnerId = getComparePartnerId(compareCityId)
+        const cityA = findMatch(compareCityId)
+        const cityB = partnerId ? findMatch(partnerId) : undefined
+        if (!cityA || !cityB) return null
+        return (
+          <CompareModal
+            cityA={cityA}
+            cityB={cityB}
+            profile={activeProfile}
+            onClose={() => setCompareCityId(null)}
+          />
+        )
+      })()}
+
       {/* Two-zone layout: Adaptive Control Panel (40%) / Living Ledger (60%) */}
       <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', minHeight: '100%' }}>
 
@@ -1507,7 +1574,11 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         {/* ── LIVING LEDGER — 60% (full width on mobile) ── */}
         <div style={{ flex: 1, background: '#F2F1EE', minWidth: 0, padding: '16px', overflowY: 'auto', paddingBottom: isMobile ? '132px' : '16px' }}>
           {livingLedgerSummaryCard}
-          {communitiesFrame}
+          {/* On desktop, Communities moved into the Control Panel accordion above.
+              On mobile there is no Control Panel — communities must stay the
+              permanently-visible base layer per Phase B's mobile spec, so it
+              renders here instead when isMobile. */}
+          {isMobile && communitiesFrame}
         </div>
       </div>
 
