@@ -10,6 +10,7 @@ import { getTopMatches, getDownPaymentMidpoint, getProceedsMidpoint } from '../.
 import { createClient } from '../../../lib/supabase/client'
 import { lookupZipCityState } from '../../../utils/zipLookup'
 import CompareModal from '../../results/CompareModal'
+import { Lock, LockOpen } from 'lucide-react'
 
 const ALL_KEYS = DNA_CATEGORIES.map(c => c.key) as (keyof DNAScores)[]
 
@@ -237,6 +238,12 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // pinned slot #1 (or slot #2, if #1 itself was clicked); needs >=2 pinned
   // cities to have a partner.
   const [compareCityId, setCompareCityId] = useState<string | null>(null)
+
+  // Lock-to-unlock (layout amendment 3) — UI-only state, NOT persisted to the DB
+  // per Craig's explicit scope note. A confirmation signal, not a restriction:
+  // locking does not disable editing the section.
+  const [lifestyleLocked, setLifestyleLocked] = useState(false)
+  const [financialsLocked, setFinancialsLocked] = useState(false)
 
   const priorityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const incomeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -614,6 +621,10 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
       setCtaError('Pin at least one community before scheduling your consultation.')
       return
     }
+    if (!lifestyleLocked || !financialsLocked) {
+      setCtaError('Lock your Lifestyle and Financials preferences before scheduling your consultation.')
+      return
+    }
     setCtaError(null)
     setCommitting(true)
     try {
@@ -664,6 +675,20 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     }
   }
 
+  // Schedule a Consultation gating (layout amendment 3) — genuinely AND, not
+  // either/or: needs a pinned community AND both sections locked. Confirmed by
+  // Craig. Shared by both the desktop (top-right) and mobile CTA.
+  const hasPinnedCity = pinnedCities.length > 0
+  const bothLocked = lifestyleLocked && financialsLocked
+  const canSchedule = hasPinnedCity && bothLocked
+  const scheduleHint = !hasPinnedCity && !bothLocked
+    ? 'Pin at least one community and lock your preferences first'
+    : !hasPinnedCity
+    ? 'Pin at least one community first'
+    : !bothLocked
+    ? 'Lock your Lifestyle and Financials preferences first'
+    : null
+
   // "Would Be Nice" shows only genuine quiz/sandbox picks — never-touched categories
   // (fix_priorities_and_interim_weighting) are not surfaced anywhere in this panel,
   // per Craig's confirmed display decision.
@@ -699,13 +724,38 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   )
 
   // ──────────────────────────────────────────────────────────
+  // Lock-to-unlock toggle (layout amendment 3) — a confirmation signal, not a
+  // restriction: toggling locked does not disable the section underneath it,
+  // the user can still freely view/edit either way. UI-only, not persisted.
+  // ──────────────────────────────────────────────────────────
+  const LockToggle = ({ locked, onClick }: { locked: boolean; onClick: () => void }) => (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        display: 'flex', alignItems: 'center', gap: '5px', fontFamily: 'inherit', cursor: 'pointer',
+        fontSize: '10px', fontWeight: 500, padding: '4px 9px', borderRadius: '12px',
+        background: locked ? 'rgba(197,183,131,0.15)' : '#F5F4F1',
+        color: locked ? '#8a6f00' : '#86868b',
+        border: `0.5px solid ${locked ? 'rgba(197,183,131,0.4)' : 'rgba(0,0,0,0.1)'}`,
+      }}
+    >
+      {locked ? <Lock size={11} /> : <LockOpen size={11} />}
+      {locked ? 'Locked' : 'Lock this in'}
+    </button>
+  )
+
+  // ──────────────────────────────────────────────────────────
   // Lifestyle content (4-tier priorities + 4 personality sliders) — ported
   // verbatim from the pre-rebuild "Your Lifestyle" panel, plus the new
   // "Not Yet Sorted" 4th column.
   // ──────────────────────────────────────────────────────────
   const lifestyleContent = (
     <div style={{ padding: '12px 16px' }}>
-      <p style={{ fontSize: '10px', color: '#6B6A65', margin: '0 0 8px' }}>Click to move between columns</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '0 0 8px' }}>
+        <p style={{ fontSize: '10px', color: '#6B6A65', margin: 0 }}>Click to move between columns</p>
+        <LockToggle locked={lifestyleLocked} onClick={() => setLifestyleLocked(v => !v)} />
+      </div>
 
       <p style={{ fontSize: '10px', color: '#6B6A65', margin: '0 0 8px' }}>
         <span style={{ color: mustHaves.length >= 3 ? '#1a6b35' : undefined, fontWeight: mustHaves.length >= 3 ? 500 : undefined }}>
@@ -822,7 +872,10 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // ──────────────────────────────────────────────────────────
   const financialsContent = (
     <div style={{ padding: '12px 16px' }}>
-      <p style={{ fontSize: '10px', color: '#888', margin: '0 0 10px' }}>Adjust to update buying power live</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '0 0 10px' }}>
+        <p style={{ fontSize: '10px', color: '#888', margin: 0 }}>Adjust to update buying power live</p>
+        <LockToggle locked={financialsLocked} onClick={() => setFinancialsLocked(v => !v)} />
+      </div>
 
       {/* Selling toggle */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
@@ -938,28 +991,32 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // ──────────────────────────────────────────────────────────
   // CTA (Schedule a Consultation) — ported verbatim, unchanged.
   // ──────────────────────────────────────────────────────────
+  // Persistent top-right CTA (layout amendment 3) — moved out of the bottom of
+  // the left column into a sticky block at the top of the Living Ledger
+  // (desktop only; mobile's CTA stays in its own fixed bottom bar, untouched in
+  // placement, but shares this same canSchedule/scheduleHint gating).
   const ctaBlock = (
-    <div style={{ flexShrink: 0, padding: '12px 16px 16px', borderTop: '0.5px solid rgba(0,0,0,0.08)', background: '#fff' }}>
+    <div style={{ flexShrink: 0, padding: '12px 16px', background: '#fff', borderRadius: '10px', border: '0.5px solid rgba(0,0,0,0.1)', marginBottom: '10px' }}>
       {ctaError && (
         <p style={{ fontSize: '10px', color: '#D9463A', margin: '0 0 6px', textAlign: 'center', lineHeight: 1.4 }}>
           {ctaError}
         </p>
       )}
       <button
-        type="button" onClick={handleCommit} disabled={committing}
+        type="button" onClick={handleCommit} disabled={committing || !canSchedule}
         style={{
           width: '100%', background: '#C5B783', color: '#0A1E3D',
           border: 'none', borderRadius: '8px', padding: '12px',
           fontWeight: 500, fontSize: '14px',
-          cursor: committing ? 'not-allowed' : 'pointer',
-          opacity: committing ? 0.7 : 1, fontFamily: 'inherit',
+          cursor: (committing || !canSchedule) ? 'not-allowed' : 'pointer',
+          opacity: (committing || !canSchedule) ? 0.5 : 1, fontFamily: 'inherit',
         }}
       >
         {committing ? 'Saving…' : 'Schedule a Consultation →'}
       </button>
-      {!ctaError && (
-        <p style={{ fontSize: '9px', color: 'rgba(0,0,0,0.32)', textAlign: 'center', margin: '5px 0 0', lineHeight: 1.4 }}>
-          Pin at least one community first
+      {!ctaError && scheduleHint && (
+        <p style={{ fontSize: '9px', color: 'rgba(0,0,0,0.42)', textAlign: 'center', margin: '5px 0 0', lineHeight: 1.4 }}>
+          {scheduleHint}
         </p>
       )}
     </div>
@@ -1555,12 +1612,20 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
             <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
               {controlPanelAccordion}
             </div>
-            {ctaBlock}
           </div>
         )}
 
         {/* ── LIVING LEDGER — 60% (full width on mobile) ── */}
         <div style={{ flex: 1, background: '#F2F1EE', minWidth: 0, padding: '16px', overflowY: 'auto', paddingBottom: isMobile ? '132px' : '16px' }}>
+          {/* Persistent CTA, top-right — desktop only. Sticky within this column's
+              own scroll container so it stays visible above Your Direction as the
+              Living Ledger's content scrolls, per Craig's "permanently visible,
+              not scrolling out of view, not below the fold" requirement. */}
+          {!isMobile && (
+            <div style={{ position: 'sticky', top: 0, zIndex: 10 }}>
+              {ctaBlock}
+            </div>
+          )}
           {livingLedgerSummaryCard}
           {/* On desktop, Communities moved into the Control Panel accordion above.
               On mobile there is no Control Panel — communities must stay the
@@ -1595,17 +1660,22 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                 </p>
               )}
               <button
-                type="button" onClick={handleCommit} disabled={committing}
+                type="button" onClick={handleCommit} disabled={committing || !canSchedule}
                 style={{
                   width: '100%', background: '#C5B783', color: '#0A1E3D',
                   border: 'none', borderRadius: '8px', padding: '12px',
                   fontWeight: 500, fontSize: '14px',
-                  cursor: committing ? 'not-allowed' : 'pointer',
-                  opacity: committing ? 0.7 : 1, fontFamily: 'inherit',
+                  cursor: (committing || !canSchedule) ? 'not-allowed' : 'pointer',
+                  opacity: (committing || !canSchedule) ? 0.5 : 1, fontFamily: 'inherit',
                 }}
               >
                 {committing ? 'Saving…' : 'Schedule a Consultation →'}
               </button>
+              {!ctaError && scheduleHint && (
+                <p style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', textAlign: 'center', margin: '5px 0 0', lineHeight: 1.4 }}>
+                  {scheduleHint}
+                </p>
+              )}
             </div>
           </div>
 
