@@ -9,7 +9,6 @@ import { getAllCities } from '../../../services/locationService'
 import { getTopMatches, getDownPaymentMidpoint, getProceedsMidpoint } from '../../../services/matchingService'
 import { createClient } from '../../../lib/supabase/client'
 import { lookupZipCityState } from '../../../utils/zipLookup'
-import { ChevronRight } from 'lucide-react'
 import CompareModal from '../../results/CompareModal'
 
 const ALL_KEYS = DNA_CATEGORIES.map(c => c.key) as (keyof DNAScores)[]
@@ -232,11 +231,6 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const [activePanel, setActivePanel] = useState<'lifestyle' | 'financials'>('lifestyle')
   const [isMobile, setIsMobile] = useState(false)
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
-
-  // Communities section (layout amendment) — independent collapsible toggle,
-  // not part of the Lifestyle/Financials mutual-exclusion pair, defaulting open
-  // since it's now the top/most-prominent section in the Control Panel.
-  const [communitiesExpanded, setCommunitiesExpanded] = useState(true)
 
   // Pinned-card Compare (placeholder wiring) — reuses the existing CompareModal/
   // createCompareDocument logic as-is. Pairs the clicked pinned card against
@@ -681,29 +675,26 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const displayedCities = showAllCities ? rankedCities.slice(0, 10) : rankedCities.slice(0, 5)
 
   // ──────────────────────────────────────────────────────────
-  // Section header for the Adaptive Control Panel accordion. Generalized to take
-  // expanded/onClick directly so it can drive both the mutually-exclusive
-  // Lifestyle/Financials pair (shared activePanel state, unchanged from Phase B)
-  // and Communities' own independent open/closed toggle, with identical
-  // affordance: rotating chevron + stronger active-state visual treatment.
+  // Tab switcher for Lifestyle/Financials (layout amendment 2 — replaces the
+  // prior vertical accordion pattern for these two sections; Communities is no
+  // longer part of this component at all, it's now a static, always-visible
+  // section, see below). Same mutual-exclusivity behavior as before, driven by
+  // the same shared activePanel state — just switched via side-by-side tabs.
   // ──────────────────────────────────────────────────────────
-  const PanelHeader = ({ label, expanded, onClick }: { label: string; expanded: boolean; onClick: () => void }) => (
+  const TabButton = ({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) => (
     <button
       type="button"
       onClick={onClick}
       style={{
-        width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        background: expanded ? '#F5F4F1' : '#fff',
-        borderWidth: '0', borderBottomWidth: '0.5px', borderStyle: 'solid', borderColor: 'rgba(0,0,0,0.08)',
-        borderLeft: expanded ? '3px solid #C5B783' : '3px solid transparent',
-        padding: '14px 16px 14px 13px', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
+        width: '50%', textAlign: 'center', fontFamily: 'inherit', cursor: 'pointer',
+        padding: '14px 8px', fontSize: '13px', fontWeight: 600,
+        background: active ? '#F5F4F1' : '#fff',
+        color: active ? '#0A1E3D' : '#86868b',
+        borderWidth: '0', borderBottomWidth: '2px', borderStyle: 'solid',
+        borderBottomColor: active ? '#C5B783' : 'transparent',
       }}
     >
-      <span style={{ fontSize: '13px', fontWeight: 600, color: '#0A1E3D' }}>{label}</span>
-      <ChevronRight
-        size={15}
-        style={{ color: expanded ? '#C5B783' : '#86868b', transition: 'transform 0.2s ease', transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)', flexShrink: 0 }}
-      />
+      {label}
     </button>
   )
 
@@ -1385,9 +1376,9 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
               : { bg: '#FCEBEB', color: '#A32D2D' }
 
             return (
-              <div style={{ display: 'flex', minHeight: '220px' }}>
-                {/* Left: square photo (50%) */}
-                <div style={{ width: '50%', flexShrink: 0, position: 'relative', overflow: 'hidden', background: '#2D4A6B' }}>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {/* Top: 16:9 photo, full width */}
+                <div style={{ width: '100%', aspectRatio: '16 / 9', flexShrink: 0, position: 'relative', overflow: 'hidden', background: '#2D4A6B' }}>
                   <Image
                     src={city.cityImageUrl ?? `/images/cities/${city.id}.jpg`}
                     alt={city.name} fill style={{ objectFit: 'cover' }}
@@ -1403,8 +1394,8 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                   </div>
                 </div>
 
-                {/* Right: info (50%) */}
-                <div style={{ flex: 1, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: '5px', overflowY: 'auto' }}>
+                {/* Below: info, stacked full width */}
+                <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
                   <div>
                     <p style={{ fontSize: '13px', fontWeight: 500, color: '#0A1E3D', margin: 0 }}>{city.name}</p>
                     <p style={{ fontSize: '9px', color: '#86868b', margin: '1px 0 0' }}>{city.metroUsed} · {city.county} County</p>
@@ -1481,25 +1472,22 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
 
   const controlPanelAccordion = (
     <>
-      <div>
-        <PanelHeader label="Your Communities" expanded={communitiesExpanded} onClick={() => setCommunitiesExpanded(v => !v)} />
-        <div style={{ maxHeight: communitiesExpanded ? '3000px' : '0px', overflow: 'hidden', transition: 'max-height 0.3s ease' }}>
-          <div style={{ padding: '12px 16px' }}>
-            {communitiesFrame}
-          </div>
-        </div>
+      {/* Communities — static, always-visible, no collapse (matches mobile's
+          existing permanently-visible base-layer treatment; desktop no longer
+          diverges from it). */}
+      <div style={{ padding: '16px 16px 12px' }}>
+        <p style={{ fontSize: '13px', fontWeight: 600, color: '#0A1E3D', margin: '0 0 10px' }}>Your Communities</p>
+        {communitiesFrame}
+      </div>
+
+      {/* Lifestyle/Financials — tab switcher (layout amendment 2), same
+          mutual-exclusivity as the prior accordion, same shared activePanel state. */}
+      <div style={{ display: 'flex', borderTop: '0.5px solid rgba(0,0,0,0.08)', borderBottom: '0.5px solid rgba(0,0,0,0.08)' }}>
+        <TabButton label="Your Lifestyle" active={activePanel === 'lifestyle'} onClick={() => setActivePanel('lifestyle')} />
+        <TabButton label="Your Financials" active={activePanel === 'financials'} onClick={() => setActivePanel('financials')} />
       </div>
       <div>
-        <PanelHeader label="Your Lifestyle" expanded={activePanel === 'lifestyle'} onClick={() => setActivePanel('lifestyle')} />
-        <div style={{ maxHeight: activePanel === 'lifestyle' ? '3000px' : '0px', overflow: 'hidden', transition: 'max-height 0.3s ease' }}>
-          {lifestyleContent}
-        </div>
-      </div>
-      <div>
-        <PanelHeader label="Your Financials" expanded={activePanel === 'financials'} onClick={() => setActivePanel('financials')} />
-        <div style={{ maxHeight: activePanel === 'financials' ? '3000px' : '0px', overflow: 'hidden', transition: 'max-height 0.3s ease' }}>
-          {financialsContent}
-        </div>
+        {activePanel === 'lifestyle' ? lifestyleContent : financialsContent}
       </div>
     </>
   )
