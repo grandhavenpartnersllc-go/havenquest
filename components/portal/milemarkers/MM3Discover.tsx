@@ -199,7 +199,9 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // Financial
   const [isSelling, setIsSelling] = useState(false)
   const [proceeds, setProceeds] = useState('')
+  const [proceedsDisplay, setProceedsDisplay] = useState('') // Phase C2 Item 1 — instant display; `proceeds` itself is now debounced
   const [savings, setSavings] = useState('')
+  const [savingsDisplay, setSavingsDisplay] = useState('') // Phase C2 Item 1 — instant display; `savings` itself is now debounced
   const [interestRate, setInterestRate] = useState(RATE_DEFAULT)
   const [loanTerm, setLoanTerm] = useState<30 | 15>(30)
   const [incomeVal, setIncomeVal] = useState(0)
@@ -213,12 +215,14 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
 
   // Community
   const [pinnedCities, setPinnedCities] = useState<string[]>([])
+  const [removedCities, setRemovedCities] = useState<string[]>([]) // Phase C2 Item 3 — "remove from view", session-local only (see report)
   const [selectedCityId, setSelectedCityId] = useState<string | null>(null)
   const [showAllCities, setShowAllCities] = useState(false)
   const [selectedMetro, setSelectedMetro] = useState(initialMetro ?? 'Austin')
   const [userHasChangedMetro, setUserHasChangedMetro] = useState(false)
   const [sandboxTouched, setSandboxTouched] = useState(true)
   const [heroTabId, setHeroTabId] = useState<string | null>(null) // Phase C1 Item 7 — active "Your Direction" hero tab
+  const [rankChangeExplanation, setRankChangeExplanation] = useState<string | null>(null) // Phase C2 Item 2
 
   // UI
   const [ctaError, setCtaError] = useState<string | null>(null)
@@ -249,6 +253,19 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const priorityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const incomeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const personalityDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const proceedsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null) // Phase C2 Item 1
+  const savingsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null) // Phase C2 Item 1
+  const explanationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null) // Phase C2 Item 2 — auto-dismiss
+  const hydratedRef = useRef(false) // Phase C2 Item 2 — suppress false "why changed" fires during initial DB/profile hydration
+  const rankSnapshotRef = useRef<{
+    topIds: string[]
+    income: number
+    proceeds: string
+    savings: string
+    rate: number
+    loanTerm: 30 | 15
+    removedCount: number
+  } | null>(null) // Phase C2 Item 2 — last-seen top-3 + inputs, to detect a genuine reorder
   const [personalityPreference, setPersonalityPreference] = useState<{
     growthProfile: number
     pace: number
@@ -326,20 +343,24 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
       }
 
       if (data.exact_home_proceeds) {
-        setProceeds(fmtCurrency(String(data.exact_home_proceeds)))
+        const v = fmtCurrency(String(data.exact_home_proceeds))
+        setProceeds(v); setProceedsDisplay(v)
       } else {
         const fp = profile?.financial_picture
         if (fp?.is_homeowner && fp.home_sale_proceeds) {
-          setProceeds(fmtCurrency(String(getProceedsMidpoint(fp.home_sale_proceeds))))
+          const v = fmtCurrency(String(getProceedsMidpoint(fp.home_sale_proceeds)))
+          setProceeds(v); setProceedsDisplay(v)
         }
       }
 
       if (data.available_funds) {
-        setSavings(fmtCurrency(String(data.available_funds)))
+        const v = fmtCurrency(String(data.available_funds))
+        setSavings(v); setSavingsDisplay(v)
       } else {
         const fp = profile?.financial_picture
         if (fp?.down_payment_available) {
-          setSavings(fmtCurrency(String(getDownPaymentMidpoint(fp.down_payment_available))))
+          const v = fmtCurrency(String(getDownPaymentMidpoint(fp.down_payment_available)))
+          setSavings(v); setSavingsDisplay(v)
         }
       }
 
@@ -418,6 +439,14 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     }
   }, [initialMetro]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Phase C2 Item 2 — gives the async DB-load + profile-seed effects above time to
+  // settle before "why did this change" starts comparing snapshots, so hydration
+  // itself never gets mistaken for a genuine live edit.
+  useEffect(() => {
+    const t = setTimeout(() => { hydratedRef.current = true }, 1500)
+    return () => clearTimeout(t)
+  }, [])
+
   // Computed
   const proceedsNum = parseMoney(proceeds)
   const savingsNum = parseMoney(savings)
@@ -444,6 +473,20 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const baseProfile = (!sandboxTouched && profile) ? profile : sandboxProfile
   const activeProfile: UserProfile = { ...baseProfile, personalityPreference }
 
+  // Phase C2 Item 4 — Exposed Baselines banner. Fixed reference point, computed
+  // once from the quiz's own financial_picture (never the live sandbox fields
+  // below) — profile is immutable for this component's lifetime, so this never
+  // drifts as the user edits their financials.
+  const baselineDownPayment = profile?.financial_picture?.down_payment_available
+    ? getDownPaymentMidpoint(profile.financial_picture.down_payment_available)
+    : 0
+  const baselineProceeds = (profile?.financial_picture?.is_homeowner && profile.financial_picture.home_sale_proceeds)
+    ? getProceedsMidpoint(profile.financial_picture.home_sale_proceeds)
+    : 0
+  const baselineBudget = baselineDownPayment + baselineProceeds
+  const BASELINE_REF_PRICE = 385000 // same generic fallback used elsewhere before any city is pinned
+  const baselineMonthly = calcMonthly(Math.max(0, BASELINE_REF_PRICE - baselineBudget), RATE_DEFAULT, 30)
+
   // Use saved MM2 results as the ranked city list; fall back to live recompute when:
   // (a) no saved results exist, (b) the selected metro has fewer than 5 saved cities
   // (prevents stale thin results from blocking a full live recompute), or (c) the tab
@@ -451,21 +494,22 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // represent a genuine statewide ranking; always recompute statewide.
   const rankedCities = useMemo(() => {
     if (selectedMetro !== 'State' && matches && matches.length > 0) {
-      const filtered = matches.filter(m => m.location?.metroUsed?.includes(selectedMetro))
+      const filtered = matches.filter(m => m.location?.metroUsed?.includes(selectedMetro) && !removedCities.includes(m.location.id))
       if (filtered.length >= 5) return filtered
     }
-    const metroCities = selectedMetro === 'State'
+    const metroCities = (selectedMetro === 'State'
       ? getAllCities()
       : getAllCities().filter(c => c.metroUsed.includes(selectedMetro))
+    ).filter(c => !removedCities.includes(c.id))
     return getTopMatches(activeProfile, metroCities, 20).topMatches
-  }, [matches, selectedMetro, activeProfile])
+  }, [matches, selectedMetro, activeProfile, removedCities])
 
   // Phase C1 Item 7 — "Your Direction" hero tabs. Deliberately independent of the
   // currently browsed metro tab above: this is the client's true personal top
   // matches across all of Texas, not whatever they happen to be browsing right now.
   const overallTopResult = useMemo(
-    () => getTopMatches(activeProfile, getAllCities(), 3),
-    [activeProfile]
+    () => getTopMatches(activeProfile, getAllCities().filter(c => !removedCities.includes(c.id)), 3),
+    [activeProfile, removedCities]
   )
 
   // Item 6 — Pin already drives this: pinned cities always take a slot; remaining
@@ -490,12 +534,53 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     const result: Record<string, number> = {}
     METRO_FILTERS.forEach(f => {
       if (f.value === 'State') return
-      const metroCities = getAllCities().filter(c => c.metroUsed.includes(f.value))
+      const metroCities = getAllCities().filter(c => c.metroUsed.includes(f.value) && !removedCities.includes(c.id))
       const top = metroCities.length > 0 ? getTopMatches(activeProfile, metroCities, 1).topMatches[0] : undefined
       if (top) result[f.value] = top.matchScore
     })
     return result
-  }, [selectedMetro, activeProfile])
+  }, [selectedMetro, activeProfile, removedCities])
+
+  // Phase C2 Item 2 — "why did this ranking change" explanations. Fires only off
+  // the debounced financial values (Item 1) and removedCities (Item 3) — never on
+  // every keystroke. Only a genuine reorder of the algorithm's own top-3 counts as
+  // "meaningful" (per Phase C1's smoothing, most edits now shouldn't reorder at
+  // all — firing less often than before is correct, not a bug). Deliberately does
+  // not cover priority/personality-driven reorders — out of this brief's scope.
+  useEffect(() => {
+    const topIds = overallTopResult.topMatches.map(m => m.location.id)
+    const prev = rankSnapshotRef.current
+    if (prev && hydratedRef.current) {
+      const reordered = topIds.length !== prev.topIds.length || topIds.some((id, i) => id !== prev.topIds[i])
+      if (reordered) {
+        let reason: string | null = null
+        if (incomeVal !== prev.income) {
+          reason = incomeVal > prev.income ? 'your income increased' : 'your income decreased'
+        } else if (proceeds !== prev.proceeds || savings !== prev.savings) {
+          const prevBudget = parseMoney(prev.proceeds) + parseMoney(prev.savings)
+          const newBudget = parseMoney(proceeds) + parseMoney(savings)
+          reason = newBudget > prevBudget ? 'your available budget increased' : 'your available budget decreased'
+        } else if (interestRate !== prev.rate) {
+          reason = interestRate > prev.rate ? 'interest rates moved up' : 'interest rates moved down'
+        } else if (loanTerm !== prev.loanTerm) {
+          reason = `you switched to a ${loanTerm}-year loan`
+        } else if (removedCities.length > prev.removedCount) {
+          reason = 'you removed a community from consideration'
+        } else if (removedCities.length < prev.removedCount) {
+          reason = 'you restored a previously removed community'
+        }
+        if (reason) {
+          const topCity = overallTopResult.topMatches[0]?.location.name
+          setRankChangeExplanation(
+            topCity ? `Your rankings updated because ${reason} — ${topCity} is now your top match.` : `Your rankings updated because ${reason}.`
+          )
+          if (explanationTimerRef.current) clearTimeout(explanationTimerRef.current)
+          explanationTimerRef.current = setTimeout(() => setRankChangeExplanation(null), 8000)
+        }
+      }
+    }
+    rankSnapshotRef.current = { topIds, income: incomeVal, proceeds, savings, rate: interestRate, loanTerm, removedCount: removedCities.length }
+  }, [overallTopResult, incomeVal, proceeds, savings, interestRate, loanTerm, removedCities])
 
   function afStatus(medianPrice: number): 'comfortable' | 'moderate' | 'stretched' {
     const income = incomeVal || profile?.annualIncome || 0
@@ -657,6 +742,16 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     const updated = pinnedCities.filter(id => id !== cityId)
     setPinnedCities(updated)
     await persistPinned(updated)
+  }
+
+  // Phase C2 Item 3 — "remove from view". Session-local only for now (see report);
+  // a pinned city can't be removed without unpinning first (point 3), enforced by
+  // simply not rendering the Remove action while pinned.
+  function removeCity(cityId: string) {
+    if (pinnedCities.includes(cityId)) return
+    setRemovedCities(prev => prev.includes(cityId) ? prev : [...prev, cityId])
+    if (selectedCityId === cityId) setSelectedCityId(null)
+    if (compareCityId === cityId) setCompareCityId(null)
   }
 
   async function handleCommit() {
@@ -920,6 +1015,14 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         <LockToggle locked={financialsLocked} onClick={() => setFinancialsLocked(v => !v)} />
       </div>
 
+      {/* Phase C2 Item 4 — Exposed Baselines banner. Fixed reference point, never
+          updates as fields below are edited (see baselineBudget/baselineMonthly). */}
+      {baselineBudget > 0 && (
+        <p style={{ fontSize: '9px', color: '#A9A79F', fontStyle: 'italic', margin: '0 0 10px' }}>
+          Your original Discovery estimate: {fmtK(baselineBudget)} budget · ~${baselineMonthly.toLocaleString()}/mo
+        </p>
+      )}
+
       {/* Selling toggle */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
         <span style={{ fontSize: '11px', color: '#1d1d1f' }}>Selling a home?</span>
@@ -940,9 +1043,17 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           <p style={{ fontSize: '10px', color: '#86868b', margin: '0 0 3px' }}>Expected sale proceeds</p>
           <div style={{ display: 'flex', alignItems: 'center', background: '#fff', border: '0.5px solid #E0DED8', borderRadius: '7px', overflow: 'hidden' }}>
             <span style={{ padding: '5px 7px', fontSize: '11px', color: '#86868b', borderRight: '0.5px solid #E0DED8', background: '#FAFAF8', flexShrink: 0 }}>$</span>
-            <input type="text" value={proceeds.replace(/^\$/, '')}
-              onChange={e => { setProceeds(fmtCurrency(e.target.value)); setSandboxTouched(true) }}
-              onBlur={() => persistNumbers({ exact_home_proceeds: proceedsNum || null })}
+            <input type="text" value={proceedsDisplay.replace(/^\$/, '')}
+              onChange={e => {
+                const formatted = fmtCurrency(e.target.value)
+                setProceedsDisplay(formatted); setSandboxTouched(true)
+                if (proceedsTimerRef.current) clearTimeout(proceedsTimerRef.current)
+                proceedsTimerRef.current = setTimeout(() => setProceeds(formatted), 400)
+              }}
+              onBlur={() => {
+                setProceeds(proceedsDisplay)
+                persistNumbers({ exact_home_proceeds: parseMoney(proceedsDisplay) || null })
+              }}
               placeholder="340,000"
               style={{ border: 'none', padding: '5px 8px', fontSize: '12px', color: '#1d1d1f', background: '#fff', outline: 'none', width: '100%', fontFamily: 'inherit' }} />
           </div>
@@ -954,9 +1065,17 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         <p style={{ fontSize: '10px', color: '#86868b', margin: '0 0 3px' }}>{isSelling ? 'Additional savings' : 'Available savings'}</p>
         <div style={{ display: 'flex', alignItems: 'center', background: '#fff', border: '0.5px solid #E0DED8', borderRadius: '7px', overflow: 'hidden' }}>
           <span style={{ padding: '5px 7px', fontSize: '11px', color: '#86868b', borderRight: '0.5px solid #E0DED8', background: '#FAFAF8', flexShrink: 0 }}>$</span>
-          <input type="text" value={savings.replace(/^\$/, '')}
-            onChange={e => { setSavings(fmtCurrency(e.target.value)); setSandboxTouched(true) }}
-            onBlur={() => persistNumbers({ available_funds: savingsNum || null })}
+          <input type="text" value={savingsDisplay.replace(/^\$/, '')}
+            onChange={e => {
+              const formatted = fmtCurrency(e.target.value)
+              setSavingsDisplay(formatted); setSandboxTouched(true)
+              if (savingsTimerRef.current) clearTimeout(savingsTimerRef.current)
+              savingsTimerRef.current = setTimeout(() => setSavings(formatted), 400)
+            }}
+            onBlur={() => {
+              setSavings(savingsDisplay)
+              persistNumbers({ available_funds: parseMoney(savingsDisplay) || null })
+            }}
             placeholder="75,000"
             style={{ border: 'none', padding: '5px 8px', fontSize: '12px', color: '#1d1d1f', background: '#fff', outline: 'none', width: '100%', fontFamily: 'inherit' }} />
         </div>
@@ -1082,6 +1201,25 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           Your Direction
         </p>
 
+        {/* Phase C2 Item 2 — "why did this ranking change" explanation. Only
+            appears after a genuine top-3 reorder settles (see the effect above),
+            never on every keystroke. */}
+        {rankChangeExplanation && (
+          <div style={{
+            background: 'rgba(197,183,131,0.15)', border: '0.5px solid rgba(197,183,131,0.35)',
+            borderRadius: '6px', padding: '6px 8px', marginBottom: '8px',
+            display: 'flex', alignItems: 'flex-start', gap: '6px',
+          }}>
+            <span style={{ fontSize: '9px', color: '#C5B783', lineHeight: 1.4, flex: 1 }}>
+              {rankChangeExplanation}
+            </span>
+            <button type="button" onClick={() => setRankChangeExplanation(null)}
+              style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: '11px', cursor: 'pointer', padding: 0, lineHeight: 1 }}>
+              ✕
+            </button>
+          </div>
+        )}
+
         {heroSlots.length === 0 ? (
           <div style={{ border: '0.5px dashed rgba(197,183,131,0.3)', borderRadius: '8px', padding: '10px 12px' }}>
             <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.6)', fontStyle: 'italic', margin: 0 }}>
@@ -1183,6 +1321,19 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                           }}
                         >
                           Compare
+                        </button>
+                      )}
+                      {!isPinnedHero && (
+                        <button
+                          type="button"
+                          onClick={() => removeCity(cityLoc.id)}
+                          style={{
+                            fontSize: '9px', color: 'rgba(255,255,255,0.45)',
+                            background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.15)',
+                            borderRadius: '8px', padding: '1px 6px', cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0,
+                          }}
+                        >
+                          Remove
                         </button>
                       )}
                     </div>
@@ -1486,6 +1637,19 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                           Compare
                         </button>
                       )}
+                      {!isPinned && (
+                        <button type="button"
+                          onClick={e => { e.stopPropagation(); removeCity(city.id) }}
+                          style={{
+                            fontSize: '9px', color: '#9a9a9a',
+                            padding: '2px 5px', borderRadius: '8px',
+                            border: '0.5px solid rgba(0,0,0,0.12)',
+                            background: 'rgba(0,0,0,0.03)',
+                            cursor: 'pointer', flexShrink: 0, fontFamily: 'inherit',
+                          }}>
+                          Remove
+                        </button>
+                      )}
                     </div>
                   )
                 })}
@@ -1500,6 +1664,14 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                   <div onClick={() => setShowAllCities(false)}
                     style={{ textAlign: 'center', padding: '6px', fontSize: '10px', color: '#0076B6', cursor: 'pointer', borderTop: '0.5px solid #E8E6E2', marginTop: '4px' }}>
                     Show less ↑
+                  </div>
+                )}
+                {removedCities.length > 0 && (
+                  <div style={{ textAlign: 'center', padding: '6px', fontSize: '9px', color: '#9a9a9a' }}>
+                    {removedCities.length} removed from view —{' '}
+                    <span onClick={() => setRemovedCities([])} style={{ color: '#0076B6', cursor: 'pointer' }}>
+                      Restore all
+                    </span>
                   </div>
                 )}
               </>
