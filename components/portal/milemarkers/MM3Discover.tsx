@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react'
 import Image from 'next/image'
-import { CityMatch, UserProfile, UserSession, SandboxProfile, DNAScores } from '../../../types'
+import { CityMatch, UserProfile, UserSession, SandboxProfile, DNAScores, NonNegotiablesState } from '../../../types'
 import FullReport from '../../results/FullReport'
 import { DNA_CATEGORIES } from '../../../utils/constants'
 import { getAllCities } from '../../../services/locationService'
@@ -16,6 +16,19 @@ import { Lock, LockOpen } from 'lucide-react'
 const ALL_KEYS = DNA_CATEGORIES.map(c => c.key) as (keyof DNAScores)[]
 
 const RATE_DEFAULT = 6.5
+
+// Phase E, Brief 1 — Non-Negotiables defaults. Commute time and flood risk were
+// dropped from v1 (no real per-city data exists for either, confirmed in Phase 0
+// investigation) — do not stub or approximate them.
+const DEFAULT_NON_NEGOTIABLES: NonNegotiablesState = {
+  hoaStrict: false,
+  crimeSafety: false,
+  notWalkable: false,
+  medicalAccess: false,
+  schoolMinGrade: null,
+  propertyTaxMaxPct: null,
+  anythingElse: '',
+}
 
 const METRO_FILTERS = [
   { label: 'All Texas',    value: 'State' },
@@ -231,6 +244,8 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const [isMobile, setIsMobile] = useState(false)
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
   const [advancedAssumptionsOpen, setAdvancedAssumptionsOpen] = useState(false) // Declutter pass — Interest rate + Loan term moved behind this
+  const [nonNegotiables, setNonNegotiables] = useState<NonNegotiablesState>(DEFAULT_NON_NEGOTIABLES)
+  const [nonNegotiablesOpen, setNonNegotiablesOpen] = useState(false) // inline accordion, not a modal/drawer — must stay always-visible per Communities' treatment
 
   // Compare (Phase C1 Item 6, restructured Phase D) — reuses the existing CompareModal/createComparisonReportDocument
   // logic as-is. Pairing is generalized across the 3-slot hero rotation via
@@ -331,6 +346,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           if (sp.niceToHaves?.length) setNiceToHaves(sp.niceToHaves)
           if (sp.notPriorities?.length) setNotPriorities(sp.notPriorities)
           if (sp.unassigned !== undefined) setUnassigned(sp.unassigned)
+          if (sp.nonNegotiables) setNonNegotiables({ ...DEFAULT_NON_NEGOTIABLES, ...sp.nonNegotiables })
           setSandboxTouched(true)
         }
         if (sp.interestRateOverride) setInterestRate(sp.interestRateOverride)
@@ -486,24 +502,43 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // (prevents stale thin results from blocking a full live recompute), or (c) the tab
   // is 'State' (All Texas) — saved matches are always metro-filtered so they can never
   // represent a genuine statewide ranking; always recompute statewide.
+  // Phase E, Brief 1 — genuine community-level filters only (HOA strictness and
+  // free text are property-level / unstructured, captured as MD-context notes
+  // elsewhere, never referenced here). Threshold cutoffs for the 3 simple toggles
+  // (crimeSafety/notWalkable/medicalAccess) are an implementation judgment call —
+  // mid-scale (score >= 4 of 10) — since the locked design describes them as plain
+  // toggles without the user setting their own minimum (unlike school rating and
+  // property tax, which are genuine user-set thresholds).
+  function passesNonNegotiables(city: ReturnType<typeof getAllCities>[number]): boolean {
+    if (nonNegotiables.crimeSafety && city.scores.safety < 4) return false
+    if (nonNegotiables.notWalkable && city.scores.walkability < 4) return false
+    if (nonNegotiables.medicalAccess && city.scores.healthcare < 4) return false
+    if (nonNegotiables.schoolMinGrade) {
+      const order = ['A', 'B', 'C', 'D', 'F']
+      if (order.indexOf(city.school.teaRating) > order.indexOf(nonNegotiables.schoolMinGrade)) return false
+    }
+    if (nonNegotiables.propertyTaxMaxPct != null && city.housing.propertyTaxRate > nonNegotiables.propertyTaxMaxPct) return false
+    return true
+  }
+
   const rankedCities = useMemo(() => {
     if (selectedMetro !== 'State' && matches && matches.length > 0) {
-      const filtered = matches.filter(m => m.location?.metroUsed?.includes(selectedMetro) && !removedCities.includes(m.location.id))
+      const filtered = matches.filter(m => m.location?.metroUsed?.includes(selectedMetro) && !removedCities.includes(m.location.id) && passesNonNegotiables(m.location))
       if (filtered.length >= 5) return filtered
     }
     const metroCities = (selectedMetro === 'State'
       ? getAllCities()
       : getAllCities().filter(c => c.metroUsed.includes(selectedMetro))
-    ).filter(c => !removedCities.includes(c.id))
+    ).filter(c => !removedCities.includes(c.id) && passesNonNegotiables(c))
     return getTopMatches(activeProfile, metroCities, 20).topMatches
-  }, [matches, selectedMetro, activeProfile, removedCities])
+  }, [matches, selectedMetro, activeProfile, removedCities, nonNegotiables])
 
   // Phase C1 Item 7 — "Your Direction" hero tabs. Deliberately independent of the
   // currently browsed metro tab above: this is the client's true personal top
   // matches across all of Texas, not whatever they happen to be browsing right now.
   const overallTopResult = useMemo(
-    () => getTopMatches(activeProfile, getAllCities().filter(c => !removedCities.includes(c.id)), 3),
-    [activeProfile, removedCities]
+    () => getTopMatches(activeProfile, getAllCities().filter(c => !removedCities.includes(c.id) && passesNonNegotiables(c)), 3),
+    [activeProfile, removedCities, nonNegotiables]
   )
 
   // Item 6 — Pin already drives this: pinned cities always take a slot; remaining
@@ -528,12 +563,12 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     const result: Record<string, number> = {}
     METRO_FILTERS.forEach(f => {
       if (f.value === 'State') return
-      const metroCities = getAllCities().filter(c => c.metroUsed.includes(f.value) && !removedCities.includes(c.id))
+      const metroCities = getAllCities().filter(c => c.metroUsed.includes(f.value) && !removedCities.includes(c.id) && passesNonNegotiables(c))
       const top = metroCities.length > 0 ? getTopMatches(activeProfile, metroCities, 1).topMatches[0] : undefined
       if (top) result[f.value] = top.matchScore
     })
     return result
-  }, [selectedMetro, activeProfile, removedCities])
+  }, [selectedMetro, activeProfile, removedCities, nonNegotiables])
 
   // Phase C2 Item 2 — "why did this ranking change" explanations. Fires only off
   // the debounced financial values (Item 1) and removedCities (Item 3) — never on
@@ -636,7 +671,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     } catch {}
   }
 
-  function debounceSavePriorities(mh: (keyof DNAScores)[], nh: (keyof DNAScores)[], np: (keyof DNAScores)[], ua: (keyof DNAScores)[]) {
+  function debounceSavePriorities(mh: (keyof DNAScores)[], nh: (keyof DNAScores)[], np: (keyof DNAScores)[], ua: (keyof DNAScores)[], nn: NonNegotiablesState = nonNegotiables) {
     if (priorityTimerRef.current) clearTimeout(priorityTimerRef.current)
     priorityTimerRef.current = setTimeout(async () => {
       try {
@@ -649,6 +684,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
             proceedsOverride: isSelling ? (proceeds || null) : null,
             interestRateOverride: interestRate,
             mustHaves: mh, niceToHaves: nh, notPriorities: np, unassigned: ua,
+            nonNegotiables: nn,
           }
         }).eq('email', s.user.email.toLowerCase())
       } catch {}
@@ -692,7 +728,17 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     else newUA = [...newUA, key]
 
     setMustHaves(newMH); setNiceToHaves(newNH); setNotPriorities(newNP); setUnassigned(newUA)
-    debounceSavePriorities(newMH, newNH, newNP, newUA)
+    debounceSavePriorities(newMH, newNH, newNP, newUA, nonNegotiables)
+  }
+
+  // Phase E, Brief 1 — Non-Negotiables. hoaStrict and anythingElse are captured
+  // here too but deliberately never read by passesNonNegotiables above; they're
+  // Market-Director-context notes only, per the locked design.
+  function updateNonNegotiables(patch: Partial<NonNegotiablesState>) {
+    const updated = { ...nonNegotiables, ...patch }
+    setNonNegotiables(updated)
+    setSandboxTouched(true)
+    debounceSavePriorities(mustHaves, niceToHaves, notPriorities, unassigned, updated)
   }
 
   async function handlePersonalityChange(key: string, value: number) {
@@ -770,6 +816,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         interestRateOverride: interestRate,
         mustHaves, niceToHaves, notPriorities, unassigned,
         citiesLocked: true,
+        nonNegotiables,
       }
 
       // exact_down_payment does not exist on users (confirmed via information_schema —
@@ -874,6 +921,25 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     >
       {locked ? <Lock size={11} /> : <LockOpen size={11} />}
       {locked ? 'Locked' : 'Lock this in'}
+    </button>
+  )
+
+  // ──────────────────────────────────────────────────────────
+  // Non-Negotiables toggle switch (Phase E, Brief 1) — small reusable control
+  // for the 4 plain-boolean items.
+  // ──────────────────────────────────────────────────────────
+  const NonNegToggle = ({ active, onClick }: { active: boolean; onClick: () => void }) => (
+    <button type="button" onClick={onClick}
+      style={{
+        width: '34px', height: '18px', borderRadius: '10px', border: 'none', cursor: 'pointer',
+        background: active ? '#0A1E3D' : '#E0DED8', position: 'relative', flexShrink: 0, padding: 0,
+        transition: 'background 0.15s',
+      }}>
+      <span style={{
+        position: 'absolute', top: '2px', left: active ? '18px' : '2px',
+        width: '14px', height: '14px', borderRadius: '50%', background: '#fff',
+        transition: 'left 0.15s',
+      }} />
     </button>
   )
 
@@ -1793,6 +1859,97 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     </div>
   )
 
+  // ──────────────────────────────────────────────────────────
+  // Non-Negotiables (Phase E, Brief 1) — inline accordion, collapsed by default.
+  // Deliberately NOT a modal/drawer like Advanced Assumptions: this section must
+  // stay always-visible-inline, matching Communities' treatment on both desktop
+  // (Control Panel) and mobile (main scroll flow) — confirmed in Phase 0.
+  // ──────────────────────────────────────────────────────────
+  const nonNegItems: { key: 'hoaStrict' | 'crimeSafety' | 'notWalkable' | 'medicalAccess'; label: string; help: string }[] = [
+    { key: 'hoaStrict', label: 'Strict HOA', help: "HOA strictness varies house to house within the same city — this won't filter your matches. We'll flag it for your Market Director to factor in when evaluating specific homes." },
+    { key: 'crimeSafety', label: 'High crime/safety concern', help: 'Excludes communities with a Higher Risk safety rating.' },
+    { key: 'notWalkable', label: 'Not walkable', help: 'Excludes communities with low walkability scores.' },
+    { key: 'medicalAccess', label: 'Limited nearby medical care', help: 'Excludes communities with low healthcare-access scores.' },
+  ]
+  const nonNegSetCount = [
+    nonNegotiables.hoaStrict, nonNegotiables.crimeSafety, nonNegotiables.notWalkable, nonNegotiables.medicalAccess,
+    nonNegotiables.schoolMinGrade != null, nonNegotiables.propertyTaxMaxPct != null, nonNegotiables.anythingElse.trim().length > 0,
+  ].filter(Boolean).length
+  const helpIconStyle: React.CSSProperties = {
+    fontSize: '9px', color: '#86868b', border: '0.5px solid #D0CEC8', borderRadius: '50%',
+    width: '13px', height: '13px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+    cursor: 'default', flexShrink: 0,
+  }
+
+  const nonNegotiablesSection = (
+    <div style={{ padding: '16px 16px 18px', borderTop: '0.5px solid rgba(0,0,0,0.08)' }}>
+      <button type="button" onClick={() => setNonNegotiablesOpen(v => !v)}
+        style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}>
+        <p style={{ fontSize: '13px', fontWeight: 600, color: '#0A1E3D', margin: 0 }}>Non-Negotiables</p>
+        <span style={{ fontSize: '10px', color: '#86868b' }}>
+          {nonNegSetCount > 0 ? `${nonNegSetCount} set` : 'None set'} {nonNegotiablesOpen ? '▲' : '▼'}
+        </span>
+      </button>
+
+      {nonNegotiablesOpen && (
+        <div style={{ marginTop: '12px' }}>
+          {nonNegItems.map(item => (
+            <div key={item.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0', borderBottom: '0.5px solid rgba(0,0,0,0.06)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '5px', minWidth: 0 }}>
+                <span style={{ fontSize: '11px', color: '#1d1d1f' }}>{item.label}</span>
+                <span title={item.help} style={helpIconStyle}>?</span>
+              </div>
+              <NonNegToggle active={nonNegotiables[item.key]} onClick={() => updateNonNegotiables({ [item.key]: !nonNegotiables[item.key] })} />
+            </div>
+          ))}
+
+          {/* School rating threshold */}
+          <div style={{ padding: '8px 0', borderBottom: '0.5px solid rgba(0,0,0,0.06)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '4px' }}>
+              <span style={{ fontSize: '11px', color: '#1d1d1f' }}>Minimum school rating</span>
+              <span title="Excludes communities whose TEA school rating is below your chosen minimum." style={helpIconStyle}>?</span>
+            </div>
+            <select value={nonNegotiables.schoolMinGrade ?? ''}
+              onChange={e => updateNonNegotiables({ schoolMinGrade: (e.target.value || null) as NonNegotiablesState['schoolMinGrade'] })}
+              style={{ width: '100%', fontSize: '11px', padding: '4px 6px', borderRadius: '6px', border: '0.5px solid #D0CEC8', fontFamily: 'inherit', background: '#fff' }}>
+              <option value="">No minimum</option>
+              <option value="A">A or better</option>
+              <option value="B">B or better</option>
+              <option value="C">C or better</option>
+              <option value="D">D or better</option>
+            </select>
+          </div>
+
+          {/* Property tax threshold */}
+          <div style={{ padding: '8px 0', borderBottom: '0.5px solid rgba(0,0,0,0.06)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '4px' }}>
+              <span style={{ fontSize: '11px', color: '#1d1d1f' }}>Maximum property tax rate</span>
+              <span title="Excludes communities whose property tax rate is above your chosen maximum." style={helpIconStyle}>?</span>
+            </div>
+            <select value={nonNegotiables.propertyTaxMaxPct ?? ''}
+              onChange={e => updateNonNegotiables({ propertyTaxMaxPct: e.target.value ? parseFloat(e.target.value) : null })}
+              style={{ width: '100%', fontSize: '11px', padding: '4px 6px', borderRadius: '6px', border: '0.5px solid #D0CEC8', fontFamily: 'inherit', background: '#fff' }}>
+              <option value="">No maximum</option>
+              <option value="0.015">Under 1.5%</option>
+              <option value="0.02">Under 2.0%</option>
+              <option value="0.025">Under 2.5%</option>
+            </select>
+          </div>
+
+          {/* Anything else — MD-context note only, never touches filtering */}
+          <div style={{ marginTop: '10px' }}>
+            <p style={{ fontSize: '10px', color: '#86868b', margin: '0 0 3px' }}>Anything else? Shared with your Market Director — doesn't affect matching.</p>
+            <textarea value={nonNegotiables.anythingElse}
+              onChange={e => setNonNegotiables(prev => ({ ...prev, anythingElse: e.target.value }))}
+              onBlur={() => debounceSavePriorities(mustHaves, niceToHaves, notPriorities, unassigned, nonNegotiables)}
+              rows={2}
+              style={{ width: '100%', fontSize: '11px', padding: '6px 8px', borderRadius: '6px', border: '0.5px solid #D0CEC8', fontFamily: 'inherit', resize: 'vertical' }} />
+          </div>
+        </div>
+      )}
+    </div>
+  )
+
   const controlPanelAccordion = (
     <>
       {/* Communities — static, always-visible, no collapse (matches mobile's
@@ -1812,6 +1969,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
       <div>
         {activePanel === 'lifestyle' ? lifestyleContent : financialsContent}
       </div>
+      {nonNegotiablesSection}
     </>
   )
 
@@ -1939,6 +2097,9 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
               permanently-visible base layer per Phase B's mobile spec, so it
               renders here instead when isMobile. */}
           {isMobile && communitiesFrame}
+          {/* Non-Negotiables (Phase E, Brief 1) — same always-visible-inline
+              treatment as Communities on mobile, per Phase 0 confirmation. */}
+          {isMobile && nonNegotiablesSection}
         </div>
       </div>
 

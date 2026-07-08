@@ -160,6 +160,20 @@ export interface UserProfile {
   personalityPreference?: PersonalityPreference
 }
 
+// Phase E, Brief 1 — Non-Negotiables. hoaStrict is property-level (varies house
+// to house within the same city) and anythingElse is free text — neither ever
+// filters the matching algorithm, both are captured as Market-Director-context
+// notes only. The other 5 fields are genuine community-level filters.
+export interface NonNegotiablesState {
+  hoaStrict: boolean
+  crimeSafety: boolean
+  notWalkable: boolean
+  medicalAccess: boolean
+  schoolMinGrade: 'A' | 'B' | 'C' | 'D' | null
+  propertyTaxMaxPct: number | null
+  anythingElse: string
+}
+
 // mustHaves/niceToHaves/notPriorities/unassigned updated to DNAScores keys to
 // stay consistent with MM3Discover's re-skin to DNA_CATEGORIES (Brief 2a Part 7) —
 // not explicitly named in Brief 2a's Part 1, but required for MM3 to compile/make sense.
@@ -172,6 +186,7 @@ export interface SandboxProfile {
   notPriorities: (keyof DNAScores)[]
   unassigned: (keyof DNAScores)[]
   citiesLocked?: boolean
+  nonNegotiables?: NonNegotiablesState
 }
 
 export interface FamilyProfile {
