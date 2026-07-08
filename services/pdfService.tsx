@@ -1,8 +1,10 @@
 import React from 'react'
 import * as ReactPDF from '@react-pdf/renderer'
-import { CityMatch, LifestyleScores, UserProfile } from '../types'
+import { CityMatch, LifestyleScores, PersonalityProfile, UserProfile } from '../types'
 import { getMonthlyPropertyTax, getTotalMonthlyEstimate, getMonthlyIncomeRemaining } from './affordabilityService'
 import { DNA_CATEGORIES } from '../utils/constants'
+import { getStateIncomeTaxRate } from '../utils/stateIncomeTax'
+import { txColIndex, txSafety, txPropertyTax, txJobMarket, txClimateV2 } from '../utils/txComparisonStats'
 
 const { Document, Page, View, Text, StyleSheet } = ReactPDF
 
@@ -153,6 +155,11 @@ const s = StyleSheet.create({
   cmpTdLabel: { flex: 1, fontSize: 8, color: MUTED },
   cmpTdVal: { width: 88, fontSize: 8, fontFamily: 'Helvetica-Bold', color: WARM, textAlign: 'right' },
   cmpTdDim: { width: 88, fontSize: 8, fontFamily: 'Helvetica', color: MUTED, textAlign: 'right' },
+  // Wider value column for the financial-picture section (Phase D) — dollar
+  // ranges like "+$180–$260/mo" need more room than the 88px score/price columns.
+  cmpTdValWide: { width: 140, fontSize: 8, fontFamily: 'Helvetica-Bold', color: WARM, textAlign: 'right' },
+  cmpTdDimWide: { width: 140, fontSize: 8, fontFamily: 'Helvetica', color: MUTED, textAlign: 'right' },
+  cmpSubLabel: { fontSize: 6.5, fontFamily: 'Helvetica-Bold', color: MUTED, letterSpacing: 0.8, marginTop: 8, marginBottom: 2, marginLeft: 12 },
   cmpSummaryBox: { backgroundColor: DARK, borderRadius: 5, padding: 12, marginTop: 14 },
   cmpSummaryLabel: { fontSize: 7, fontFamily: 'Helvetica-Bold', color: GOLD, letterSpacing: 1, marginBottom: 4 },
   cmpSummaryText: { fontSize: 8.5, color: CREAM, lineHeight: 1.65 },
@@ -205,6 +212,69 @@ function rankLabel(i: number): string {
 function money(n: number): string {
   return '$' + Math.round(n).toLocaleString('en-US')
 }
+
+function moneyK(n: number): string {
+  if (n >= 1_000_000) return '$' + (n / 1_000_000).toFixed(1) + 'M'
+  if (n >= 1_000) return '$' + Math.round(n / 1_000) + 'K'
+  return n ? money(n) : '$0'
+}
+
+// Mirrors MM3Discover.tsx's calcMonthly (standard fixed-rate amortization).
+// Duplicated intentionally rather than imported — it's a small, pure formula
+// and this keeps pdfService.tsx free of any import from a 'use client' UI
+// component. Keep in sync if the amortization formula ever changes.
+function calcMonthlyPayment(principal: number, annualRatePercent: number, termYears: number): number {
+  if (principal <= 0) return 0
+  const r = annualRatePercent / 100 / 12
+  const n = termYears * 12
+  if (r === 0) return Math.round(principal / n)
+  return Math.round(principal * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1))
+}
+
+// Net-Inflow Cash Mirror (Phase D) — estimated state income tax "savings" vs
+// the client's origin state, presented as a range rather than a precise
+// figure. STATE_INCOME_TAX_RATE (utils/stateIncomeTax.ts) is a top-marginal/
+// flat-rate simplification — actual liability depends on income level and
+// filing status — so we present a defensible band (70%-100% of the naive
+// marginal-rate calculation) instead of implying false precision, consistent
+// with this app's existing range-based financial presentations elsewhere
+// (the live interest-rate market band, quiz-bucket midpoints). Returns null
+// when the origin state is unknown or itself has no income tax (nothing to
+// compare).
+function taxSavingsRange(annualIncome: number, originState: string | null): [number, number] | null {
+  const rate = getStateIncomeTaxRate(originState)
+  if (rate === null || rate <= 0) return null
+  const highAnnual = rate * annualIncome
+  const lowAnnual = highAnnual * 0.7
+  return [Math.round(lowAnnual / 12), Math.round(highAnnual / 12)]
+}
+
+function taxSavingsLabel(annualIncome: number, originState: string | null): string {
+  if (!originState) return 'Origin state not on file'
+  const range = taxSavingsRange(annualIncome, originState)
+  if (!range) return `No state income tax where you're moving from (${originState})`
+  const [lo, hi] = range
+  return `+${money(lo)}–${money(hi)}/mo vs ${originState}`
+}
+
+// Which index/indices among a row of per-city values is "winning" — lower-is-
+// better for cost/time figures, higher-is-better for scores. A universal tie
+// highlights nobody (mirrors CompareModal.tsx's on-screen bestIndices).
+function pdfBestIndices(values: number[], lowerIsBetter: boolean): boolean[] {
+  if (values.length === 0) return []
+  const best = lowerIsBetter ? Math.min(...values) : Math.max(...values)
+  const count = values.filter(v => v === best).length
+  if (count === values.length) return values.map(() => false)
+  return values.map(v => v === best)
+}
+
+const PERSONALITY_LABELS: [keyof PersonalityProfile, string][] = [
+  ['growthProfile', 'Growth Profile (Established – Emerging)'],
+  ['pace', 'Pace (Relaxed – Fast-Paced)'],
+  ['culture', 'Culture (Private – Community-Oriented)'],
+  ['environment', 'Environment (Urban – Rural)'],
+  ['lifestyleOrientation', 'Lifestyle (Practical – Luxury)'],
+]
 
 const SCORE_LABELS: [keyof LifestyleScores, string][] = [
   ['affordability', 'Affordability'],
@@ -455,32 +525,40 @@ export function createReportDocument(props: Props): React.ReactElement<ReactPDF.
   return <ReportDocument {...props} />
 }
 
-// ─── Compare Document ────────────────────────────────────────────────────────
+// ─── Comparison Report Document (Phase D) ─────────────────────────────────────
+// Supersedes the old, stripped-down CompareDocument/createCompareDocument
+// (single-page, priority-only DNA subset, no financial picture, no personality
+// traits). Array-driven over `cities` (2 today, N-ready) rather than fixed
+// cityA/cityB props — matches CompareModal.tsx's restructuring. Column widths
+// (cmpTdVal/cmpTdDim, 88/140px) are still tuned for exactly 2 columns, same
+// caveat as the on-screen modal.
 
-interface CompareProps {
-  cityA: CityMatch
-  cityB: CityMatch
+interface ComparisonReportProps {
+  cities: CityMatch[]
   profile: UserProfile
+  totalFunds: number
+  interestRate: number
+  loanTerm: 30 | 15
+  originState: string | null
+  originCity: string | null
   summary: string
   generatedDate: string
 }
 
-function CompareDocument({ cityA, cityB, profile, summary, generatedDate }: CompareProps) {
+function ComparisonReportDocument({
+  cities, profile, totalFunds, interestRate, loanTerm, originState, originCity, summary, generatedDate,
+}: ComparisonReportProps) {
   const priorityCats = [
     ...profile.mustHaves.map(k => ({ key: k, tag: 'Must Have' })),
     ...profile.niceToHaves.map(k => ({ key: k, tag: 'Important' })),
   ]
 
-  const domA = cityA.location.market.daysOnMarket
-  const domB = cityB.location.market.daysOnMarket
-  const domAWins = domA < domB
-  const domBWins = domB < domA
+  const cityNames = cities.map(c => c.location.name).join(' vs ')
+  const budgetStr = totalFunds > 0 ? moneyK(totalFunds) : '—'
+  const taxSavings = taxSavingsLabel(profile.annualIncome, originState)
 
   return (
-    <Document
-      title={`HavenQuest — ${cityA.location.name} vs ${cityB.location.name}`}
-      author="HavenQuest"
-    >
+    <Document title={`HavenQuest — ${cityNames}`} author="HavenQuest">
       <Page size="A4" style={s.page}>
 
         <View style={s.header}>
@@ -488,82 +566,167 @@ function CompareDocument({ cityA, cityB, profile, summary, generatedDate }: Comp
             <Text style={s.logoBlack}>Haven</Text>
             <Text style={s.logoGold}>Quest</Text>
           </View>
-          <Text style={s.headerSub}>City Comparison</Text>
-          <Text style={s.headerMeta}>
-            {cityA.location.name} vs {cityB.location.name}  ·  {generatedDate}
-          </Text>
+          <Text style={s.headerSub}>Comparison Report</Text>
+          <Text style={s.headerMeta}>{cityNames}  ·  {generatedDate}</Text>
         </View>
 
         <View style={s.body}>
 
           {/* City intro */}
-          <View style={s.cmpIntroRow}>
-            <View style={s.cmpCityBlockA}>
-              <Text style={s.cmpCityName}>{cityA.location.name}</Text>
-              <Text style={s.cmpCityCounty}>{cityA.location.county} County, TX</Text>
-              <View style={s.cmpMatchBadge}>
-                <Text style={s.cmpMatchText}>{cityA.matchScore}% match</Text>
-              </View>
-            </View>
-            <View style={s.cmpCityBlockB}>
-              <Text style={s.cmpCityName}>{cityB.location.name}</Text>
-              <Text style={s.cmpCityCounty}>{cityB.location.county} County, TX</Text>
-              <View style={s.cmpMatchBadge}>
-                <Text style={s.cmpMatchText}>{cityB.matchScore}% match</Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Affordability */}
-          <Text style={s.sectionLabel}>AFFORDABILITY</Text>
-          <View style={s.table}>
-            {([
-              { label: 'Est. monthly housing', a: cityA.estimatedMonthlyHousing, b: cityB.estimatedMonthlyHousing },
-              { label: 'Est. monthly total', a: cityA.estimatedMonthlyTotal, b: cityB.estimatedMonthlyTotal },
-            ] as const).map((row, idx, arr) => {
-              const aWins = row.a < row.b
-              const bWins = row.b < row.a
-              const isLast = idx === arr.length - 1
-              return (
-                <View key={row.label} style={isLast ? s.cmpTrLast : s.cmpTr}>
-                  <Text style={s.cmpTdLabel}>{row.label}</Text>
-                  <Text style={aWins ? s.cmpTdVal : s.cmpTdDim}>{money(row.a)}</Text>
-                  <Text style={bWins ? s.cmpTdVal : s.cmpTdDim}>{money(row.b)}</Text>
+          <View style={s.cmpIntroRow} wrap={false}>
+            {cities.map((city, i) => (
+              <View key={city.location.id} style={i === cities.length - 1 ? s.cmpCityBlockB : s.cmpCityBlockA}>
+                <Text style={s.cmpCityName}>{city.location.name}</Text>
+                <Text style={s.cmpCityCounty}>{city.location.county} County, TX</Text>
+                <View style={s.cmpMatchBadge}>
+                  <Text style={s.cmpMatchText}>{city.matchScore}% match</Text>
                 </View>
-              )
-            })}
-            <View style={s.cmpTrLast}>
-              <Text style={s.cmpTdLabel}>Housing burden</Text>
-              <Text style={[s.cmpTdVal, { color: cityA.affordabilityFlag ? '#EA580C' : '#2D7A4F' }]}>
-                {cityA.affordabilityFlag ? '>40%' : 'OK'}
-              </Text>
-              <Text style={[s.cmpTdVal, { color: cityB.affordabilityFlag ? '#EA580C' : '#2D7A4F' }]}>
-                {cityB.affordabilityFlag ? '>40%' : 'OK'}
-              </Text>
+              </View>
+            ))}
+          </View>
+
+          {/* ── Your Financial Picture (incl. Net-Inflow Cash Mirror) ── */}
+          <View wrap={false}>
+            <Text style={s.sectionLabel}>YOUR FINANCIAL PICTURE</Text>
+            <View style={s.table}>
+              <View style={s.cmpTr}>
+                <Text style={s.cmpTdLabel}>Est. budget (buying power)</Text>
+                {cities.map(city => (
+                  <Text key={city.location.id} style={s.cmpTdValWide}>{budgetStr}</Text>
+                ))}
+              </View>
+              {(() => {
+                const payments = cities.map(city => {
+                  const balance = Math.max(0, city.location.housing.medianHomePrice - totalFunds)
+                  return calcMonthlyPayment(balance, interestRate, loanTerm)
+                })
+                const wins = pdfBestIndices(payments, true)
+                return (
+                  <View style={s.cmpTrLast}>
+                    <Text style={s.cmpTdLabel}>Est. monthly payment</Text>
+                    {cities.map((city, i) => (
+                      <Text key={city.location.id} style={wins[i] ? s.cmpTdValWide : s.cmpTdDimWide}>
+                        {payments[i] > 0 ? `${money(payments[i])}/mo` : '—'}
+                      </Text>
+                    ))}
+                  </View>
+                )
+              })()}
+            </View>
+
+            <Text style={s.cmpSubLabel}>NET-INFLOW CASH MIRROR</Text>
+            <View style={s.table}>
+              <View style={s.cmpTrLast}>
+                <Text style={s.cmpTdLabel}>
+                  Est. state tax savings{originCity ? ` vs ${originCity}` : ''}
+                </Text>
+                {cities.map(city => (
+                  <Text key={city.location.id} style={s.cmpTdValWide}>{taxSavings}</Text>
+                ))}
+              </View>
             </View>
           </View>
 
-          {/* Your priorities */}
+          {/* ── Stats table — same field-mapping as the live "Texas vs. Your
+              Origin" chart (components/portal/milemarkers/MM3Discover.tsx),
+              via utils/txComparisonStats.ts ── */}
+          <View wrap={false}>
+            <Text style={s.sectionLabel}>COST OF LIVING &amp; STATS</Text>
+            <View style={s.table}>
+              {(() => {
+                const rows: { label: string; values: string[] }[] = [
+                  { label: 'COL Index', values: cities.map(c => String(txColIndex(c.location.metroUsed))) },
+                  { label: 'Median Home', values: cities.map(c => moneyK(c.location.housing.medianHomePrice)) },
+                  { label: 'Property Tax', values: cities.map(c => txPropertyTax(c.location.metroUsed)) },
+                  { label: 'State Inc. Tax', values: cities.map(() => 'None (TX)') },
+                  { label: 'Schools', values: cities.map(c => c.location.school?.teaRating ?? '—') },
+                  { label: 'Crime/Safety', values: cities.map(c => txSafety(c.location.scores.safety)) },
+                  { label: 'Job Market', values: cities.map(c => txJobMarket(c.location.metroUsed)) },
+                  { label: 'Climate', values: cities.map(c => txClimateV2(c.location.metroUsed)) },
+                ]
+                return rows.map((row, idx) => (
+                  <View key={row.label} style={idx === rows.length - 1 ? s.cmpTrLast : s.cmpTr}>
+                    <Text style={s.cmpTdLabel}>{row.label}</Text>
+                    {row.values.map((v, i) => (
+                      <Text key={cities[i].location.id} style={s.cmpTdVal}>{v}</Text>
+                    ))}
+                  </View>
+                ))
+              })()}
+            </View>
+          </View>
+
+          {/* ── DNA (functional) scores — all 7, not just priority-flagged ── */}
+          <View wrap={false}>
+            <Text style={s.sectionLabel}>DNA SCORES</Text>
+            <View style={s.table}>
+              {DNA_CATEGORIES.map((cat, idx) => {
+                const values = cities.map(c => c.location.dna[cat.key])
+                const wins = pdfBestIndices(values, false)
+                const isLast = idx === DNA_CATEGORIES.length - 1
+                return (
+                  <View key={cat.key} style={isLast ? s.cmpTrLast : s.cmpTr}>
+                    <Text style={s.cmpTdLabel}>{cat.label}</Text>
+                    {cities.map((city, i) => (
+                      <Text
+                        key={city.location.id}
+                        style={wins[i] ? [s.cmpTdVal, { color: scoreColor(values[i]) }] : s.cmpTdDim}
+                      >
+                        {values[i]}/10
+                      </Text>
+                    ))}
+                  </View>
+                )
+              })}
+            </View>
+          </View>
+
+          {/* ── Personality (lifestyle) scores — all 5 ── */}
+          <View wrap={false}>
+            <Text style={s.sectionLabel}>PERSONALITY SCORES</Text>
+            <View style={s.table}>
+              {PERSONALITY_LABELS.map(([key, label], idx) => {
+                const values = cities.map(c => c.location.personality[key])
+                const wins = pdfBestIndices(values, false)
+                const isLast = idx === PERSONALITY_LABELS.length - 1
+                return (
+                  <View key={key} style={isLast ? s.cmpTrLast : s.cmpTr}>
+                    <Text style={s.cmpTdLabel}>{label}</Text>
+                    {cities.map((city, i) => (
+                      <Text
+                        key={city.location.id}
+                        style={wins[i] ? [s.cmpTdVal, { color: scoreColor(values[i]) }] : s.cmpTdDim}
+                      >
+                        {values[i]}/10
+                      </Text>
+                    ))}
+                  </View>
+                )
+              })}
+            </View>
+          </View>
+
+          {/* Your priorities (unchanged from the prior compare PDF) */}
           {priorityCats.length > 0 && (
-            <View>
+            <View wrap={false}>
               <Text style={s.sectionLabel}>YOUR PRIORITIES</Text>
               <View style={s.table}>
                 {priorityCats.map(({ key, tag }, idx) => {
                   const cat = DNA_CATEGORIES.find(c => c.key === key)
-                  const scoreA = cityA.location.dna[key]
-                  const scoreB = cityB.location.dna[key]
-                  const aWins = scoreA > scoreB
-                  const bWins = scoreB > scoreA
+                  const values = cities.map(c => c.location.dna[key])
+                  const wins = pdfBestIndices(values, false)
                   const isLast = idx === priorityCats.length - 1
                   return (
                     <View key={key} style={isLast ? s.cmpTrLast : s.cmpTr}>
                       <Text style={s.cmpTdLabel}>{cat?.label ?? key} ({tag})</Text>
-                      <Text style={aWins ? [s.cmpTdVal, { color: scoreColor(scoreA) }] : s.cmpTdDim}>
-                        {scoreA}/10
-                      </Text>
-                      <Text style={bWins ? [s.cmpTdVal, { color: scoreColor(scoreB) }] : s.cmpTdDim}>
-                        {scoreB}/10
-                      </Text>
+                      {cities.map((city, i) => (
+                        <Text
+                          key={city.location.id}
+                          style={wins[i] ? [s.cmpTdVal, { color: scoreColor(values[i]) }] : s.cmpTdDim}
+                        >
+                          {values[i]}/10
+                        </Text>
+                      ))}
                     </View>
                   )
                 })}
@@ -571,42 +734,39 @@ function CompareDocument({ cityA, cityB, profile, summary, generatedDate }: Comp
             </View>
           )}
 
-          {/* Market & Schools */}
-          <Text style={s.sectionLabel}>MARKET & SCHOOLS</Text>
-          <View style={s.table}>
-            <View style={s.cmpTr}>
-              <Text style={s.cmpTdLabel}>Market</Text>
-              <Text style={[s.cmpTdVal, { color: marketColor(cityA.location.market.marketCondition) }]}>
-                {cityA.location.market.marketCondition.replace(' Market', '')}
-              </Text>
-              <Text style={[s.cmpTdVal, { color: marketColor(cityB.location.market.marketCondition) }]}>
-                {cityB.location.market.marketCondition.replace(' Market', '')}
-              </Text>
-            </View>
-            <View style={s.cmpTr}>
-              <Text style={s.cmpTdLabel}>Days on market</Text>
-              <Text style={domAWins ? s.cmpTdVal : s.cmpTdDim}>{domA}d</Text>
-              <Text style={domBWins ? s.cmpTdVal : s.cmpTdDim}>{domB}d</Text>
-            </View>
-            <View style={s.cmpTr}>
-              <Text style={s.cmpTdLabel}>School (TEA)</Text>
-              <Text style={[s.cmpTdVal, { color: gradeColor(cityA.location.school.teaRating) }]}>
-                {cityA.location.school.teaRating}
-              </Text>
-              <Text style={[s.cmpTdVal, { color: gradeColor(cityB.location.school.teaRating) }]}>
-                {cityB.location.school.teaRating}
-              </Text>
-            </View>
-            <View style={s.cmpTrLast}>
-              <Text style={s.cmpTdLabel}>District</Text>
-              <Text style={s.cmpTdDim}>{cityA.location.school.primaryISD}</Text>
-              <Text style={s.cmpTdDim}>{cityB.location.school.primaryISD}</Text>
+          {/* Market & Schools (market condition + days-on-market, unchanged) */}
+          <View wrap={false}>
+            <Text style={s.sectionLabel}>MARKET SNAPSHOT</Text>
+            <View style={s.table}>
+              <View style={s.cmpTr}>
+                <Text style={s.cmpTdLabel}>Market</Text>
+                {cities.map(city => (
+                  <Text
+                    key={city.location.id}
+                    style={[s.cmpTdVal, { color: marketColor(city.location.market.marketCondition) }]}
+                  >
+                    {city.location.market.marketCondition.replace(' Market', '')}
+                  </Text>
+                ))}
+              </View>
+              {(() => {
+                const values = cities.map(c => c.location.market.daysOnMarket)
+                const wins = pdfBestIndices(values, true)
+                return (
+                  <View style={s.cmpTrLast}>
+                    <Text style={s.cmpTdLabel}>Days on market</Text>
+                    {cities.map((city, i) => (
+                      <Text key={city.location.id} style={wins[i] ? s.cmpTdVal : s.cmpTdDim}>{values[i]}d</Text>
+                    ))}
+                  </View>
+                )
+              })()}
             </View>
           </View>
 
           {/* Bottom line */}
           {summary ? (
-            <View style={s.cmpSummaryBox}>
+            <View style={s.cmpSummaryBox} wrap={false}>
               <Text style={s.cmpSummaryLabel}>BOTTOM LINE</Text>
               <Text style={s.cmpSummaryText}>{summary}</Text>
             </View>
@@ -624,6 +784,6 @@ function CompareDocument({ cityA, cityB, profile, summary, generatedDate }: Comp
   )
 }
 
-export function createCompareDocument(props: CompareProps): React.ReactElement<ReactPDF.DocumentProps> {
-  return <CompareDocument {...props} />
+export function createComparisonReportDocument(props: ComparisonReportProps): React.ReactElement<ReactPDF.DocumentProps> {
+  return <ComparisonReportDocument {...props} />
 }

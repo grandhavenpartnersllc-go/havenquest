@@ -315,9 +315,13 @@ export default function SavedMatches({ matches, profile }: SavedMatchesProps) {
 
       {showCompare && cityA && cityB && (
         <CompareModal
-          cityA={cityA}
-          cityB={cityB}
+          cities={[cityA, cityB]}
           profile={profile}
+          totalFunds={0}
+          interestRate={6.5}
+          loanTerm={30}
+          originState={null}
+          originCity={null}
           onClose={() => setCompareIds([])}
         />
       )}

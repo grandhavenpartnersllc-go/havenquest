@@ -8,13 +8,29 @@ import { getScoreColor } from '../../utils/scoring'
 import { DNA_CATEGORY_ICONS } from '../../utils/categoryIcons'
 import { X, AlertTriangle, CheckCircle, Download } from 'lucide-react'
 
+// Phase D — restructured from fixed cityA/cityB props to an array-driven
+// layout. Exactly 2 cities are passed today (matching real usage — Pin/
+// Compare from Phase C1 always pairs against a single anchor), but every
+// section below maps over `cities` and computes "who wins" via bestIndices
+// rather than a hardcoded pairwise comparison, so it's structurally ready
+// for more than 2 later. Column width (CITY_COL_W) is still a fixed 150px
+// tuned for exactly 2 columns — a 3+-city selection UI is deliberately not
+// built here (out of scope per the brief); making the columns responsive to
+// N would be part of that future work, not this restructuring.
 interface CompareModalProps {
-  cityA: CityMatch
-  cityB: CityMatch
+  cities: CityMatch[]
   profile: UserProfile
+  totalFunds: number
+  interestRate: number
+  loanTerm: 30 | 15
+  originState: string | null
+  originCity: string | null
   onClose: () => void
 }
 
+// Pairwise only — a "leads on X" narrative doesn't generalize cleanly past 2
+// cities, so this (and its render site below) is intentionally gated to
+// cities.length === 2.
 function getSummary(cityA: CityMatch, cityB: CityMatch, profile: UserProfile): string {
   const primaryKeys = profile.mustHaves.length > 0 ? profile.mustHaves : profile.niceToHaves
   const priorityLabel = profile.mustHaves.length > 0 ? 'must-have' : 'important'
@@ -58,47 +74,47 @@ function matchScoreConfig(score: number): { label: string; color: string; bg: st
   return                   { label: 'Potential Match',  color: '#6B7280', bg: '#F3F4F6' }
 }
 
-// Consistent 3-column layout: label | city A | city B
-// Used in both the header and every data row so the vertical divider
-// lands at exactly the same x-position from top to bottom.
-const CITY_COL_W = 150 // px — wide enough for long city names
-const DIVIDER_PAD = 12  // px — breathing room on each side of the divider
+// Which index/indices in a row of values is "winning" — lower-is-better for
+// cost/time figures, higher-is-better for scores. Ties win together (matches
+// the original cityA/cityB behavior, where an exact tie highlighted neither —
+// preserved here via strict < / > comparisons against the best value).
+function bestIndices(values: number[], lowerIsBetter: boolean): boolean[] {
+  if (values.length === 0) return []
+  const best = lowerIsBetter ? Math.min(...values) : Math.max(...values)
+  const count = values.filter(v => v === best).length
+  if (count === values.length) return values.map(() => false) // every column ties — nobody "wins"
+  return values.map(v => v === best)
+}
+
+// Consistent (N+1)-column layout: label | city 1 | city 2 | ... | city N.
+// Used in both the header and every data row so the vertical dividers land
+// at exactly the same x-positions from top to bottom.
+const CITY_COL_W = 150 // px — wide enough for long city names, tuned for N=2
+const DIVIDER_PAD = 12  // px — breathing room on each side of each divider
 
 const COL_LABEL: React.CSSProperties = { flex: '1 1 0', minWidth: 0 }
 
-// City A: right-aligned values, right-border = the divider
-const COL_A: React.CSSProperties = {
-  width: CITY_COL_W,
-  flexShrink: 0,
-  paddingRight: DIVIDER_PAD,
-  borderRight: '2px solid #D1D5DB',
-  textAlign: 'right',
-}
-
-// City B: right-aligned values, left-padded after the divider
-const COL_B: React.CSSProperties = {
-  width: CITY_COL_W,
-  flexShrink: 0,
-  paddingLeft: DIVIDER_PAD,
-  textAlign: 'right',
-}
-
-// Same widths for the header, different divider colour (dark-on-blue)
-const HDR_A: React.CSSProperties = {
-  ...COL_A,
-  borderRight: '2px solid rgba(8,16,28,0.22)',
-}
-const HDR_B: React.CSSProperties = {
-  ...COL_B,
+function cityColStyle(index: number, total: number, borderColor: string): React.CSSProperties {
+  const isLast = index === total - 1
+  return {
+    width: CITY_COL_W,
+    flexShrink: 0,
+    paddingLeft: index === 0 ? 0 : DIVIDER_PAD,
+    paddingRight: isLast ? 0 : DIVIDER_PAD,
+    borderRight: isLast ? undefined : `2px solid ${borderColor}`,
+    textAlign: 'right',
+  }
 }
 
 const HEADER_BG = '#60B8FF'
 const HDR_TEXT  = 'rgba(8,16,28,0.85)'
 const HDR_MUTED = 'rgba(8,16,28,0.5)'
+const HDR_DIVIDER = 'rgba(8,16,28,0.22)'
+const BODY_DIVIDER = '#D1D5DB'
 
 type DlState = 'idle' | 'loading' | 'done' | 'error'
 
-export default function CompareModal({ cityA, cityB, profile, onClose }: CompareModalProps) {
+export default function CompareModal({ cities, profile, totalFunds, interestRate, loanTerm, originState, originCity, onClose }: CompareModalProps) {
   const [dlState, setDlState] = React.useState<DlState>('idle')
 
   const priorityCats = [
@@ -106,26 +122,26 @@ export default function CompareModal({ cityA, cityB, profile, onClose }: Compare
     ...profile.niceToHaves.map(k => ({ key: k, tag: 'Important', tagColor: '#6B7280', tagBg: '#F7F6F3' })),
   ]
 
-  const summary = getSummary(cityA, cityB, profile)
-  const cfgA = matchScoreConfig(cityA.matchScore)
-  const cfgB = matchScoreConfig(cityB.matchScore)
+  const summary = cities.length === 2 ? getSummary(cities[0], cities[1], profile) : ''
 
   async function handleDownload() {
     setDlState('loading')
     try {
-      const [{ pdf }, { createCompareDocument }] = await Promise.all([
+      const [{ pdf }, { createComparisonReportDocument }] = await Promise.all([
         import('@react-pdf/renderer'),
         import('../../services/pdfService'),
       ])
       const generatedDate = new Date().toLocaleDateString('en-US', {
         month: 'long', day: 'numeric', year: 'numeric',
       })
-      const doc = createCompareDocument({ cityA, cityB, profile, summary, generatedDate })
+      const doc = createComparisonReportDocument({
+        cities, profile, totalFunds, interestRate, loanTerm, originState, originCity, summary, generatedDate,
+      })
       const blob = await pdf(doc).toBlob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `HavenQuest-${cityA.location.name}-vs-${cityB.location.name}.pdf`
+      a.download = `HavenQuest-Comparison-${cities.map(c => c.location.name).join('-vs-')}.pdf`
       a.click()
       URL.revokeObjectURL(url)
       setDlState('done')
@@ -135,6 +151,8 @@ export default function CompareModal({ cityA, cityB, profile, onClose }: Compare
       setTimeout(() => setDlState('idle'), 3000)
     }
   }
+
+  if (cities.length < 2) return null
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
@@ -158,13 +176,11 @@ export default function CompareModal({ cityA, cityB, profile, onClose }: Compare
           </button>
 
           {/*
-            3-column grid — same proportions as body rows.
+            (N+1)-column grid — same proportions as body rows.
             Col 1 (flex): eyebrow label
-            Col 2 (150 px): city A — left-aligned, right-border divider
-            Col 3 (150 px): city B — right-aligned
+            Col 2..N+1 (150 px each): one city per column
           */}
           <div className="flex items-start">
-            {/* Col 1: label */}
             <div style={COL_LABEL} className="pr-3">
               <p
                 className="text-[10px] font-bold uppercase tracking-widest mb-1.5"
@@ -175,51 +191,32 @@ export default function CompareModal({ cityA, cityB, profile, onClose }: Compare
               <div className="w-8 h-[2px]" style={{ backgroundColor: '#B8912A' }} />
             </div>
 
-            {/* Col 2: city A */}
-            <div style={HDR_A}>
-              <p className="font-bold text-[17px] leading-tight truncate mb-0.5" style={{ color: HDR_TEXT }}>
-                {cityA.location.name}
-              </p>
-              <p className="text-[11px] mb-3" style={{ color: HDR_MUTED }}>
-                {cityA.location.county} County, TX
-              </p>
-              <div className="flex justify-end">
-                <div
-                  className="inline-flex items-baseline gap-1.5 px-2.5 py-1.5 rounded-lg"
-                  style={{ backgroundColor: cfgA.bg }}
-                >
-                  <span className="text-xl font-bold tabular-nums leading-none" style={{ color: cfgA.color }}>
-                    {cityA.matchScore}
-                  </span>
-                  <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: cfgA.color, opacity: 0.8 }}>
-                    {cfgA.label}
-                  </span>
+            {cities.map((city, i) => {
+              const cfg = matchScoreConfig(city.matchScore)
+              return (
+                <div key={city.location.id} style={cityColStyle(i, cities.length, HDR_DIVIDER)}>
+                  <p className="font-bold text-[17px] leading-tight truncate mb-0.5" style={{ color: HDR_TEXT }}>
+                    {city.location.name}
+                  </p>
+                  <p className="text-[11px] mb-3" style={{ color: HDR_MUTED }}>
+                    {city.location.county} County, TX
+                  </p>
+                  <div className="flex justify-end">
+                    <div
+                      className="inline-flex items-baseline gap-1.5 px-2.5 py-1.5 rounded-lg"
+                      style={{ backgroundColor: cfg.bg }}
+                    >
+                      <span className="text-xl font-bold tabular-nums leading-none" style={{ color: cfg.color }}>
+                        {city.matchScore}
+                      </span>
+                      <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: cfg.color, opacity: 0.8 }}>
+                        {cfg.label}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-
-            {/* Col 3: city B — right-aligned */}
-            <div style={HDR_B}>
-              <p className="font-bold text-[17px] leading-tight truncate mb-0.5" style={{ color: HDR_TEXT }}>
-                {cityB.location.name}
-              </p>
-              <p className="text-[11px] mb-3" style={{ color: HDR_MUTED }}>
-                {cityB.location.county} County, TX
-              </p>
-              <div className="flex justify-end">
-                <div
-                  className="inline-flex items-baseline gap-1.5 px-2.5 py-1.5 rounded-lg"
-                  style={{ backgroundColor: cfgB.bg }}
-                >
-                  <span className="text-xl font-bold tabular-nums leading-none" style={{ color: cfgB.color }}>
-                    {cityB.matchScore}
-                  </span>
-                  <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: cfgB.color, opacity: 0.8 }}>
-                    {cfgB.label}
-                  </span>
-                </div>
-              </div>
-            </div>
+              )
+            })}
           </div>
         </div>
 
@@ -230,35 +227,32 @@ export default function CompareModal({ cityA, cityB, profile, onClose }: Compare
           <section>
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Affordability</p>
             <div>
-              {[
-                { label: 'Est. monthly housing', a: cityA.estimatedMonthlyHousing, b: cityB.estimatedMonthlyHousing, fmt: formatCurrency },
-                { label: 'Est. monthly total',   a: cityA.estimatedMonthlyTotal,   b: cityB.estimatedMonthlyTotal,   fmt: formatCurrency },
-              ].map(row => {
-                const aWins = row.a < row.b
-                const bWins = row.b < row.a
+              {([
+                { label: 'Est. monthly housing', get: (c: CityMatch) => c.estimatedMonthlyHousing },
+                { label: 'Est. monthly total',   get: (c: CityMatch) => c.estimatedMonthlyTotal },
+              ]).map(row => {
+                const values = cities.map(row.get)
+                const wins = bestIndices(values, true)
                 return (
                   <div key={row.label} className="flex items-center py-2.5 border-b border-gray-50">
                     <span className="text-xs text-gray-500 truncate" style={COL_LABEL}>{row.label}</span>
-                    <span
-                      className={`text-xs tabular-nums ${aWins ? 'font-bold text-gray-900' : 'text-gray-400'}`}
-                      style={COL_A}
-                    >
-                      {row.fmt(row.a)}
-                    </span>
-                    <span
-                      className={`text-xs tabular-nums ${bWins ? 'font-bold text-gray-900' : 'text-gray-400'}`}
-                      style={COL_B}
-                    >
-                      {row.fmt(row.b)}
-                    </span>
+                    {cities.map((city, i) => (
+                      <span
+                        key={city.location.id}
+                        className={`text-xs tabular-nums ${wins[i] ? 'font-bold text-gray-900' : 'text-gray-400'}`}
+                        style={cityColStyle(i, cities.length, BODY_DIVIDER)}
+                      >
+                        {formatCurrency(values[i])}
+                      </span>
+                    ))}
                   </div>
                 )
               })}
 
               <div className="flex items-center py-2.5 border-b border-gray-50">
                 <span className="text-xs text-gray-500" style={COL_LABEL}>Housing burden</span>
-                {([cityA, cityB] as const).map((city, i) => (
-                  <div key={city.location.id} style={i === 0 ? COL_A : COL_B} className="flex justify-end">
+                {cities.map((city, i) => (
+                  <div key={city.location.id} style={cityColStyle(i, cities.length, BODY_DIVIDER)} className="flex justify-end">
                     {city.affordabilityFlag ? (
                       <span className="inline-flex items-center gap-1 text-[11px] font-medium text-orange-500">
                         <AlertTriangle size={11} /> &gt;40%
@@ -282,10 +276,8 @@ export default function CompareModal({ cityA, cityB, profile, onClose }: Compare
                 {priorityCats.map(({ key, tag, tagColor, tagBg }) => {
                   const cat = DNA_CATEGORIES.find(c => c.key === key)!
                   const Icon = DNA_CATEGORY_ICONS[key]
-                  const scoreA = cityA.location.dna[key]
-                  const scoreB = cityB.location.dna[key]
-                  const aWins = scoreA > scoreB
-                  const bWins = scoreB > scoreA
+                  const values = cities.map(c => c.location.dna[key])
+                  const wins = bestIndices(values, false)
                   return (
                     <div key={key} className="flex items-center py-2.5 border-b border-gray-50">
                       <div className="flex items-center gap-1.5 min-w-0 truncate" style={COL_LABEL}>
@@ -298,18 +290,15 @@ export default function CompareModal({ cityA, cityB, profile, onClose }: Compare
                           {tag}
                         </span>
                       </div>
-                      <span
-                        className={`text-xs tabular-nums ${aWins ? 'font-bold' : 'text-gray-400'}`}
-                        style={{ ...COL_A, color: aWins ? getScoreColor(scoreA) : undefined }}
-                      >
-                        {scoreA}/10
-                      </span>
-                      <span
-                        className={`text-xs tabular-nums ${bWins ? 'font-bold' : 'text-gray-400'}`}
-                        style={{ ...COL_B, color: bWins ? getScoreColor(scoreB) : undefined }}
-                      >
-                        {scoreB}/10
-                      </span>
+                      {cities.map((city, i) => (
+                        <span
+                          key={city.location.id}
+                          className={`text-xs tabular-nums ${wins[i] ? 'font-bold' : 'text-gray-400'}`}
+                          style={{ ...cityColStyle(i, cities.length, BODY_DIVIDER), color: wins[i] ? getScoreColor(values[i]) : undefined }}
+                        >
+                          {values[i]}/10
+                        </span>
+                      ))}
                     </div>
                   )
                 })}
@@ -323,55 +312,51 @@ export default function CompareModal({ cityA, cityB, profile, onClose }: Compare
             <div>
               <div className="flex items-center py-2.5 border-b border-gray-50">
                 <span className="text-xs text-gray-500" style={COL_LABEL}>Market</span>
-                <span className="text-xs text-gray-700" style={COL_A}>
-                  {cityA.location.market.marketCondition.replace(' Market', '')}
-                </span>
-                <span className="text-xs text-gray-700" style={COL_B}>
-                  {cityB.location.market.marketCondition.replace(' Market', '')}
-                </span>
+                {cities.map((city, i) => (
+                  <span key={city.location.id} className="text-xs text-gray-700" style={cityColStyle(i, cities.length, BODY_DIVIDER)}>
+                    {city.location.market.marketCondition.replace(' Market', '')}
+                  </span>
+                ))}
               </div>
 
               <div className="flex items-center py-2.5 border-b border-gray-50">
                 <span className="text-xs text-gray-500" style={COL_LABEL}>Days on market</span>
-                {([cityA, cityB] as const).map((city, i) => {
-                  const dom = city.location.market.daysOnMarket
-                  const other = (i === 0 ? cityB : cityA).location.market.daysOnMarket
-                  const wins = dom < other
-                  return (
+                {(() => {
+                  const values = cities.map(c => c.location.market.daysOnMarket)
+                  const wins = bestIndices(values, true)
+                  return cities.map((city, i) => (
                     <span
                       key={city.location.id}
-                      className={`text-xs tabular-nums ${wins ? 'font-bold text-gray-900' : 'text-gray-400'}`}
-                      style={i === 0 ? COL_A : COL_B}
+                      className={`text-xs tabular-nums ${wins[i] ? 'font-bold text-gray-900' : 'text-gray-400'}`}
+                      style={cityColStyle(i, cities.length, BODY_DIVIDER)}
                     >
-                      {dom}d
+                      {values[i]}d
                     </span>
-                  )
-                })}
+                  ))
+                })()}
               </div>
 
               <div className="flex items-center py-2.5 border-b border-gray-50">
                 <span className="text-xs text-gray-500" style={COL_LABEL}>School (TEA)</span>
-                <span className="text-xs font-semibold text-gray-700" style={COL_A}>
-                  {cityA.location.school.teaRating}
-                </span>
-                <span className="text-xs font-semibold text-gray-700" style={COL_B}>
-                  {cityB.location.school.teaRating}
-                </span>
+                {cities.map((city, i) => (
+                  <span key={city.location.id} className="text-xs font-semibold text-gray-700" style={cityColStyle(i, cities.length, BODY_DIVIDER)}>
+                    {city.location.school.teaRating}
+                  </span>
+                ))}
               </div>
 
               <div className="flex items-center py-2.5">
                 <span className="text-xs text-gray-500" style={COL_LABEL}>District</span>
-                <span className="text-xs text-gray-500 truncate" style={COL_A}>
-                  {cityA.location.school.primaryISD}
-                </span>
-                <span className="text-xs text-gray-500 truncate" style={COL_B}>
-                  {cityB.location.school.primaryISD}
-                </span>
+                {cities.map((city, i) => (
+                  <span key={city.location.id} className="text-xs text-gray-500 truncate" style={cityColStyle(i, cities.length, BODY_DIVIDER)}>
+                    {city.location.school.primaryISD}
+                  </span>
+                ))}
               </div>
             </div>
           </section>
 
-          {/* Summary */}
+          {/* Summary — pairwise only, see getSummary */}
           {summary && (
             <div className="rounded-xl px-4 py-3.5" style={{ backgroundColor: '#08101C' }}>
               <p className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
@@ -383,7 +368,7 @@ export default function CompareModal({ cityA, cityB, profile, onClose }: Compare
             </div>
           )}
 
-          {/* Download comparison PDF */}
+          {/* Download comparison report */}
           <div className="flex justify-end">
             <button
               onClick={handleDownload}
@@ -396,7 +381,7 @@ export default function CompareModal({ cityA, cityB, profile, onClose }: Compare
               }}
             >
               <Download size={13} />
-              {dlState === 'loading' ? 'Generating…' : dlState === 'done' ? 'Downloaded!' : dlState === 'error' ? 'Failed' : 'Download Comparison PDF'}
+              {dlState === 'loading' ? 'Generating…' : dlState === 'done' ? 'Downloaded!' : dlState === 'error' ? 'Failed' : 'Download Comparison Report'}
             </button>
           </div>
 

@@ -9,6 +9,7 @@ import { getAllCities } from '../../../services/locationService'
 import { getTopMatches, getDownPaymentMidpoint, getProceedsMidpoint } from '../../../services/matchingService'
 import { createClient } from '../../../lib/supabase/client'
 import { lookupZipCityState } from '../../../utils/zipLookup'
+import { txColIndex, txSafety, txPropertyTax, txJobMarket, txClimateV2 } from '../../../utils/txComparisonStats'
 import CompareModal from '../../results/CompareModal'
 import { Lock, LockOpen } from 'lucide-react'
 
@@ -85,39 +86,6 @@ function lookupOriginCity(city: string): OriginCityData | null {
     k !== 'default' && city.toLowerCase().includes(k.toLowerCase())
   )
   return key ? ORIGIN_CITY_DATA[key] : null
-}
-
-function txColIndex(metro: string): number {
-  if (metro.includes('Houston')) return 98
-  if (metro.includes('San Antonio')) return 97
-  if (metro.includes('Dallas') || metro.includes('DFW') || metro.includes('Fort Worth')) return 104
-  return 108
-}
-
-function txSafety(score: number): string {
-  if (score >= 8) return 'Very low'
-  if (score >= 6) return 'Low'
-  if (score >= 4) return 'Moderate'
-  return 'Higher risk'
-}
-
-function txPropertyTax(metro: string): string {
-  if (metro.includes('Houston')) return '2.0%'
-  if (metro.includes('San Antonio')) return '2.3%'
-  if (metro.includes('Dallas') || metro.includes('DFW') || metro.includes('Fort Worth')) return '2.1%'
-  return '1.9%'
-}
-
-function txJobMarket(metro: string): string {
-  if (metro.includes('Houston') || metro.includes('San Antonio')) return 'Moderate'
-  return 'Strong'
-}
-
-function txClimateV2(metro: string): string {
-  if (metro.includes('Houston')) return 'Humid subtropical'
-  if (metro.includes('Dallas') || metro.includes('DFW') || metro.includes('Fort Worth')) return 'Hot & stormy'
-  if (metro.includes('San Antonio')) return 'Hot & dry'
-  return 'Hot summers'
 }
 
 function parseHomePrice(s: string): number {
@@ -238,7 +206,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const [isMobile, setIsMobile] = useState(false)
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
 
-  // Compare (Phase C1 Item 6) — reuses the existing CompareModal/createCompareDocument
+  // Compare (Phase C1 Item 6, restructured Phase D) — reuses the existing CompareModal/createComparisonReportDocument
   // logic as-is. Pairing is generalized across the 3-slot hero rotation via
   // getComparePartnerId below, available from both the hero tabs and the expanded
   // 5-10 list.
@@ -1838,9 +1806,10 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         </div>
       )}
 
-      {/* Compare (Phase C1 Item 6) — reuses the existing CompareModal as-is;
-          pairing logic is generalized across the 3-slot hero rotation via
-          getComparePartnerId. A fuller comparison-report build remains Phase D. */}
+      {/* Compare (Phase C1 Item 6, restructured Phase D) — pairing logic is
+          generalized across the 3-slot hero rotation via getComparePartnerId.
+          CompareModal itself takes an array of cities (2 today, N-ready) —
+          this call site always passes exactly the 2 currently paired. */}
       {compareCityId && (() => {
         const partnerId = getComparePartnerId(compareCityId)
         const cityA = findMatch(compareCityId)
@@ -1848,9 +1817,13 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         if (!cityA || !cityB) return null
         return (
           <CompareModal
-            cityA={cityA}
-            cityB={cityB}
+            cities={[cityA, cityB]}
             profile={activeProfile}
+            totalFunds={totalFunds}
+            interestRate={interestRate}
+            loanTerm={loanTerm}
+            originState={originState}
+            originCity={originCity}
             onClose={() => setCompareCityId(null)}
           />
         )
