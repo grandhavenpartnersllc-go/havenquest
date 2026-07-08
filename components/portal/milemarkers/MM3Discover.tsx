@@ -109,6 +109,31 @@ function communityCharLabel(env: number): string {
   return 'Rural'
 }
 
+// Declutter pass — replaces the old persistent, dismiss-only "Your Direction"
+// banner. Owns its own fade timer (starts fading ~400ms before the parent's
+// 4000ms auto-dismiss actually clears rankChangeExplanation) so the trigger
+// effect above didn't need any logic changes beyond that one timeout value.
+function RankChangeAlert({ message }: { message: string }) {
+  const [fading, setFading] = useState(false)
+  useEffect(() => {
+    setFading(false)
+    const t = setTimeout(() => setFading(true), 3600)
+    return () => clearTimeout(t)
+  }, [message])
+  return (
+    <div style={{
+      position: 'absolute', top: '-10px', right: '8px', maxWidth: '220px', zIndex: 5,
+      background: 'rgba(20,30,50,0.97)', border: '0.5px solid rgba(197,183,131,0.4)',
+      borderRadius: '6px', padding: '6px 8px',
+      boxShadow: '0 4px 14px rgba(0,0,0,0.25)',
+      opacity: fading ? 0 : 1, transition: 'opacity 0.4s ease',
+      pointerEvents: 'none',
+    }}>
+      <span style={{ fontSize: '9px', color: '#C5B783', lineHeight: 1.4 }}>{message}</span>
+    </div>
+  )
+}
+
 const SliderRow = ({
   leftLabel,
   rightLabel,
@@ -205,6 +230,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const [activePanel, setActivePanel] = useState<'lifestyle' | 'financials'>('lifestyle')
   const [isMobile, setIsMobile] = useState(false)
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
+  const [advancedAssumptionsOpen, setAdvancedAssumptionsOpen] = useState(false) // Declutter pass — Interest rate + Loan term moved behind this
 
   // Compare (Phase C1 Item 6, restructured Phase D) — reuses the existing CompareModal/createComparisonReportDocument
   // logic as-is. Pairing is generalized across the 3-slot hero rotation via
@@ -543,7 +569,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
             topCity ? `Your rankings updated because ${reason} — ${topCity} is now your top match.` : `Your rankings updated because ${reason}.`
           )
           if (explanationTimerRef.current) clearTimeout(explanationTimerRef.current)
-          explanationTimerRef.current = setTimeout(() => setRankChangeExplanation(null), 8000)
+          explanationTimerRef.current = setTimeout(() => setRankChangeExplanation(null), 4000) // Declutter pass — was 8000ms
         }
       }
     }
@@ -1070,6 +1096,42 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         </div>
       </div>
 
+      {/* Declutter pass — Interest rate + Loan term moved to Advanced Assumptions;
+          only a live summary + trigger stays in the always-visible flow. */}
+      <div style={{ marginBottom: '10px' }}>
+        <button type="button" onClick={() => setAdvancedAssumptionsOpen(true)}
+          style={{
+            width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            padding: '8px 10px', borderRadius: '7px', border: '0.5px solid #E0DED8', background: '#FAFAF8',
+            cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
+          }}>
+          <span style={{ fontSize: '10px', color: '#6B6A65' }}>Advanced Assumptions</span>
+          <span style={{ fontSize: '10px', color: '#1d1d1f', fontWeight: 500 }}>{interestRate}% · {loanTerm}yr →</span>
+        </button>
+      </div>
+
+      {/* Monthly estimate */}
+      <div style={{ background: '#EDF2FF', borderRadius: '7px', padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <p style={{ fontSize: '9px', color: '#0076B6', margin: '0 0 1px' }}>Est. monthly payment</p>
+          <p style={{ fontSize: '9px', color: '#86868b', margin: 0 }}>Principal + interest only</p>
+        </div>
+        <p style={{ fontSize: '16px', fontWeight: 500, color: '#0A1E3D', margin: 0 }}>
+          {refMonthly > 0 ? `${refMonthly.toLocaleString()}` : '—'}
+        </p>
+      </div>
+    </div>
+  )
+
+  // ──────────────────────────────────────────────────────────
+  // Advanced Assumptions (Declutter pass) — Interest rate + Loan term, moved
+  // verbatim out of financialsContent. Rendered inside a centered-card overlay
+  // on desktop (styled after CompareModal's pattern, not the component itself)
+  // and as a nested stacked sheet inside the already-open Financials drawer on
+  // mobile — see the two render sites below.
+  // ──────────────────────────────────────────────────────────
+  const advancedAssumptionsContent = (
+    <div>
       {/* Rate slider */}
       <div style={{ marginBottom: '10px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
@@ -1092,7 +1154,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
       </div>
 
       {/* Loan term */}
-      <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
+      <div style={{ display: 'flex', gap: '6px' }}>
         {([30, 15] as const).map(term => {
           const active = loanTerm === term
           return (
@@ -1103,17 +1165,6 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
             </button>
           )
         })}
-      </div>
-
-      {/* Monthly estimate */}
-      <div style={{ background: '#EDF2FF', borderRadius: '7px', padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <p style={{ fontSize: '9px', color: '#0076B6', margin: '0 0 1px' }}>Est. monthly payment</p>
-          <p style={{ fontSize: '9px', color: '#86868b', margin: 0 }}>Principal + interest only</p>
-        </div>
-        <p style={{ fontSize: '16px', fontWeight: 500, color: '#0A1E3D', margin: 0 }}>
-          {refMonthly > 0 ? `$${refMonthly.toLocaleString()}` : '—'}
-        </p>
       </div>
     </div>
   )
@@ -1159,7 +1210,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // child's existing color choice stays correct unchanged).
   // ──────────────────────────────────────────────────────────
   const livingLedgerSummaryCard = (
-    <div style={{ background: '#0A1E3D', borderRadius: '10px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '10px' }}>
+    <div style={{ background: '#0A1E3D', borderRadius: '10px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '10px' }}>
       {/* YOUR DIRECTION — Phase C1 Item 7: tabbable hero across the top-3 matches,
           labeled by place name (never ordinal). Only one match ever occupies the
           hero/focal position at a time. Tabs default to the algorithm's own top 3;
@@ -1168,25 +1219,6 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         <p style={{ fontSize: '9px', fontWeight: 500, letterSpacing: '0.1em', color: '#C5B783', textTransform: 'uppercase', margin: '0 0 8px' }}>
           Your Direction
         </p>
-
-        {/* Phase C2 Item 2 — "why did this ranking change" explanation. Only
-            appears after a genuine top-3 reorder settles (see the effect above),
-            never on every keystroke. */}
-        {rankChangeExplanation && (
-          <div style={{
-            background: 'rgba(197,183,131,0.15)', border: '0.5px solid rgba(197,183,131,0.35)',
-            borderRadius: '6px', padding: '6px 8px', marginBottom: '8px',
-            display: 'flex', alignItems: 'flex-start', gap: '6px',
-          }}>
-            <span style={{ fontSize: '9px', color: '#C5B783', lineHeight: 1.4, flex: 1 }}>
-              {rankChangeExplanation}
-            </span>
-            <button type="button" onClick={() => setRankChangeExplanation(null)}
-              style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: '11px', cursor: 'pointer', padding: 0, lineHeight: 1 }}>
-              ✕
-            </button>
-          </div>
-        )}
 
         {heroSlots.length === 0 ? (
           <div style={{ border: '0.5px dashed rgba(197,183,131,0.3)', borderRadius: '8px', padding: '10px 12px' }}>
@@ -1205,7 +1237,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                 return (
                   <button key={id} type="button" onClick={() => setHeroTabId(id)}
                     style={{
-                      flex: 1, minWidth: 0, padding: '5px 6px', borderRadius: '6px',
+                      flex: 1, minWidth: 0, padding: '5px 10px', borderRadius: '20px',
                       fontSize: '10px', fontWeight: active ? 500 : 400,
                       background: active ? 'rgba(197,183,131,0.18)' : 'rgba(255,255,255,0.05)',
                       color: active ? '#C5B783' : 'rgba(255,255,255,0.55)',
@@ -1237,7 +1269,8 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                   display: 'flex', alignItems: 'center', gap: '10px',
                   position: 'relative',
                 }}>
-                  <div style={{ width: '52px', height: '52px', borderRadius: '7px', overflow: 'hidden', position: 'relative', flexShrink: 0, background: '#1a3558' }}>
+                  {rankChangeExplanation && <RankChangeAlert message={rankChangeExplanation} />}
+                  <div style={{ width: '60px', height: '60px', borderRadius: '7px', overflow: 'hidden', position: 'relative', flexShrink: 0, background: '#1a3558' }}>
                     <Image
                       src={cityLoc.cityImageUrl ?? `/images/cities/${cityLoc.id}.jpg`}
                       alt={cityLoc.name} fill style={{ objectFit: 'cover' }}
@@ -1263,6 +1296,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                       <span style={{ fontSize: '9px', color: afColor(status) }}>{afLabel(status)}</span>
                       <button
                         type="button"
+                        className="mm3-secondary-action"
                         onClick={() => isPinnedHero ? unpinCity(cityLoc.id) : pinCity(cityLoc.id)}
                         disabled={!isPinnedHero && pinnedCities.length >= 3}
                         style={{
@@ -1272,7 +1306,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                           border: `0.5px solid ${isPinnedHero ? 'rgba(197,183,131,0.35)' : 'rgba(0,118,182,0.35)'}`,
                           borderRadius: '8px', padding: '1px 6px',
                           cursor: (!isPinnedHero && pinnedCities.length >= 3) ? 'not-allowed' : 'pointer',
-                          opacity: (!isPinnedHero && pinnedCities.length >= 3) ? 0.4 : 1,
+                          opacity: isPinnedHero ? ((!isPinnedHero && pinnedCities.length >= 3) ? 0.4 : 1) : 0.55,
                           fontFamily: 'inherit', flexShrink: 0,
                         }}
                       >
@@ -1281,9 +1315,10 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                       {comparePartner && (
                         <button
                           type="button"
+                          className="mm3-secondary-action"
                           onClick={() => setCompareCityId(cityLoc.id)}
                           style={{
-                            fontSize: '9px', color: '#C5B783',
+                            fontSize: '9px', color: '#C5B783', opacity: 0.55,
                             background: 'rgba(197,183,131,0.12)', border: '0.5px solid rgba(197,183,131,0.35)',
                             borderRadius: '8px', padding: '1px 6px', cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0,
                           }}
@@ -1294,9 +1329,10 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                       {!isPinnedHero && (
                         <button
                           type="button"
+                          className="mm3-secondary-action"
                           onClick={() => removeCity(cityLoc.id)}
                           style={{
-                            fontSize: '9px', color: 'rgba(255,255,255,0.45)',
+                            fontSize: '9px', color: 'rgba(255,255,255,0.45)', opacity: 0.55,
                             background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.15)',
                             borderRadius: '8px', padding: '1px 6px', cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0,
                           }}
@@ -1533,9 +1569,9 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                   style={{
                     padding: '3px 9px', borderRadius: '20px', fontSize: '10px',
                     fontWeight: active ? 500 : 400,
-                    background: active ? '#0A1E3D' : 'transparent',
-                    color: active ? '#fff' : '#6B6A65',
-                    border: `0.5px solid ${active ? '#0A1E3D' : '#D0CEC8'}`,
+                    background: active ? 'rgba(197,183,131,0.18)' : 'transparent',
+                    color: active ? '#8a6f00' : '#6B6A65',
+                    border: `0.5px solid ${active ? '#C5B783' : '#D0CEC8'}`,
                     cursor: 'pointer',
                   }}>{f.label}{pct != null ? ` · ${pct}%` : ''}</button>
               )
@@ -1564,9 +1600,9 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                     <div key={city.id} onClick={() => setSelectedCityId(city.id)}
                       style={{
                         background: rowBg, border: `0.5px solid ${rowBorder}`,
-                        borderRadius: '6px', padding: '6px 8px',
+                        borderRadius: '6px', padding: '7px 8px',
                         display: 'flex', alignItems: 'center', gap: '6px',
-                        marginBottom: '2px', cursor: 'pointer',
+                        marginBottom: '6px', cursor: 'pointer',
                       }}
                       onMouseEnter={e => { if (!isSelected && !isPinned) (e.currentTarget as HTMLDivElement).style.background = '#F5F5F7' }}
                       onMouseLeave={e => { if (!isSelected && !isPinned) (e.currentTarget as HTMLDivElement).style.background = 'transparent' }}
@@ -1579,6 +1615,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                       <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: afColor(status), flexShrink: 0 }} />
                       <span style={{ fontSize: '10px', color: '#C5B783', fontWeight: 500, flexShrink: 0 }}>{match.matchScore}%</span>
                       <button type="button"
+                        className="mm3-secondary-action"
                         onClick={e => { e.stopPropagation(); isPinned ? unpinCity(city.id) : pinCity(city.id) }}
                         disabled={!isPinned && pinnedCities.length >= 3}
                         style={{
@@ -1588,15 +1625,16 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                           background: isPinned ? 'rgba(197,183,131,0.1)' : '#F0F7FF',
                           cursor: (!isPinned && pinnedCities.length >= 3) ? 'not-allowed' : 'pointer',
                           flexShrink: 0,
-                          opacity: !isPinned && pinnedCities.length >= 3 ? 0.38 : 1,
+                          opacity: isPinned ? 1 : (pinnedCities.length >= 3 ? 0.38 : 0.55),
                         }}>
                         {isPinned ? '✓' : 'Pin'}
                       </button>
                       {getComparePartnerId(city.id) && (
                         <button type="button"
+                          className="mm3-secondary-action"
                           onClick={e => { e.stopPropagation(); setCompareCityId(city.id) }}
                           style={{
-                            fontSize: '9px', color: '#C5B783',
+                            fontSize: '9px', color: '#C5B783', opacity: 0.55,
                             padding: '2px 5px', borderRadius: '8px',
                             border: '0.5px solid rgba(197,183,131,0.35)',
                             background: 'rgba(197,183,131,0.1)',
@@ -1607,9 +1645,10 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                       )}
                       {!isPinned && (
                         <button type="button"
+                          className="mm3-secondary-action"
                           onClick={e => { e.stopPropagation(); removeCity(city.id) }}
                           style={{
-                            fontSize: '9px', color: '#9a9a9a',
+                            fontSize: '9px', color: '#9a9a9a', opacity: 0.55,
                             padding: '2px 5px', borderRadius: '8px',
                             border: '0.5px solid rgba(0,0,0,0.12)',
                             background: 'rgba(0,0,0,0.03)',
@@ -1781,6 +1820,14 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // ──────────────────────────────────────────────────────────
   return (
     <>
+      {/* Declutter pass item 6 — Pin/Compare/Remove read as dimmed/secondary by
+          default, full-strength on hover/focus so ranked results dominate the
+          visual hierarchy. Inline styles can't express :hover, hence this tag. */}
+      <style>{`
+        .mm3-secondary-action { transition: opacity 0.15s ease; }
+        .mm3-secondary-action:hover, .mm3-secondary-action:focus-visible { opacity: 1 !important; }
+      `}</style>
+
       {/* Full report modal overlay */}
       {reportMatch && (
         <div
@@ -1802,6 +1849,33 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
               </button>
             </div>
             <FullReport match={reportMatch} profile={activeProfile} />
+          </div>
+        </div>
+      )}
+
+      {/* Advanced Assumptions (Declutter pass) — desktop only; mobile nests this
+          inside the already-open Financials drawer instead (see below). */}
+      {!isMobile && advancedAssumptionsOpen && (
+        <div
+          onClick={() => setAdvancedAssumptionsOpen(false)}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
+            zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '24px',
+          }}
+        >
+          <div onClick={e => e.stopPropagation()} style={{
+            background: '#fff', borderRadius: '16px', width: '100%', maxWidth: '380px',
+            boxShadow: '0 -4px 40px rgba(0,0,0,0.28)', padding: '20px',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <p style={{ fontSize: '14px', fontWeight: 600, color: '#0A1E3D', margin: 0 }}>Advanced Assumptions</p>
+              <button type="button" onClick={() => setAdvancedAssumptionsOpen(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px', color: '#86868b' }}>
+                ✕ Close
+              </button>
+            </div>
+            {advancedAssumptionsContent}
           </div>
         </div>
       )}
@@ -1914,7 +1988,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
 
           {mobileDrawerOpen && (
             <div
-              onClick={() => setMobileDrawerOpen(false)}
+              onClick={() => { setMobileDrawerOpen(false); setAdvancedAssumptionsOpen(false) }}
               style={{
                 position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
                 zIndex: 600, display: 'flex', alignItems: 'flex-end',
@@ -1930,14 +2004,24 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px 0' }}>
                   <p style={{ fontSize: '13px', fontWeight: 500, color: '#0A1E3D', margin: 0 }}>
-                    {activePanel === 'lifestyle' ? 'Your Lifestyle' : 'Your Financials'}
+                    {activePanel === 'lifestyle' ? 'Your Lifestyle' : advancedAssumptionsOpen ? 'Advanced Assumptions' : 'Your Financials'}
                   </p>
-                  <button type="button" onClick={() => setMobileDrawerOpen(false)}
+                  <button type="button" onClick={() => { setMobileDrawerOpen(false); setAdvancedAssumptionsOpen(false) }}
                     style={{ fontSize: '13px', color: '#86868b', background: 'none', border: 'none', cursor: 'pointer' }}>
                     ✕ Close
                   </button>
                 </div>
-                {activePanel === 'lifestyle' ? lifestyleContent : financialsContent}
+                {activePanel === 'lifestyle' ? lifestyleContent : (
+                  advancedAssumptionsOpen ? (
+                    <div style={{ padding: '12px 16px' }}>
+                      <button type="button" onClick={() => setAdvancedAssumptionsOpen(false)}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '11px', color: '#0076B6', marginBottom: '10px', padding: 0, fontFamily: 'inherit' }}>
+                        ← Back to Financials
+                      </button>
+                      {advancedAssumptionsContent}
+                    </div>
+                  ) : financialsContent
+                )}
               </div>
               <style>{`
                 @keyframes mm3-drawer-up {
