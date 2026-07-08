@@ -73,10 +73,49 @@ function deriveSegment(monthlyPayment: number, grossMonthlyIncome: number): Segm
 }
 
 export interface FinancialFitResult {
-  financialModifier: number   // 1.00 / 0.95 / 0.85 / 0.70 / 0.00
-  financialFitScore: number   // 0-10, for MD visibility
+  financialModifier: number   // continuous 0.00-1.00, see BURDEN_MODIFIER_CURVE
+  financialFitScore: number   // continuous 0-10, for MD visibility
   segment: Segment
 }
+
+// Phase C1 (PHASE_C1_algorithm_and_hero_mechanics.md, Item 1) — burden -> modifier/
+// score is a continuous piecewise-linear curve through the same anchor points the
+// old step function used (0.30/0.40/0.50/0.70), so a small dollar swing near a
+// boundary no longer flips a full bucket ("ranking inertia"). Deliberate, confirmed
+// evolution of "locked refinement 4" below (still a true, honest, deterministic
+// score, computed once and sorted strictly — never an accidental override of it).
+type CurvePoint = [burden: number, value: number]
+
+function interpolateCurve(burden: number, points: CurvePoint[]): number {
+  if (burden <= points[0][0]) return points[0][1]
+  for (let i = 1; i < points.length; i++) {
+    const [x1, y1] = points[i]
+    if (burden <= x1) {
+      const [x0, y0] = points[i - 1]
+      const t = (burden - x0) / (x1 - x0)
+      return y0 + t * (y1 - y0)
+    }
+  }
+  return points[points.length - 1][1]
+}
+
+const BURDEN_MODIFIER_CURVE: CurvePoint[] = [
+  [0.00, 1.00],
+  [0.30, 1.00],
+  [0.40, 0.95],
+  [0.50, 0.85],
+  [0.70, 0.70],
+  [1.00, 0.00],
+]
+
+const BURDEN_SCORE_CURVE: CurvePoint[] = [
+  [0.00, 10],
+  [0.30, 10],
+  [0.40, 8],
+  [0.50, 6],
+  [0.70, 4],
+  [1.00, 0],
+]
 
 // Layer 1 — Financial Modifier gate (graduated, locked refinement). Reuses the
 // same down-payment / proceeds / mortgage-balance plumbing as the prior
@@ -108,21 +147,8 @@ function calculateFinancialFit(
 
   const burden = monthlyPayment / grossMonthlyIncome
 
-  let financialModifier: number
-  let financialFitScore: number
-  if (burden <= 0) {
-    financialModifier = 1.00; financialFitScore = 10
-  } else if (burden < 0.30) {
-    financialModifier = 1.00; financialFitScore = 10
-  } else if (burden < 0.40) {
-    financialModifier = 0.95; financialFitScore = 8
-  } else if (burden < 0.50) {
-    financialModifier = 0.85; financialFitScore = 6
-  } else if (burden < 0.70) {
-    financialModifier = 0.70; financialFitScore = 4
-  } else {
-    financialModifier = 0.00; financialFitScore = 0  // mathematically impossible scenario, per locked refinement
-  }
+  const financialModifier = Math.round(interpolateCurve(burden, BURDEN_MODIFIER_CURVE) * 100) / 100
+  const financialFitScore = Math.round(interpolateCurve(burden, BURDEN_SCORE_CURVE) * 10) / 10
 
   return { financialModifier, financialFitScore, segment }
 }
@@ -219,7 +245,10 @@ export function getTopMatches(
   const sorted = scored.sort((a, b) => b.matchScore - a.matchScore)
   const topMatches = sorted.slice(0, limit)
 
-  // True rankings only — never reordered for diversity (locked refinement 4).
+  // True rankings only — never reordered for diversity (locked refinement 4). Phase
+  // C1's burden-curve smoothing above (see BURDEN_MODIFIER_CURVE) is a confirmed,
+  // deliberate evolution of this same rule, not a contradiction: every score is
+  // still computed once, honestly, and this sort is strictly by score.
   // "Other Strong Matches": next-highest cities whose zone differs from any city already in topMatches.
   const usedZones = new Set(topMatches.map(m => m.location.zone))
   const otherStrongMatches = sorted

@@ -218,6 +218,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const [selectedMetro, setSelectedMetro] = useState(initialMetro ?? 'Austin')
   const [userHasChangedMetro, setUserHasChangedMetro] = useState(false)
   const [sandboxTouched, setSandboxTouched] = useState(true)
+  const [heroTabId, setHeroTabId] = useState<string | null>(null) // Phase C1 Item 7 — active "Your Direction" hero tab
 
   // UI
   const [ctaError, setCtaError] = useState<string | null>(null)
@@ -233,10 +234,10 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const [isMobile, setIsMobile] = useState(false)
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
 
-  // Pinned-card Compare (placeholder wiring) — reuses the existing CompareModal/
-  // createCompareDocument logic as-is. Pairs the clicked pinned card against
-  // pinned slot #1 (or slot #2, if #1 itself was clicked); needs >=2 pinned
-  // cities to have a partner.
+  // Compare (Phase C1 Item 6) — reuses the existing CompareModal/createCompareDocument
+  // logic as-is. Pairing is generalized across the 3-slot hero rotation via
+  // getComparePartnerId below, available from both the hero tabs and the expanded
+  // 5-10 list.
   const [compareCityId, setCompareCityId] = useState<string | null>(null)
 
   // Lock-to-unlock (layout amendment 3) — UI-only state, NOT persisted to the DB
@@ -459,6 +460,43 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     return getTopMatches(activeProfile, metroCities, 20).topMatches
   }, [matches, selectedMetro, activeProfile])
 
+  // Phase C1 Item 7 — "Your Direction" hero tabs. Deliberately independent of the
+  // currently browsed metro tab above: this is the client's true personal top
+  // matches across all of Texas, not whatever they happen to be browsing right now.
+  const overallTopResult = useMemo(
+    () => getTopMatches(activeProfile, getAllCities(), 3),
+    [activeProfile]
+  )
+
+  // Item 6 — Pin already drives this: pinned cities always take a slot; remaining
+  // slots fill with the algorithm's own top matches (reusing otherStrongMatches as
+  // a zone-diverse fallback once pins have eaten into the plain top 3), lowest-
+  // ranked defaults stepping aside first as more cities get pinned.
+  const heroSlots = useMemo(() => {
+    const slots: string[] = pinnedCities.slice(0, 3)
+    const fillCandidates = [...overallTopResult.topMatches, ...overallTopResult.otherStrongMatches]
+    for (const m of fillCandidates) {
+      if (slots.length >= 3) break
+      if (!slots.includes(m.location.id)) slots.push(m.location.id)
+    }
+    return slots
+  }, [pinnedCities, overallTopResult])
+
+  const effectiveHeroTabId = (heroTabId && heroSlots.includes(heroTabId)) ? heroTabId : (heroSlots[0] ?? null)
+
+  // Item 8 — match-quality % on metro pills, shown only while "All Texas" is active.
+  const metroTopScores = useMemo(() => {
+    if (selectedMetro !== 'State') return {} as Record<string, number>
+    const result: Record<string, number> = {}
+    METRO_FILTERS.forEach(f => {
+      if (f.value === 'State') return
+      const metroCities = getAllCities().filter(c => c.metroUsed.includes(f.value))
+      const top = metroCities.length > 0 ? getTopMatches(activeProfile, metroCities, 1).topMatches[0] : undefined
+      if (top) result[f.value] = top.matchScore
+    })
+    return result
+  }, [selectedMetro, activeProfile])
+
   function afStatus(medianPrice: number): 'comfortable' | 'moderate' | 'stretched' {
     const income = incomeVal || profile?.annualIncome || 0
     if (income <= 0) return 'stretched'
@@ -484,16 +522,21 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const refMonthly = calcMonthly(refBalance, refRate, loanTerm)
 
   function findMatch(cityId: string): CityMatch | undefined {
-    return rankedCities.find(m => m.location.id === cityId) ?? matches.find(m => m.location.id === cityId)
+    return rankedCities.find(m => m.location.id === cityId)
+      ?? matches.find(m => m.location.id === cityId)
+      ?? overallTopResult.topMatches.find(m => m.location.id === cityId)
+      ?? overallTopResult.otherStrongMatches.find(m => m.location.id === cityId)
   }
 
-  // Pinned-card Compare pairing (interim placeholder, per Craig): clicking Compare
-  // on pinned slot #1 pairs it against slot #2; clicking it on slot #2 or #3 pairs
-  // against slot #1. Requires >=2 pinned cities to have a partner at all.
+  // Compare pairing (Phase C1 Item 6) — generalized to the 3-slot hero rotation.
+  // Pairs the clicked city against the current hero focal city (a single consistent
+  // anchor across the whole page — hero tabs and the expanded 5-10 list share this
+  // same function); if the hero city itself is clicked, it pairs against the next
+  // hero slot instead. Needs >=2 filled hero slots to have a partner at all.
   function getComparePartnerId(clickedId: string): string | null {
-    if (pinnedCities.length < 2) return null
-    if (clickedId === pinnedCities[0]) return pinnedCities[1] ?? null
-    return pinnedCities[0]
+    if (heroSlots.length < 2) return null
+    if (clickedId !== effectiveHeroTabId) return effectiveHeroTabId ?? null
+    return heroSlots.find(id => id !== clickedId) ?? null
   }
 
   async function persistPinned(ids: string[]) {
@@ -1030,53 +1073,74 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // ──────────────────────────────────────────────────────────
   const livingLedgerSummaryCard = (
     <div style={{ background: '#0A1E3D', borderRadius: '10px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '10px' }}>
-      {/* YOUR DIRECTION */}
+      {/* YOUR DIRECTION — Phase C1 Item 7: tabbable hero across the top-3 matches,
+          labeled by place name (never ordinal). Only one match ever occupies the
+          hero/focal position at a time. Tabs default to the algorithm's own top 3;
+          pinned cities take priority over defaults (Item 6) — see heroSlots above. */}
       <div>
         <p style={{ fontSize: '9px', fontWeight: 500, letterSpacing: '0.1em', color: '#C5B783', textTransform: 'uppercase', margin: '0 0 8px' }}>
           Your Direction
         </p>
 
-        {/* 3 pinned city slots */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          {[0, 1, 2].map(i => {
-            const cityId = pinnedCities[i]
-            const match = cityId ? findMatch(cityId) : undefined
-            const cityLoc = match?.location ?? (cityId ? getAllCities().find(c => c.id === cityId) : undefined)
-            const status = cityLoc ? afStatus(cityLoc.housing.medianHomePrice) : null
-            const isFirst = i === 0
+        {heroSlots.length === 0 ? (
+          <div style={{ border: '0.5px dashed rgba(197,183,131,0.3)', borderRadius: '8px', padding: '10px 12px' }}>
+            <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.6)', fontStyle: 'italic', margin: 0 }}>
+              No matches available yet.
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* Tabs — labeled by place name, never ordinal ("1 / 2 / 3") */}
+            <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
+              {heroSlots.map(id => {
+                const loc = getAllCities().find(c => c.id === id)
+                if (!loc) return null
+                const active = id === effectiveHeroTabId
+                return (
+                  <button key={id} type="button" onClick={() => setHeroTabId(id)}
+                    style={{
+                      flex: 1, minWidth: 0, padding: '5px 6px', borderRadius: '6px',
+                      fontSize: '10px', fontWeight: active ? 500 : 400,
+                      background: active ? 'rgba(197,183,131,0.18)' : 'rgba(255,255,255,0.05)',
+                      color: active ? '#C5B783' : 'rgba(255,255,255,0.55)',
+                      border: `0.5px solid ${active ? 'rgba(197,183,131,0.4)' : 'rgba(255,255,255,0.1)'}`,
+                      cursor: 'pointer', fontFamily: 'inherit',
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}>
+                    {loc.name}
+                  </button>
+                )
+              })}
+            </div>
 
-            if (cityLoc) {
+            {/* Single focal hero card for the active tab */}
+            {(() => {
+              const cityId = effectiveHeroTabId
+              const match = cityId ? findMatch(cityId) : undefined
+              const cityLoc = match?.location ?? (cityId ? getAllCities().find(c => c.id === cityId) : undefined)
+              if (!cityLoc) return null
+              const status = afStatus(cityLoc.housing.medianHomePrice)
+              const isPinnedHero = pinnedCities.includes(cityLoc.id)
+              const comparePartner = getComparePartnerId(cityLoc.id)
+
               return (
-                <div key={cityId} style={{
+                <div style={{
                   background: 'rgba(255,255,255,0.07)',
-                  border: `0.5px solid ${isFirst ? '#C5B783' : 'rgba(255,255,255,0.12)'}`,
-                  borderRadius: '8px', padding: '8px 10px',
-                  display: 'flex', alignItems: 'center', gap: '8px',
+                  border: `0.5px solid ${isPinnedHero ? '#C5B783' : 'rgba(255,255,255,0.12)'}`,
+                  borderRadius: '8px', padding: '10px 12px',
+                  display: 'flex', alignItems: 'center', gap: '10px',
                   position: 'relative',
                 }}>
-                  <button
-                    type="button"
-                    onClick={() => unpinCity(cityId)}
-                    style={{
-                      position: 'absolute', top: '4px', right: '6px',
-                      background: 'none', border: 'none', cursor: 'pointer',
-                      color: 'rgba(255,255,255,0.35)', fontSize: '12px', lineHeight: 1,
-                      padding: '2px 3px', fontFamily: 'inherit',
-                    }}
-                    aria-label={`Unpin ${cityLoc.name}`}
-                  >
-                    ✕
-                  </button>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '6px', overflow: 'hidden', position: 'relative', flexShrink: 0, background: '#1a3558' }}>
+                  <div style={{ width: '52px', height: '52px', borderRadius: '7px', overflow: 'hidden', position: 'relative', flexShrink: 0, background: '#1a3558' }}>
                     <Image
                       src={cityLoc.cityImageUrl ?? `/images/cities/${cityLoc.id}.jpg`}
                       alt={cityLoc.name} fill style={{ objectFit: 'cover' }}
                       onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
                     />
                   </div>
-                  <div style={{ flex: 1, minWidth: 0, paddingRight: '12px' }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <p style={{ fontSize: '13px', color: '#fff', fontWeight: 500, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <p style={{ fontSize: '14px', color: '#fff', fontWeight: 500, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {cityLoc.name}
                       </p>
                       {match && (
@@ -1088,15 +1152,32 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                     <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', margin: '2px 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {cityLoc.metroUsed}
                     </p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '3px' }}>
-                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: afColor(status!), flexShrink: 0 }} />
-                      <span style={{ fontSize: '9px', color: afColor(status!) }}>{afLabel(status!)}</span>
-                      {pinnedCities.length >= 2 && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '4px', flexWrap: 'wrap' }}>
+                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: afColor(status), flexShrink: 0 }} />
+                      <span style={{ fontSize: '9px', color: afColor(status) }}>{afLabel(status)}</span>
+                      <button
+                        type="button"
+                        onClick={() => isPinnedHero ? unpinCity(cityLoc.id) : pinCity(cityLoc.id)}
+                        disabled={!isPinnedHero && pinnedCities.length >= 3}
+                        style={{
+                          marginLeft: 'auto', fontSize: '9px',
+                          color: isPinnedHero ? '#C5B783' : '#0076B6',
+                          background: isPinnedHero ? 'rgba(197,183,131,0.12)' : 'rgba(0,118,182,0.12)',
+                          border: `0.5px solid ${isPinnedHero ? 'rgba(197,183,131,0.35)' : 'rgba(0,118,182,0.35)'}`,
+                          borderRadius: '8px', padding: '1px 6px',
+                          cursor: (!isPinnedHero && pinnedCities.length >= 3) ? 'not-allowed' : 'pointer',
+                          opacity: (!isPinnedHero && pinnedCities.length >= 3) ? 0.4 : 1,
+                          fontFamily: 'inherit', flexShrink: 0,
+                        }}
+                      >
+                        {isPinnedHero ? 'Unpin' : 'Pin'}
+                      </button>
+                      {comparePartner && (
                         <button
                           type="button"
-                          onClick={() => setCompareCityId(cityId)}
+                          onClick={() => setCompareCityId(cityLoc.id)}
                           style={{
-                            marginLeft: 'auto', fontSize: '9px', color: '#C5B783',
+                            fontSize: '9px', color: '#C5B783',
                             background: 'rgba(197,183,131,0.12)', border: '0.5px solid rgba(197,183,131,0.35)',
                             borderRadius: '8px', padding: '1px 6px', cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0,
                           }}
@@ -1108,17 +1189,9 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                   </div>
                 </div>
               )
-            }
-
-            return (
-              <div key={i} style={{ border: '0.5px dashed rgba(197,183,131,0.3)', borderRadius: '8px', padding: '10px 12px' }}>
-                <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.6)', fontStyle: 'italic', margin: 0 }}>
-                  + Pin a community →
-                </p>
-              </div>
-            )
-          })}
-        </div>
+            })()}
+          </>
+        )}
       </div>
 
       {/* PRIORITIES SUMMARY */}
@@ -1334,6 +1407,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           <div style={{ padding: '10px 12px 8px', display: 'flex', gap: '5px', flexWrap: 'wrap', borderBottom: '0.5px solid #F0EEE9' }}>
             {METRO_FILTERS.map(f => {
               const active = selectedMetro === f.value
+              const pct = f.value !== 'State' ? metroTopScores[f.value] : undefined
               return (
                 <button key={f.value} type="button"
                   onClick={() => handleMetroChange(f.value)}
@@ -1344,7 +1418,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                     color: active ? '#fff' : '#6B6A65',
                     border: `0.5px solid ${active ? '#0A1E3D' : '#D0CEC8'}`,
                     cursor: 'pointer',
-                  }}>{f.label}</button>
+                  }}>{f.label}{pct != null ? ` · ${pct}%` : ''}</button>
               )
             })}
           </div>
@@ -1399,6 +1473,19 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                         }}>
                         {isPinned ? '✓' : 'Pin'}
                       </button>
+                      {getComparePartnerId(city.id) && (
+                        <button type="button"
+                          onClick={e => { e.stopPropagation(); setCompareCityId(city.id) }}
+                          style={{
+                            fontSize: '9px', color: '#C5B783',
+                            padding: '2px 5px', borderRadius: '8px',
+                            border: '0.5px solid rgba(197,183,131,0.35)',
+                            background: 'rgba(197,183,131,0.1)',
+                            cursor: 'pointer', flexShrink: 0, fontFamily: 'inherit',
+                          }}>
+                          Compare
+                        </button>
+                      )}
                     </div>
                   )
                 })}
@@ -1579,8 +1666,9 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         </div>
       )}
 
-      {/* Pinned-card Compare (placeholder wiring) — reuses the existing CompareModal
-          as-is; interim only, not the full Phase D comparison-report build. */}
+      {/* Compare (Phase C1 Item 6) — reuses the existing CompareModal as-is;
+          pairing logic is generalized across the 3-slot hero rotation via
+          getComparePartnerId. A fuller comparison-report build remains Phase D. */}
       {compareCityId && (() => {
         const partnerId = getComparePartnerId(compareCityId)
         const cityA = findMatch(compareCityId)
