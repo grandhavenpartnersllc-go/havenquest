@@ -546,13 +546,25 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     return getTopMatches(activeProfile, metroCities, 20).topMatches
   }, [matches, selectedMetro, activeProfile, removedCities, nonNegotiables])
 
-  // Phase C1 Item 7 — "Your Direction" hero tabs. Deliberately independent of the
-  // currently browsed metro tab above: this is the client's true personal top
-  // matches across all of Texas, not whatever they happen to be browsing right now.
-  const overallTopResult = useMemo(
-    () => getTopMatches(activeProfile, getAllCities().filter(c => !removedCities.includes(c.id) && passesNonNegotiables(c)), 3),
-    [activeProfile, removedCities, nonNegotiables]
-  )
+  // Phase C1 Item 7, rescoped per fix_hero_backfill_metro_scope.md — "Your
+  // Direction" hero backfill now respects the active metro selection, mirroring
+  // rankedCities' own scoping/fallback pattern above exactly (All Texas ->
+  // genuine statewide pool, otherwise metro-filtered). This reverses the
+  // original "deliberately independent of the currently browsed metro" design:
+  // that produced a confirmed, reproducible bug where unpinning a city while
+  // browsing one metro could backfill the freed hero slot with a city from a
+  // completely different metro (e.g. Boerne/San Antonio surfacing while Austin
+  // was active), even though the Communities list never showed it. Deliberately
+  // does NOT replicate rankedCities' `matches`-prop fast path — that shortcut
+  // exists to reuse MM2's saved rankings for the browsable list specifically,
+  // not something the hero backfill pool depended on before this fix either.
+  const overallTopResult = useMemo(() => {
+    const metroCities = (selectedMetro === 'State'
+      ? getAllCities()
+      : getAllCities().filter(c => c.metroUsed.includes(selectedMetro))
+    ).filter(c => !removedCities.includes(c.id) && passesNonNegotiables(c))
+    return getTopMatches(activeProfile, metroCities, 3)
+  }, [activeProfile, selectedMetro, removedCities, nonNegotiables])
 
   // Item 6 — Pin already drives this: pinned cities always take a slot; remaining
   // slots fill with the algorithm's own top matches (reusing otherStrongMatches as
