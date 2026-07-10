@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HavenQuest · Refine — redesign prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0A1E3D; --navy-2:#0d284f; --blue:#0076B6; --gold:#C5B783; --gold-d:#a48f4e;
+    --stone:#EFEEE9; --stone-2:#E5E3DC; --card:#ffffff;
+    --ink:#1c2430; --muted:#6a7180; --line:#dcdad2;
+    --good:#2f8f5b; --mod:#b9822b; --stretch:#b5482f;
+    --rail:132px; --drawer:404px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;}
+  body{font-family:'Poppins',system-ui,sans-serif;color:var(--ink);background:var(--stone);overflow:hidden;}
+  button{font-family:inherit;cursor:pointer;}
+  .app{display:flex;height:100vh;width:100vw;}
+
+  /* RAIL — thin, horizontal icon+label */
+  .rail{width:var(--rail);flex:0 0 var(--rail);background:var(--navy);display:flex;flex-direction:column;padding:16px 10px;z-index:6;}
+  .brand{display:flex;align-items:center;gap:9px;padding:0 4px 4px;margin-bottom:14px;}
+  .brand .mark{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--blue),var(--navy-2));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:15px;letter-spacing:.5px;flex:0 0 34px;}
+  .brand .wm{color:#fff;font-size:13px;font-weight:600;line-height:1.1;}
+  .brand .wm small{display:block;color:#8aa0bd;font-size:9px;font-weight:400;}
+  .railsep{height:1px;background:rgba(255,255,255,.12);margin:2px 4px 12px;}
+  .rlabel{color:#7f93af;font-size:9px;letter-spacing:.6px;text-transform:uppercase;padding:0 6px 6px;}
+  .railbtn{position:relative;display:flex;align-items:center;gap:10px;width:100%;border:none;background:transparent;border-radius:10px;color:#b8c4d6;padding:10px 10px;margin-bottom:3px;transition:background .16s,color .16s;text-align:left;}
+  .railbtn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:0 0 20px;}
+  .railbtn span{font-size:12.5px;font-weight:500;}
+  .railbtn:hover{background:rgba(255,255,255,.07);color:#e2e9f3;}
+  .railbtn.active{color:var(--navy);background:var(--gold);}
+  .gsep{margin-top:auto;}
+  .railfoot{margin-top:10px;}
+  .railfoot small{display:block;color:#5f728c;font-size:9px;padding:0 6px;line-height:1.4;}
+
+  /* main column = header + canvas */
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;}
+
+  /* HEADER — bolder Navigator chrome */
+  .topbar{height:60px;flex:0 0 60px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:var(--navy);border-bottom:1px solid rgba(255,255,255,.08);}
+  .nav{display:flex;align-items:center;gap:6px;}
+  .nav .plabel{color:var(--gold);font-size:12px;font-weight:600;letter-spacing:.4px;margin-right:16px;}
+  .nav a{color:#9db0cb;font-size:13px;font-weight:500;text-decoration:none;padding:8px 12px;border-radius:8px;}
+  .nav a:hover{background:rgba(255,255,255,.06);color:#e2e9f3;}
+  .nav a.on{color:#fff;position:relative;}
+  .nav a.on::after{content:"";position:absolute;left:12px;right:12px;bottom:2px;height:2px;border-radius:2px;background:var(--gold);}
+  .hactions{display:flex;align-items:center;gap:14px;}
+  .hactions .reset{background:transparent;border:none;color:#7f93af;font-size:11px;}
+  .hactions .reset:hover{color:#cdd6e4;}
+  .cta{background:var(--gold);color:var(--navy);border:none;border-radius:10px;padding:9px 15px;font-weight:600;font-size:12px;display:flex;align-items:center;gap:7px;position:relative;transition:box-shadow .2s,background .2s;}
+  .cta:hover{background:#d3c493;}
+  .cta.locked{background:#2a3d5c;color:#8194ad;cursor:not-allowed;}
+  .cta.locked:hover{background:#2a3d5c;}
+  .cta.ready{box-shadow:0 0 0 3px rgba(197,183,131,.30);}
+  .cta .atip{width:236px;}
+  .cta.locked:hover .atip{opacity:1;visibility:visible;transform:none;}
+  .cta2{background:transparent;border:1.5px solid var(--gold);color:var(--gold);border-radius:10px;padding:7px 14px;font-weight:600;font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer;transition:background .18s,color .18s,border-color .18s;}
+  .cta2:hover{background:rgba(197,183,131,.14);}
+  .cta2.done{background:var(--gold);color:var(--navy);border-color:var(--gold);}
+  .ovl{position:fixed;inset:0;background:rgba(10,30,61,.58);display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;visibility:hidden;transition:opacity .2s;z-index:200;}
+  .ovl.open{opacity:1;visibility:visible;}
+  .modal{background:#fff;width:min(660px,100%);max-height:88vh;overflow-y:auto;border-radius:18px;box-shadow:0 30px 80px rgba(10,30,61,.4);transform:translateY(10px);transition:transform .2s;}
+  .ovl.open .modal{transform:none;}
+  .mhead{background:linear-gradient(120deg,var(--navy),var(--navy-2));color:#fff;padding:20px 24px;}
+  .mhead h2{margin:0 0 4px;font-size:19px;font-weight:600;}
+  .mhead p{margin:0;font-size:12.5px;color:#c7d2e2;line-height:1.5;}
+  .mbodyx{padding:20px 24px;}
+  .msec{margin-bottom:18px;}
+  .msec h4{margin:0 0 9px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#a48f4e;}
+  .msum-row{display:flex;justify-content:space-between;gap:14px;font-size:13px;padding:6px 0;border-bottom:1px solid var(--stone-2);}
+  .msum-row:last-child{border-bottom:none;}
+  .msum-row .k{color:var(--muted);}
+  .msum-row .v{color:var(--ink);font-weight:500;text-align:right;}
+  .mchips{display:flex;flex-wrap:wrap;gap:6px;}
+  .mchip{background:var(--stone);border:1px solid var(--line);border-radius:20px;padding:3px 10px;font-size:12px;color:var(--ink);}
+  .mchip.gold{background:rgba(197,183,131,.18);border-color:var(--gold);}
+  .mcities{display:flex;flex-direction:column;gap:8px;}
+  .mcity{display:flex;justify-content:space-between;align-items:center;background:var(--stone);border-radius:10px;padding:9px 12px;font-size:13px;gap:10px;}
+  .mcity .mm{color:var(--navy);font-weight:600;white-space:nowrap;}
+  .mnote{background:rgba(0,118,182,.07);border:1px solid rgba(0,118,182,.2);border-radius:10px;padding:11px 13px;font-size:12px;color:#0a3a57;line-height:1.5;}
+  .mfoot{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--line);padding:14px 24px;display:flex;justify-content:space-between;align-items:center;gap:12px;}
+  .mfoot .keep{background:transparent;border:none;color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;}
+  .mfoot .keep:hover{color:var(--ink);}
+  .mfoot .confirm{background:var(--gold);color:var(--navy);border:none;border-radius:10px;padding:11px 20px;font-weight:600;font-size:13px;cursor:pointer;}
+  .mfoot .confirm:hover{background:#d3c493;}
+
+  .canvas{flex:1;min-width:0;display:flex;background:var(--stone);}
+  .drawer{width:0;flex:0 0 0;background:var(--card);border-right:1px solid var(--line);overflow:hidden;transition:width .28s cubic-bezier(.4,0,.2,1),flex-basis .28s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;}
+  .drawer.open{width:var(--drawer);flex:0 0 var(--drawer);}
+  .drawer-inner{width:var(--drawer);height:100%;display:flex;flex-direction:column;opacity:0;transition:opacity .2s .08s;}
+  .drawer.open .drawer-inner{opacity:1;}
+  .dhead{display:flex;align-items:center;justify-content:space-between;padding:20px 22px 14px;border-bottom:1px solid var(--line);}
+  .dhead h2{margin:0;font-size:17px;font-weight:600;color:var(--navy);}
+  .dhead p{margin:3px 0 0;font-size:12px;color:var(--muted);}
+  .dclose{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--muted);font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center;}
+  .dclose:hover{background:var(--stone);}
+  .dbody{padding:18px 22px 26px;overflow-y:auto;flex:1;}
+
+  .colhead{display:grid;grid-template-columns:96px 1fr;align-items:end;margin-bottom:6px;}
+  .colhead .cols{display:grid;grid-template-columns:repeat(4,1fr);}
+  .colhead .col{text-align:center;font-size:9.5px;font-weight:600;color:var(--muted);line-height:1.15;padding:0 2px;transition:color .2s;}
+  .colhead .col .cap{display:block;font-size:8px;font-weight:500;color:#b3b0a6;}
+  .colhead .col.flash{color:var(--stretch);}
+  .prionote{font-size:11px;color:var(--muted);background:var(--stone);border-radius:8px;padding:9px 11px;margin-top:12px;line-height:1.5;}
+  .prionote b{color:var(--ink);font-weight:500;}
+  .pword{position:relative;border-bottom:1px dotted #a9a69c;cursor:help;}
+  .pword span.tip{position:absolute;left:0;top:calc(100% + 7px);width:232px;background:var(--navy);color:#fff;font-family:'Poppins',sans-serif;font-size:11px;font-weight:400;line-height:1.55;letter-spacing:0;padding:10px 12px;border-radius:9px;box-shadow:0 8px 20px rgba(10,30,61,.28);opacity:0;visibility:hidden;transform:translateY(-3px);transition:opacity .15s,transform .15s;z-index:30;pointer-events:none;}
+  .pword:hover span.tip{opacity:1;visibility:visible;transform:none;}
+  .pword span.tip b{color:var(--gold);font-weight:600;}
+  .pword span.tip::before{content:"";position:absolute;left:13px;top:-5px;width:10px;height:10px;background:var(--navy);transform:rotate(45deg);}
+  .atip{position:absolute;right:0;top:calc(100% + 8px);width:210px;background:var(--navy);color:#fff;font-family:'Poppins',sans-serif;font-size:11px;font-weight:400;line-height:1.5;text-align:left;padding:9px 11px;border-radius:9px;box-shadow:0 8px 20px rgba(10,30,61,.28);opacity:0;visibility:hidden;transform:translateY(-3px);transition:opacity .14s,transform .14s;z-index:40;pointer-events:none;}
+  .mphoto .cmp:hover .atip,.mphoto .pin:hover .atip,.brow .bcmp:hover .atip,.brow .bpin:hover .atip{opacity:1;visibility:visible;transform:none;}
+  .atip b{color:var(--gold);font-weight:600;}
+  .atip::before{content:"";position:absolute;right:9px;top:-5px;width:10px;height:10px;background:var(--navy);transform:rotate(45deg);}
+  .brow .bpin,.brow .bcmp{position:relative;}
+  .prow{display:grid;grid-template-columns:96px 1fr;align-items:center;margin:9px 0;}
+  .plabel{font-size:12px;font-weight:500;color:var(--ink);padding-right:8px;}
+  .track{position:relative;height:34px;border-radius:9px;background:var(--stone);border:1px solid var(--line);}
+  .track .band{position:absolute;top:0;bottom:0;width:25%;}
+  .track .band.b0{left:0;background:rgba(197,183,131,.14);border-right:1px dashed var(--line);}
+  .track .band.b1{left:25%;background:rgba(0,118,182,.07);border-right:1px dashed var(--line);}
+  .track .band.b2{left:50%;border-right:1px dashed var(--line);}
+  .track .band.b3{left:75%;background:repeating-linear-gradient(45deg,transparent,transparent 5px,rgba(0,0,0,.03) 5px,rgba(0,0,0,.03) 10px);}
+  .ball{position:absolute;top:50%;width:22px;height:22px;margin-top:-11px;margin-left:-11px;border-radius:50%;background:#fff;border:2px solid var(--muted);box-shadow:0 1px 3px rgba(0,0,0,.18);transition:left .18s cubic-bezier(.34,1.4,.5,1),background .18s,border-color .18s;touch-action:none;cursor:grab;}
+  .ball.drag{cursor:grabbing;transition:none;box-shadow:0 3px 8px rgba(0,0,0,.28);}
+  .ball.t0{background:var(--gold);border-color:var(--gold-d);}
+  .ball.t1{background:var(--blue);border-color:#005e91;}
+  .ball.t2{background:#c9d3df;border-color:#9aa7b8;}
+  .ball.t3{background:#fff;border-color:#c3c0b6;border-style:dashed;}
+  .subhead{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.4px;text-transform:uppercase;margin:26px 0 12px;}
+  .slrow{margin:14px 0;}
+  .slrow .top{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;}
+  .slrow .top b{font-weight:500;color:var(--ink);}
+  .slrow .top span{color:var(--muted);}
+  input[type=range]{width:100%;accent-color:var(--blue);}
+  .ends{display:flex;justify-content:space-between;font-size:10px;color:#b3b0a6;margin-top:1px;}
+  .info{display:inline-flex;width:15px;height:15px;border-radius:50%;border:1px solid var(--line);color:var(--muted);font-size:9px;align-items:center;justify-content:center;margin-left:5px;vertical-align:middle;cursor:help;}
+  .field{margin:14px 0;}
+  .field label{display:block;font-size:12px;font-weight:500;margin-bottom:5px;color:var(--ink);}
+  .field .in{display:flex;align-items:center;border:1px solid var(--line);border-radius:9px;background:#fff;padding:0 12px;height:42px;}
+  .field .in span{color:var(--muted);font-size:14px;}
+  .field .in input{border:none;outline:none;font-family:inherit;font-size:15px;width:100%;padding:0 4px;color:var(--ink);background:transparent;}
+  .baseline{font-size:11px;color:var(--muted);background:var(--stone);border-radius:7px;padding:8px 11px;margin-top:6px;}
+  .nn{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line);}
+  .nn .lab{font-size:12.5px;}
+  .nn .lab small{display:block;color:var(--muted);font-size:10.5px;margin-top:1px;}
+  .tog{width:40px;height:23px;border-radius:20px;background:#d9d6cd;border:none;position:relative;transition:background .18s;flex:0 0 40px;}
+  .tog::after{content:"";position:absolute;top:2px;left:2px;width:19px;height:19px;border-radius:50%;background:#fff;transition:left .18s;box-shadow:0 1px 2px rgba(0,0,0,.25);}
+  .tog.on{background:var(--blue);}
+  .tog.on::after{left:19px;}
+  .thresh select{font-family:inherit;font-size:12px;border:1px solid var(--line);border-radius:7px;padding:4px 6px;background:#fff;color:var(--ink);}
+  .mdnote{color:var(--blue) !important;font-style:italic;}
+
+  .scroll{flex:1;overflow-y:auto;padding:24px 30px 60px;}
+  .cwrap{max-width:1240px;margin:0 auto;}
+
+  .metros{display:flex;gap:7px;margin-bottom:20px;flex-wrap:wrap;}
+  .mtab{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 15px;font-size:12.5px;font-weight:500;color:var(--ink);display:flex;align-items:center;gap:7px;}
+  .mtab:hover{border-color:#c3c0b6;}
+  .mtab.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+  .mtab .pct{font-size:11px;color:var(--gold);font-weight:600;position:relative;}
+  .mtab .pct .mtip{position:absolute;left:50%;top:calc(100% + 9px);transform:translateX(-50%) translateY(-3px);width:240px;background:var(--navy);color:#fff;font-family:'Poppins',sans-serif;font-size:11px;font-weight:400;line-height:1.55;text-align:left;padding:10px 12px;border-radius:9px;box-shadow:0 8px 20px rgba(10,30,61,.28);opacity:0;visibility:hidden;transition:opacity .15s,transform .15s;z-index:50;pointer-events:none;}
+  .mtab .pct:hover .mtip{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0);}
+  .mtab .pct .mtip b{color:var(--gold);font-weight:600;}
+  .mtab .pct .mtip::before{content:"";position:absolute;left:50%;margin-left:-5px;top:-5px;width:10px;height:10px;background:var(--navy);transform:rotate(45deg);}
+
+  .hero-h{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px;}
+  .hero-h h1{margin:0;font-size:21px;font-weight:600;color:var(--navy);}
+  .hero-h .sub{font-size:12px;color:var(--muted);}
+
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:14px;}
+  .cards.narrow{grid-template-columns:repeat(3,1fr);gap:11px;}
+  .mcard{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;transition:box-shadow .16s,border-color .16s;cursor:pointer;}
+  .mcard:hover{border-color:#c3c0b6;box-shadow:0 4px 14px rgba(10,30,61,.09);}
+  .mcard.sel{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold),0 8px 22px rgba(197,183,131,.45);}
+  .mphoto{height:112px;position:relative;display:flex;align-items:flex-end;padding:10px 12px;color:#fff;}
+  .mphoto .rank{position:absolute;top:9px;left:11px;background:rgba(10,30,61,.72);font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;}
+  .mphoto .pin{position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:8px;border:none;background:rgba(255,255,255,.9);color:var(--navy);font-size:13px;display:flex;align-items:center;justify-content:center;}
+  .mphoto .pin.pinned{background:var(--gold);}
+  .mphoto h3{margin:0;font-size:16px;font-weight:600;text-shadow:0 1px 4px rgba(0,0,0,.4);}
+  .mbody{padding:12px 14px 14px;}
+  .mmatch{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .mmatch .pct{font-size:19px;font-weight:700;color:var(--navy);}
+  .mmatch .pct small{font-size:11px;font-weight:500;color:var(--muted);}
+  .fit{font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:20px;}
+  .fit.good{background:rgba(47,143,91,.13);color:var(--good);}
+  .fit.mod{background:rgba(185,130,43,.14);color:var(--mod);}
+  .fit.stretch{background:rgba(181,72,47,.13);color:var(--stretch);}
+  .mmini{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);}
+  .mmini b{color:var(--ink);font-weight:500;}
+  .expand-hint{margin-top:9px;font-size:10.5px;color:var(--blue);cursor:pointer;display:inline-block;}
+  .expand-hint:hover{text-decoration:underline;}
+
+  .detail{grid-column:1/-1;background:#fff;border:1px solid var(--gold);border-radius:14px;overflow:hidden;margin-top:2px;box-shadow:0 6px 20px rgba(197,183,131,.22);}
+  .dtop{display:flex;gap:16px;padding:16px 18px 6px;align-items:center;}
+  .dimg{position:relative;flex:0 0 300px;width:300px;aspect-ratio:16/9;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(10,30,61,.14);}
+  .dimg .drank{position:absolute;top:9px;left:10px;background:rgba(10,30,61,.72);color:#fff;font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;}
+  .dhd{flex:1;min-width:0;}
+  .dhd h3{margin:0 0 3px;font-size:20px;color:var(--navy);font-weight:600;}
+  .dhd .loc{margin-bottom:11px;}
+  .dquick{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:13px;color:var(--ink);}
+  .dquick b{color:var(--navy);font-weight:600;}
+  .dpad2{padding:6px 18px 18px;}
+  .detail .loc{font-size:12px;color:var(--muted);margin-bottom:14px;}
+  .dgrid{display:grid;grid-template-columns:1.1fr 1fr;gap:22px;}
+  .fin h4,.dna h4{font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin:0 0 10px;font-weight:600;}
+  .finrow{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px;}
+  .finrow:last-child{border:none;}
+  .finrow b{font-weight:600;color:var(--navy);}
+  .finrow .big{font-size:16px;}
+  .finrow b.save{color:#2f8f5b;}
+  .fnote{margin-top:16px;padding:11px 13px;background:#f5f7f4;border:1px solid var(--line);border-radius:9px;font-size:11px;line-height:1.55;color:var(--muted);}
+  .fnote b{color:var(--navy);font-weight:600;}
+  .dnarow{margin:9px 0;}
+  .dnarow .t{display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:3px;color:var(--ink);}
+  .bar{height:6px;border-radius:4px;background:var(--stone-2);overflow:hidden;}
+  .bar i{display:block;height:100%;background:var(--blue);border-radius:4px;}
+  .dbtns{grid-column:1/-1;display:flex;gap:9px;margin-top:16px;}
+  .dbtns button{flex:1;border-radius:9px;padding:9px;font-size:12px;font-weight:500;border:1px solid var(--line);background:#fff;color:var(--ink);}
+  .dbtns .full{background:var(--navy);color:#fff;border-color:var(--navy);}
+
+  .browse{margin-top:16px;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:visible;}
+  .btoggle{width:100%;background:#fff;border:none;padding:13px 18px;display:flex;align-items:center;justify-content:space-between;font-family:inherit;font-size:13px;font-weight:600;color:var(--navy);}
+  .btoggle .chev2{display:inline-block;transition:transform .22s;color:var(--gold);margin-right:7px;}
+  .browse.open .btoggle .chev2{transform:rotate(90deg);}
+  .btoggle em{font-style:normal;color:var(--blue);}
+  .btoggle .bmeta{font-size:11px;font-weight:500;color:var(--muted);}
+  .browseBody{display:none;padding:0 0 6px;}
+  .browse.open .browseBody{display:block;}
+  .bhint{font-size:11.5px;color:var(--muted);padding:2px 18px 10px;border-top:1px solid var(--line);}
+  .brow{display:grid;grid-template-columns:30px 1fr auto 46px 28px 28px;align-items:center;gap:12px;padding:10px 18px;border-top:1px solid var(--line);cursor:pointer;}
+  .brow:hover{background:var(--stone);}
+  .brow.selrow{background:var(--stone);}
+  .brow .rk{font-size:12px;font-weight:600;color:var(--muted);}
+  .brow .nm{font-size:13px;font-weight:500;color:var(--ink);line-height:1.25;}
+  .brow .nm small{display:block;font-size:11px;color:var(--muted);font-weight:400;}
+  .brow .st{font-size:11.5px;color:var(--muted);text-align:right;white-space:nowrap;}
+  .brow .mt{font-size:13px;font-weight:600;color:var(--navy);text-align:right;}
+  .brow .bpin{width:28px;height:28px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--muted);font-size:13px;display:flex;align-items:center;justify-content:center;}
+  .brow .bpin.on{background:var(--gold);color:var(--navy);border-color:var(--gold-d);}
+  .browseRows .detail{margin:0 14px 12px;}
+
+  /* TWO-ZONE FINANCIAL PICTURE */
+  .finzone{display:grid;grid-template-columns:1.55fr 1fr;gap:16px;margin-top:22px;align-items:start;}
+  .finpanel{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;}
+  .finband{background:var(--navy);color:#fff;padding:16px 22px;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+  .finband .lab{font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;color:#9fb0c8;}
+  .finband .val{font-size:27px;font-weight:700;line-height:1.1;}
+  .finband .val small{font-size:12px;font-weight:500;color:var(--gold);}
+  .finband .ctx{font-size:11px;color:#bccadd;text-align:right;}
+  .finband .ctx b{color:var(--gold);font-weight:600;}
+  .finbody{padding:18px 22px 20px;}
+  .fsec{margin-bottom:18px;}
+  .fsec h5{margin:0 0 10px;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);font-weight:600;}
+  .compbar{display:flex;height:16px;border-radius:6px;overflow:hidden;margin-bottom:10px;background:var(--stone-2);}
+  .compbar i{height:100%;}
+  .clegend{display:grid;grid-template-columns:1fr 1fr;gap:6px 18px;}
+  .cli{display:flex;align-items:center;justify-content:space-between;font-size:12px;}
+  .cli .k{display:flex;align-items:center;gap:7px;color:var(--ink);}
+  .cli .dot{width:9px;height:9px;border-radius:3px;flex:0 0 9px;}
+  .cli b{font-weight:600;color:var(--navy);}
+  .ftotal{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--line);margin-top:10px;padding-top:10px;font-size:13px;}
+  .ftotal b{font-size:18px;color:var(--navy);font-weight:700;}
+  .fgrid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .fbox{background:var(--stone);border-radius:10px;padding:11px 13px;}
+  .fbox .l{font-size:10.5px;color:var(--muted);}
+  .fbox .v{font-size:16px;font-weight:600;color:var(--navy);margin-top:2px;}
+  .fbox .v small{font-size:10.5px;color:var(--muted);font-weight:400;}
+  .gauge{position:relative;height:12px;border-radius:7px;overflow:hidden;display:flex;margin:6px 0 6px;}
+  .gauge .g{height:100%;}
+  .gmark{position:absolute;top:-3px;width:3px;height:18px;background:var(--navy);border-radius:2px;transition:left .25s;}
+  .gmeta{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);}
+  .rates{display:flex;gap:8px;}
+  .rate3{flex:1;border:1px solid var(--line);border-radius:9px;padding:9px;text-align:center;}
+  .rate3.cur{border-color:var(--gold);background:rgba(197,183,131,.1);}
+  .rate3 .r{font-size:11px;color:var(--muted);}
+  .rate3 .p{font-size:14px;font-weight:600;color:var(--navy);margin-top:2px;}
+
+  .finside{display:flex;flex-direction:column;gap:16px;}
+  .recap{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;padding:15px 18px;}
+  .recap h5{margin:0 0 12px;font-size:13px;font-weight:600;color:var(--navy);}
+  .rline{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:7px 0;font-size:12px;border-top:1px solid var(--line);}
+  .rline:first-of-type{border-top:none;}
+  .rline .rl{color:var(--muted);flex:0 0 auto;}
+  .rline .rv{text-align:right;color:var(--ink);}
+  .chip{display:inline-block;background:var(--stone);border-radius:6px;padding:2px 7px;font-size:11px;margin:0 0 3px 4px;color:var(--ink);}
+  .chip.gold{background:rgba(197,183,131,.22);}
+
+  .consult{margin-top:20px;background:linear-gradient(100deg,var(--navy),var(--navy-2));border-radius:14px;padding:15px 20px;display:flex;align-items:center;justify-content:space-between;gap:14px;opacity:0;transform:translateY(8px);transition:opacity .4s,transform .4s;pointer-events:none;}
+  .consult.show{opacity:1;transform:none;pointer-events:auto;}
+  .consult .txt{color:#fff;}
+  .consult .txt b{font-weight:600;}
+  .consult .txt small{display:block;color:#a9bad2;font-size:11.5px;margin-top:2px;}
+  .consult button{background:var(--gold);color:var(--navy);border:none;border-radius:9px;padding:10px 18px;font-weight:600;font-size:13px;white-space:nowrap;}
+
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;font-size:12.5px;padding:10px 18px;border-radius:10px;opacity:0;transition:opacity .25s,transform .25s;z-index:50;box-shadow:0 6px 20px rgba(0,0,0,.25);}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* COMPARE — card/row controls */
+  .mphoto .cmp{position:absolute;top:8px;right:42px;width:28px;height:28px;border-radius:8px;border:none;background:rgba(255,255,255,.9);color:var(--navy);font-size:13px;display:flex;align-items:center;justify-content:center;}
+  .mphoto .cmp.on{background:var(--blue);color:#fff;}
+  .brow .bcmp{width:28px;height:28px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--muted);font-size:13px;display:flex;align-items:center;justify-content:center;}
+  .brow .bcmp.on{background:var(--blue);color:#fff;border-color:#005e91;}
+  /* COMPARE — full-width band under financials */
+  .cmpband{margin-top:16px;background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;}
+  .cmpbhead{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--line);flex-wrap:wrap;gap:10px;}
+  .cmpband.empty .cmpbhead{border-bottom:none;}
+  .cmpbtitle{font-size:14px;font-weight:600;color:var(--navy);}
+  .cmpbtitle span{color:var(--muted);font-weight:500;font-size:12px;margin-left:6px;}
+  .cmpbactions{display:flex;align-items:center;gap:8px;}
+  .cmpband.empty .cmpbactions{display:none;}
+  .cmpghost{background:none;border:1px solid var(--line);border-radius:8px;color:var(--muted);font-size:11.5px;font-family:inherit;padding:6px 11px;}
+  .cmpghost:hover{background:var(--stone);color:var(--ink);}
+  .cmpreport{background:var(--navy);color:#fff;border:none;border-radius:8px;font-size:11.5px;font-weight:600;font-family:inherit;padding:7px 13px;}
+  .cmpreport:hover{background:var(--navy-2);}
+  .cmpempty{padding:20px;text-align:center;color:var(--muted);font-size:12.5px;}
+  .cmpempty b{display:block;color:var(--ink);font-weight:500;margin-bottom:3px;font-size:13px;}
+  .cmptable{width:100%;border-collapse:collapse;}
+  .cmptable th,.cmptable td{padding:10px 14px;text-align:left;border-top:1px solid var(--line);font-size:12.5px;vertical-align:middle;}
+  .cmptable thead th{border-top:none;background:var(--stone);font-weight:600;color:var(--navy);font-size:12px;}
+  .cmptable thead th.o{color:var(--muted);font-weight:500;}
+  .cmptable thead th small{display:block;color:var(--muted);font-size:9.5px;font-weight:400;text-transform:uppercase;letter-spacing:.3px;}
+  .cmphx{background:none;border:none;color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;margin-left:6px;padding:0;}
+  .cmphx:hover{color:var(--stretch);}
+  .cmptable .rowlab{color:var(--muted);width:180px;}
+  .cmptable td.oc{color:var(--muted);}
+  .cmptable td.vc{color:var(--navy);font-weight:600;}
+  .cmptable td .better{color:var(--good);font-size:10px;margin-left:4px;}
+  .cmpmore2{display:none;}
+  .cmpband.showfull .cmpmore2{display:table-row;}
+  /* SETTINGS quick-reference trigger */
+  .hero-r{display:flex;align-items:center;gap:14px;}
+  .setbtn{background:#fff;border:1px solid var(--line);border-radius:9px;color:var(--ink);font-family:inherit;font-size:12px;font-weight:500;padding:7px 12px;display:flex;align-items:center;gap:7px;cursor:pointer;transition:border-color .16s,background .16s;}
+  .setbtn:hover{border-color:#c3c0b6;background:var(--stone);}
+  .setbtn .cog{font-size:13px;line-height:1;}
+
+  /* PIN-DRIVEN COMPARE — right column of the two-zone financial picture */
+  .cmpx{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;}
+  .cmpx-h{padding:14px 16px 12px;border-bottom:1px solid var(--line);}
+  .cmpx-h b{font-size:13px;font-weight:600;color:var(--navy);}
+  .cmpx-h span{display:block;font-size:11px;font-weight:500;color:var(--muted);margin-top:2px;}
+  .cmpx-scroll{overflow-x:auto;}
+  .cxt{width:100%;border-collapse:collapse;}
+  .cxt th,.cxt td{padding:8px 9px;font-size:11.5px;text-align:right;border-top:1px solid var(--line);white-space:nowrap;}
+  .cxt thead th{border-top:none;font-size:10.5px;font-weight:600;color:var(--navy);vertical-align:bottom;line-height:1.18;white-space:normal;min-width:62px;}
+  .cxt thead th small{display:block;font-size:8.5px;font-weight:400;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-top:2px;}
+  .cxt .rl{text-align:left;color:var(--muted);font-weight:500;white-space:normal;}
+  .cxt .oc{color:var(--muted);background:var(--stone);}
+  .cxt thead th.oc{color:var(--muted);font-weight:600;}
+  .cxt .vc{color:var(--navy);font-weight:600;}
+  .cxt .up{color:var(--good);font-size:9px;margin-left:2px;}
+  .cmpx-foot{padding:12px 16px;border-top:1px solid var(--line);font-size:11px;color:var(--muted);line-height:1.5;display:flex;flex-direction:column;gap:10px;}
+  .cxflag{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+  .cxflag .fx{background:rgba(0,118,182,.09);border:1px solid rgba(0,118,182,.25);border-radius:20px;padding:2px 5px 2px 10px;font-size:11px;color:#0a3a57;display:inline-flex;align-items:center;gap:5px;}
+  .cxflag .fx button{background:none;border:none;color:#0a3a57;cursor:pointer;font-size:13px;padding:0 2px;line-height:1;}
+  .cxreport{align-self:flex-start;background:var(--navy);color:#fff;border:none;border-radius:8px;font-size:11.5px;font-weight:600;font-family:inherit;padding:8px 13px;cursor:pointer;}
+  .cxreport:hover{background:var(--navy-2);}
+  /* ARCHETYPE — foundation line in the Lifestyle drawer + chooser */
+  .arche{background:linear-gradient(180deg,#fbfaf6,#fff);border:1px solid var(--line);border-radius:12px;padding:12px 13px;margin-bottom:18px;position:relative;}
+  .arche::before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:3px;border-radius:2px;background:var(--gold);}
+  .arche-lab{font-size:9.5px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);padding-left:8px;}
+  .arche-val{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 0 6px;padding-left:8px;}
+  .arche-val b{font-size:15px;color:var(--navy);font-weight:600;}
+  .arche-edit{background:none;border:none;color:var(--blue);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;padding:2px 4px;flex:0 0 auto;}
+  .arche-edit:hover{text-decoration:underline;}
+  .arche-why{font-size:11px;line-height:1.55;color:var(--muted);padding-left:8px;}
+  .arche-why b{color:var(--ink);font-weight:600;}
+  .aopt{display:block;width:100%;text-align:left;border:1px solid var(--line);border-radius:11px;padding:12px 14px;margin-bottom:9px;background:#fff;cursor:pointer;transition:border-color .15s,background .15s,box-shadow .15s;font-family:inherit;}
+  .aopt:hover{border-color:#c3c0b6;}
+  .aopt.sel{border-color:var(--gold);background:rgba(197,183,131,.09);box-shadow:0 0 0 1px var(--gold);}
+  .aopt .an{display:block;font-size:13.5px;font-weight:600;color:var(--navy);}
+  .aopt.sel .an::after{content:" ✓";color:var(--gold-d);}
+  .aopt .ad{display:block;font-size:11.5px;color:var(--muted);line-height:1.5;margin-top:3px;}
+  .awarn{background:rgba(0,118,182,.07);border:1px solid rgba(0,118,182,.2);border-radius:10px;padding:10px 13px;font-size:12px;color:#0a3a57;line-height:1.5;margin-top:4px;}
+  .awarn b{font-weight:600;}
+  /* ASK & GLOSSARY drawer */
+  .askintro{display:flex;gap:11px;align-items:flex-start;font-size:12px;line-height:1.6;color:var(--muted);background:var(--stone);border-radius:10px;padding:11px 13px;margin-bottom:14px;}
+  .askintro b{color:var(--ink);font-weight:600;}
+  .amyav{display:inline-block;flex:0 0 auto;border-radius:50%;background-image:url(data:image/jpeg;base64,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);background-size:cover;background-position:center center;color:transparent;font-size:0;box-shadow:0 0 0 1.5px var(--gold),inset 0 0 0 1px rgba(0,0,0,.18);overflow:hidden;}
+  .amyav-lg{width:34px;height:34px;font-size:15px;}
+  .amyav-sm{width:20px;height:20px;font-size:11px;}
+  .amyav-rail{width:22px;height:22px;font-size:12px;flex:0 0 22px;}
+  .askintro .amyname{color:var(--ink);font-weight:600;}
+  .ansby{display:flex;align-items:center;gap:7px;padding:9px 13px 0;font-size:11.5px;font-weight:600;color:var(--navy);}
+  .askbar{display:flex;gap:8px;margin-bottom:14px;}
+  .askbar input{flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;padding:0 12px;height:40px;font-family:inherit;font-size:13px;color:var(--ink);outline:none;}
+  .askbar input:focus{border-color:var(--blue);}
+  .asksend{flex:0 0 auto;background:var(--navy);color:#fff;border:none;border-radius:9px;padding:0 15px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;}
+  .asksend:hover{background:var(--navy-2);}
+  .qlabel{font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin:2px 0 8px;}
+  .qchips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;}
+  .qchip{background:#fff;border:1px solid var(--line);border-radius:20px;padding:6px 12px;font-family:inherit;font-size:11.5px;color:var(--ink);cursor:pointer;transition:border-color .15s,background .15s;text-align:left;}
+  .qchip:hover{border-color:var(--gold);background:rgba(197,183,131,.1);}
+  .ansbox{margin-bottom:16px;}
+  .ans{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+  .ans.handoff{border-color:var(--gold);}
+  .ans .aq{background:var(--stone);padding:9px 13px;font-size:12px;color:var(--navy);font-weight:600;border-bottom:1px solid var(--line);}
+  .ans .aa{padding:12px 13px;font-size:12.5px;line-height:1.6;color:var(--ink);}
+  .ans .aa b{color:var(--navy);font-weight:600;}
+  .ans-md{margin:0 13px 13px;background:linear-gradient(100deg,var(--navy),var(--navy-2));border-radius:10px;padding:11px 13px;font-size:11.5px;line-height:1.5;color:#dbe4f0;}
+  .ans-md b{color:#fff;font-weight:600;}
+  .ans-book{margin-top:9px;background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:7px 12px;font-family:inherit;font-size:11.5px;font-weight:600;cursor:pointer;}
+  .ans-book:hover{background:#d3c493;}
+  .glosshd{border-top:1px solid var(--line);padding-top:14px;margin-bottom:10px;}
+  .glosshd h5{margin:0;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);font-weight:600;}
+  .glosssearch{width:100%;border:1px solid var(--line);border-radius:9px;padding:0 12px;height:36px;font-family:inherit;font-size:12.5px;color:var(--ink);outline:none;margin-bottom:10px;}
+  .glosssearch:focus{border-color:var(--blue);}
+  .gterm{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px;cursor:pointer;transition:border-color .15s,background .15s;}
+  .gterm:hover{border-color:#c3c0b6;background:var(--stone);}
+  .gterm .gt{font-size:12.5px;font-weight:600;color:var(--navy);}
+  .gterm .gd{font-size:11.5px;line-height:1.5;color:var(--muted);margin-top:2px;}
+  .gempty{font-size:12px;color:var(--muted);line-height:1.5;padding:6px 2px;}
+  @media(max-width:1080px){.finzone{grid-template-columns:1fr;}}
+  @media(max-width:900px){.cards{grid-template-columns:repeat(2,1fr);}.dgrid{grid-template-columns:1fr;}.fgrid2{grid-template-columns:1fr;}.dtop{flex-direction:column;align-items:stretch;}.dimg{flex:0 0 auto;width:100%;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <nav class="rail" aria-label="Refine controls">
+    <div class="brand">
+      <div class="mark">HQ</div>
+      <div class="wm">HavenQuest<small>Navigator</small></div>
+    </div>
+    <div class="railsep"></div>
+    <div class="rlabel">Refine</div>
+    <button class="railbtn" data-panel="lifestyle">
+      <svg viewBox="0 0 24 24"><path d="M4 6h10M4 12h6M4 18h13"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="12" r="2"/><circle cx="20" cy="18" r="2"/></svg><span>Lifestyle</span>
+    </button>
+    <button class="railbtn" data-panel="financials">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M9.5 9.8c0-1 1.1-1.6 2.5-1.6s2.5.6 2.5 1.7c0 2.4-5 1.3-5 3.6 0 1.1 1.1 1.7 2.5 1.7s2.5-.7 2.5-1.7"/></svg><span>Money</span>
+    </button>
+    <button class="railbtn" data-panel="nonneg">
+      <svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.4-3 8-7 10-4-2-7-5.6-7-10V6z"/><path d="M9.5 12l1.8 1.8L15 9.8"/></svg><span>Limits</span>
+    </button>
+    <div class="railsep gsep"></div>
+    <div class="rlabel">Learn</div>
+    <button class="railbtn" data-panel="guide">
+      <span class="amyav amyav-rail">A</span><span>Ask Amy</span>
+    </button>
+    <div class="railfoot"><small>Prototype build — not live</small></div>
+  </nav>
+
+  <div class="main">
+    <header class="topbar">
+      <nav class="nav">
+        <span class="plabel">REFINE</span>
+        <a href="#" onclick="return false">Dashboard</a>
+        <a href="#" onclick="return false">Explore</a>
+        <a href="#" class="on" onclick="return false">Matches</a>
+        <a href="#" onclick="return false">My Profile</a>
+      </nav>
+      <div class="hactions">
+        <button class="reset" id="reset">Reset demo</button>
+        <button class="cta2" id="ctaConfirm">Confirm your choices</button>
+        <button class="cta locked" id="ctaTop">Advance to your free consultation →<span class="atip"><b>Confirm your choices first</b> — use “Confirm your choices” on the left to review what your Market Director sees, then this unlocks.</span></button>
+      </div>
+    </header>
+    <div class="ovl" id="confirmOvl">
+      <div class="modal" role="dialog" aria-modal="true">
+        <div class="mhead"><h2>Review your relocation summary</h2><p>This is what we'll share with your Market Director to prepare for your consultation. Take a look, then confirm.</p></div>
+        <div class="mbodyx" id="confirmBody"></div>
+        <div class="mfoot"><button class="keep" id="mKeep">Keep editing</button><button class="confirm" id="mConfirm">Confirm &amp; continue →</button></div>
+      </div>
+    </div>
+
+    <div class="ovl" id="settingsOvl">
+      <div class="modal" role="dialog" aria-modal="true">
+        <div class="mhead"><h2>Your Relocation Profile</h2><p>Everything shaping your matches, in one place — this is what you're refining on this page. Adjust any of it from the rail on the left.</p></div>
+        <div class="mbodyx" id="settingsBody"></div>
+        <div class="mfoot"><span style="font-size:12px;color:var(--muted)">Refine anytime from the left rail.</span><button class="confirm" id="setDone">Done</button></div>
+      </div>
+    </div>
+
+    <div class="ovl" id="archeOvl">
+      <div class="modal" role="dialog" aria-modal="true">
+        <div class="mhead"><h2>Why are you moving?</h2><p>This is the foundation of your Relocation Profile — it sets what your matches optimize for before you fine-tune anything. Change it and your list rebuilds around the new reason; your tier and slider refinements stay put.</p></div>
+        <div class="mbodyx" id="archeBody"></div>
+        <div class="mfoot"><button class="keep" id="archeCancel">Cancel</button><button class="confirm" id="archeApply">Apply — rebuild my matches</button></div>
+      </div>
+    </div>
+
+    <div class="canvas">
+      <aside class="drawer" id="drawer">
+        <div class="drawer-inner">
+          <div class="dhead">
+            <div><h2 id="dtitle">Lifestyle</h2><p id="dsub">What matters most in where you land.</p></div>
+            <button class="dclose" id="dclose" aria-label="Close">✕</button>
+          </div>
+          <div class="dbody" id="dbody"></div>
+        </div>
+      </aside>
+
+      <div class="scroll">
+        <div class="cwrap">
+
+          <div class="metros" id="metros"></div>
+
+          <div class="hero-h">
+            <h1>Your top matches</h1>
+            <div class="hero-r">
+              <span class="sub">Click a card to see how it fits your money.</span>
+              <button class="setbtn" id="settingsBtn"><span class="cog">⚙</span>Your Relocation Profile</button>
+            </div>
+          </div>
+          <div class="cards" id="cards"></div>
+
+          <div class="browse" id="browse">
+            <button class="btoggle" id="browseToggle">
+              <span><span class="chev2">▸</span>Show your full ranked field — <em id="bcount">7</em>&nbsp;more</span>
+              <span class="bmeta">ranks 4–10</span>
+            </button>
+            <div class="browseBody">
+              <div class="bhint">Your strongest beyond the top three. Tap any to see its financials, or pin one to pull it into your top three. Your Market Director can dig into any of these with you.</div>
+              <div id="browseRows"></div>
+            </div>
+          </div>
+
+          <div class="finzone">
+            <section class="finpanel">
+              <div class="finband">
+                <div><div class="lab">Your buying power</div><div class="val" id="bpVal">$0</div></div>
+                <div class="ctx" id="bpCtx"></div>
+              </div>
+              <div class="finbody" id="finBody"></div>
+            </section>
+
+            <div class="finside">
+              <div class="cmpx" id="compareSide"></div>
+            </div>
+          </div>
+
+          <div class="consult" id="consult">
+            <div class="txt"><b>Feeling good about a couple of these?</b>
+              <small>Your Market Director can walk through the real numbers with you — no cost to talk.</small></div>
+            <button id="consultBtn">Schedule a consultation</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  var DNA_LABELS=["Affordability","Schools","Safety","Walkable","Dining","Outdoors"];
+  var PALETTE=[["#3a6ea5","#1f3d63"],["#4a7c59","#274332"],["#7a5a7d","#452845"],["#8a6a4a","#4f3a28"],["#356b8a","#1d3d50"],["#5c7a56","#33472f"],["#6a6a8a","#3a3a52"],["#7d5a6a","#45303a"],["#3f7d5a","#234433"],["#4a6a95","#293c56"]];
+  var PCT={"All Texas":80,"Austin":80,"DFW":77,"Houston":78,"San Antonio":76};
+  var RAW={
+    "All Texas":[["Georgetown","Austin",515000,0.019,80,"Historic square, top schools, still has room",[7,8,8,5,6,7]],["Alamo Heights","San Antonio",735000,0.021,78,"Walkable and historic, premium price",[5,9,9,7,8,6]],["Flower Mound","DFW",565000,0.023,77,"Lakeside, established, excellent schools",[6,9,8,4,6,7]],["Dripping Springs","Austin",640000,0.017,76,"Hill Country quiet, low taxes",[5,8,9,3,5,9]],["The Woodlands","Houston",560000,0.021,75,"Master-planned, wooded, family-strong",[6,8,8,5,7,8]],["Coppell","DFW",610000,0.022,74,"Small, walkable, top-rated schools",[5,9,9,6,7,5]],["Katy","Houston",445000,0.024,73,"Great schools, strong west-side value",[8,8,7,4,6,6]],["Boerne","San Antonio",585000,0.018,72,"Hill Country charm, lower taxes",[6,8,9,5,6,8]],["Round Rock","Austin",470000,0.021,71,"Best value near Austin, family-friendly",[8,7,8,5,6,6]],["McKinney","DFW",495000,0.020,70,"Charming downtown, strong overall value",[7,8,8,6,7,6]]],
+    "Austin":[["Georgetown","Austin",515000,0.019,80,"Historic square, top schools, still has room",[7,8,8,5,6,7]],["Dripping Springs","Austin",640000,0.017,78,"Hill Country quiet, great schools, pricier",[5,8,9,3,5,9]],["Round Rock","Austin",470000,0.021,76,"Best value near Austin, family-friendly",[8,7,8,5,6,6]],["Leander","Austin",445000,0.022,74,"Newer suburbs, fast-growing, budget-friendly",[7,7,8,4,5,6]],["Cedar Park","Austin",520000,0.020,73,"Polished suburb, strong schools, low crime",[6,8,8,5,6,6]],["Pflugerville","Austin",430000,0.023,71,"Affordable, diverse, quick to downtown",[8,7,7,5,6,5]],["Buda","Austin",480000,0.021,69,"Small-town feel just south, easy commute",[7,7,8,4,5,7]],["Kyle","Austin",390000,0.022,67,"Lowest prices in the metro, growing fast",[9,6,7,4,5,6]],["Lakeway","Austin",720000,0.019,66,"Lake living and golf, higher price tag",[4,8,9,3,6,8]],["Hutto","Austin",405000,0.023,64,"Value play east side, newer builds",[8,6,7,4,4,5]]],
+    "DFW":[["Flower Mound","DFW",565000,0.023,77,"Lakeside, established, excellent schools",[6,9,8,4,6,7]],["Coppell","DFW",610000,0.022,75,"Small, walkable, top-rated schools",[5,9,9,6,7,5]],["McKinney","DFW",495000,0.020,74,"Charming downtown, strong overall value",[7,8,8,6,7,6]],["Frisco","DFW",620000,0.022,72,"Big amenities, top schools, pricier",[5,9,8,5,8,6]],["Allen","DFW",540000,0.021,71,"Family suburb, sports and schools",[6,8,8,5,6,6]],["Prosper","DFW",660000,0.021,69,"Newer luxury builds, room to grow",[4,9,8,3,5,6]],["Southlake","DFW",850000,0.020,67,"Premier schools, high price tag",[3,9,9,5,7,6]],["Mansfield","DFW",445000,0.023,66,"South-side value, good schools",[8,7,8,4,5,6]],["Wylie","DFW",425000,0.022,64,"Affordable, quieter, growing",[8,7,7,4,5,6]],["Rockwall","DFW",505000,0.021,62,"Lake town east of Dallas",[7,7,8,5,6,7]]],
+    "Houston":[["The Woodlands","Houston",560000,0.021,78,"Master-planned, wooded, family-strong",[6,8,8,5,7,8]],["Katy","Houston",445000,0.024,75,"Great schools, strong west-side value",[8,8,7,4,6,6]],["Sugar Land","Houston",530000,0.022,73,"Diverse, safe, excellent schools",[6,9,9,5,7,6]],["Pearland","Houston",430000,0.023,71,"Affordable south side, growing fast",[8,7,7,4,6,5]],["Cypress","Houston",415000,0.024,70,"Newer suburbs, budget-friendly",[8,7,7,3,5,6]],["League City","Houston",460000,0.022,68,"Bay area, good schools, longer commute",[7,7,8,4,6,7]],["Missouri City","Houston",395000,0.023,66,"Value, diverse, quieter",[8,7,7,4,5,5]],["Kingwood","Houston",480000,0.021,65,"Wooded, tucked away up north",[6,7,8,4,5,8]],["Friendswood","Houston",520000,0.021,63,"Small-town feel, top schools, safe",[6,9,9,4,5,6]],["Fulshear","Houston",610000,0.022,61,"Newer luxury, far west edge",[4,8,8,3,5,7]]],
+    "San Antonio":[["Alamo Heights","San Antonio",735000,0.021,76,"Walkable, historic, top schools, pricey",[5,9,9,7,8,6]],["Boerne","San Antonio",585000,0.018,74,"Hill Country charm, lower taxes",[6,8,9,5,6,8]],["Schertz","San Antonio",395000,0.023,72,"Best value, military-friendly",[9,7,8,4,5,6]],["Fair Oaks Ranch","San Antonio",620000,0.019,70,"Quiet, upscale, hilly",[4,8,9,3,5,8]],["New Braunfels","San Antonio",445000,0.020,69,"River town, growing, plenty to do",[7,7,8,5,6,8]],["Cibolo","San Antonio",405000,0.022,67,"Affordable, family, newer builds",[8,7,8,4,5,6]],["Helotes","San Antonio",490000,0.020,66,"Hill edge, good schools",[6,8,8,4,5,7]],["Bulverde","San Antonio",560000,0.019,64,"Rural feel, room to spread out",[5,7,9,2,4,8]],["Converse","San Antonio",340000,0.023,62,"Lowest prices, close in",[9,6,7,4,5,5]],["Selma","San Antonio",375000,0.022,60,"Value, retail-close, small",[8,6,7,4,6,5]]]
+  };
+  var ORIGIN={name:"Nashville, TN",col:112,tax:0.0074,incomeTax:"3.0%",med:465000,pay:3180};
+  // Archetype = the "reason for moving" from the discovery quiz. In the real engine it presets the functional-fit
+  // category weights AND the DNA-vs-personality blend. Here it's mocked: `fav` biases the sample DNA dims that exist
+  // in this prototype (Affordability,Schools,Safety,Walkable,Dining,Outdoors); real career/growth weighting lives in
+  // categories not present in this mock's 6-dim sample, so those archetypes reshuffle lightly. `why` copy stays honest
+  // to what the real engine actually does and never claims inputs the algorithm doesn't use.
+  var ARCHETYPES={
+    family:{short:"Family",name:"a family move",fav:[1,2],why:"Because this is a family move, we weight <b>schools, safety, and family life</b> most heavily — and lean on hard community data (about 70%) more than personal feel (30%)."},
+    career:{short:"Career & work",name:"a career move",fav:[],why:"Because this move is about work, we weight <b>job access and growth potential</b> more, with community data and personal feel balanced fairly evenly (about 65/35)."},
+    lifestyle:{short:"Lifestyle & pace",name:"a lifestyle move",fav:[5,3],why:"Because this is a lifestyle move, we lean harder on <b>personal feel and pace</b> (about 50/50 with community data) and weight <b>outdoors and walkability</b> more."},
+    cost:{short:"Cost of living",name:"a cost-of-living move",fav:[0],why:"Because affordability is the driver, we weight <b>value and monthly cost</b> most and keep community data (about 60%) ahead of personal feel (40%)."},
+    fresh:{short:"Fresh start / general",name:"a fresh start",fav:[],why:"A general move — we keep a balanced weighting (about 60% community data · 40% personal feel) with nothing pushed ahead until your tiers below tell us more."}
+  };
+  var ARCHE_ORDER=["family","career","lifestyle","cost","fresh"];
+
+  var state={metro:"All Texas",archetype:"family",panel:null,firstOpened:false,browseOpen:false,cmpOpen:false,
+    selectedKey:null,detailKey:null,pinsByMetro:{},compareByMetro:{},interactions:0,confirmed:false,
+    fin:{income:145000,cash:60000,proceeds:120000,selling:true,rate:6.5,term:30},
+    tiers:{"Affordability":0,"School quality":0,"Commute":1,"Walkability":1,"Nightlife & dining":2,"Outdoor access":3}};
+  var TIER_NAMES=["Must Have","Important To Me","Would Be Nice","Not Important"];
+  var TIER_WEIGHTS=[3,2,1,0];
+  var DEFUSE=' <b>How it\'s used:</b> every community is scored 0–10 on this; your tier sets how much that score counts — Must Have most, Not Important not at all.';
+  var DEFS={
+    "Affordability":"<b>Affordability</b> — how comfortably typical home prices and monthly costs here fit a budget like yours."+DEFUSE,
+    "School quality":"<b>School quality</b> — the strength of local public schools by rating and outcomes; weigh it high if you have school-age kids."+DEFUSE,
+    "Commute":"<b>Commute</b> — how workable typical drive times and access to job centers are; higher means shorter, easier commutes."+DEFUSE,
+    "Walkability":"<b>Walkability</b> — how much you can reach on foot (shops, dining, parks) versus needing to drive everywhere."+DEFUSE,
+    "Nightlife & dining":"<b>Nightlife &amp; dining</b> — the depth of restaurants, bars, and evening activity nearby."+DEFUSE,
+    "Outdoor access":"<b>Outdoor access</b> — proximity to parks, trails, water, and open space for an active outdoor lifestyle."+DEFUSE
+  };
+  var PERSUSE=' Slide toward whichever fits — it nudges your matches toward communities with that character.';
+  var PERSDEFS=[
+    "<b>Established ↔ Up-and-coming</b> — settled, mature neighborhoods versus newer, fast-growing areas still coming into their own."+PERSUSE,
+    "<b>Practical ↔ Upscale</b> — down-to-earth, value-minded communities versus more polished, higher-end surroundings."+PERSUSE,
+    "<b>Urban ↔ Rural</b> — walkable city density versus quiet, spread-out country."+PERSUSE,
+    "<b>Relaxed ↔ Fast-paced</b> — a laid-back everyday tempo versus a busy, high-energy one."+PERSUSE
+  ];
+  var FINDEFS={
+    income:"<b>Household income</b> — your total pre-tax household income. It drives how much home you can comfortably carry and every affordability figure on this page.",
+    proceeds:"<b>Expected home-sale proceeds</b> — what you expect to walk away with after selling your current home and paying off its mortgage and selling costs. Added to your down payment.",
+    cashdp:"<b>Cash toward the purchase</b> — savings you'll put in up front: down payment plus closing costs. More down means a smaller loan and a lower monthly payment.",
+    rate:"<b>Interest rate</b> — the annual mortgage rate used to estimate your payment. A working assumption — adjust it to see how sensitive your budget is to rate changes.",
+    term:"<b>Loan term</b> — how long you pay the mortgage over. 30 years lowers the monthly payment; 15 years raises it but saves a lot of interest over the life of the loan.",
+    pi:"<b>Principal &amp; interest</b> — the core loan payment: the part that pays down what you borrowed, plus the lender's interest. Usually the biggest piece of a monthly payment.",
+    ptax:"<b>Property tax</b> — annual local taxes on the home, collected monthly with your payment. Texas has no state income tax but property-tax rates run higher, and they vary a lot by community. This estimate applies the homestead exemption for a primary residence; any MUD or PID district taxes are not included.",
+    ins:"<b>Homeowner's insurance (est.)</b> — an estimate of the monthly insurance premium folded into your payment. Actual cost depends on the home, location, and coverage.",
+    hoa:"<b>HOA (est.)</b> — an estimated homeowners-association fee for communities that have one, covering shared amenities and upkeep. Varies widely, and many areas have none.",
+    cash:"<b>Cash to close</b> — the total cash you'd need on closing day: your down payment plus roughly 3% in closing costs (lender, title, and escrow fees).",
+    comfort:"<b>Comfortable up to</b> — the home price your income supports while keeping housing at a comfortable share of your budget — not the maximum a lender might approve.",
+    afford:"<b>Housing as % of income</b> — your estimated monthly housing cost divided by gross monthly income. Staying at or below ~28% is the widely-used comfort guideline.",
+    rates:"<b>If rates move</b> — how your monthly payment shifts at a few nearby interest rates, so you can see how sensitive your budget is before locking anything in.",
+    netinflow:"<b>Net-inflow</b> — roughly how much you keep each month from Texas having no state income tax, versus your origin state. Shown as a range because it depends on your situation — directional, not tax advice."
+  };
+  function hv(label,key){return '<span class="pword">'+label+'<span class="tip">'+(FINDEFS[key]||'')+'</span></span>';}
+  var TIER_CAPS=[3,5,99,99];
+
+  var CACHE={};
+  function build(metro){return RAW[metro].map(function(t,i){var col=PALETTE[i%PALETTE.length];return {n:t[0],metro:t[1],price:t[2],tax:t[3],match:t[4],why:t[5],dna:t[6],c1:col[0],c2:col[1]};});}
+  function matchPct(c){var a=ARCHETYPES[state.archetype]||{fav:[]},b=0;(a.fav||[]).forEach(function(i){b+=(c.dna[i]-6)*0.9;});return Math.max(40,Math.min(96,Math.round(c.match+b)));}
+  function allCities(){if(!CACHE[state.metro])CACHE[state.metro]=build(state.metro);return CACHE[state.metro].slice().sort(function(a,b){return matchPct(b)-matchPct(a);});}
+  function keyOf(c){return state.metro+"|"+c.n;}
+  function pins(){if(!state.pinsByMetro[state.metro])state.pinsByMetro[state.metro]=[];return state.pinsByMetro[state.metro];}
+  function heroCities(){var p=pins(),hero=[];p.forEach(function(n){var c=allCities().filter(function(x){return x.n===n;})[0];if(c)hero.push(c);});allCities().forEach(function(c){if(hero.length<3&&hero.indexOf(c)<0)hero.push(c);});return hero.slice(0,3);}
+  function browseCities(){var hero=heroCities();return allCities().filter(function(c){return hero.indexOf(c)<0;}).slice(0,7);}
+  function focusCity(){if(state.selectedKey){var f=allCities().filter(function(c){return keyOf(c)===state.selectedKey;})[0];if(f)return f;}return heroCities()[0];}
+  function isPinned(c){return pins().indexOf(c.n)>=0;}
+  function togglePin(c){var p=pins(),i=p.indexOf(c.n);if(i>=0){p.splice(i,1);toast("Unpinned "+c.n);}else{if(p.length>=3){toast("Your top three is full — unpin one first");return;}p.push(c.n);toast("Pinned "+c.n+" into your top three");}bumpInteraction();renderCards();}
+  function compareNames(){if(!state.compareByMetro[state.metro])state.compareByMetro[state.metro]=[];return state.compareByMetro[state.metro];}
+  function compareCities(){return compareNames().map(function(n){return allCities().filter(function(x){return x.n===n;})[0];}).filter(Boolean);}
+  function isComparing(c){return compareNames().indexOf(c.n)>=0;}
+  function toggleCompare(c){var a=compareNames(),i=a.indexOf(c.n);if(i>=0){a.splice(i,1);toast("Removed "+c.n+" from your comparison report");}else{if(a.length>=3){toast("A report lines up 3 cities at once — remove one first");return;}a.push(c.n);toast("Added "+c.n+" to your comparison report");}bumpInteraction();renderCards();}
+
+  var $=function(id){return document.getElementById(id);};
+  function fmt(n){return "$"+Math.round(n).toLocaleString();}
+  function fmtk(n){return "$"+Math.round(n/1000)+"K";}
+  function downPayment(){return state.fin.cash+(state.fin.selling?state.fin.proceeds:0);}
+  function mfactor(rate,term){var r=rate/100/12,n=term*12;return r>0?r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1):1/n;}
+  function pAndI(city,rate){return Math.max(city.price-downPayment(),0)*mfactor(rate||state.fin.rate,state.fin.term);}
+  function insMo(city){return city.price*0.0035/12;}
+  var HOA=45;
+  var HOMESTEAD=140000;   // 2026 TX school-district homestead exemption (Prop 13 / SB4) — PLACEHOLDER figure, verify against appraisal-district source at build
+  var SCHOOL_SHARE=0.5;   // ASSUMPTION: school district ≈ half of a community's total property-tax rate — must be replaced with real per-jurisdiction split before go-live
+  function propTaxAnnual(city){var taxable=Math.max(city.price-HOMESTEAD,0);return taxable*(city.tax*SCHOOL_SHARE)+city.price*(city.tax*(1-SCHOOL_SHARE));}
+  function propTaxMo(city){return propTaxAnnual(city)/12;}
+  function homesteadSaveMo(city){return (city.price*city.tax-propTaxAnnual(city))/12;}
+  function totalMonthly(city,rate){return pAndI(city,rate)+propTaxMo(city)+insMo(city)+HOA;}
+  function monthlyPayment(city){return totalMonthly(city);}
+  function fit(city){var ratio=totalMonthly(city)/(state.fin.income/12*0.36);if(ratio<=0.85)return {k:"good",t:"Comfortable"};if(ratio<=1.08)return {k:"mod",t:"Moderate"};return {k:"stretch",t:"Stretched"};}
+  function buyingPower(){var maxMo=state.fin.income/12*0.36,factor=mfactor(state.fin.rate,state.fin.term);return (maxMo*0.86)/factor+downPayment();}
+  function maxComfortHome(city){var budget=state.fin.income/12*0.28,f=mfactor(state.fin.rate,state.fin.term);return (budget-HOA+f*downPayment())/(f+(city.tax+0.0035)/12);}
+  function median(arr){var s=arr.slice().sort(function(a,b){return a-b;});var m=Math.floor(s.length/2);return s.length%2?s[m]:(s[m-1]+s[m])/2;}
+  function taxSaveMo(){var lo=Math.round(state.fin.income*0.007/12/50)*50,hi=Math.round(state.fin.income*0.011/12/50)*50;return [lo,hi];}
+
+  var METRO_TIP="<b>Metro match</b> — how well this metro's communities fit your priorities and budget overall. Shown only in All Texas, so you can see where your strongest matches cluster. Open a metro to see the community scores behind it.";
+  function renderMetros(){var wrap=$("metros");wrap.innerHTML="";var all=state.metro==="All Texas";Object.keys(RAW).forEach(function(m){var b=document.createElement("button");b.className="mtab"+(state.metro===m?" active":"");var showPct=all&&m!=="All Texas";b.innerHTML=m+(showPct?' <span class="pct">'+PCT[m]+'%<span class="mtip">'+METRO_TIP+'</span></span>':'');b.onclick=function(){state.metro=m;state.selectedKey=null;state.detailKey=null;render();};wrap.appendChild(b);});}
+
+  function renderCards(){
+    var wrap=$("cards");wrap.innerHTML="";wrap.className="cards"+(state.panel!==null?" narrow":"");
+    heroCities().forEach(function(c,i){
+      var f=fit(c),sel=state.selectedKey===keyOf(c),open=state.detailKey===keyOf(c),pinned=isPinned(c),comparing=isComparing(c);
+      var card=document.createElement("div");card.className="mcard"+(sel?" sel":"");
+      card.innerHTML='<div class="mphoto" style="background:linear-gradient(150deg,'+c.c1+','+c.c2+')"><div class="rank">'+(pinned?'★ Pinned':'Match '+(i+1))+'</div><button class="cmp'+(comparing?' on':'')+'" aria-label="Compare">⇄<span class="atip"><b>Compare in depth</b> — add this city to a printable side-by-side report vs. '+ORIGIN.name+' and other picks.</span></button><button class="pin'+(pinned?' pinned':'')+'" aria-label="Pin">'+(pinned?'★':'☆')+'<span class="atip"><b>Pin</b> — lock this into your Top Matches (up to 3). Your comparison and financials follow it.</span></button><h3>'+c.n+'</h3></div><div class="mbody"><div class="mmatch"><div class="pct">'+matchPct(c)+'<small>% match</small></div><div class="fit '+f.k+'">'+f.t+'</div></div><div class="mmini"><span>Median <b>'+fmt(c.price)+'</b></span><span>~<b>'+fmt(monthlyPayment(c))+'</b>/mo</span></div><div class="expand-hint">'+(open?'▲ Hide report':'▾ See summary report')+'</div></div>';
+      card.querySelector(".pin").onclick=function(e){e.stopPropagation();togglePin(c);};
+      card.querySelector(".cmp").onclick=function(e){e.stopPropagation();toggleCompare(c);};
+      card.querySelector(".expand-hint").onclick=function(e){e.stopPropagation();state.detailKey=open?null:keyOf(c);state.selectedKey=keyOf(c);bumpInteraction();renderCards();};
+      card.onclick=function(){state.selectedKey=keyOf(c);state.detailKey=null;bumpInteraction();renderCards();};
+      wrap.appendChild(card);
+    });
+    var openHero=heroCities().filter(function(x){return keyOf(x)===state.detailKey;})[0];if(openHero)wrap.appendChild(detailPanel(openHero));
+    renderBrowse();renderPanels();
+  }
+  function renderBrowse(){
+    $("browse").classList.toggle("open",state.browseOpen);
+    var rows=browseCities();$("bcount").textContent=rows.length;
+    var wrap=$("browseRows");wrap.innerHTML="";
+    rows.forEach(function(c,idx){
+      var sel=state.selectedKey===keyOf(c),open=state.detailKey===keyOf(c),pinned=isPinned(c),comparing=isComparing(c);
+      var sub=(state.metro==="All Texas"?c.metro+" · ":"")+c.why;
+      var row=document.createElement("div");row.className="brow"+(open?" selrow":"");
+      row.innerHTML='<div class="rk">'+(idx+4)+'</div><div class="nm">'+c.n+'<small>'+sub+'</small></div><div class="st">~'+fmt(monthlyPayment(c))+'/mo</div><div class="mt">'+matchPct(c)+'%</div><button class="bcmp'+(comparing?' on':'')+'" aria-label="Compare">⇄<span class="atip"><b>Compare in depth</b> — add this city to a printable side-by-side report vs. '+ORIGIN.name+' and other picks.</span></button><button class="bpin'+(pinned?' on':'')+'" aria-label="Pin">'+(pinned?'★':'☆')+'<span class="atip"><b>Pin</b> — lock this into your Top Matches (up to 3). Your comparison and financials follow it.</span></button>';
+      row.querySelector(".bpin").onclick=function(e){e.stopPropagation();togglePin(c);};
+      row.querySelector(".bcmp").onclick=function(e){e.stopPropagation();toggleCompare(c);};
+      row.onclick=function(){state.detailKey=open?null:keyOf(c);state.selectedKey=keyOf(c);bumpInteraction();renderCards();};
+      wrap.appendChild(row);if(open)wrap.appendChild(detailPanel(c));
+    });
+  }
+  function detailPanel(c){
+    var d=document.createElement("div");d.className="detail";var f=fit(c),dnaRows="";
+    DNA_LABELS.forEach(function(lab,i){var v=c.dna[i];dnaRows+='<div class="dnarow"><div class="t"><span>'+lab+'</span><span>'+v+'/10</span></div><div class="bar"><i style="width:'+(v*10)+'%"></i></div></div>';});
+    d.innerHTML='<div class="dtop"><div class="dimg" style="background:linear-gradient(150deg,'+c.c1+','+c.c2+')"><span class="drank">'+(isPinned(c)?'★ Pinned':'Your pick')+'</span></div><div class="dhd"><h3>'+c.n+'</h3><div class="loc">'+c.metro+' metro · live figures from your Money drawer</div><div class="dquick"><span class="fit '+f.k+'">'+f.t+'</span><span>Est. <b>'+fmt(monthlyPayment(c))+'</b>/mo</span></div></div></div><div class="dpad2"><div class="dgrid"><div class="fin"><h4>Your financials here</h4><div class="finrow"><span>Est. monthly payment</span><b class="big">'+fmt(monthlyPayment(c))+'</b></div><div class="finrow"><span>Median home price</span><b>'+fmt(c.price)+'</b></div><div class="finrow"><span>Property tax rate</span><b>'+(c.tax*100).toFixed(1)+'%</b></div><div class="finrow"><span>Homestead exemption</span><b class="save">−'+fmt(homesteadSaveMo(c))+'/mo</b></div><div class="finrow"><span>Budget fit</span><span class="fit '+f.k+'">'+f.t+'</span></div></div><div class="dna"><h4>Community DNA</h4>'+dnaRows+'</div><div class="dbtns"><button class="pin2">'+(isPinned(c)?"★ Pinned":"☆ Pin into top three")+'</button><button class="cmp3">'+(isComparing(c)?"✓ In report":"⇄ Add to report")+'</button><button class="full">Full report (PDF) →</button></div></div></div>';
+    d.querySelector(".pin2").onclick=function(){togglePin(c);};
+    d.querySelector(".cmp3").onclick=function(){toggleCompare(c);};
+    d.querySelector(".full").onclick=function(){toast("Full report opens the complete PDF (not built in this mockup).");};
+    return d;
+  }
+
+  function renderPanels(){
+    var c=focusCity();
+    $("bpVal").innerHTML=fmt(buyingPower())+' <small>at '+state.fin.rate.toFixed(1)+'% · '+state.fin.term+'yr</small>';
+    $("bpCtx").innerHTML='Payment breakdown for <b>'+c.n+'</b>';
+    // composition
+    var pi=pAndI(c),ptax=propTaxMo(c),ins=insMo(c),hoa=HOA,total=pi+ptax+ins+hoa;
+    function w(x){return (x/total*100).toFixed(1)+"%";}
+    var comp='<div class="fsec"><h5>Monthly payment · '+c.n+'</h5>'+
+      '<div class="compbar"><i style="width:'+w(pi)+';background:var(--blue)"></i><i style="width:'+w(ptax)+';background:var(--gold)"></i><i style="width:'+w(ins)+';background:#8aa0bd"></i><i style="width:'+w(hoa)+';background:#c3c0b6"></i></div>'+
+      '<div class="clegend">'+
+        cli("var(--blue)",hv("Principal & interest","pi"),pi)+
+        cli("var(--gold)",hv("Property tax","ptax"),ptax)+
+        cli("#8aa0bd",hv("Insurance (est.)","ins"),ins)+
+        cli("#c3c0b6",hv("HOA (est.)","hoa"),hoa)+
+      '</div><div class="ftotal"><span>Total estimated payment</span><b>'+fmt(total)+'/mo</b></div></div>';
+    // cash to close + fit gauge
+    var cash=downPayment()+c.price*0.03;
+    var afford=total/(state.fin.income/12)*100;
+    var gmarkL=Math.min(afford,45)/45*100;
+    var box='<div class="fsec"><div class="fgrid2">'+
+      '<div class="fbox"><div class="l">'+hv("Cash to close","cash")+'</div><div class="v">'+fmt(cash)+' <small>down + ~3% costs</small></div></div>'+
+      '<div class="fbox"><div class="l">'+hv("Comfortable up to","comfort")+'</div><div class="v">'+fmtk(maxComfortHome(c))+' <small>vs. median '+fmtk(median(allCities().map(function(x){return x.price;})))+'</small></div></div>'+
+      '</div></div>';
+    var gauge='<div class="fsec"><h5>'+hv("Affordability — housing as % of income","afford")+'</h5>'+
+      '<div class="gauge"><div class="g" style="width:62%;background:rgba(47,143,91,.28)"></div><div class="g" style="width:18%;background:rgba(185,130,43,.32)"></div><div class="g" style="width:20%;background:rgba(181,72,47,.28)"></div><div class="gmark" style="left:'+gmarkL+'%"></div></div>'+
+      '<div class="gmeta"><span>'+afford.toFixed(0)+'% of gross income · '+fit(c).t+'</span><span>comfort ≤28%</span></div></div>';
+    // rate sensitivity
+    var rs='<div class="fsec"><h5>'+hv("If rates move","rates")+'</h5><div class="rates">'+
+      rate3(6.0,c)+rate3(6.5,c)+rate3(7.0,c)+'</div></div>';
+    // net inflow
+    var ts=taxSaveMo();
+    var ni='<div class="fsec" style="margin-bottom:0"><h5>'+hv("Net-inflow vs. "+ORIGIN.name,"netinflow")+'</h5><div class="fgrid2">'+
+      '<div class="fbox"><div class="l">Est. state-tax savings</div><div class="v">+$'+ts[0].toLocaleString()+'–$'+ts[1].toLocaleString()+' <small>/mo</small></div></div>'+
+      '<div class="fbox"><div class="l">Annualized</div><div class="v">+$'+(ts[0]*12).toLocaleString()+'–$'+(ts[1]*12).toLocaleString()+' <small>/yr</small></div></div>'+
+      '</div></div>';
+    var fnote='<div class="fnote"><b>How these tax figures work:</b> they assume you file the homestead exemption on a primary residence ($140K off school-district value for 2026, saving about '+fmt(homesteadSaveMo(c))+'/mo here). Newer master-planned communities may also carry MUD or PID district taxes that can add $200–400/mo and are <b>not</b> shown here — your Market Director confirms the exact taxing entities for any specific home. These are estimates, not a quote.</div>';
+    $("finBody").innerHTML=comp+box+gauge+rs+ni+fnote;
+    renderCompareSide();
+  }
+  function cli(color,label,val){return '<div class="cli"><span class="k"><span class="dot" style="background:'+color+'"></span>'+label+'</span><b>'+fmt(val)+'</b></div>';}
+  function rate3(r,c){var cur=Math.abs(r-state.fin.rate)<0.05;return '<div class="rate3'+(cur?' cur':'')+'"><div class="r">'+r.toFixed(1)+'%</div><div class="p">'+fmt(totalMonthly(c,r))+'</div></div>';}
+
+  function renderCompareSide(){
+    var hero=heroCities();
+    var rows=[
+      {l:"Match",o:"—",v:function(c){return matchPct(c)+"%";}},
+      {l:"Est. monthly",o:fmt(ORIGIN.pay),v:function(c){return fmt(monthlyPayment(c));},better:function(c){return monthlyPayment(c)<ORIGIN.pay;}},
+      {l:"Property tax",o:(ORIGIN.tax*100).toFixed(2)+"%",v:function(c){return (c.tax*100).toFixed(1)+"%";}},
+      {l:"State income tax",o:ORIGIN.incomeTax,v:function(){return "None";},better:function(){return true;}}
+    ];
+    var head='<tr><th class="rl"></th><th class="oc">'+ORIGIN.name.split(",")[0]+'<small>you\'re here</small></th>';
+    hero.forEach(function(c){head+='<th>'+c.n+'<small>'+(isPinned(c)?'pinned':'match')+'</small></th>';});
+    head+='</tr>';
+    var body='';
+    rows.forEach(function(r){
+      body+='<tr><td class="rl">'+r.l+'</td><td class="oc">'+r.o+'</td>';
+      hero.forEach(function(c){var up=r.better&&r.better(c);body+='<td class="vc">'+r.v(c)+(up?'<span class="up">▲</span>':'')+'</td>';});
+      body+='</tr>';
+    });
+    var rs=compareCities();
+    var foot;
+    if(rs.length){
+      var chips=rs.map(function(c){return '<span class="fx">'+c.n+'<button data-xr="'+c.n+'" aria-label="Remove">×</button></span>';}).join("");
+      foot='<div class="cxflag">'+chips+'</div><button class="cxreport" id="cxReport">Generate comparison report ('+rs.length+') →</button>';
+    }else{
+      foot='Pinning a city up top swaps it in here. For a deeper, printable side-by-side, tap <b>⇄</b> on any cities you\'re weighing — then generate a full report.';
+    }
+    $("compareSide").innerHTML=
+      '<div class="cmpx-h"><b>How they compare</b><span>Your top matches vs. '+ORIGIN.name+'</span></div>'+
+      '<div class="cmpx-scroll"><table class="cxt"><thead>'+head+'</thead><tbody>'+body+'</tbody></table></div>'+
+      '<div class="cmpx-foot">'+foot+'</div>';
+    var cr=$("cxReport");if(cr)cr.onclick=function(){toast("Generate comparison report — the in-depth, printable side-by-side vs. "+ORIGIN.name+" (PDF not built in this mockup).");};
+    $("compareSide").querySelectorAll("[data-xr]").forEach(function(b){b.onclick=function(){var a=compareNames(),i=a.indexOf(b.dataset.xr);if(i>=0)a.splice(i,1);renderCards();};});
+  }
+  function tierListChips(t,gold){var items=Object.keys(state.tiers).filter(function(k){return state.tiers[k]===t;});return items.length?items.map(function(m){return '<span class="mchip'+(gold?" gold":"")+'">'+m+'</span>';}).join(""):'<span class="mchip" style="color:var(--muted)">none set</span>';}
+  function renderSettingsSummary(){
+    var c=focusCity(),a=ARCHETYPES[state.archetype];
+    $("settingsBody").innerHTML=
+      '<div class="msec"><h4>Why you\'re moving</h4><div class="msum-row" style="border:none;flex-direction:column;align-items:flex-start;gap:5px"><span class="v" style="font-weight:600;color:var(--navy)">'+a.name+'</span><span class="k" style="line-height:1.5">'+a.why.replace(/<\/?b>/g,"")+'</span></div></div>'+
+      '<div class="msec"><h4>Your money</h4>'+
+        '<div class="msum-row"><span class="k">Comfortable budget</span><span class="v">'+fmtk(maxComfortHome(c))+' · '+fmt(downPayment())+' down</span></div>'+
+        '<div class="msum-row"><span class="k">Household income</span><span class="v">'+fmt(state.fin.income)+'/yr</span></div>'+
+        '<div class="msum-row"><span class="k">Rate · term (assumed)</span><span class="v">'+state.fin.rate.toFixed(1)+'% · '+state.fin.term+' yr</span></div>'+
+      '</div>'+
+      '<div class="msec"><h4>What matters most</h4>'+
+        '<div class="msum-row" style="border:none;flex-direction:column;align-items:flex-start;gap:6px"><span class="k">Must have</span><span class="mchips">'+tierListChips(0,true)+'</span></div>'+
+        '<div class="msum-row" style="border:none;flex-direction:column;align-items:flex-start;gap:6px"><span class="k">Important to me</span><span class="mchips">'+tierListChips(1)+'</span></div>'+
+        '<div class="msum-row" style="border:none;flex-direction:column;align-items:flex-start;gap:6px"><span class="k">Would be nice</span><span class="mchips">'+tierListChips(2)+'</span></div>'+
+      '</div>'+
+      '<div class="msec" style="margin-bottom:0"><h4>Feel &amp; limits</h4>'+
+        '<div class="msum-row"><span class="k">Personality</span><span class="v">Leans rural · relaxed pace</span></div>'+
+        '<div class="msum-row"><span class="k">Non-negotiables</span><span class="v">Safe communities · schools B+ · tax ≤ 2.2%</span></div>'+
+      '</div>';
+  }
+
+  var pendingArche=null;
+  function renderArcheOptions(){
+    pendingArche=state.archetype;
+    var h=ARCHE_ORDER.map(function(k){var a=ARCHETYPES[k];var sel=k===pendingArche;var desc=a.why.replace(/<\/?b>/g,"");return '<button class="aopt'+(sel?' sel':'')+'" data-arche="'+k+'"><span class="an">'+a.short+'</span><span class="ad">'+desc+'</span></button>';}).join("");
+    h+='<div class="awarn"><b>Heads up:</b> this changes what your matches are built around, so your list will reshuffle. Your Must-have / Important tiers and personality sliders carry over.</div>';
+    $("archeBody").innerHTML=h;
+    $("archeBody").querySelectorAll("[data-arche]").forEach(function(b){b.onclick=function(){pendingArche=b.dataset.arche;$("archeBody").querySelectorAll(".aopt").forEach(function(x){x.classList.toggle("sel",x.dataset.arche===pendingArche);});};});
+  }
+
+  var GUIDE_INTRO="<span class=\"amyname\">Hi, I'm Amy.</span> Ask me about a Texas term or the home-buying process and I'll give you the plain-language basics. When it comes to what's right for <b>your</b> move, that's where your Market Director comes in.";
+  var TOPQ=["What's a MUD?","Do I pay state income tax in Texas?","What's the homestead exemption?","What are closing costs?","What's an ISD?","How does HavenQuest match me?"];
+  var KB=[
+    {t:"MUD (Municipal Utility District)",g:1,k:["mud","municipal utility"],d:"An extra taxing district that funds water/sewer in many newer suburbs.",a:"A <b>MUD (Municipal Utility District)</b> is a special taxing district that funds water, sewer, and drainage in many newer master-planned Texas suburbs. If a home sits in a MUD, you pay an extra property-tax line on top of the city, county, and school rates — sometimes a few hundred dollars a month. Two homes on the same street can differ if one's in a MUD and one isn't. Your Market Director pulls the exact MUD rate for any specific home."},
+    {t:"PID (Public Improvement District)",g:1,k:["pid","public improvement"],d:"An added assessment funding local improvements — separate from a MUD.",a:"A <b>PID (Public Improvement District)</b> is a defined area where owners pay an added assessment to fund local improvements like landscaping, amenities, or roads. It's usually a separate, fixed charge — different from a MUD's ongoing tax rate."},
+    {t:"Homestead exemption",g:1,k:["homestead"],d:"Lowers the taxable value of your primary residence, so you pay less tax.",a:"The <b>homestead exemption</b> lowers the taxable value of your primary residence, so you owe less property tax. In Texas the school-district portion of your home's value gets a sizable exemption on a home you actually live in — it doesn't apply to rentals or second homes. Exact savings depend on the jurisdiction; the county appraisal district confirms the real number."},
+    {t:"ISD (school district)",g:1,k:["isd","school district","schools"],d:"The public school district a home is zoned to.",a:"An <b>ISD (Independent School District)</b> is the local public school district a home is zoned to. In Texas, which ISD — and which specific schools — a home feeds into can vary block to block, and it's one of the biggest drivers of both family fit and home value."},
+    {t:"Property tax rate",g:1,k:["property tax"],d:"Texas leans on property tax (no income tax), combining several pieces.",a:"Texas has no state income tax, so <b>property taxes</b> do more of the work and tend to run higher than many states. Your total rate combines city, county, school-district, and sometimes MUD or PID pieces — which is why the same list price can cost different amounts month to month depending on where it sits."},
+    {t:"Appraisal district & assessed value",g:1,k:["appraisal district","assessed value","market value","appraised value"],d:"Sets the value your property tax is based on each year.",a:"The county <b>appraisal district</b> sets your home's value each year, which your property tax is based on. <b>Market value</b> is what it could sell for; <b>appraised (taxable) value</b> is what you're taxed on — the homestead exemption and a 10% annual cap can hold the taxable value below market once you've filed."},
+    {t:"HOA (Homeowners Association)",g:1,k:["hoa","homeowners association"],d:"Neighborhood dues and rules for shared areas — varies house to house.",a:"An <b>HOA (Homeowners Association)</b> maintains shared areas and sets community rules, funded by regular dues. Fees and how strict the rules are vary a lot — even within the same city — so it's checked per neighborhood, not per city. Your Market Director reviews the specific HOA for any home you like."},
+    {t:"ETJ (Extraterritorial Jurisdiction)",g:1,k:["etj","extraterritorial"],d:"The unincorporated fringe just outside a city's limits.",a:"<b>ETJ (Extraterritorial Jurisdiction)</b> is the unincorporated area just outside a city's limits, where the city has some planning authority but you're not fully inside city services or taxes. It can affect utilities, permitting, and whether an area might be annexed later."},
+    {t:"Closing costs & cash to close",g:1,k:["closing cost","cash to close"],d:"One-time fees to finalize the purchase, plus your down payment.",a:"<b>Closing costs</b> are the one-time fees to finalize a purchase — lender, title, escrow, appraisal, and prepaids — usually roughly 2–4% of the price. <b>Cash to close</b> is your down payment plus those costs: the total you bring on closing day."},
+    {t:"Title & escrow",g:1,k:["title","escrow"],d:"Confirms ownership and safely holds funds until closing.",a:"<b>Title</b> confirms you legally own the home free of other claims. <b>Escrow</b> is the neutral third party that holds funds and documents until every condition of the sale is met, then disburses everything at closing."},
+    {t:"No state income tax",g:1,k:["state income tax","income tax"],d:"Texas has none — a real monthly difference vs. many states.",a:"Texas has <b>no state income tax</b> — a real monthly difference if you're moving from a state that has one. The trade-off is higher property taxes, which is exactly why this page shows your Texas monthly cost and your net-inflow versus your origin state side by side."},
+    {t:"Community DNA & match %",g:1,k:["community dna","match %","match percent","how does havenquest","match me","matching","how do you match"],d:"How we profile communities and score your fit.",a:"<b>Community DNA</b> is our 0–10 profile of each community across things like schools, safety, walkability, and outdoors. Your <b>match %</b> is how well a community's DNA and cost line up with what you've told us matters — and it updates live as you refine your priorities, money, and non-negotiables."}
+  ];
+  var EVAL=["should i","should we","best ","better ","recommend","worth it","worth buying","good deal","good idea","right for","for my","for us","can i afford","which one","which city","which community","which neighborhood","do you think","your advice","is it worth","help me decide","pick "];
+  function isEvaluative(q){return EVAL.some(function(w){return q.indexOf(w)>=0;});}
+  function findKB(q){for(var i=0;i<KB.length;i++){for(var j=0;j<KB[i].k.length;j++){if(q.indexOf(KB[i].k[j])>=0)return KB[i];}}return null;}
+  function nudgeHTML(kind){var line=kind==="handoff"?"This is exactly what your free consultation is for — your Market Director makes it specific to your family, budget, and timeline.":"Want this specific to your move? Your Market Director walks through the real numbers with you — free, no pressure.";return '<div class="ans-md">'+line+'<br><button class="ans-book">Book your free consultation →</button></div>';}
+  function renderAns(ans){var box=$("askAns");if(!box)return;var cls=ans.kind==="handoff"?" handoff":"";box.innerHTML='<div class="ans'+cls+'"><div class="aq">'+ans.q+'</div><div class="ansby"><span class="amyav amyav-sm">A</span>Amy</div><div class="aa">'+ans.a+'</div>'+nudgeHTML(ans.kind==="handoff"?"handoff":"fact")+'</div>';var bk=box.querySelector(".ans-book");if(bk)bk.onclick=function(){closePanel();openConfirm();};box.scrollIntoView({behavior:"smooth",block:"nearest"});}
+  function submitAsk(text){var q=(text||"").toLowerCase().trim();if(!q)return;var ans;if(isEvaluative(q)){ans={q:text,a:"That's a judgment call your Market Director is here for. I can give you the general lay of the land, but which community, home, or trade-off actually fits <b>your</b> family is what they'll dig into with you.",kind:"handoff"};}else{var hit=findKB(q);ans=hit?{q:text,a:hit.a,kind:"fact"}:{q:text,a:"I can help with Texas relocation and home-buying basics — try a popular question above or browse the glossary below. For anything specific to your move, your Market Director is the person to ask.",kind:"fact"};}renderAns(ans);}
+  function glossRow(e){return '<div class="gterm" data-term="'+e.t.replace(/"/g,'&quot;')+'"><div class="gt">'+e.t+'</div><div class="gd">'+e.d+'</div></div>';}
+  function bindGloss(){document.querySelectorAll(".gterm").forEach(function(g){g.onclick=function(){var e=KB.filter(function(x){return x.t===g.dataset.term;})[0];if(e)renderAns({q:e.t,a:e.a,kind:"fact"});};});}
+  function guideHTML(){var chips=TOPQ.map(function(q){return '<button class="qchip" data-q="'+q.replace(/"/g,'&quot;')+'">'+q+'</button>';}).join("");var gloss=KB.filter(function(e){return e.g;}).map(glossRow).join("");return '<div class="askintro"><span class="amyav amyav-lg">A</span><span>'+GUIDE_INTRO+'</span></div><div class="askbar"><input id="askInput" placeholder="Ask about a Texas term or the buying process…" autocomplete="off"><button class="asksend" id="askSend">Ask</button></div><div class="qlabel">Popular questions</div><div class="qchips">'+chips+'</div><div class="ansbox" id="askAns"></div><div class="glosshd"><h5>Glossary</h5></div><input class="glosssearch" id="glossSearch" placeholder="Search terms…" autocomplete="off"><div id="glossList">'+gloss+'</div>';}
+  function initGuide(){var input=$("askInput");function go(){submitAsk(input.value);input.value="";}$("askSend").onclick=go;input.addEventListener("keydown",function(e){if(e.key==="Enter")go();});document.querySelectorAll(".qchip").forEach(function(b){b.onclick=function(){submitAsk(b.dataset.q);};});var search=$("glossSearch");search.addEventListener("input",function(){var v=search.value.toLowerCase(),wrap=$("glossList");var rows=KB.filter(function(e){return e.g&&(e.t.toLowerCase().indexOf(v)>=0||e.d.toLowerCase().indexOf(v)>=0||e.a.toLowerCase().indexOf(v)>=0);});wrap.innerHTML=rows.length?rows.map(glossRow).join(""):'<div class="gempty">No terms match that yet — your Market Director can explain anything that\'s not here.</div>';bindGloss();});bindGloss();}
+
+  var PANEL_META={lifestyle:{title:"Lifestyle",sub:"What matters most in where you land."},financials:{title:"Money",sub:"Your real numbers drive every match live."},nonneg:{title:"Non-negotiables",sub:"Hard filters. We only show what clears them."},guide:{title:"Ask Amy",sub:"Amy answers Texas terms & buying-process basics."}};
+  function openPanel(p){if(state.panel===p){closePanel();return;}state.panel=p;document.querySelectorAll(".railbtn").forEach(function(b){b.classList.toggle("active",b.dataset.panel===p);});$("drawer").classList.add("open");$("dtitle").textContent=PANEL_META[p].title;$("dsub").textContent=PANEL_META[p].sub;buildDrawer(p);renderCards();}
+  function closePanel(){state.panel=null;document.querySelectorAll(".railbtn").forEach(function(b){b.classList.remove("active");});$("drawer").classList.remove("open");renderCards();}
+  function buildDrawer(p){var body=$("dbody");if(p==="lifestyle"){body.innerHTML=lifestyleHTML();initSliders();var ae=$("archeEdit");if(ae)ae.onclick=function(){renderArcheOptions();$("archeOvl").classList.add("open");};}else if(p==="financials"){body.innerHTML=financialsHTML();initFinancials();}else if(p==="nonneg"){body.innerHTML=nonnegHTML();initNonNeg();}else{body.innerHTML=guideHTML();initGuide();}}
+
+  function lifestyleHTML(){var head='<div class="colhead"><div></div><div class="cols">';TIER_NAMES.forEach(function(t,i){var meta='×'+TIER_WEIGHTS[i]+(TIER_CAPS[i]<90?' · max '+TIER_CAPS[i]:'');head+='<div class="col" data-col="'+i+'">'+t+'<span class="cap">'+meta+'</span></div>';});head+='</div></div>';var rows="";Object.keys(state.tiers).forEach(function(item){rows+='<div class="prow"><div class="plabel"><span class="pword">'+item+'<span class="tip">'+(DEFS[item]||item)+'</span></span></div><div class="track" data-item="'+item+'"><div class="band b0"></div><div class="band b1"></div><div class="band b2"></div><div class="band b3"></div><div class="ball t'+state.tiers[item]+'"></div></div></div>';});var note='<div class="prionote">Higher tiers count for more in your match — Must Have most, then Important, then Would Be Nice. <b>Not Important is left out of your match entirely</b>, so use it for things you don\'t want nudging your results.</div>';var sliders='<div class="subhead">Community personality</div>';var per=[["Established","Up-and-coming",6],["Practical","Upscale",4],["Urban","Rural",7],["Relaxed","Fast-paced",3]];per.forEach(function(s,i){sliders+='<div class="slrow"><div class="top"><b><span class="pword">'+s[0]+' ↔ '+s[1]+'<span class="tip">'+PERSDEFS[i]+'</span></span></b></div><input type="range" min="0" max="10" value="'+s[2]+'" data-per="'+i+'"><div class="ends"><span>'+s[0]+'</span><span>'+s[1]+'</span></div></div>';});var a=ARCHETYPES[state.archetype];var arche='<div class="arche"><div class="arche-lab">This move is mostly about</div><div class="arche-val"><b id="archeName">'+a.name+'</b><button class="arche-edit" id="archeEdit">change</button></div><div class="arche-why">'+a.why+'</div></div>';return arche+head+rows+note+sliders;}
+  function initSliders(){var counts=function(){var c=[0,0,0,0];Object.keys(state.tiers).forEach(function(k){c[state.tiers[k]]++;});return c;};document.querySelectorAll(".track").forEach(function(track){var ball=track.querySelector(".ball"),item=track.dataset.item,dragging=false;function center(col){return (col*25+12.5);}function place(col){ball.className="ball t"+col;ball.style.left=center(col)+"%";}place(state.tiers[item]);function tryMove(col){var cur=state.tiers[item];if(col===cur){place(cur);return;}var c=counts(),target=col,guard=0;while(TIER_CAPS[target]<90&&(c[target]-(cur===target?1:0))>=TIER_CAPS[target]&&guard<3){flashCol(target);target++;guard++;}if(target>3)target=3;state.tiers[item]=target;place(target);bumpInteraction();renderPanels();}track.addEventListener("click",function(e){if(dragging)return;var rect=track.getBoundingClientRect(),x=(e.clientX-rect.left)/rect.width;tryMove(Math.min(3,Math.max(0,Math.floor(x*4))));});ball.addEventListener("pointerdown",function(e){dragging=true;ball.classList.add("drag");ball.setPointerCapture(e.pointerId);e.preventDefault();});ball.addEventListener("pointermove",function(e){if(!dragging)return;var rect=track.getBoundingClientRect(),x=Math.min(1,Math.max(0,(e.clientX-rect.left)/rect.width));ball.style.left=(x*100)+"%";});ball.addEventListener("pointerup",function(e){if(!dragging)return;dragging=false;ball.classList.remove("drag");var rect=track.getBoundingClientRect(),x=Math.min(1,Math.max(0,(e.clientX-rect.left)/rect.width)),col=Math.min(3,Math.max(0,Math.floor(x*4)));setTimeout(function(){tryMove(col);},0);});});document.querySelectorAll('[data-per]').forEach(function(r){r.addEventListener("input",function(){bumpInteraction();});});}
+  function flashCol(i){var el=document.querySelector('.col[data-col="'+i+'"]');if(!el)return;el.classList.add("flash");toast(TIER_NAMES[i]+" is full (max "+TIER_CAPS[i]+") — bumped to the next tier");setTimeout(function(){el.classList.remove("flash");},700);}
+
+  function financialsHTML(){
+    var selling=state.fin.selling;
+    var proceeds=selling?moneyField("Expected home-sale proceeds","proceeds",state.fin.proceeds,FINDEFS.proceeds):'';
+    var cashLabel=selling?"Other savings / cash":"Savings toward down payment";
+    return moneyField("Household income","income",state.fin.income,FINDEFS.income)+
+      '<div class="nn" style="padding:12px 0"><div class="lab">Selling a home?<small>Adds your expected proceeds to your down payment</small></div><button class="tog'+(selling?' on':'')+'" id="sellTog" aria-pressed="'+selling+'"></button></div>'+
+      proceeds+
+      moneyField(cashLabel,"cash",state.fin.cash,FINDEFS.cashdp)+
+      '<div class="baseline" id="dpLine">Total toward down payment: <b>'+fmt(downPayment())+'</b></div>'+
+      '<div class="baseline">Your original Discovery estimate: $525K budget · ~$3,050/mo. Edits here recalibrate every match.</div>'+
+      '<div class="slrow" style="margin-top:20px"><div class="top"><b><span class="pword">Interest rate<span class="tip">'+FINDEFS.rate+'</span></span></b><span id="rateOut">'+state.fin.rate.toFixed(1)+'%</span></div><input type="range" min="5" max="8" step="0.1" value="'+state.fin.rate+'" id="rate"><div class="ends"><span>5.0%</span><span>8.0%</span></div></div>'+
+      '<div class="slrow"><div class="top"><b><span class="pword">Loan term<span class="tip">'+FINDEFS.term+'</span></span></b><span id="termOut">'+state.fin.term+' yr</span></div><input type="range" min="15" max="30" step="15" value="'+state.fin.term+'" id="term"><div class="ends"><span>15 yr</span><span>30 yr</span></div></div>';
+  }
+  function moneyField(label,key,val,def){var lab=def?'<span class="pword">'+label+'<span class="tip">'+def+'</span></span>':label;return '<div class="field"><label>'+lab+'</label><div class="in"><span>$</span><input inputmode="numeric" data-money="'+key+'" value="'+val.toLocaleString()+'"></div></div>';}
+  function initFinancials(){
+    document.querySelectorAll('[data-money]').forEach(function(inp){inp.addEventListener("input",function(){var raw=parseInt(inp.value.replace(/[^0-9]/g,""),10)||0;state.fin[inp.dataset.money]=raw;inp.value=raw.toLocaleString();var dp=$("dpLine");if(dp)dp.innerHTML='Total toward down payment: <b>'+fmt(downPayment())+'</b>';liveRecalc();});});
+    var sell=$("sellTog");if(sell)sell.addEventListener("click",function(){state.fin.selling=!state.fin.selling;buildDrawer("financials");renderCards();});
+    var rate=$("rate"),term=$("term");
+    rate.addEventListener("input",function(){state.fin.rate=parseFloat(rate.value);$("rateOut").textContent=state.fin.rate.toFixed(1)+"%";liveRecalc();});
+    term.addEventListener("input",function(){state.fin.term=parseInt(term.value,10);$("termOut").textContent=state.fin.term+" yr";liveRecalc();});
+  }
+  function liveRecalc(){bumpInteraction();renderCards();}
+
+  function nonnegHTML(){var toggles=[["High crime / safety","We drop communities below a safe-index threshold",true],["Not walkable","Filters low walk-score communities",false],["Limited nearby medical care","Requires a hospital within range",false]];var h='';toggles.forEach(function(t,i){h+='<div class="nn"><div class="lab">'+t[0]+'<small>'+t[1]+'</small></div><button class="tog'+(t[2]?" on":"")+'" data-nn="'+i+'" aria-pressed="'+t[2]+'"></button></div>';});h+='<div class="nn"><div class="lab">School rating below<small>Sets your own minimum</small></div><div class="thresh"><select><option>A</option><option selected>B</option><option>C</option></select></div></div>';h+='<div class="nn"><div class="lab">Property tax rate above<small>Sets your own ceiling</small></div><div class="thresh"><select><option>1.8%</option><option selected>2.2%</option><option>2.5%</option></select></div></div>';h+='<div class="nn" style="border:none"><div class="lab">Strict HOA<small class="mdnote">Captured as a note for your Market Director — varies house to house</small></div><button class="tog" data-nn="9"></button></div>';return h;}
+  function initNonNeg(){document.querySelectorAll('[data-nn]').forEach(function(b){b.addEventListener("click",function(){b.classList.toggle("on");b.setAttribute("aria-pressed",b.classList.contains("on"));bumpInteraction();toast("Filter updated — matches would re-rank live");});});}
+
+  function bumpInteraction(){state.interactions++;if(state.interactions>=2){$("consult").classList.add("show");}if(state.confirmed){state.confirmed=false;updateGate();toast("You changed something — re-confirm your choices before booking.");}}
+  var toastT;function toast(msg){var el=$("toast");el.textContent=msg;el.classList.add("show");clearTimeout(toastT);toastT=setTimeout(function(){el.classList.remove("show");},1900);}
+  function render(){renderMetros();renderCards();}
+
+  function updateGate(){var adv=$("ctaTop"),conf=$("ctaConfirm");if(!adv||!conf)return;if(state.confirmed){adv.classList.remove("locked");adv.classList.add("ready");conf.classList.add("done");conf.textContent="✓ Choices confirmed";}else{adv.classList.add("locked");adv.classList.remove("ready");conf.classList.remove("done");conf.textContent="Confirm your choices";}}
+  function openConfirm(){renderConfirmSummary();$("confirmOvl").classList.add("open");}
+  function closeConfirm(){$("confirmOvl").classList.remove("open");}
+  function renderConfirmSummary(){
+    var c=focusCity(),hero=heroCities();
+    var cityRows=hero.map(function(x,i){var tag=isPinned(x)?"Pinned":"Match "+(i+1);return '<div class="mcity"><span><b>'+x.n+'</b> · '+x.metro+' <span style="color:var(--muted)">('+tag+')</span></span><span class="mm">'+matchPct(x)+'% · '+fmt(monthlyPayment(x))+'/mo</span></div>';}).join("");
+    function tierChips(t){var items=Object.keys(state.tiers).filter(function(k){return state.tiers[k]===t;});return items.length?items.map(function(m){return '<span class="mchip'+(t===0?" gold":"")+'">'+m+'</span>';}).join(""):'<span class="mchip" style="color:var(--muted)">none set</span>';}
+    var cmp=compareCities();
+    var cmpLine=cmp.length?cmp.map(function(x){return x.n;}).join(", ")+" vs. "+ORIGIN.name:"None selected";
+    var ts=taxSaveMo();
+    $("confirmBody").innerHTML=
+      '<div class="msec"><h4>Your top matches</h4><div class="mcities">'+cityRows+'</div></div>'+
+      '<div class="msec"><h4>Your money</h4>'+
+        '<div class="msum-row"><span class="k">Household income</span><span class="v">'+fmt(state.fin.income)+'/yr</span></div>'+
+        '<div class="msum-row"><span class="k">Toward down payment</span><span class="v">'+fmt(downPayment())+(state.fin.selling?" (incl. home-sale proceeds)":"")+'</span></div>'+
+        '<div class="msum-row"><span class="k">Rate · term (assumed)</span><span class="v">'+state.fin.rate.toFixed(1)+'% · '+state.fin.term+' yr</span></div>'+
+        '<div class="msum-row"><span class="k">Comfortable up to</span><span class="v">'+fmtk(maxComfortHome(c))+'</span></div>'+
+        '<div class="msum-row"><span class="k">Est. state-tax net-inflow</span><span class="v">+$'+ts[0].toLocaleString()+'–$'+ts[1].toLocaleString()+'/mo</span></div>'+
+      '</div>'+
+      '<div class="msec"><h4>What matters most</h4>'+
+        '<div class="msum-row" style="border:none;flex-direction:column;align-items:flex-start;gap:6px"><span class="k">Must have</span><span class="mchips">'+tierChips(0)+'</span></div>'+
+        '<div class="msum-row" style="border:none;flex-direction:column;align-items:flex-start;gap:6px"><span class="k">Important to me</span><span class="mchips">'+tierChips(1)+'</span></div>'+
+        '<div class="msum-row" style="border:none;flex-direction:column;align-items:flex-start;gap:6px"><span class="k">Would be nice</span><span class="mchips">'+tierChips(2)+'</span></div>'+
+      '</div>'+
+      '<div class="msec"><h4>Community feel &amp; limits</h4>'+
+        '<div class="msum-row"><span class="k">Personality</span><span class="v">Leans rural · relaxed pace</span></div>'+
+        '<div class="msum-row"><span class="k">Non-negotiables</span><span class="v">Safe communities · schools B+ · property tax ≤ 2.2%</span></div>'+
+        '<div class="msum-row"><span class="k">Comparing</span><span class="v">'+cmpLine+'</span></div>'+
+      '</div>'+
+      '<div class="mnote">This is what your Market Director reviews before your consultation. You can keep editing anytime — you\'ll just re-confirm before booking so what we send always matches what you see.</div>';
+  }
+
+  document.querySelectorAll(".railbtn").forEach(function(b){b.addEventListener("click",function(){openPanel(b.dataset.panel);});});
+  $("dclose").addEventListener("click",closePanel);
+  $("browseToggle").addEventListener("click",function(){state.browseOpen=!state.browseOpen;renderBrowse();});
+  $("settingsBtn").addEventListener("click",function(){renderSettingsSummary();$("settingsOvl").classList.add("open");});
+  $("archeCancel").addEventListener("click",function(){$("archeOvl").classList.remove("open");});
+  $("archeOvl").addEventListener("click",function(e){if(e.target===$("archeOvl"))$("archeOvl").classList.remove("open");});
+  $("archeApply").addEventListener("click",function(){var changed=pendingArche&&pendingArche!==state.archetype;if(pendingArche)state.archetype=pendingArche;$("archeOvl").classList.remove("open");if(state.panel==="lifestyle")buildDrawer("lifestyle");renderCards();if(changed){bumpInteraction();toast("Rebuilt around "+ARCHETYPES[state.archetype].name+" — your tiers and sliders carried over");}});
+  $("setDone").addEventListener("click",function(){$("settingsOvl").classList.remove("open");});
+  $("settingsOvl").addEventListener("click",function(e){if(e.target===$("settingsOvl"))$("settingsOvl").classList.remove("open");});
+  $("consultBtn").addEventListener("click",openConfirm);
+  $("ctaConfirm").addEventListener("click",openConfirm);
+  $("mKeep").addEventListener("click",closeConfirm);
+  $("confirmOvl").addEventListener("click",function(e){if(e.target===$("confirmOvl"))closeConfirm();});
+  $("mConfirm").addEventListener("click",function(){state.confirmed=true;closeConfirm();updateGate();toast("Confirmed — your summary is ready. Advance to your consultation to send it.");});
+  $("ctaTop").addEventListener("click",function(){if(!state.confirmed){openConfirm();return;}toast("Summary sent to your Market Director — opening your booking…");});
+  $("reset").addEventListener("click",function(){state.metro="All Texas";state.archetype="family";state.selectedKey=null;state.detailKey=null;state.pinsByMetro={};state.compareByMetro={};state.interactions=0;state.browseOpen=false;state.cmpOpen=false;state.fin={income:145000,cash:60000,proceeds:120000,selling:true,rate:6.5,term:30};state.tiers={"Affordability":0,"School quality":0,"Commute":1,"Walkability":1,"Nightlife & dining":2,"Outdoor access":3};$("consult").classList.remove("show");state.confirmed=false;closePanel();render();updateGate();});
+
+  render();
+  updateGate();
+  setTimeout(function(){if(!state.firstOpened){state.firstOpened=true;openPanel("lifestyle");}},550);
+})();
+</script>
+</body>
+</html>
