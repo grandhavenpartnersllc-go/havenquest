@@ -11,11 +11,28 @@ import { createClient } from '../../../lib/supabase/client'
 import { lookupZipCityState } from '../../../utils/zipLookup'
 import { txColIndex, txSafety, txPropertyTax, txJobMarket, txClimateV2 } from '../../../utils/txComparisonStats'
 import CompareModal from '../../results/CompareModal'
-import { Lock, LockOpen } from 'lucide-react'
+import { Lock, LockOpen, SlidersHorizontal, CircleDollarSign, ShieldCheck, MessageCircle } from 'lucide-react'
 
 const ALL_KEYS = DNA_CATEGORIES.map(c => c.key) as (keyof DNAScores)[]
 
 const RATE_DEFAULT = 6.5
+
+// Brief 3 — icon rail + summoned drawer shell. The rail replaces the always-open
+// ~40% control panel; each launcher summons a single drawer (one open at a time).
+// "Non-Negotiables" is kept verbatim as the established, shipped term (not "Limits").
+type DrawerKey = 'lifestyle' | 'financials' | 'nonneg' | 'guide'
+const RAIL_ITEMS: { k: DrawerKey; label: string; Icon: typeof SlidersHorizontal; group: 'refine' | 'learn' }[] = [
+  { k: 'lifestyle',  label: 'Lifestyle',       Icon: SlidersHorizontal, group: 'refine' },
+  { k: 'financials', label: 'Money',           Icon: CircleDollarSign,  group: 'refine' },
+  { k: 'nonneg',     label: 'Non-Negotiables', Icon: ShieldCheck,       group: 'refine' },
+  { k: 'guide',      label: 'Ask Amy',         Icon: MessageCircle,     group: 'learn'  },
+]
+const DRAWER_META: Record<DrawerKey, { title: string; subtitle: string }> = {
+  lifestyle:  { title: 'Lifestyle',       subtitle: 'What matters most in where you land.' },
+  financials: { title: 'Money',           subtitle: 'Your real numbers drive every match live.' },
+  nonneg:     { title: 'Non-Negotiables', subtitle: 'Hard filters — we only show what clears them.' },
+  guide:      { title: 'Ask Amy',         subtitle: 'Texas terms & buying-process basics.' },
+}
 
 // Phase E, Brief 1 — Non-Negotiables defaults. Commute time and flood risk were
 // dropped from v1 (no real per-city data exists for either, confirmed in Phase 0
@@ -238,11 +255,12 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const [originCity, setOriginCity] = useState<string | null>(null)
   const [originState, setOriginState] = useState<string | null>(null)
 
-  // Adaptive Control Panel (Phase B) — accordion between Lifestyle/Financials,
-  // and mobile sticky-drawer state. Lifestyle expanded by default on first load.
-  const [activePanel, setActivePanel] = useState<'lifestyle' | 'financials'>('lifestyle')
+  // Brief 3 — icon rail + summoned drawer. A single openDrawer state drives BOTH the
+  // desktop rail and the mobile bottom bar, which structurally guarantees "one drawer
+  // open at a time." Replaces the prior desktop activePanel tab switch and the mobile
+  // mobileDrawerOpen flag — both were UI-only, no persistence rode on them. null = closed.
+  const [openDrawer, setOpenDrawer] = useState<DrawerKey | null>(null)
   const [isMobile, setIsMobile] = useState(false)
-  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
   const [advancedAssumptionsOpen, setAdvancedAssumptionsOpen] = useState(false) // Declutter pass — Interest rate + Loan term moved behind this
   const [nonNegotiables, setNonNegotiables] = useState<NonNegotiablesState>(DEFAULT_NON_NEGOTIABLES)
   const [nonNegotiablesOpen, setNonNegotiablesOpen] = useState(false) // inline accordion, not a modal/drawer — must stay always-visible per Communities' treatment
@@ -916,28 +934,9 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const displayedCities = showAllCities ? rankedCities.slice(0, 10) : rankedCities.slice(0, 5)
 
   // ──────────────────────────────────────────────────────────
-  // Tab switcher for Lifestyle/Financials (layout amendment 2 — replaces the
-  // prior vertical accordion pattern for these two sections; Communities is no
-  // longer part of this component at all, it's now a static, always-visible
-  // section, see below). Same mutual-exclusivity behavior as before, driven by
-  // the same shared activePanel state — just switched via side-by-side tabs.
+  // Brief 3 — the Lifestyle/Financials tab switcher was removed: each panel is now
+  // its own rail launcher summoning its own drawer, so the shared tab control is gone.
   // ──────────────────────────────────────────────────────────
-  const TabButton = ({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) => (
-    <button
-      type="button"
-      onClick={onClick}
-      style={{
-        width: '50%', textAlign: 'center', fontFamily: 'inherit', cursor: 'pointer',
-        padding: '14px 8px', fontSize: '13px', fontWeight: 600,
-        background: active ? '#F5F4F1' : '#fff',
-        color: active ? '#0A1E3D' : '#86868b',
-        borderWidth: '0', borderBottomWidth: '2px', borderStyle: 'solid',
-        borderBottomColor: active ? '#C5B783' : 'transparent',
-      }}
-    >
-      {label}
-    </button>
-  )
 
   // ──────────────────────────────────────────────────────────
   // Lock-to-unlock toggle (layout amendment 3) — a confirmation signal, not a
@@ -1987,27 +1986,18 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     </div>
   )
 
-  const controlPanelAccordion = (
-    <>
-      {/* Communities — static, always-visible, no collapse (matches mobile's
-          existing permanently-visible base-layer treatment; desktop no longer
-          diverges from it). */}
-      <div style={{ padding: '16px 16px 12px' }}>
-        <p style={{ fontSize: '13px', fontWeight: 600, color: '#0A1E3D', margin: '0 0 10px' }}>Your Communities</p>
-        {communitiesFrame}
-      </div>
-
-      {/* Lifestyle/Financials — tab switcher (layout amendment 2), same
-          mutual-exclusivity as the prior accordion, same shared activePanel state. */}
-      <div style={{ display: 'flex', borderTop: '0.5px solid rgba(0,0,0,0.08)', borderBottom: '0.5px solid rgba(0,0,0,0.08)' }}>
-        <TabButton label="Your Lifestyle" active={activePanel === 'lifestyle'} onClick={() => setActivePanel('lifestyle')} />
-        <TabButton label="Your Financials" active={activePanel === 'financials'} onClick={() => setActivePanel('financials')} />
-      </div>
-      <div>
-        {activePanel === 'lifestyle' ? lifestyleContent : financialsContent}
-      </div>
-      {nonNegotiablesSection}
-    </>
+  // Brief 3 — Ask Amy launcher is present per the prototype, but its glossary/Q&A
+  // content is deferred to Brief 7. For now the drawer opens this minimal placeholder.
+  const askAmyPlaceholder = (
+    <div style={{ padding: '20px 22px' }}>
+      <p style={{ fontSize: '12.5px', color: '#1d1d1f', lineHeight: 1.6, margin: '0 0 10px' }}>
+        <b style={{ color: '#0A1E3D' }}>Amy</b> is your relocation guide. She&rsquo;ll answer Texas
+        terms and home-buying-process basics right here.
+      </p>
+      <p style={{ fontSize: '11px', color: '#86868b', lineHeight: 1.6, margin: 0 }}>
+        Coming soon. For anything specific to your move, your Market Director is the person to ask.
+      </p>
+    </div>
   )
 
   // ──────────────────────────────────────────────────────────
@@ -2098,26 +2088,100 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         )
       })()}
 
-      {/* Two-zone layout: Adaptive Control Panel (40%) / Living Ledger (60%) */}
-      <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', minHeight: '100%' }}>
+      {/* Brief 3 — icon rail + summoned drawer shell (desktop) / bottom-bar + sheet
+          (mobile). Replaces the always-open ~40% control panel. The drawer is a flex
+          SIBLING of the canvas (push model), never an overlay, so it can never cover the
+          results. No-horizontal-scroll is guaranteed structurally two ways: (1) in this
+          flex row the child widths always sum to the row width — the rail is a fixed
+          132px, the drawer is flex-basis 0↔404px, and the canvas is flex:1 with
+          min-width:0, so as the drawer grows the canvas shrinks by the same amount (no
+          net horizontal growth); (2) overflow-x:hidden on the row clips any sub-pixel
+          transient during the width transition, so nothing can leak into WorkspacePanel's
+          implicit overflow-x:auto (CLAUDE.md §5). Because the width can never grow the
+          page, the push transition is safe to keep (no fade fallback needed). */}
+      <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', minHeight: '100%', overflowX: 'hidden' }}>
 
-        {/* ── ADAPTIVE CONTROL PANEL — 40% (desktop only) ── */}
+        {/* ── ICON RAIL — desktop only ── */}
         {!isMobile && (
-          <div style={{
-            width: '40%', flexShrink: 0,
-            background: '#fff',
-            display: 'flex', flexDirection: 'column',
+          <nav aria-label="Refine controls" style={{
+            width: '132px', flexShrink: 0, background: '#0A1E3D',
+            display: 'flex', flexDirection: 'column', padding: '16px 10px',
             position: 'sticky', top: 0, alignSelf: 'stretch',
-            overflow: 'hidden',
-            borderRight: '0.5px solid rgba(0,0,0,0.08)',
           }}>
-            <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
-              {controlPanelAccordion}
-            </div>
-          </div>
+            <p style={{ color: '#7F93AF', fontSize: '9px', letterSpacing: '0.6px', textTransform: 'uppercase', padding: '0 6px 6px', margin: 0 }}>Refine</p>
+            {RAIL_ITEMS.filter(i => i.group === 'refine').map(({ k, label, Icon }) => {
+              const active = openDrawer === k
+              return (
+                <button key={k} type="button" onClick={() => setOpenDrawer(active ? null : k)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '10px', width: '100%',
+                    border: 'none', background: active ? '#C5B783' : 'transparent',
+                    borderRadius: '10px', color: active ? '#0A1E3D' : '#B8C4D6',
+                    padding: '10px', marginBottom: '3px', textAlign: 'left', cursor: 'pointer',
+                    fontFamily: 'inherit', fontSize: '12.5px', fontWeight: 500, lineHeight: 1.15,
+                  }}>
+                  <Icon size={20} style={{ flexShrink: 0 }} />
+                  <span>{label}</span>
+                </button>
+              )
+            })}
+            <div style={{ marginTop: 'auto' }} />
+            <div style={{ height: '1px', background: 'rgba(255,255,255,0.12)', margin: '2px 4px 12px' }} />
+            <p style={{ color: '#7F93AF', fontSize: '9px', letterSpacing: '0.6px', textTransform: 'uppercase', padding: '0 6px 6px', margin: 0 }}>Learn</p>
+            {RAIL_ITEMS.filter(i => i.group === 'learn').map(({ k, label, Icon }) => {
+              const active = openDrawer === k
+              return (
+                <button key={k} type="button" onClick={() => setOpenDrawer(active ? null : k)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '10px', width: '100%',
+                    border: 'none', background: active ? '#C5B783' : 'transparent',
+                    borderRadius: '10px', color: active ? '#0A1E3D' : '#B8C4D6',
+                    padding: '10px', marginBottom: '3px', textAlign: 'left', cursor: 'pointer',
+                    fontFamily: 'inherit', fontSize: '12.5px', fontWeight: 500, lineHeight: 1.15,
+                  }}>
+                  <Icon size={20} style={{ flexShrink: 0 }} />
+                  <span>{label}</span>
+                </button>
+              )
+            })}
+          </nav>
         )}
 
-        {/* ── LIVING LEDGER — 60% (full width on mobile) ── */}
+        {/* ── SUMMONED DRAWER — desktop only; push model (flex sibling, never overlays) ── */}
+        {!isMobile && (
+          <aside style={{
+            flexShrink: 0,
+            flexBasis: openDrawer ? '404px' : '0px', width: openDrawer ? '404px' : '0px',
+            background: '#fff', overflow: 'hidden',
+            borderRight: openDrawer ? '0.5px solid rgba(0,0,0,0.1)' : 'none',
+            transition: 'width 0.28s cubic-bezier(0.4,0,0.2,1), flex-basis 0.28s cubic-bezier(0.4,0,0.2,1)',
+            position: 'sticky', top: 0, alignSelf: 'stretch',
+            display: 'flex', flexDirection: 'column',
+          }}>
+            {openDrawer && (
+              <div style={{ width: '404px', height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '20px 22px 14px', borderBottom: '0.5px solid rgba(0,0,0,0.1)', flexShrink: 0 }}>
+                  <div>
+                    <p style={{ margin: 0, fontSize: '17px', fontWeight: 600, color: '#0A1E3D' }}>{DRAWER_META[openDrawer].title}</p>
+                    <p style={{ margin: '3px 0 0', fontSize: '12px', color: '#86868b' }}>{DRAWER_META[openDrawer].subtitle}</p>
+                  </div>
+                  <button type="button" onClick={() => setOpenDrawer(null)} aria-label="Close"
+                    style={{ width: '30px', height: '30px', flexShrink: 0, borderRadius: '8px', border: '0.5px solid rgba(0,0,0,0.1)', background: '#fff', color: '#86868b', fontSize: '15px', lineHeight: 1, cursor: 'pointer' }}>
+                    ✕
+                  </button>
+                </div>
+                <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+                  {openDrawer === 'lifestyle' && lifestyleContent}
+                  {openDrawer === 'financials' && financialsContent}
+                  {openDrawer === 'nonneg' && nonNegotiablesSection}
+                  {openDrawer === 'guide' && askAmyPlaceholder}
+                </div>
+              </div>
+            )}
+          </aside>
+        )}
+
+        {/* ── RESULTS CANVAS (Living Ledger) — full width on mobile ── */}
         <div style={{ flex: 1, background: '#F2F1EE', minWidth: 0, padding: '16px', overflowY: 'auto', paddingBottom: isMobile ? '132px' : '16px' }}>
           {/* Persistent CTA, top-right — desktop only. Sticky within this column's
               own scroll container so it stays visible above Your Direction as the
@@ -2129,34 +2193,34 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
             </div>
           )}
           {livingLedgerSummaryCard}
-          {/* On desktop, Communities moved into the Control Panel accordion above.
-              On mobile there is no Control Panel — communities must stay the
-              permanently-visible base layer per Phase B's mobile spec, so it
-              renders here instead when isMobile. */}
-          {isMobile && communitiesFrame}
-          {/* Non-Negotiables (Phase E, Brief 1) — same always-visible-inline
-              treatment as Communities on mobile, per Phase 0 confirmation. */}
-          {isMobile && nonNegotiablesSection}
+          {/* Communities — ported verbatim inline into the results canvas (Brief 3
+              resolution #1), mirroring the existing mobile treatment. Lifestyle,
+              Financials and Non-Negotiables moved into the rail drawer; Communities
+              did NOT get its own drawer. Brief 4 does the real canvas restructure. */}
+          {communitiesFrame}
         </div>
       </div>
 
-      {/* ── MOBILE STICKY BOTTOM BAR + DRAWER ── */}
+      {/* ── MOBILE STICKY BOTTOM BAR + SUMMONED SHEET ── */}
       {isMobile && (
         <>
           <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 500, background: '#0A1E3D', borderTop: '0.5px solid rgba(255,255,255,0.15)' }}>
             <div style={{ display: 'flex' }}>
-              {(['lifestyle', 'financials'] as const).map(panel => (
-                <button key={panel} type="button"
-                  onClick={() => { setActivePanel(panel); setMobileDrawerOpen(true) }}
-                  style={{
-                    flex: 1, padding: '10px', fontSize: '12px', fontWeight: 500,
-                    background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-                    color: activePanel === panel ? '#C5B783' : 'rgba(255,255,255,0.55)',
-                    borderBottom: activePanel === panel ? '2px solid #C5B783' : '2px solid transparent',
-                  }}>
-                  {panel === 'lifestyle' ? 'Your Lifestyle' : 'Your Financials'}
-                </button>
-              ))}
+              {RAIL_ITEMS.map(({ k, label }) => {
+                const active = openDrawer === k
+                return (
+                  <button key={k} type="button"
+                    onClick={() => setOpenDrawer(active ? null : k)}
+                    style={{
+                      flex: 1, padding: '10px 4px', fontSize: '10px', fontWeight: 500, lineHeight: 1.2,
+                      background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                      color: active ? '#C5B783' : 'rgba(255,255,255,0.55)',
+                      borderBottom: active ? '2px solid #C5B783' : '2px solid transparent',
+                    }}>
+                    {label}
+                  </button>
+                )
+              })}
             </div>
             <div style={{ padding: '10px 16px 14px' }}>
               {ctaError && (
@@ -2184,9 +2248,9 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
             </div>
           </div>
 
-          {mobileDrawerOpen && (
+          {openDrawer && (
             <div
-              onClick={() => { setMobileDrawerOpen(false); setAdvancedAssumptionsOpen(false) }}
+              onClick={() => { setOpenDrawer(null); setAdvancedAssumptionsOpen(false) }}
               style={{
                 position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
                 zIndex: 600, display: 'flex', alignItems: 'flex-end',
@@ -2202,14 +2266,15 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px 0' }}>
                   <p style={{ fontSize: '13px', fontWeight: 500, color: '#0A1E3D', margin: 0 }}>
-                    {activePanel === 'lifestyle' ? 'Your Lifestyle' : advancedAssumptionsOpen ? 'Advanced Assumptions' : 'Your Financials'}
+                    {openDrawer === 'financials' && advancedAssumptionsOpen ? 'Advanced Assumptions' : DRAWER_META[openDrawer].title}
                   </p>
-                  <button type="button" onClick={() => { setMobileDrawerOpen(false); setAdvancedAssumptionsOpen(false) }}
+                  <button type="button" onClick={() => { setOpenDrawer(null); setAdvancedAssumptionsOpen(false) }}
                     style={{ fontSize: '13px', color: '#86868b', background: 'none', border: 'none', cursor: 'pointer' }}>
                     ✕ Close
                   </button>
                 </div>
-                {activePanel === 'lifestyle' ? lifestyleContent : (
+                {openDrawer === 'lifestyle' && lifestyleContent}
+                {openDrawer === 'financials' && (
                   advancedAssumptionsOpen ? (
                     <div style={{ padding: '12px 16px' }}>
                       <button type="button" onClick={() => setAdvancedAssumptionsOpen(false)}
@@ -2220,6 +2285,8 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                     </div>
                   ) : financialsContent
                 )}
+                {openDrawer === 'nonneg' && nonNegotiablesSection}
+                {openDrawer === 'guide' && askAmyPlaceholder}
               </div>
               <style>{`
                 @keyframes mm3-drawer-up {
