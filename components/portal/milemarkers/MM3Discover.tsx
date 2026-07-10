@@ -15,6 +15,37 @@ import { Lock, LockOpen, SlidersHorizontal, CircleDollarSign, ShieldCheck, Messa
 
 const ALL_KEYS = DNA_CATEGORIES.map(c => c.key) as (keyof DNAScores)[]
 
+// Brief 4, Checkpoint 1 — read-back dedupe. Resolves internally-inconsistent stored
+// priority data (a category recorded under multiple buckets) into exclusive membership,
+// precedence mustHaves > niceToHaves > notPriorities > unassigned (the first/highest
+// bucket a category appears in wins; it is dropped from all lower ones). Any ALL_KEYS
+// category missing from all four falls to unassigned so every category always renders
+// somewhere. Pure + read-path only — the write path is untouched; the deduped state
+// self-heals the stored row on the next debounced save.
+function dedupePriorityBuckets(
+  mh: (keyof DNAScores)[],
+  nh: (keyof DNAScores)[],
+  np: (keyof DNAScores)[],
+  ua: (keyof DNAScores)[],
+): { mustHaves: (keyof DNAScores)[]; niceToHaves: (keyof DNAScores)[]; notPriorities: (keyof DNAScores)[]; unassigned: (keyof DNAScores)[] } {
+  const seen = new Set<keyof DNAScores>()
+  const take = (arr: (keyof DNAScores)[]) => {
+    const out: (keyof DNAScores)[] = []
+    for (const k of arr) {
+      if (!ALL_KEYS.includes(k) || seen.has(k)) continue
+      seen.add(k)
+      out.push(k)
+    }
+    return out
+  }
+  const mustHaves = take(mh)
+  const niceToHaves = take(nh)
+  const notPriorities = take(np)
+  const unassigned = take(ua)
+  for (const k of ALL_KEYS) if (!seen.has(k)) unassigned.push(k)
+  return { mustHaves, niceToHaves, notPriorities, unassigned }
+}
+
 const RATE_DEFAULT = 6.5
 
 // Brief 3 — icon rail + summoned drawer shell. The rail replaces the always-open
@@ -284,6 +315,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const savingsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null) // Phase C2 Item 1
   const explanationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null) // Phase C2 Item 2 — auto-dismiss
   const hydratedRef = useRef(false) // Phase C2 Item 2 — suppress false "why changed" fires during initial DB/profile hydration
+  const prioritiesFromSandboxRef = useRef(false) // Brief 4 C1 — set true once the sandbox authoritatively hydrates priorities; blocks the quiz seed from refilling an emptied bucket
   const rankSnapshotRef = useRef<{
     topIds: string[]
     income: number
@@ -374,10 +406,27 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         // saved value" guard (sp.mustHaves?.length, etc.), so a brand-new user
         // with no sandbox_profile — or with these specific keys absent — still
         // falls through to the existing quiz-seed default path untouched.
-        if (sp.mustHaves?.length) setMustHaves(sp.mustHaves)
-        if (sp.niceToHaves?.length) setNiceToHaves(sp.niceToHaves)
-        if (sp.notPriorities?.length) setNotPriorities(sp.notPriorities)
-        if (sp.unassigned !== undefined) setUnassigned(sp.unassigned)
+        // Brief 4, Checkpoint 1 — SANDBOX-AUTHORITATIVE priority hydration. If the user
+        // has started sorting (any of the four sandbox arrays non-empty), the sandbox is
+        // the single source of truth: hydrate ALL FOUR buckets from it — INCLUDING the
+        // empty ones — deduped into exclusive membership, and latch
+        // prioritiesFromSandboxRef so the quiz seed (block below) can never repopulate a
+        // bucket the user deliberately emptied. The prior per-bucket `if (sp.x?.length)`
+        // guards were the defect: they skipped empty sandbox buckets, letting a stale
+        // quiz-seed Must Have survive after the user had cleared it. Write path unchanged;
+        // this deduped state self-heals the stored row on the next debounced save.
+        const spMH = sp.mustHaves ?? []
+        const spNH = sp.niceToHaves ?? []
+        const spNP = sp.notPriorities ?? []
+        const spUA = sp.unassigned ?? []
+        if (spMH.length || spNH.length || spNP.length || spUA.length) {
+          const d = dedupePriorityBuckets(spMH, spNH, spNP, spUA)
+          setMustHaves(d.mustHaves)
+          setNiceToHaves(d.niceToHaves)
+          setNotPriorities(d.notPriorities)
+          setUnassigned(d.unassigned)
+          prioritiesFromSandboxRef.current = true
+        }
         // Non-Negotiables (Phase E, Brief 1) — hydrated unconditionally, NOT
         // gated behind useSandboxPriorities. Root cause of the confirmed
         // persistence bug: sandbox_committed_at is only ever set by the final
@@ -465,15 +514,26 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // Seed from profile
   useEffect(() => {
     if (!profile) return
-    if (mustHaves.length === 0 && niceToHaves.length === 0) {
+    // Brief 4, Checkpoint 1 — the quiz seed must NOT run once the sandbox has
+    // authoritatively hydrated priorities (prioritiesFromSandboxRef); otherwise it could
+    // repopulate a bucket the user emptied in their sandbox. New users with no sandbox
+    // priority data still seed here exactly as before.
+    if (!prioritiesFromSandboxRef.current && mustHaves.length === 0 && niceToHaves.length === 0) {
       if (profile.mustHaves?.length > 0 || profile.niceToHaves?.length > 0 || profile.notPriorities?.length > 0) {
-        setMustHaves(profile.mustHaves ?? [])
-        setNiceToHaves(profile.niceToHaves ?? [])
-        setNotPriorities(profile.notPriorities ?? [])
         // profile.unassignedPriorities is the real, quiz-sourced "never touched" set
         // (fix_priorities_and_interim_weighting). Falls back to [] for pre-fix accounts,
-        // whose old merged notPriorities data can't be retroactively split.
-        setUnassigned(profile.unassignedPriorities ?? [])
+        // whose old merged notPriorities data can't be retroactively split. Deduped for
+        // exclusive membership + completeness on the same read path as the sandbox case.
+        const d = dedupePriorityBuckets(
+          profile.mustHaves ?? [],
+          profile.niceToHaves ?? [],
+          profile.notPriorities ?? [],
+          profile.unassignedPriorities ?? [],
+        )
+        setMustHaves(d.mustHaves)
+        setNiceToHaves(d.niceToHaves)
+        setNotPriorities(d.notPriorities)
+        setUnassigned(d.unassigned)
       } else {
         setNiceToHaves(ALL_KEYS)
         setUnassigned([])
@@ -2125,8 +2185,11 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                 </button>
               )
             })}
-            <div style={{ marginTop: 'auto' }} />
-            <div style={{ height: '1px', background: 'rgba(255,255,255,0.12)', margin: '2px 4px 12px' }} />
+            {/* Brief 4 C1 — the Learn group renders directly under Refine. The prior
+                marginTop:auto spacer pushed it to the bottom of the rail, which stretches
+                to full page-content height (WorkspacePanel scroll model), dropping the Ask
+                Amy launcher far below the fold so it never appeared. */}
+            <div style={{ height: '1px', background: 'rgba(255,255,255,0.12)', margin: '10px 4px 12px' }} />
             <p style={{ color: '#7F93AF', fontSize: '9px', letterSpacing: '0.6px', textTransform: 'uppercase', padding: '0 6px 6px', margin: 0 }}>Learn</p>
             {RAIL_ITEMS.filter(i => i.group === 'learn').map(({ k, label, Icon }) => {
               const active = openDrawer === k
