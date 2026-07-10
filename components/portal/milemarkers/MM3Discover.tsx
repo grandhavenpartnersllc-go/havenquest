@@ -342,21 +342,33 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           : Infinity
         const useSandboxPriorities = sandboxAge <= SANDBOX_MAX_AGE_MS
         if (useSandboxPriorities) {
-          if (sp.mustHaves?.length) setMustHaves(sp.mustHaves)
-          if (sp.niceToHaves?.length) setNiceToHaves(sp.niceToHaves)
-          if (sp.notPriorities?.length) setNotPriorities(sp.notPriorities)
-          if (sp.unassigned !== undefined) setUnassigned(sp.unassigned)
           setSandboxTouched(true)
         }
+        // Lifestyle-priority buckets (Brief: fix priorities hydration) —
+        // hydrated unconditionally, NOT gated behind useSandboxPriorities,
+        // extending the identical fix already proven below for Non-Negotiables.
+        // sandbox_committed_at is only ever set by the final handleCommit()
+        // flow, so for anyone still mid-session (the overwhelming majority of
+        // MM3 sandbox edits) sandboxAge evaluates to Infinity and
+        // useSandboxPriorities is false — this whole block never ran, silently
+        // dropping the user's saved priorities back to defaults on every
+        // reload. Each setter keeps its original "does this key have a real
+        // saved value" guard (sp.mustHaves?.length, etc.), so a brand-new user
+        // with no sandbox_profile — or with these specific keys absent — still
+        // falls through to the existing quiz-seed default path untouched.
+        if (sp.mustHaves?.length) setMustHaves(sp.mustHaves)
+        if (sp.niceToHaves?.length) setNiceToHaves(sp.niceToHaves)
+        if (sp.notPriorities?.length) setNotPriorities(sp.notPriorities)
+        if (sp.unassigned !== undefined) setUnassigned(sp.unassigned)
         // Non-Negotiables (Phase E, Brief 1) — hydrated unconditionally, NOT
         // gated behind useSandboxPriorities. Root cause of the confirmed
         // persistence bug: sandbox_committed_at is only ever set by the final
         // handleCommit() flow, so for anyone still mid-session (the overwhelming
         // majority of MM3 sandbox edits) sandboxAge evaluates to Infinity and
         // useSandboxPriorities is false — this whole block never ran, silently
-        // dropping nonNegotiables (and, on the same logic, would drop the
-        // priorities fields above too for an uncommitted sandbox — a separate,
-        // pre-existing risk flagged in this fix's report, not addressed here).
+        // dropping nonNegotiables (and, on the same logic, dropped the
+        // priorities fields above too for an uncommitted sandbox — now fixed
+        // above with the identical pattern).
         // Non-Negotiables has no established 30-day-staleness requirement of its
         // own, so the correct minimal fix is to hydrate it whenever
         // sandbox_profile exists at all, matching interestRateOverride's
