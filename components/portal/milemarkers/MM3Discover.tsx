@@ -330,6 +330,8 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // getComparePartnerId below, available from both the hero tabs and the expanded
   // 5-10 list.
   const [compareCityId, setCompareCityId] = useState<string | null>(null)
+  // Presentation-only — the inline "How Texas compares" accordion (default collapsed); saves nothing.
+  const [comparisonOpen, setComparisonOpen] = useState(false)
 
   // Brief 6 C1 — Consultation confirm-gate. Replaces the old pin+lock gate
   // (lifestyleLocked/financialsLocked). `confirmed` is the single gate that unlocks
@@ -1596,10 +1598,16 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
 
         return (
           <div>
-            <p style={{ fontSize: '9px', fontWeight: 500, letterSpacing: '0.1em', color: '#C5B783', textTransform: 'uppercase', margin: '0 0 8px' }}>
-              Texas vs. {originLabel}{originData && originState ? `, ${originState}` : ''}
-            </p>
-            <div style={{ overflowX: 'auto' }}>
+            {/* Comparison accordion (layout-only) — collapsible header; the table markup
+                below is byte-for-byte unchanged, gated behind comparisonOpen via display. */}
+            <button type="button" onClick={() => setComparisonOpen(v => !v)}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', marginBottom: comparisonOpen ? '8px' : 0 }}>
+              <span style={{ fontSize: '9px', fontWeight: 500, letterSpacing: '0.1em', color: '#C5B783', textTransform: 'uppercase' }}>
+                How Texas compares to {originLabel}{originData && originState ? `, ${originState}` : ''}
+              </span>
+              <span style={{ fontSize: '10px', color: '#C5B783', flexShrink: 0 }}>{comparisonOpen ? '▾' : '▸'}</span>
+            </button>
+            <div style={{ overflowX: 'auto', display: comparisonOpen ? 'block' : 'none' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr>
