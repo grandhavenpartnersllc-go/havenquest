@@ -156,20 +156,6 @@ function parseHomePrice(s: string): number {
   return parseFloat(clean) || 0
 }
 
-function rankPillLabel(idx: number): string {
-  if (idx === 0) return '⭐ Top pick'
-  if (idx === 1) return 'Runner-up'
-  if (idx === 2) return 'Strong alt'
-  return `#${idx + 1}`
-}
-
-function communityCharLabel(env: number): string {
-  if (env <= 3) return 'Urban'
-  if (env <= 6) return 'Suburban'
-  if (env <= 8) return 'Small Town'
-  return 'Rural'
-}
-
 // Declutter pass — replaces the old persistent, dismiss-only "Your Direction"
 // banner. Owns its own fade timer (starts fading ~400ms before the parent's
 // 4000ms auto-dismiss actually clears rankChangeExplanation) so the trigger
@@ -753,7 +739,9 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const afLabel = (s: 'comfortable' | 'moderate' | 'stretched') =>
     s === 'comfortable' ? 'Comfortable' : s === 'moderate' ? 'Moderate' : 'Stretched'
 
-  const refCityData = getAllCities().find(c => c.id === pinnedCities[0])
+  // Brief 4 C2 — Buying Power now references the FOCUSED city (effectiveSelectedKey),
+  // not pinnedCities[0], so "Monthly est." tracks the hero card the user is focused on.
+  const refCityData = getAllCities().find(c => c.id === effectiveSelectedKey)
   const refPrice = refCityData?.housing.medianHomePrice ?? 385000
   const refBalance = Math.max(0, refPrice - totalFunds)
   const refRate = loanTerm === 15 ? Math.max(interestRate - 0.5, 2) : interestRate
@@ -1003,9 +991,10 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // per Craig's confirmed display decision.
   const lessImportant = notPriorities
 
-  const selectedMatch = rankedCities.find(m => m.location.id === effectiveSelectedKey)
-  const selectedRankIdx = rankedCities.findIndex(m => m.location.id === effectiveSelectedKey)
-  const displayedCities = showAllCities ? rankedCities.slice(0, 10) : rankedCities.slice(0, 5)
+  // Brief 4 C2 — ranks 4–10 for the browse expander (rankedCities minus the hero-3 set).
+  // The old selectedMatch/selectedRankIdx/displayedCities (community preview + 1–10 list)
+  // are removed with that UI; the hero-3 + browse read rankedCities directly.
+  const browseCities = rankedCities.filter(m => !heroSlots.includes(m.location.id)).slice(0, 7)
 
   // ──────────────────────────────────────────────────────────
   // Brief 3 — the Lifestyle/Financials tab switcher was removed: each panel is now
@@ -1387,116 +1376,6 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // ──────────────────────────────────────────────────────────
   const livingLedgerSummaryCard = (
     <div style={{ background: '#0A1E3D', borderRadius: '10px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '10px' }}>
-      {/* Brief 4 C2 — "Your Top Matches" hero-3 (replaces the single-focal "Your Direction"
-          tab card). Clicking a card body FOCUSES it (selectedKey → drives Buying Power +
-          comparison + preview); the report opens only via the deliberate "See summary
-          report" link (openReport → FullReport modal). Transitional: still inside the navy
-          summary card this checkpoint; step 3 re-parents it into the light matches area. */}
-      <div>
-        <p style={{ fontSize: '9px', fontWeight: 500, letterSpacing: '0.1em', color: '#C5B783', textTransform: 'uppercase', margin: '0 0 8px' }}>
-          Your Top Matches
-        </p>
-
-        {heroSlots.length === 0 ? (
-          <div style={{ border: '0.5px dashed rgba(197,183,131,0.3)', borderRadius: '8px', padding: '10px 12px' }}>
-            <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.6)', fontStyle: 'italic', margin: 0 }}>
-              No matches available yet.
-            </p>
-          </div>
-        ) : (
-          <>
-            {rankChangeExplanation && (
-              <div style={{ marginBottom: '8px' }}><RankChangeAlert message={rankChangeExplanation} /></div>
-            )}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
-              {heroSlots.map((id, i) => {
-                const match = findMatch(id)
-                const cityLoc = match?.location ?? getAllCities().find(c => c.id === id)
-                if (!cityLoc) return null
-                const status = afStatus(cityLoc.housing.medianHomePrice)
-                const badge = status === 'comfortable'
-                  ? { bg: '#E8F5EE', color: '#1a6b35' }
-                  : status === 'moderate'
-                  ? { bg: '#FAEEDA', color: '#633806' }
-                  : { bg: '#FCEBEB', color: '#A32D2D' }
-                const isPinnedHero = pinnedCities.includes(cityLoc.id)
-                const isFocused = cityLoc.id === effectiveSelectedKey
-                const cityBalance = Math.max(0, cityLoc.housing.medianHomePrice - totalFunds)
-                const cityRate = loanTerm === 15 ? Math.max(interestRate - 0.5, 2) : interestRate
-                const cityMonthly = calcMonthly(cityBalance, cityRate, loanTerm)
-                const comparePartner = getComparePartnerId(cityLoc.id)
-                return (
-                  <div key={id} onClick={() => focusCity(cityLoc.id)}
-                    style={{
-                      background: '#fff', borderRadius: '12px', overflow: 'hidden', cursor: 'pointer',
-                      border: isFocused ? '1.5px solid #C5B783' : '0.5px solid rgba(0,0,0,0.1)',
-                      boxShadow: isFocused ? '0 0 0 2px rgba(197,183,131,0.45)' : 'none',
-                      display: 'flex', flexDirection: 'column',
-                    }}>
-                    {/* Photo + rank/pin/compare */}
-                    <div style={{ height: '92px', position: 'relative', background: '#2D4A6B', display: 'flex', alignItems: 'flex-end', padding: '8px 10px' }}>
-                      <Image
-                        src={cityLoc.cityImageUrl ?? `/images/cities/${cityLoc.id}.jpg`}
-                        alt={cityLoc.name} fill style={{ objectFit: 'cover' }}
-                        onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
-                      />
-                      <span style={{ position: 'absolute', top: '7px', left: '8px', fontSize: '9px', fontWeight: 600, color: '#fff', background: 'rgba(10,30,61,0.72)', padding: '2px 7px', borderRadius: '10px' }}>
-                        {isPinnedHero ? '★ Pinned' : `Match ${i + 1}`}
-                      </span>
-                      <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', gap: '4px' }}>
-                        {comparePartner && (
-                          <button type="button" className="mm3-secondary-action" aria-label="Compare"
-                            onClick={e => { e.stopPropagation(); setCompareCityId(cityLoc.id) }}
-                            style={{ width: '22px', height: '22px', borderRadius: '7px', border: 'none', background: 'rgba(255,255,255,0.9)', color: '#0A1E3D', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'inherit' }}>
-                            ⇄
-                          </button>
-                        )}
-                        <button type="button" className="mm3-secondary-action" aria-label={isPinnedHero ? 'Unpin' : 'Pin'}
-                          onClick={e => { e.stopPropagation(); isPinnedHero ? unpinCity(cityLoc.id) : pinCity(cityLoc.id) }}
-                          disabled={!isPinnedHero && pinnedCities.length >= 3}
-                          style={{
-                            width: '22px', height: '22px', borderRadius: '7px', border: 'none',
-                            background: isPinnedHero ? '#C5B783' : 'rgba(255,255,255,0.9)', color: '#0A1E3D', fontSize: '11px',
-                            cursor: (!isPinnedHero && pinnedCities.length >= 3) ? 'not-allowed' : 'pointer',
-                            opacity: (!isPinnedHero && pinnedCities.length >= 3) ? 0.5 : 1,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'inherit',
-                          }}>
-                          {isPinnedHero ? '★' : '☆'}
-                        </button>
-                      </div>
-                      <p style={{ position: 'relative', margin: 0, fontSize: '13px', fontWeight: 600, color: '#fff', textShadow: '0 1px 4px rgba(0,0,0,0.5)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {cityLoc.name}
-                      </p>
-                    </div>
-                    {/* Body — match %, fit badge, median + monthly, See summary report */}
-                    <div style={{ padding: '9px 10px 10px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                        <span style={{ fontSize: '16px', fontWeight: 700, color: '#0A1E3D', lineHeight: 1 }}>
-                          {match ? match.matchScore : '—'}<span style={{ fontSize: '9px', fontWeight: 500, color: '#86868b' }}>% match</span>
-                        </span>
-                        <span style={{ fontSize: '9.5px', fontWeight: 600, padding: '2px 7px', borderRadius: '10px', background: badge.bg, color: badge.color }}>
-                          {afLabel(status)}
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#86868b', marginBottom: '7px' }}>
-                        <span>Median <b style={{ color: '#1d1d1f', fontWeight: 600 }}>{fmtK(cityLoc.housing.medianHomePrice)}</b></span>
-                        <span>~<b style={{ color: '#1d1d1f', fontWeight: 600 }}>${cityMonthly.toLocaleString()}</b>/mo</span>
-                      </div>
-                      <button type="button"
-                        onClick={e => { e.stopPropagation(); if (match) openReport(match) }}
-                        disabled={!match}
-                        style={{ background: 'none', border: 'none', padding: 0, fontFamily: 'inherit', fontSize: '10px', color: '#0076B6', cursor: match ? 'pointer' : 'default' }}>
-                        ▾ See summary report
-                      </button>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </>
-        )}
-      </div>
-
       {/* PRIORITIES SUMMARY */}
       {(mustHaves.length > 0 || niceToHaves.length > 0) && (
         <div>
@@ -1697,247 +1576,215 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // (Lifestyle/Financials panels that used to hang off this frame have moved to
   // the Adaptive Control Panel, so this frame is simpler than it was pre-rebuild).
   // ──────────────────────────────────────────────────────────
-  const communitiesFrame = (
-    <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: '10px', overflow: 'hidden' }}>
-      <div style={{ padding: '12px 12px 0' }}>
-        <p style={{ fontSize: '10px', color: '#888', margin: '0 0 10px' }}>Click any city to preview. Pin up to 3.</p>
+  // Brief 4 C2 — matches area: metro pills (re-parented from the removed communitiesFrame)
+  // + the "Your Top Matches" hero-3 + a ranks 4-10 browse expander. Replaces the old
+  // communitiesFrame (1-10 list + preview card). Buying Power + comparison stay in the navy
+  // summary card (Brief 5). No save/persistence handler changed.
+  const matchesArea = (
+    <div style={{ marginBottom: '10px' }}>
+      {/* Metro pills */}
+      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '12px' }}>
+        {METRO_FILTERS.map(f => {
+          const active = selectedMetro === f.value
+          const pct = f.value !== 'State' ? metroTopScores[f.value] : undefined
+          return (
+            <button key={f.value} type="button"
+              onClick={() => handleMetroChange(f.value)}
+              style={{
+                padding: '5px 12px', borderRadius: '20px', fontSize: '11px',
+                fontWeight: active ? 500 : 400,
+                background: active ? '#0A1E3D' : '#fff',
+                color: active ? '#fff' : '#1d1d1f',
+                border: `0.5px solid ${active ? '#0A1E3D' : 'rgba(0,0,0,0.12)'}`,
+                cursor: 'pointer', fontFamily: 'inherit',
+              }}>{f.label}{pct != null ? ` · ${pct}%` : ''}</button>
+          )
+        })}
       </div>
-      <div style={{ display: 'flex', minHeight: '280px', alignItems: 'stretch', borderTop: '0.5px solid #F0EEE9' }}>
 
-        {/* Left: metro pills + city list (52%) */}
-        <div style={{ width: '52%', borderRight: '0.5px solid #E8E6E2', display: 'flex', flexDirection: 'column' }}>
-          {/* Metro pills */}
-          <div style={{ padding: '10px 12px 8px', display: 'flex', gap: '5px', flexWrap: 'wrap', borderBottom: '0.5px solid #F0EEE9' }}>
-            {METRO_FILTERS.map(f => {
-              const active = selectedMetro === f.value
-              const pct = f.value !== 'State' ? metroTopScores[f.value] : undefined
+      {/* Heading */}
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '10px', gap: '10px' }}>
+        <p style={{ fontSize: '15px', fontWeight: 600, color: '#0A1E3D', margin: 0 }}>Your Top Matches</p>
+        <span style={{ fontSize: '11px', color: '#86868b' }}>Click a card to see how it fits your money.</span>
+      </div>
+
+      {/* Hero-3 — card body click FOCUSES (focusCity -> selectedKey, drives Buying Power +
+          comparison); the report opens only via the deliberate "See summary report" link. */}
+      {heroSlots.length === 0 ? (
+        <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: '10px', padding: '16px' }}>
+          <p style={{ fontSize: '12px', color: '#86868b', margin: 0 }}>No matches available yet.</p>
+        </div>
+      ) : (
+        <>
+          {rankChangeExplanation && (
+            <div style={{ marginBottom: '10px' }}><RankChangeAlert message={rankChangeExplanation} /></div>
+          )}
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '12px' }}>
+            {heroSlots.map((id, i) => {
+              const match = findMatch(id)
+              const cityLoc = match?.location ?? getAllCities().find(c => c.id === id)
+              if (!cityLoc) return null
+              const status = afStatus(cityLoc.housing.medianHomePrice)
+              const badge = status === 'comfortable'
+                ? { bg: '#E8F5EE', color: '#1a6b35' }
+                : status === 'moderate'
+                ? { bg: '#FAEEDA', color: '#633806' }
+                : { bg: '#FCEBEB', color: '#A32D2D' }
+              const isPinnedHero = pinnedCities.includes(cityLoc.id)
+              const isFocused = cityLoc.id === effectiveSelectedKey
+              const cityBalance = Math.max(0, cityLoc.housing.medianHomePrice - totalFunds)
+              const cityRate = loanTerm === 15 ? Math.max(interestRate - 0.5, 2) : interestRate
+              const cityMonthly = calcMonthly(cityBalance, cityRate, loanTerm)
+              const comparePartner = getComparePartnerId(cityLoc.id)
               return (
-                <button key={f.value} type="button"
-                  onClick={() => handleMetroChange(f.value)}
+                <div key={id} onClick={() => focusCity(cityLoc.id)}
                   style={{
-                    padding: '3px 9px', borderRadius: '20px', fontSize: '10px',
-                    fontWeight: active ? 500 : 400,
-                    background: active ? 'rgba(197,183,131,0.18)' : 'transparent',
-                    color: active ? '#8a6f00' : '#6B6A65',
-                    border: `0.5px solid ${active ? '#C5B783' : '#D0CEC8'}`,
-                    cursor: 'pointer',
-                  }}>{f.label}{pct != null ? ` · ${pct}%` : ''}</button>
+                    background: '#fff', borderRadius: '12px', overflow: 'hidden', cursor: 'pointer',
+                    border: isFocused ? '1.5px solid #C5B783' : '0.5px solid rgba(0,0,0,0.1)',
+                    boxShadow: isFocused ? '0 0 0 2px rgba(197,183,131,0.45)' : 'none',
+                    display: 'flex', flexDirection: 'column',
+                  }}>
+                  {/* Photo + rank/pin/compare */}
+                  <div style={{ height: '92px', position: 'relative', background: '#2D4A6B', display: 'flex', alignItems: 'flex-end', padding: '8px 10px' }}>
+                    <Image
+                      src={cityLoc.cityImageUrl ?? `/images/cities/${cityLoc.id}.jpg`}
+                      alt={cityLoc.name} fill style={{ objectFit: 'cover' }}
+                      onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+                    />
+                    <span style={{ position: 'absolute', top: '7px', left: '8px', fontSize: '9px', fontWeight: 600, color: '#fff', background: 'rgba(10,30,61,0.72)', padding: '2px 7px', borderRadius: '10px' }}>
+                      {isPinnedHero ? '★ Pinned' : `Match ${i + 1}`}
+                    </span>
+                    <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', gap: '4px' }}>
+                      {comparePartner && (
+                        <button type="button" className="mm3-secondary-action" aria-label="Compare"
+                          onClick={e => { e.stopPropagation(); setCompareCityId(cityLoc.id) }}
+                          style={{ width: '22px', height: '22px', borderRadius: '7px', border: 'none', background: 'rgba(255,255,255,0.9)', color: '#0A1E3D', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'inherit' }}>
+                          ⇄
+                        </button>
+                      )}
+                      <button type="button" className="mm3-secondary-action" aria-label={isPinnedHero ? 'Unpin' : 'Pin'}
+                        onClick={e => { e.stopPropagation(); isPinnedHero ? unpinCity(cityLoc.id) : pinCity(cityLoc.id) }}
+                        disabled={!isPinnedHero && pinnedCities.length >= 3}
+                        style={{
+                          width: '22px', height: '22px', borderRadius: '7px', border: 'none',
+                          background: isPinnedHero ? '#C5B783' : 'rgba(255,255,255,0.9)', color: '#0A1E3D', fontSize: '11px',
+                          cursor: (!isPinnedHero && pinnedCities.length >= 3) ? 'not-allowed' : 'pointer',
+                          opacity: (!isPinnedHero && pinnedCities.length >= 3) ? 0.5 : 1,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'inherit',
+                        }}>
+                        {isPinnedHero ? '★' : '☆'}
+                      </button>
+                    </div>
+                    <p style={{ position: 'relative', margin: 0, fontSize: '13px', fontWeight: 600, color: '#fff', textShadow: '0 1px 4px rgba(0,0,0,0.5)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {cityLoc.name}
+                    </p>
+                  </div>
+                  {/* Body — match %, fit badge, median + monthly, See summary report */}
+                  <div style={{ padding: '9px 10px 10px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '16px', fontWeight: 700, color: '#0A1E3D', lineHeight: 1 }}>
+                        {match ? match.matchScore : '—'}<span style={{ fontSize: '9px', fontWeight: 500, color: '#86868b' }}>% match</span>
+                      </span>
+                      <span style={{ fontSize: '9.5px', fontWeight: 600, padding: '2px 7px', borderRadius: '10px', background: badge.bg, color: badge.color }}>
+                        {afLabel(status)}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#86868b', marginBottom: '7px' }}>
+                      <span>Median <b style={{ color: '#1d1d1f', fontWeight: 600 }}>{fmtK(cityLoc.housing.medianHomePrice)}</b></span>
+                      <span>~<b style={{ color: '#1d1d1f', fontWeight: 600 }}>${cityMonthly.toLocaleString()}</b>/mo</span>
+                    </div>
+                    <button type="button"
+                      onClick={e => { e.stopPropagation(); if (match) openReport(match) }}
+                      disabled={!match}
+                      style={{ background: 'none', border: 'none', padding: 0, fontFamily: 'inherit', fontSize: '10px', color: '#0076B6', cursor: match ? 'pointer' : 'default' }}>
+                      ▾ See summary report
+                    </button>
+                  </div>
+                </div>
               )
             })}
           </div>
+        </>
+      )}
 
-          {/* City list */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '8px 12px 12px' }}>
-            {rankedCities.length === 0 ? (
-              <p style={{ fontSize: '12px', color: '#86868b', margin: '12px 0' }}>No communities in this metro.</p>
-            ) : (
-              <>
-                {displayedCities.map(match => {
-                  const city = match.location
-                  const isPinned = pinnedCities.includes(city.id)
-                  const isSelected = city.id === effectiveSelectedKey
-                  const status = afStatus(city.housing.medianHomePrice)
-                  const overallIdx = rankedCities.findIndex(m => m.location.id === city.id)
-
-                  let rowBg = 'transparent'
-                  let rowBorder = 'transparent'
-                  if (isPinned) { rowBg = '#FEFDF8'; rowBorder = '#C5B783' }
-                  else if (isSelected) { rowBg = '#F0F3F8'; rowBorder = '#0A1E3D' }
-
-                  return (
-                    <div key={city.id} onClick={() => setSelectedKey(city.id)}
-                      style={{
-                        background: rowBg, border: `0.5px solid ${rowBorder}`,
-                        borderRadius: '6px', padding: '7px 8px',
-                        display: 'flex', alignItems: 'center', gap: '6px',
-                        marginBottom: '6px', cursor: 'pointer',
-                      }}
-                      onMouseEnter={e => { if (!isSelected && !isPinned) (e.currentTarget as HTMLDivElement).style.background = '#F5F5F7' }}
-                      onMouseLeave={e => { if (!isSelected && !isPinned) (e.currentTarget as HTMLDivElement).style.background = 'transparent' }}
-                    >
-                      <span style={{ fontSize: '9px', color: '#86868b', width: '18px', flexShrink: 0 }}>#{overallIdx + 1}</span>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontSize: '11px', color: '#1d1d1f', fontWeight: 500, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{city.name}</p>
-                        <p style={{ fontSize: '9px', color: '#86868b', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{city.metroUsed}</p>
-                      </div>
-                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: afColor(status), flexShrink: 0 }} />
-                      <span style={{ fontSize: '10px', color: '#C5B783', fontWeight: 500, flexShrink: 0 }}>{match.matchScore}%</span>
-                      <button type="button"
-                        className="mm3-secondary-action"
-                        onClick={e => { e.stopPropagation(); isPinned ? unpinCity(city.id) : pinCity(city.id) }}
-                        disabled={!isPinned && pinnedCities.length >= 3}
-                        style={{
-                          fontSize: '9px', color: isPinned ? '#C5B783' : '#0076B6',
-                          padding: '2px 5px', borderRadius: '8px',
-                          border: isPinned ? '0.5px solid rgba(197,183,131,0.4)' : '0.5px solid #C8E0F5',
-                          background: isPinned ? 'rgba(197,183,131,0.1)' : '#F0F7FF',
-                          cursor: (!isPinned && pinnedCities.length >= 3) ? 'not-allowed' : 'pointer',
-                          flexShrink: 0,
-                          opacity: isPinned ? 1 : (pinnedCities.length >= 3 ? 0.38 : 0.55),
-                        }}>
-                        {isPinned ? '✓' : 'Pin'}
-                      </button>
-                      {getComparePartnerId(city.id) && (
-                        <button type="button"
-                          className="mm3-secondary-action"
-                          onClick={e => { e.stopPropagation(); setCompareCityId(city.id) }}
-                          style={{
-                            fontSize: '9px', color: '#C5B783', opacity: 0.55,
-                            padding: '2px 5px', borderRadius: '8px',
-                            border: '0.5px solid rgba(197,183,131,0.35)',
-                            background: 'rgba(197,183,131,0.1)',
-                            cursor: 'pointer', flexShrink: 0, fontFamily: 'inherit',
-                          }}>
-                          Compare
-                        </button>
-                      )}
-                      {!isPinned && (
-                        <button type="button"
-                          className="mm3-secondary-action"
-                          onClick={e => { e.stopPropagation(); removeCity(city.id) }}
-                          style={{
-                            fontSize: '9px', color: '#9a9a9a', opacity: 0.55,
-                            padding: '2px 5px', borderRadius: '8px',
-                            border: '0.5px solid rgba(0,0,0,0.12)',
-                            background: 'rgba(0,0,0,0.03)',
-                            cursor: 'pointer', flexShrink: 0, fontFamily: 'inherit',
-                          }}>
-                          Remove
-                        </button>
-                      )}
+      {/* Browse expander — ranks 4-10. Row click focuses; pin promotes into the hero set. */}
+      {browseCities.length > 0 && (
+        <div style={{ marginTop: '12px', background: '#fff', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: '10px', overflow: 'hidden' }}>
+          <button type="button" onClick={() => setShowAllCities(v => !v)}
+            style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff', border: 'none', padding: '12px 16px', cursor: 'pointer', fontFamily: 'inherit' }}>
+            <span style={{ fontSize: '13px', fontWeight: 600, color: '#0A1E3D' }}>
+              <span style={{ color: '#C5B783', marginRight: '7px' }}>{showAllCities ? '▾' : '▸'}</span>
+              Browse your full ranked field — <span style={{ color: '#0076B6' }}>{browseCities.length} more</span>
+            </span>
+            <span style={{ fontSize: '11px', color: '#86868b' }}>ranks 4–{3 + browseCities.length}</span>
+          </button>
+          {showAllCities && (
+            <div style={{ borderTop: '0.5px solid #F0EEE9' }}>
+              <p style={{ fontSize: '11px', color: '#86868b', padding: '8px 16px 2px', margin: 0 }}>Tap any to focus it; pin one to pull it into your Top Matches.</p>
+              {browseCities.map(match => {
+                const city = match.location
+                const isPinned = pinnedCities.includes(city.id)
+                const isFocused = city.id === effectiveSelectedKey
+                const status = afStatus(city.housing.medianHomePrice)
+                const rank = rankedCities.findIndex(m => m.location.id === city.id) + 1
+                const cityBalance = Math.max(0, city.housing.medianHomePrice - totalFunds)
+                const cityRate = loanTerm === 15 ? Math.max(interestRate - 0.5, 2) : interestRate
+                const cityMonthly = calcMonthly(cityBalance, cityRate, loanTerm)
+                return (
+                  <div key={city.id} onClick={() => focusCity(city.id)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 16px',
+                      borderTop: '0.5px solid #F0EEE9', cursor: 'pointer',
+                      background: isFocused ? '#F0F3F8' : isPinned ? '#FEFDF8' : 'transparent',
+                    }}>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#86868b', width: '22px', flexShrink: 0 }}>#{rank}</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: '13px', fontWeight: 500, color: '#1d1d1f', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{city.name}</p>
+                      <p style={{ fontSize: '11px', color: '#86868b', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{city.metroUsed}</p>
                     </div>
-                  )
-                })}
-
-                {rankedCities.length > 5 && !showAllCities && (
-                  <div onClick={() => setShowAllCities(true)}
-                    style={{ textAlign: 'center', padding: '6px', fontSize: '10px', color: '#0076B6', cursor: 'pointer', borderTop: '0.5px solid #E8E6E2', marginTop: '4px' }}>
-                    Show more ↓
-                  </div>
-                )}
-                {showAllCities && (
-                  <div onClick={() => setShowAllCities(false)}
-                    style={{ textAlign: 'center', padding: '6px', fontSize: '10px', color: '#0076B6', cursor: 'pointer', borderTop: '0.5px solid #E8E6E2', marginTop: '4px' }}>
-                    Show less ↑
-                  </div>
-                )}
-                {removedCities.length > 0 && (
-                  <div style={{ textAlign: 'center', padding: '6px', fontSize: '9px', color: '#9a9a9a' }}>
-                    {removedCities.length} removed from view —{' '}
-                    <span onClick={() => setRemovedCities([])} style={{ color: '#0076B6', cursor: 'pointer' }}>
-                      Restore all
-                    </span>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Right: preview card (48%) */}
-        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          {selectedMatch ? (() => {
-            const city = selectedMatch.location
-            const isPinned = pinnedCities.includes(city.id)
-            const status = afStatus(city.housing.medianHomePrice)
-            const statusBadge = status === 'comfortable'
-              ? { bg: '#E8F5EE', color: '#1a6b35' }
-              : status === 'moderate'
-              ? { bg: '#FAEEDA', color: '#633806' }
-              : { bg: '#FCEBEB', color: '#A32D2D' }
-
-            return (
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                {/* Top: 16:9 photo, full width */}
-                <div style={{ width: '100%', aspectRatio: '16 / 9', flexShrink: 0, position: 'relative', overflow: 'hidden', background: '#2D4A6B' }}>
-                  <Image
-                    src={city.cityImageUrl ?? `/images/cities/${city.id}.jpg`}
-                    alt={city.name} fill style={{ objectFit: 'cover' }}
-                    onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
-                  />
-                  <div style={{ position: 'absolute', bottom: '8px', left: '8px', display: 'flex', gap: '5px', alignItems: 'center' }}>
-                    <span style={{ fontSize: '9px', fontWeight: 500, background: '#C5B783', color: '#0A1E3D', padding: '2px 6px', borderRadius: '4px' }}>
-                      {rankPillLabel(selectedRankIdx)}
-                    </span>
-                    <span style={{ fontSize: '11px', fontWeight: 500, color: '#fff' }}>
-                      {selectedMatch.matchScore}%
-                    </span>
-                  </div>
-                </div>
-
-                {/* Below: info, stacked full width */}
-                <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                  <div>
-                    <p style={{ fontSize: '13px', fontWeight: 500, color: '#0A1E3D', margin: 0 }}>{city.name}</p>
-                    <p style={{ fontSize: '9px', color: '#86868b', margin: '1px 0 0' }}>{city.metroUsed} · {city.county} County</p>
-                  </div>
-
-                  <p style={{
-                    fontSize: '10px', color: '#3a3a3a', lineHeight: 1.5, margin: 0,
-                    display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden',
-                  } as React.CSSProperties}>
-                    {city.description}
-                  </p>
-
-                  {/* 2×2 stat grid */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
-                    {[
-                      { label: 'Schools',   value: city.school?.teaRating ? `${city.school.teaRating} rated` : '—' },
-                      { label: 'Med home',  value: fmtK(city.housing.medianHomePrice) },
-                      { label: 'Safety',    value: city.scores.safety >= 7 ? 'Low risk' : city.scores.safety >= 4 ? 'Moderate' : 'Higher risk' },
-                      { label: 'Community', value: communityCharLabel(city.personality.environment) },
-                    ].map(stat => (
-                      <div key={stat.label} style={{ background: '#F5F4F1', borderRadius: '5px', padding: '4px 6px' }}>
-                        <p style={{ fontSize: '8px', color: '#86868b', textTransform: 'uppercase', letterSpacing: '0.04em', margin: '0 0 1px' }}>{stat.label}</p>
-                        <p style={{ fontSize: '10px', color: '#1d1d1f', fontWeight: 500, margin: 0 }}>{stat.value}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Budget fit */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '10px', color: '#86868b' }}>Budget fit</span>
-                    <span style={{ background: statusBadge.bg, color: statusBadge.color, borderRadius: '12px', padding: '2px 8px', fontSize: '9px', fontWeight: 500 }}>
-                      {afLabel(status)}
-                    </span>
-                  </div>
-
-                  {/* Buttons */}
-                  <div style={{ display: 'flex', gap: '5px', marginTop: 'auto' }}>
-                    <button type="button"
-                      onClick={() => isPinned ? unpinCity(city.id) : pinCity(city.id)}
+                    <span style={{ fontSize: '12px', color: '#86868b', whiteSpace: 'nowrap', flexShrink: 0 }}>~${cityMonthly.toLocaleString()}/mo</span>
+                    <span style={{ fontSize: '13px', fontWeight: 600, color: '#0A1E3D', flexShrink: 0 }}>{match.matchScore}%</span>
+                    <button type="button" className="mm3-secondary-action"
+                      onClick={e => { e.stopPropagation(); isPinned ? unpinCity(city.id) : pinCity(city.id) }}
                       disabled={!isPinned && pinnedCities.length >= 3}
                       style={{
-                        flex: 1, background: isPinned ? 'rgba(197,183,131,0.15)' : '#0A1E3D',
-                        color: isPinned ? '#C5B783' : '#fff',
-                        border: isPinned ? '0.5px solid rgba(197,183,131,0.4)' : 'none',
-                        borderRadius: '6px', padding: '6px', fontSize: '9px', fontWeight: 500,
+                        fontSize: '10px', color: isPinned ? '#0A1E3D' : '#0076B6', flexShrink: 0,
+                        padding: '3px 8px', borderRadius: '8px',
+                        border: isPinned ? '0.5px solid rgba(197,183,131,0.5)' : '0.5px solid #C8E0F5',
+                        background: isPinned ? '#C5B783' : '#F0F7FF',
                         cursor: (!isPinned && pinnedCities.length >= 3) ? 'not-allowed' : 'pointer',
-                        opacity: !isPinned && pinnedCities.length >= 3 ? 0.5 : 1,
-                        fontFamily: 'inherit', textAlign: 'center',
+                        opacity: isPinned ? 1 : (pinnedCities.length >= 3 ? 0.4 : 1),
+                        fontFamily: 'inherit',
                       }}>
-                      {isPinned ? 'Pinned ✓' : 'Pin'}
+                      {isPinned ? '★ Pinned' : 'Pin'}
                     </button>
-                    <button type="button"
-                      onClick={() => setReportMatch(selectedMatch)}
-                      style={{
-                        flex: 1, border: '0.5px solid #0A1E3D', borderRadius: '6px',
-                        padding: '6px', fontSize: '9px', color: '#0A1E3D',
-                        background: '#fff', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'center',
-                      }}>
-                      Full report →
+                    {getComparePartnerId(city.id) && (
+                      <button type="button" className="mm3-secondary-action"
+                        onClick={e => { e.stopPropagation(); setCompareCityId(city.id) }}
+                        style={{ fontSize: '10px', color: '#0A1E3D', flexShrink: 0, padding: '3px 8px', borderRadius: '8px', border: '0.5px solid rgba(0,0,0,0.15)', background: '#fff', cursor: 'pointer', fontFamily: 'inherit' }}>
+                        Compare
+                      </button>
+                    )}
+                    <button type="button" className="mm3-secondary-action"
+                      onClick={e => { e.stopPropagation(); removeCity(city.id) }}
+                      style={{ fontSize: '10px', color: '#9a9a9a', flexShrink: 0, padding: '3px 8px', borderRadius: '8px', border: '0.5px solid rgba(0,0,0,0.12)', background: 'rgba(0,0,0,0.03)', cursor: 'pointer', fontFamily: 'inherit' }}>
+                      Remove
                     </button>
                   </div>
-                </div>
-              </div>
-            )
-          })() : (
-            <div style={{ padding: '12px' }}>
-              <p style={{ fontSize: '11px', color: '#86868b', margin: 0 }}>Select a city to preview.</p>
+                )
+              })}
             </div>
           )}
         </div>
-      </div>
+      )}
+
+      {/* Removed-from-view restore (preserved from the old communities list) */}
+      {removedCities.length > 0 && (
+        <div style={{ textAlign: 'center', padding: '8px', fontSize: '10px', color: '#9a9a9a' }}>
+          {removedCities.length} removed from view —{' '}
+          <span onClick={() => setRemovedCities([])} style={{ color: '#0076B6', cursor: 'pointer' }}>Restore all</span>
+        </div>
+      )}
     </div>
   )
 
@@ -2241,12 +2088,11 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
               {ctaBlock}
             </div>
           )}
+          {/* Brief 4 C2 — matches area (metro pills + Your Top Matches hero-3 + browse
+              expander) on top, then the financial summary card below (Buying Power +
+              comparison stay per Brief 5; the hero-3 was lifted out of it into here). */}
+          {matchesArea}
           {livingLedgerSummaryCard}
-          {/* Communities — ported verbatim inline into the results canvas (Brief 3
-              resolution #1), mirroring the existing mobile treatment. Lifestyle,
-              Financials and Non-Negotiables moved into the rail drawer; Communities
-              did NOT get its own drawer. Brief 4 does the real canvas restructure. */}
-          {communitiesFrame}
         </div>
       </div>
 
