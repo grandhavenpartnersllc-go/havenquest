@@ -196,41 +196,41 @@ function RankChangeAlert({ message }: { message: string }) {
   )
 }
 
+// Drawer-polish — personality slider restyled to the prototype .slrow layout:
+// a "Left ↔ Right" line above (with optional desktop-only hover-def via the CP-money
+// .mm3-help CSS) + end labels below. value/onChange preserved byte-for-byte.
 const SliderRow = ({
   leftLabel,
   rightLabel,
   value,
   onChange,
+  def,
 }: {
   leftLabel: string
   rightLabel: string
   value: number
   onChange: (v: number) => void
+  def?: string
 }) => (
-  <div style={{
-    display: 'grid',
-    gridTemplateColumns: '80px 1fr 80px',
-    alignItems: 'center',
-    gap: '8px',
-    marginBottom: '10px',
-  }}>
-    <span style={{ fontSize: '10px', color: '#888', textAlign: 'right', lineHeight: 1.3 }}>
-      {leftLabel}
-    </span>
-    <div style={{ position: 'relative', height: '20px', display: 'flex', alignItems: 'center' }}>
-      <input
-        type="range"
-        min={1}
-        max={10}
-        step={1}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        style={{ width: '100%', accentColor: '#0A1E3D', cursor: 'pointer' }}
-      />
+  <div style={{ margin: '14px 0' }}>
+    <div style={{ fontSize: '12px', fontWeight: 500, color: '#1c2430', marginBottom: '4px' }}>
+      {def
+        ? <span className="mm3-help">{leftLabel} ↔ {rightLabel}<span className="mm3-help-tip">{def}</span></span>
+        : <>{leftLabel} ↔ {rightLabel}</>}
     </div>
-    <span style={{ fontSize: '10px', color: '#888', textAlign: 'left', lineHeight: 1.3 }}>
-      {rightLabel}
-    </span>
+    <input
+      type="range"
+      min={1}
+      max={10}
+      step={1}
+      value={value}
+      onChange={(e) => onChange(Number(e.target.value))}
+      style={{ width: '100%', accentColor: '#0076B6', cursor: 'pointer' }}
+    />
+    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#b3b0a6', marginTop: '1px' }}>
+      <span>{leftLabel}</span>
+      <span>{rightLabel}</span>
+    </div>
   </div>
 )
 
@@ -298,7 +298,6 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const [isMobile, setIsMobile] = useState(false)
   const [advancedAssumptionsOpen, setAdvancedAssumptionsOpen] = useState(false) // Declutter pass — Interest rate + Loan term moved behind this
   const [nonNegotiables, setNonNegotiables] = useState<NonNegotiablesState>(DEFAULT_NON_NEGOTIABLES)
-  const [nonNegotiablesOpen, setNonNegotiablesOpen] = useState(false) // inline accordion, not a modal/drawer — must stay always-visible per Communities' treatment
 
   // Compare (Phase C1 Item 6, restructured Phase D) — reuses the existing CompareModal/createComparisonReportDocument
   // logic as-is. Pairing is generalized across the 3-slot hero rotation via
@@ -1059,9 +1058,9 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         <p style={{ fontSize: '11px', color: '#6B6A65', lineHeight: 1.5, margin: 0 }}>{archetypeInfo.why}</p>
       </div>
 
-      <p style={{ fontSize: '10px', color: '#6B6A65', margin: '0 0 8px' }}>Click to move between columns</p>
+      <p style={{ fontSize: '10px', color: '#6a7180', margin: '0 0 8px' }}>Click to move between columns</p>
 
-      <p style={{ fontSize: '10px', color: '#6B6A65', margin: '0 0 8px' }}>
+      <p style={{ fontSize: '10px', color: '#6a7180', margin: '0 0 8px' }}>
         <span style={{ color: mustHaves.length >= 3 ? '#1a6b35' : undefined, fontWeight: mustHaves.length >= 3 ? 500 : undefined }}>
           {mustHaves.length}/3 Must Haves{mustHaves.length >= 3 ? ' ✓' : ''}
         </span>
@@ -1154,17 +1153,18 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           Your Personality
         </p>
         {([
-          { key: 'growthProfile', left: 'Established', right: 'Up-and-Coming' },
-          { key: 'lifestyleOrientation', left: 'Practical', right: 'Upscale & Aspirational' },
-          { key: 'environment', left: 'Urban', right: 'Rural' },
-          { key: 'pace', left: 'Relaxed', right: 'Fast-paced' },
-        ] as const).map(({ key, left, right }) => (
+          { key: 'growthProfile', left: 'Established', right: 'Up-and-Coming', def: 'Settled, established neighborhoods versus newer, fast-growing areas still coming into their own.' },
+          { key: 'lifestyleOrientation', left: 'Practical', right: 'Upscale & Aspirational', def: 'Down-to-earth, value-minded communities versus more polished, higher-end surroundings.' },
+          { key: 'environment', left: 'Urban', right: 'Rural', def: 'Walkable city density versus quiet, spread-out country.' },
+          { key: 'pace', left: 'Relaxed', right: 'Fast-paced', def: 'A laid-back everyday tempo versus a busy, high-energy one.' },
+        ] as const).map(({ key, left, right, def }) => (
           <SliderRow
             key={key}
             leftLabel={left}
             rightLabel={right}
             value={personalityPreference[key]}
             onChange={(v) => handlePersonalityChange(key, v)}
+            def={isMobile ? undefined : def}
           />
         ))}
       </div>
@@ -1842,71 +1842,66 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   }
 
   const nonNegotiablesSection = (
-    <div style={{ padding: '16px 16px 18px', borderTop: '0.5px solid rgba(0,0,0,0.08)' }}>
-      <button type="button" onClick={() => setNonNegotiablesOpen(v => !v)}
-        style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}>
-        <p style={{ fontSize: '13px', fontWeight: 600, color: '#0A1E3D', margin: 0 }}>Non-Negotiables</p>
-        <span style={{ fontSize: '10px', color: '#86868b' }}>
-          {nonNegSetCount > 0 ? `${nonNegSetCount} set` : 'None set'} {nonNegotiablesOpen ? '▲' : '▼'}
-        </span>
-      </button>
+    <div style={{ padding: '14px 18px' }}>
+      {/* Drawer-polish — always-expanded (prototype has no collapse); restyled to .nn rows.
+          Handlers (updateNonNegotiables / setNonNegotiables / debounceSavePriorities) unchanged. */}
+      <p style={{ fontSize: '13px', fontWeight: 600, color: '#0A1E3D', margin: '0 0 2px' }}>
+        Non-Negotiables{nonNegSetCount > 0 && <span style={{ fontWeight: 400, color: '#6a7180' }}> · {nonNegSetCount} set</span>}
+      </p>
+      <p style={{ fontSize: '11px', color: '#6a7180', margin: '0 0 8px', lineHeight: 1.5 }}>Hard filters — we only show communities that clear them.</p>
 
-      {nonNegotiablesOpen && (
-        <div style={{ marginTop: '12px' }}>
-          {nonNegItems.map(item => (
-            <div key={item.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0', borderBottom: '0.5px solid rgba(0,0,0,0.06)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '5px', minWidth: 0 }}>
-                <span style={{ fontSize: '11px', color: '#1d1d1f' }}>{item.label}</span>
-                <span title={item.help} style={helpIconStyle}>?</span>
-              </div>
-              <NonNegToggle active={nonNegotiables[item.key]} onClick={() => updateNonNegotiables({ [item.key]: !nonNegotiables[item.key] })} />
-            </div>
-          ))}
-
-          {/* School rating threshold */}
-          <div style={{ padding: '8px 0', borderBottom: '0.5px solid rgba(0,0,0,0.06)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '4px' }}>
-              <span style={{ fontSize: '11px', color: '#1d1d1f' }}>Minimum school rating</span>
-              <span title="Excludes communities whose TEA school rating is below your chosen minimum." style={helpIconStyle}>?</span>
-            </div>
-            <select value={nonNegotiables.schoolMinGrade ?? ''}
-              onChange={e => updateNonNegotiables({ schoolMinGrade: (e.target.value || null) as NonNegotiablesState['schoolMinGrade'] })}
-              style={{ width: '100%', fontSize: '11px', padding: '4px 6px', borderRadius: '6px', border: '0.5px solid #D0CEC8', fontFamily: 'inherit', background: '#fff' }}>
-              <option value="">No minimum</option>
-              <option value="A">A or better</option>
-              <option value="B">B or better</option>
-              <option value="C">C or better</option>
-              <option value="D">D or better</option>
-            </select>
+      {nonNegItems.map(item => (
+        <div key={item.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 0', borderBottom: '1px solid #E5E3DC', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+            <span style={{ fontSize: '12.5px', color: '#1c2430' }}>{item.label}</span>
+            <span title={item.help} style={helpIconStyle}>?</span>
           </div>
-
-          {/* Property tax threshold */}
-          <div style={{ padding: '8px 0', borderBottom: '0.5px solid rgba(0,0,0,0.06)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '4px' }}>
-              <span style={{ fontSize: '11px', color: '#1d1d1f' }}>Maximum property tax rate</span>
-              <span title="Excludes communities whose property tax rate is above your chosen maximum." style={helpIconStyle}>?</span>
-            </div>
-            <select value={nonNegotiables.propertyTaxMaxPct ?? ''}
-              onChange={e => updateNonNegotiables({ propertyTaxMaxPct: e.target.value ? parseFloat(e.target.value) : null })}
-              style={{ width: '100%', fontSize: '11px', padding: '4px 6px', borderRadius: '6px', border: '0.5px solid #D0CEC8', fontFamily: 'inherit', background: '#fff' }}>
-              <option value="">No maximum</option>
-              <option value="0.015">Under 1.5%</option>
-              <option value="0.02">Under 2.0%</option>
-              <option value="0.025">Under 2.5%</option>
-            </select>
-          </div>
-
-          {/* Anything else — MD-context note only, never touches filtering */}
-          <div style={{ marginTop: '10px' }}>
-            <p style={{ fontSize: '10px', color: '#86868b', margin: '0 0 3px' }}>Anything else? Shared with your Market Director — doesn't affect matching.</p>
-            <textarea value={nonNegotiables.anythingElse}
-              onChange={e => setNonNegotiables(prev => ({ ...prev, anythingElse: e.target.value }))}
-              onBlur={() => debounceSavePriorities(mustHaves, niceToHaves, notPriorities, unassigned, nonNegotiables)}
-              rows={2}
-              style={{ width: '100%', fontSize: '11px', padding: '6px 8px', borderRadius: '6px', border: '0.5px solid #D0CEC8', fontFamily: 'inherit', resize: 'vertical' }} />
-          </div>
+          <NonNegToggle active={nonNegotiables[item.key]} onClick={() => updateNonNegotiables({ [item.key]: !nonNegotiables[item.key] })} />
         </div>
-      )}
+      ))}
+
+      {/* School rating threshold — .nn + .thresh */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 0', borderBottom: '1px solid #E5E3DC', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+          <span style={{ fontSize: '12.5px', color: '#1c2430' }}>Minimum school rating</span>
+          <span title="Excludes communities whose TEA school rating is below your chosen minimum." style={helpIconStyle}>?</span>
+        </div>
+        <select value={nonNegotiables.schoolMinGrade ?? ''}
+          onChange={e => updateNonNegotiables({ schoolMinGrade: (e.target.value || null) as NonNegotiablesState['schoolMinGrade'] })}
+          style={{ fontSize: '12px', padding: '5px 8px', borderRadius: '7px', border: '1px solid #dcdad2', fontFamily: 'inherit', background: '#fff', color: '#1c2430', flexShrink: 0 }}>
+          <option value="">No minimum</option>
+          <option value="A">A or better</option>
+          <option value="B">B or better</option>
+          <option value="C">C or better</option>
+          <option value="D">D or better</option>
+        </select>
+      </div>
+
+      {/* Property tax threshold — .nn + .thresh */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 0', borderBottom: '1px solid #E5E3DC', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+          <span style={{ fontSize: '12.5px', color: '#1c2430' }}>Maximum property tax rate</span>
+          <span title="Excludes communities whose property tax rate is above your chosen maximum." style={helpIconStyle}>?</span>
+        </div>
+        <select value={nonNegotiables.propertyTaxMaxPct ?? ''}
+          onChange={e => updateNonNegotiables({ propertyTaxMaxPct: e.target.value ? parseFloat(e.target.value) : null })}
+          style={{ fontSize: '12px', padding: '5px 8px', borderRadius: '7px', border: '1px solid #dcdad2', fontFamily: 'inherit', background: '#fff', color: '#1c2430', flexShrink: 0 }}>
+          <option value="">No maximum</option>
+          <option value="0.015">Under 1.5%</option>
+          <option value="0.02">Under 2.0%</option>
+          <option value="0.025">Under 2.5%</option>
+        </select>
+      </div>
+
+      {/* Anything else — MD-context note only (.mdnote), never touches filtering */}
+      <div style={{ marginTop: '12px' }}>
+        <p style={{ fontSize: '11px', color: '#0076B6', fontStyle: 'italic', margin: '0 0 4px' }}>Anything else? Shared with your Market Director — doesn&rsquo;t affect matching.</p>
+        <textarea value={nonNegotiables.anythingElse}
+          onChange={e => setNonNegotiables(prev => ({ ...prev, anythingElse: e.target.value }))}
+          onBlur={() => debounceSavePriorities(mustHaves, niceToHaves, notPriorities, unassigned, nonNegotiables)}
+          rows={2}
+          style={{ width: '100%', fontSize: '12px', padding: '7px 9px', borderRadius: '7px', border: '1px solid #dcdad2', fontFamily: 'inherit', resize: 'vertical', color: '#1c2430' }} />
+      </div>
     </div>
   )
 
