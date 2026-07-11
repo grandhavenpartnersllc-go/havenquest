@@ -11,7 +11,7 @@ import { createClient } from '../../../lib/supabase/client'
 import { lookupZipCityState } from '../../../utils/zipLookup'
 import { txColIndex, txSafety, txPropertyTax, txJobMarket, txClimateV2 } from '../../../utils/txComparisonStats'
 import CompareModal from '../../results/CompareModal'
-import { Lock, LockOpen, SlidersHorizontal, CircleDollarSign, ShieldCheck, MessageCircle } from 'lucide-react'
+import { SlidersHorizontal, CircleDollarSign, ShieldCheck, MessageCircle } from 'lucide-react'
 
 const ALL_KEYS = DNA_CATEGORIES.map(c => c.key) as (keyof DNAScores)[]
 
@@ -291,11 +291,13 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // 5-10 list.
   const [compareCityId, setCompareCityId] = useState<string | null>(null)
 
-  // Lock-to-unlock (layout amendment 3) — UI-only state, NOT persisted to the DB
-  // per Craig's explicit scope note. A confirmation signal, not a restriction:
-  // locking does not disable editing the section.
-  const [lifestyleLocked, setLifestyleLocked] = useState(false)
-  const [financialsLocked, setFinancialsLocked] = useState(false)
+  // Brief 6 C1 — Consultation confirm-gate. Replaces the old pin+lock gate
+  // (lifestyleLocked/financialsLocked). `confirmed` is the single gate that unlocks
+  // Advance; `summaryOpen` drives the review modal; `reconfirmNudge` is the one-time
+  // "your choices changed — reconfirm" hint after an edit invalidates a confirmation.
+  const [confirmed, setConfirmed] = useState(false)
+  const [summaryOpen, setSummaryOpen] = useState(false)
+  const [reconfirmNudge, setReconfirmNudge] = useState(false)
 
   const priorityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const incomeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -917,10 +919,6 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
       setCtaError('Pin at least one community before scheduling your consultation.')
       return
     }
-    if (!lifestyleLocked || !financialsLocked) {
-      setCtaError('Lock your Lifestyle and Financials preferences before scheduling your consultation.')
-      return
-    }
     setCtaError(null)
     setCommitting(true)
     try {
@@ -972,19 +970,19 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     }
   }
 
-  // Schedule a Consultation gating (layout amendment 3) — genuinely AND, not
-  // either/or: needs a pinned community AND both sections locked. Confirmed by
-  // Craig. Shared by both the desktop (top-right) and mobile CTA.
+  // Brief 6 C1 — the confirm-gate replaces the old pin+lock gate. Only a pinned city
+  // is needed to open the confirm summary; `confirmed` (set in the modal) is what
+  // unlocks Advance.
   const hasPinnedCity = pinnedCities.length > 0
-  const bothLocked = lifestyleLocked && financialsLocked
-  const canSchedule = hasPinnedCity && bothLocked
-  const scheduleHint = !hasPinnedCity && !bothLocked
-    ? 'Pin at least one community and lock your preferences first'
-    : !hasPinnedCity
-    ? 'Pin at least one community first'
-    : !bothLocked
-    ? 'Lock your Lifestyle and Financials preferences first'
-    : null
+
+  // Honesty guard — any edit to a summary input after confirming silently un-confirms
+  // and re-grays Advance, so the reviewed summary always matches the screen. Self-
+  // guarded: confirming changes only `confirmed`/`summaryOpen` (not these deps), so it
+  // never clears itself; on mount `confirmed` is false, so initial hydration is a no-op.
+  useEffect(() => {
+    if (confirmed) { setConfirmed(false); setReconfirmNudge(true) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mustHaves, niceToHaves, notPriorities, unassigned, nonNegotiables, proceeds, savings, incomeVal, interestRate, loanTerm, isSelling, pinnedCities, personalityPreference])
 
   // "Would Be Nice" shows only genuine quiz/sandbox picks — never-touched categories
   // (fix_priorities_and_interim_weighting) are not surfaced anywhere in this panel,
@@ -1002,26 +1000,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // ──────────────────────────────────────────────────────────
 
   // ──────────────────────────────────────────────────────────
-  // Lock-to-unlock toggle (layout amendment 3) — a confirmation signal, not a
-  // restriction: toggling locked does not disable the section underneath it,
-  // the user can still freely view/edit either way. UI-only, not persisted.
-  // ──────────────────────────────────────────────────────────
-  const LockToggle = ({ locked, onClick }: { locked: boolean; onClick: () => void }) => (
-    <button
-      type="button"
-      onClick={onClick}
-      style={{
-        display: 'flex', alignItems: 'center', gap: '5px', fontFamily: 'inherit', cursor: 'pointer',
-        fontSize: '10px', fontWeight: 500, padding: '4px 9px', borderRadius: '12px',
-        background: locked ? 'rgba(197,183,131,0.15)' : '#F5F4F1',
-        color: locked ? '#8a6f00' : '#86868b',
-        border: `0.5px solid ${locked ? 'rgba(197,183,131,0.4)' : 'rgba(0,0,0,0.1)'}`,
-      }}
-    >
-      {locked ? <Lock size={11} /> : <LockOpen size={11} />}
-      {locked ? 'Locked' : 'Lock this in'}
-    </button>
-  )
+  // Brief 6 C1 — LockToggle removed; the old lock gate is replaced by the confirm gate.
 
   // ──────────────────────────────────────────────────────────
   // Non-Negotiables toggle switch (Phase E, Brief 1) — small reusable control
@@ -1049,10 +1028,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // ──────────────────────────────────────────────────────────
   const lifestyleContent = (
     <div style={{ padding: '12px 16px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '0 0 8px' }}>
-        <p style={{ fontSize: '10px', color: '#6B6A65', margin: 0 }}>Click to move between columns</p>
-        <LockToggle locked={lifestyleLocked} onClick={() => setLifestyleLocked(v => !v)} />
-      </div>
+      <p style={{ fontSize: '10px', color: '#6B6A65', margin: '0 0 8px' }}>Click to move between columns</p>
 
       <p style={{ fontSize: '10px', color: '#6B6A65', margin: '0 0 8px' }}>
         <span style={{ color: mustHaves.length >= 3 ? '#1a6b35' : undefined, fontWeight: mustHaves.length >= 3 ? 500 : undefined }}>
@@ -1169,10 +1145,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // ──────────────────────────────────────────────────────────
   const financialsContent = (
     <div style={{ padding: '12px 16px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '0 0 10px' }}>
-        <p style={{ fontSize: '10px', color: '#888', margin: 0 }}>Adjust to update buying power live</p>
-        <LockToggle locked={financialsLocked} onClick={() => setFinancialsLocked(v => !v)} />
-      </div>
+      <p style={{ fontSize: '10px', color: '#888', margin: '0 0 10px' }}>Adjust to update buying power live</p>
 
       {/* Phase C2 Item 4 — Exposed Baselines banner. Fixed reference point, never
           updates as fields below are edited (see baselineBudget/baselineMonthly). */}
@@ -1335,34 +1308,44 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   )
 
   // ──────────────────────────────────────────────────────────
-  // CTA (Schedule a Consultation) — ported verbatim, unchanged.
+  // Brief 6 C1 — top consultation gate: "Confirm your choices" + "Advance".
+  // Sticky at the top of the Living Ledger (desktop); the mobile bottom bar carries
+  // the same two controls. Both share the `confirmed`/`summaryOpen` gate state.
   // ──────────────────────────────────────────────────────────
-  // Persistent top-right CTA (layout amendment 3) — moved out of the bottom of
-  // the left column into a sticky block at the top of the Living Ledger
-  // (desktop only; mobile's CTA stays in its own fixed bottom bar, untouched in
-  // placement, but shares this same canSchedule/scheduleHint gating).
   const ctaBlock = (
-    <div style={{ flexShrink: 0, padding: '12px 16px', background: '#fff', borderRadius: '10px', border: '0.5px solid rgba(0,0,0,0.1)', marginBottom: '10px' }}>
+    <div style={{ flexShrink: 0, padding: '12px 14px', background: '#0A1E3D', borderRadius: '10px', border: '0.5px solid rgba(0,0,0,0.1)', marginBottom: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
       {ctaError && (
-        <p style={{ fontSize: '10px', color: '#D9463A', margin: '0 0 6px', textAlign: 'center', lineHeight: 1.4 }}>
-          {ctaError}
+        <p style={{ fontSize: '10px', color: '#FF6B6B', margin: 0, textAlign: 'center', lineHeight: 1.4 }}>{ctaError}</p>
+      )}
+      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <button type="button" onClick={() => { setReconfirmNudge(false); setSummaryOpen(true) }} disabled={!hasPinnedCity}
+          style={{
+            flex: 1, background: confirmed ? 'rgba(197,183,131,0.18)' : 'transparent',
+            color: hasPinnedCity ? '#C5B783' : 'rgba(197,183,131,0.4)',
+            border: `1px solid ${hasPinnedCity ? '#C5B783' : 'rgba(197,183,131,0.3)'}`,
+            borderRadius: '8px', padding: '10px', fontWeight: 600, fontSize: '12.5px',
+            cursor: hasPinnedCity ? 'pointer' : 'not-allowed', fontFamily: 'inherit',
+          }}>
+          {confirmed ? '✓ Choices confirmed' : 'Confirm your choices'}
+        </button>
+        <button type="button" onClick={handleCommit} disabled={committing || !confirmed}
+          style={{
+            flex: 1, background: confirmed ? '#C5B783' : '#2a3d5c', color: confirmed ? '#0A1E3D' : '#8194ad',
+            border: 'none', borderRadius: '8px', padding: '10px', fontWeight: 600, fontSize: '12.5px',
+            cursor: (committing || !confirmed) ? 'not-allowed' : 'pointer',
+            boxShadow: confirmed ? '0 0 0 3px rgba(197,183,131,0.30)' : 'none', fontFamily: 'inherit',
+          }}>
+          {committing ? 'Saving…' : 'Advance to your free consultation →'}
+        </button>
+      </div>
+      {!ctaError && !hasPinnedCity && (
+        <p style={{ fontSize: '9px', color: 'rgba(255,255,255,0.5)', textAlign: 'center', margin: 0, lineHeight: 1.4 }}>
+          Pin at least one community to confirm your choices.
         </p>
       )}
-      <button
-        type="button" onClick={handleCommit} disabled={committing || !canSchedule}
-        style={{
-          width: '100%', background: '#C5B783', color: '#0A1E3D',
-          border: 'none', borderRadius: '8px', padding: '12px',
-          fontWeight: 500, fontSize: '14px',
-          cursor: (committing || !canSchedule) ? 'not-allowed' : 'pointer',
-          opacity: (committing || !canSchedule) ? 0.5 : 1, fontFamily: 'inherit',
-        }}
-      >
-        {committing ? 'Saving…' : 'Schedule a Consultation →'}
-      </button>
-      {!ctaError && scheduleHint && (
-        <p style={{ fontSize: '9px', color: 'rgba(0,0,0,0.42)', textAlign: 'center', margin: '5px 0 0', lineHeight: 1.4 }}>
-          {scheduleHint}
+      {!ctaError && hasPinnedCity && reconfirmNudge && !confirmed && (
+        <p style={{ fontSize: '9px', color: '#C5B783', textAlign: 'center', margin: 0, lineHeight: 1.4 }}>
+          Your choices changed — reconfirm before advancing.
         </p>
       )}
     </div>
@@ -1931,6 +1914,114 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         </div>
       )}
 
+      {/* Brief 6 C1 — "Confirm your choices" review summary. Honest framing: this is what
+          the Market Director reviews at the consultation; nothing is sent or emailed here. */}
+      {summaryOpen && (() => {
+        const labelsFor = (keys: (keyof DNAScores)[]): string[] =>
+          keys.map(k => DNA_CATEGORIES.find(c => c.key === k)?.label).filter((l): l is string => Boolean(l))
+        const mustLabels = labelsFor(mustHaves)
+        const impLabels = labelsFor(niceToHaves)
+        const niceLabels = labelsFor(notPriorities)
+        const moneyRows: [string, string][] = [
+          ['Household income', incomeDisplay || (incomeVal ? fmtCurrency(String(incomeVal)) : '—')],
+          ['Toward down payment', totalFunds > 0 ? `${fmtK(totalFunds)}${isSelling ? ' (incl. home-sale proceeds)' : ''}` : '—'],
+          ['Rate · term (assumed)', `${interestRate}% · ${loanTerm} yr`],
+          ['Est. monthly', refMonthly > 0 ? `$${refMonthly.toLocaleString()}/mo` : '—'],
+        ]
+        const perRows: [string, number][] = [
+          ['Established ↔ Up-and-coming', personalityPreference.growthProfile],
+          ['Practical ↔ Upscale', personalityPreference.lifestyleOrientation],
+          ['Urban ↔ Rural', personalityPreference.environment],
+          ['Relaxed ↔ Fast-paced', personalityPreference.pace],
+        ]
+        const nnActive: string[] = []
+        if (nonNegotiables.crimeSafety) nnActive.push('Safe communities')
+        if (nonNegotiables.notWalkable) nnActive.push('Walkable')
+        if (nonNegotiables.medicalAccess) nnActive.push('Near medical care')
+        if (nonNegotiables.schoolMinGrade) nnActive.push(`Schools ${nonNegotiables.schoolMinGrade}+`)
+        if (nonNegotiables.propertyTaxMaxPct) nnActive.push(`Property tax ≤ ${(nonNegotiables.propertyTaxMaxPct * 100).toFixed(1)}%`)
+        if (nonNegotiables.hoaStrict) nnActive.push('No strict HOA (MD note)')
+        const secH: React.CSSProperties = { margin: '0 0 9px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#a48f4e' }
+        const chip: React.CSSProperties = { background: '#EFEEE9', border: '1px solid #dcdad2', borderRadius: '20px', padding: '3px 10px', fontSize: '12px', color: '#1c2430' }
+        return (
+          <div onClick={() => setSummaryOpen(false)}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(10,30,61,0.58)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', overflowY: 'auto' }}>
+            <div onClick={e => e.stopPropagation()}
+              style={{ background: '#fff', width: '100%', maxWidth: '620px', maxHeight: '88vh', overflowY: 'auto', borderRadius: '16px', boxShadow: '0 30px 80px rgba(10,30,61,0.4)' }}>
+              <div style={{ background: 'linear-gradient(120deg,#0A1E3D,#0d284f)', color: '#fff', padding: '20px 24px' }}>
+                <h2 style={{ margin: '0 0 4px', fontSize: '19px', fontWeight: 600 }}>Review your relocation summary</h2>
+                <p style={{ margin: 0, fontSize: '12.5px', color: '#c7d2e2', lineHeight: 1.5 }}>
+                  This is what your Market Director will review with you at your consultation. Take a look, then confirm.
+                </p>
+              </div>
+              <div style={{ padding: '20px 24px' }}>
+                <div style={{ marginBottom: '18px' }}>
+                  <h4 style={secH}>Your top matches</h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {heroSlots.map((id, i) => {
+                      const m = findMatch(id)
+                      const loc = m?.location ?? getAllCities().find(c => c.id === id)
+                      if (!loc) return null
+                      const st = afStatus(loc.housing.medianHomePrice)
+                      return (
+                        <div key={id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F5F4F1', borderRadius: '10px', padding: '9px 12px', fontSize: '13px', gap: '10px' }}>
+                          <span><b style={{ color: '#0A1E3D' }}>{loc.name}</b> · {loc.metroUsed} <span style={{ color: '#6a7180' }}>({pinnedCities.includes(loc.id) ? 'pinned' : `match ${i + 1}`})</span></span>
+                          <span style={{ color: '#0A1E3D', fontWeight: 600, whiteSpace: 'nowrap' }}>{m ? `${m.matchScore}% · ` : ''}{afLabel(st)}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+                <div style={{ marginBottom: '18px' }}>
+                  <h4 style={secH}>Your money picture</h4>
+                  {moneyRows.map(([k, v]) => (
+                    <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: '14px', fontSize: '13px', padding: '6px 0', borderBottom: '1px solid #E5E3DC' }}>
+                      <span style={{ color: '#6a7180' }}>{k}</span>
+                      <span style={{ color: '#1c2430', fontWeight: 500, textAlign: 'right' }}>{v}</span>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ marginBottom: '18px' }}>
+                  <h4 style={secH}>What matters most</h4>
+                  {([['Must have', mustLabels], ['Important to me', impLabels], ['Would be nice', niceLabels]] as [string, string[]][]).map(([tier, labels]) => (
+                    <div key={tier} style={{ marginBottom: '8px' }}>
+                      <p style={{ fontSize: '11px', color: '#6a7180', margin: '0 0 4px' }}>{tier}</p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                        {labels.length ? labels.map(l => <span key={l} style={chip}>{l}</span>) : <span style={{ ...chip, color: '#6a7180' }}>none set</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ marginBottom: 0 }}>
+                  <h4 style={secH}>Feel &amp; limits</h4>
+                  <div style={{ marginBottom: '10px' }}>
+                    {perRows.map(([label, val]) => (
+                      <div key={label} style={{ display: 'flex', justifyContent: 'space-between', gap: '14px', fontSize: '12.5px', padding: '3px 0' }}>
+                        <span style={{ color: '#6a7180' }}>{label}</span>
+                        <span style={{ color: '#1c2430', fontWeight: 500 }}>{val}/10</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p style={{ fontSize: '11px', color: '#6a7180', margin: '0 0 4px' }}>Non-negotiables</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '10px' }}>
+                    {nnActive.length ? nnActive.map(n => <span key={n} style={chip}>{n}</span>) : <span style={{ ...chip, color: '#6a7180' }}>none set</span>}
+                  </div>
+                  <p style={{ fontSize: '11px', color: '#6a7180', margin: 0 }}>
+                    Compared against <b style={{ color: '#1c2430' }}>{originCity ?? 'your origin'}</b> — the full side-by-side is on the page.
+                  </p>
+                </div>
+              </div>
+              <div style={{ position: 'sticky', bottom: 0, background: '#fff', borderTop: '1px solid #dcdad2', padding: '14px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+                <button type="button" onClick={() => setSummaryOpen(false)}
+                  style={{ background: 'none', border: 'none', color: '#6a7180', fontSize: '13px', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>Keep editing</button>
+                <button type="button" onClick={() => { setConfirmed(true); setReconfirmNudge(false); setSummaryOpen(false) }}
+                  style={{ background: '#C5B783', color: '#0A1E3D', border: 'none', borderRadius: '10px', padding: '11px 20px', fontWeight: 600, fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit' }}>Confirm &amp; continue →</button>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
+
       {/* Advanced Assumptions (Declutter pass) — desktop only; mobile nests this
           inside the already-open Financials drawer instead (see below). */}
       {!isMobile && advancedAssumptionsOpen && (
@@ -2123,21 +2214,34 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                   {ctaError}
                 </p>
               )}
-              <button
-                type="button" onClick={handleCommit} disabled={committing || !canSchedule}
-                style={{
-                  width: '100%', background: '#C5B783', color: '#0A1E3D',
-                  border: 'none', borderRadius: '8px', padding: '12px',
-                  fontWeight: 500, fontSize: '14px',
-                  cursor: (committing || !canSchedule) ? 'not-allowed' : 'pointer',
-                  opacity: (committing || !canSchedule) ? 0.5 : 1, fontFamily: 'inherit',
-                }}
-              >
-                {committing ? 'Saving…' : 'Schedule a Consultation →'}
-              </button>
-              {!ctaError && scheduleHint && (
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button type="button" onClick={() => { setReconfirmNudge(false); setSummaryOpen(true) }} disabled={!hasPinnedCity}
+                  style={{
+                    flex: 1, background: confirmed ? 'rgba(197,183,131,0.18)' : 'transparent',
+                    color: hasPinnedCity ? '#C5B783' : 'rgba(197,183,131,0.4)',
+                    border: `1px solid ${hasPinnedCity ? '#C5B783' : 'rgba(197,183,131,0.3)'}`,
+                    borderRadius: '8px', padding: '11px', fontWeight: 600, fontSize: '12px',
+                    cursor: hasPinnedCity ? 'pointer' : 'not-allowed', fontFamily: 'inherit',
+                  }}>
+                  {confirmed ? '✓ Confirmed' : 'Confirm'}
+                </button>
+                <button type="button" onClick={handleCommit} disabled={committing || !confirmed}
+                  style={{
+                    flex: 1, background: confirmed ? '#C5B783' : '#2a3d5c', color: confirmed ? '#0A1E3D' : '#8194ad',
+                    border: 'none', borderRadius: '8px', padding: '11px', fontWeight: 600, fontSize: '12px',
+                    cursor: (committing || !confirmed) ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
+                  }}>
+                  {committing ? 'Saving…' : 'Advance →'}
+                </button>
+              </div>
+              {!ctaError && !hasPinnedCity && (
                 <p style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', textAlign: 'center', margin: '5px 0 0', lineHeight: 1.4 }}>
-                  {scheduleHint}
+                  Pin a community to confirm.
+                </p>
+              )}
+              {!ctaError && hasPinnedCity && reconfirmNudge && !confirmed && (
+                <p style={{ fontSize: '9px', color: '#C5B783', textAlign: 'center', margin: '5px 0 0', lineHeight: 1.4 }}>
+                  Choices changed — reconfirm.
                 </p>
               )}
             </div>
