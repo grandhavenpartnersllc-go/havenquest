@@ -373,7 +373,6 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const [confirmed, setConfirmed] = useState(false)
   const [summaryOpen, setSummaryOpen] = useState(false)
   const [reconfirmNudge, setReconfirmNudge] = useState(false)
-  const [profileOpen, setProfileOpen] = useState(false) // Brief 6 C2 — "Your Relocation Profile" read-only popup; deliberately NOT in the honesty-guard deps, so it can't touch `confirmed`
 
   const priorityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const incomeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -1452,13 +1451,10 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     }}>
       {/* LEFT — intro + relocation profile + region tabs */}
       <div style={{ minWidth: 0, flex: 1 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '9px' }}>
-          <p style={{ fontSize: '13px', fontWeight: 500, color: '#0A1E3D', margin: 0 }}>Compare where you&rsquo;d land across Texas.</p>
-          <button type="button" onClick={() => setProfileOpen(true)}
-            style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#fff', border: '0.5px solid rgba(0,0,0,0.12)', borderRadius: '9px', color: '#1c2430', fontFamily: 'inherit', fontSize: '12px', fontWeight: 500, padding: '6px 11px', cursor: 'pointer', flexShrink: 0 }}>
-            <span aria-hidden="true">⚙</span> Your Relocation Profile
-          </button>
-        </div>
+        {/* MM3 Brief 1 — the standalone "Your Relocation Profile" button was removed here; the
+            "Review and confirm your profile" CTA is now the single review entry (its modal also
+            carries the archetype "why you're moving" line the old read-only popup used to show). */}
+        <p style={{ fontSize: '13px', fontWeight: 500, color: '#0A1E3D', margin: '0 0 9px' }}>Compare where you&rsquo;d land across Texas.</p>
         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
           {METRO_FILTERS.map(f => {
             const active = selectedMetro === f.value
@@ -1869,8 +1865,8 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
             <button type="button" onClick={() => setShowAllCities(v => !v)}
               style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: '10px', padding: '12px 14px', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
               <span>
-                <span style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#0A1E3D' }}>See your full top 10</span>
-                <span style={{ display: 'block', fontSize: '11px', color: '#86868b', marginTop: '1px' }}>the next {browseCities.length} (ranks 4–{3 + browseCities.length})</span>
+                <span style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#0A1E3D' }}>See your other ranked cities</span>
+                <span style={{ display: 'block', fontSize: '11px', color: '#86868b', marginTop: '1px' }}>the next {browseCities.length} — ranks 4–{3 + browseCities.length}</span>
               </span>
               <span style={{ fontSize: '13px', color: '#C5B783', flexShrink: 0, transform: showAllCities ? 'rotate(90deg)' : 'none', transition: 'transform 0.18s' }}>▸</span>
             </button>
@@ -2130,6 +2126,13 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                 </p>
               </div>
               <div style={{ padding: '20px 24px' }}>
+                {/* MM3 Brief 1 (B1-blend) — archetype "why you're moving" line folded in from the
+                    removed read-only profile popup; reuses secH + archetypeInfo (no rebuild). */}
+                <div style={{ marginBottom: '18px' }}>
+                  <h4 style={secH}>Why you&rsquo;re moving</h4>
+                  <p style={{ fontSize: '14px', fontWeight: 600, color: '#0A1E3D', margin: '0 0 3px' }}>{archetypeInfo.label}</p>
+                  <p style={{ fontSize: '12px', color: '#6a7180', lineHeight: 1.5, margin: 0 }}>{archetypeInfo.why}</p>
+                </div>
                 <div style={{ marginBottom: '18px' }}>
                   <h4 style={secH}>Your top matches</h4>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -2191,102 +2194,6 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                   style={{ background: 'none', border: 'none', color: '#6a7180', fontSize: '13px', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>Keep editing</button>
                 <button type="button" onClick={() => { setConfirmed(true); setReconfirmNudge(false); setSummaryOpen(false) }}
                   style={{ background: '#C5B783', color: '#0A1E3D', border: 'none', borderRadius: '10px', padding: '11px 20px', fontWeight: 600, fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit' }}>Confirm &amp; continue →</button>
-              </div>
-            </div>
-          </div>
-        )
-      })()}
-
-      {/* Brief 6 C2 — "Your Relocation Profile" read-only popup. Light duplicate of the
-          read-only sections (CP1's confirm modal is left byte-for-byte untouched); adds the
-          archetype line, omits top matches, single Close, no confirm interaction. `profileOpen`
-          is not in the honesty-guard deps, so opening/closing never touches `confirmed`. */}
-      {profileOpen && (() => {
-        const labelsFor = (keys: (keyof DNAScores)[]): string[] =>
-          keys.map(k => DNA_CATEGORIES.find(c => c.key === k)?.label).filter((l): l is string => Boolean(l))
-        const mustLabels = labelsFor(mustHaves)
-        const impLabels = labelsFor(niceToHaves)
-        const niceLabels = labelsFor(notPriorities)
-        const moneyRows: [string, string][] = [
-          ['Household income', incomeDisplay || (incomeVal ? fmtCurrency(String(incomeVal)) : '—')],
-          ['Toward down payment', totalFunds > 0 ? `${fmtK(totalFunds)}${isSelling ? ' (incl. home-sale proceeds)' : ''}` : '—'],
-          ['Rate · term (assumed)', `${interestRate}% · ${loanTerm} yr`],
-          ['Est. monthly', refMonthly > 0 ? `$${refMonthly.toLocaleString()}/mo` : '—'],
-        ]
-        const perRows: [string, number][] = [
-          ['Established ↔ Up-and-coming', personalityPreference.growthProfile],
-          ['Practical ↔ Upscale', personalityPreference.lifestyleOrientation],
-          ['Urban ↔ Rural', personalityPreference.environment],
-          ['Relaxed ↔ Fast-paced', personalityPreference.pace],
-        ]
-        const nnActive: string[] = []
-        if (nonNegotiables.crimeSafety) nnActive.push('Safe communities')
-        if (nonNegotiables.notWalkable) nnActive.push('Walkable')
-        if (nonNegotiables.medicalAccess) nnActive.push('Near medical care')
-        if (nonNegotiables.schoolMinGrade) nnActive.push(`Schools ${nonNegotiables.schoolMinGrade}+`)
-        if (nonNegotiables.propertyTaxMaxPct) nnActive.push(`Property tax ≤ ${(nonNegotiables.propertyTaxMaxPct * 100).toFixed(1)}%`)
-        if (nonNegotiables.hoaStrict) nnActive.push('No strict HOA (MD note)')
-        const secH: React.CSSProperties = { margin: '0 0 9px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#a48f4e' }
-        const chip: React.CSSProperties = { background: '#EFEEE9', border: '1px solid #dcdad2', borderRadius: '20px', padding: '3px 10px', fontSize: '12px', color: '#1c2430' }
-        return (
-          <div onClick={() => setProfileOpen(false)}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(10,30,61,0.58)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', overflowY: 'auto' }}>
-            <div onClick={e => e.stopPropagation()}
-              style={{ background: '#fff', width: '100%', maxWidth: '620px', maxHeight: '88vh', overflowY: 'auto', borderRadius: '16px', boxShadow: '0 30px 80px rgba(10,30,61,0.4)' }}>
-              <div style={{ background: 'linear-gradient(120deg,#0A1E3D,#0d284f)', color: '#fff', padding: '20px 24px' }}>
-                <h2 style={{ margin: '0 0 4px', fontSize: '19px', fontWeight: 600 }}>Your Relocation Profile</h2>
-                <p style={{ margin: 0, fontSize: '12.5px', color: '#c7d2e2', lineHeight: 1.5 }}>
-                  Everything shaping your matches, in one place. Adjust any of it from the rail on the left.
-                </p>
-              </div>
-              <div style={{ padding: '20px 24px' }}>
-                <div style={{ marginBottom: '18px' }}>
-                  <h4 style={secH}>Why you&rsquo;re moving</h4>
-                  <p style={{ fontSize: '14px', fontWeight: 600, color: '#0A1E3D', margin: '0 0 3px' }}>{archetypeInfo.label}</p>
-                  <p style={{ fontSize: '12px', color: '#6a7180', lineHeight: 1.5, margin: 0 }}>{archetypeInfo.why}</p>
-                </div>
-                <div style={{ marginBottom: '18px' }}>
-                  <h4 style={secH}>Your money picture</h4>
-                  {moneyRows.map(([k, v]) => (
-                    <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: '14px', fontSize: '13px', padding: '6px 0', borderBottom: '1px solid #E5E3DC' }}>
-                      <span style={{ color: '#6a7180' }}>{k}</span>
-                      <span style={{ color: '#1c2430', fontWeight: 500, textAlign: 'right' }}>{v}</span>
-                    </div>
-                  ))}
-                </div>
-                <div style={{ marginBottom: '18px' }}>
-                  <h4 style={secH}>What matters most</h4>
-                  {([['Must have', mustLabels], ['Important to me', impLabels], ['Would be nice', niceLabels]] as [string, string[]][]).map(([tier, labels]) => (
-                    <div key={tier} style={{ marginBottom: '8px' }}>
-                      <p style={{ fontSize: '11px', color: '#6a7180', margin: '0 0 4px' }}>{tier}</p>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                        {labels.length ? labels.map(l => <span key={l} style={chip}>{l}</span>) : <span style={{ ...chip, color: '#6a7180' }}>none set</span>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div style={{ marginBottom: 0 }}>
-                  <h4 style={secH}>Feel &amp; limits</h4>
-                  <div style={{ marginBottom: '10px' }}>
-                    {perRows.map(([label, val]) => (
-                      <div key={label} style={{ display: 'flex', justifyContent: 'space-between', gap: '14px', fontSize: '12.5px', padding: '3px 0' }}>
-                        <span style={{ color: '#6a7180' }}>{label}</span>
-                        <span style={{ color: '#1c2430', fontWeight: 500 }}>{val}/10</span>
-                      </div>
-                    ))}
-                  </div>
-                  <p style={{ fontSize: '11px', color: '#6a7180', margin: '0 0 4px' }}>Non-negotiables</p>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '10px' }}>
-                    {nnActive.length ? nnActive.map(n => <span key={n} style={chip}>{n}</span>) : <span style={{ ...chip, color: '#6a7180' }}>none set</span>}
-                  </div>
-                  <p style={{ fontSize: '11px', color: '#6a7180', margin: 0 }}>
-                    Compared against <b style={{ color: '#1c2430' }}>{originCity ?? 'your origin'}</b> — the full side-by-side is on the page.
-                  </p>
-                </div>
-              </div>
-              <div style={{ position: 'sticky', bottom: 0, background: '#fff', borderTop: '1px solid #dcdad2', padding: '14px 24px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-                <button type="button" onClick={() => setProfileOpen(false)}
-                  style={{ background: '#0A1E3D', color: '#fff', border: 'none', borderRadius: '10px', padding: '11px 22px', fontWeight: 600, fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit' }}>Close</button>
               </div>
             </div>
           </div>
@@ -2441,6 +2348,12 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
 
         {/* ── RESULTS CANVAS (Living Ledger) — full width on mobile ── */}
         <div style={{ flex: 1, background: '#F2F1EE', minWidth: 0, padding: '16px', overflowY: 'auto', paddingBottom: isMobile ? '132px' : '16px' }}>
+          {/* MM3 Brief 1 — centered content wrapper (prototype .cwrap). The #F2F1EE canvas keeps
+              flex-filling edge-to-edge; this inner wrapper caps the content at ~1240px and centers
+              it, so wide/ultra-wide desktops get balanced margins instead of an edge-to-edge stretch.
+              max-width only caps (never forces width), so with a drawer open the canvas narrows and
+              the content simply re-centers/fills the remaining space — no overflow, no h-scroll. */}
+          <div style={{ maxWidth: '1240px', margin: '0 auto' }}>
           {/* MM3 header restructure — the header band (intro + region tabs + relocation
               profile + stacked gated CTAs) replaces the old sticky navy ctaBlock. Desktop:
               sticky at the top of this scroll column (opaque canvas bg so content scrolls
@@ -2459,6 +2372,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
               the hero-3 was lifted out of it into here). */}
           {matchesArea}
           {livingLedgerSummaryCard}
+          </div>
         </div>
       </div>
 
