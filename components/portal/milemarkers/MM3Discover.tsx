@@ -243,12 +243,20 @@ interface Props {
   initialCityIndex?: number
 }
 
-// 4-tier priority chain used by the Adaptive Control Panel's Lifestyle section
-// (Round 7 locked design — a genuine, visible "Not Yet Sorted" 4th group, not
-// collapsed/secondary). Order matters: this is the up/down chain movePriority
-// walks between.
+// 4-tier priority chain used by the Lifestyle drawer (a genuine, visible "Not Yet
+// Sorted" 4th group, not collapsed/secondary). Order matters: highest priority first —
+// the track-and-ball's cascade-down overflow walks this order (see setPriorityTier).
 type Tier = 'mustHave' | 'important' | 'wouldBeNice' | 'unassigned'
 const TIER_ORDER: Tier[] = ['mustHave', 'important', 'wouldBeNice', 'unassigned']
+// Track-and-ball priority caps (Craig's rule): Must have 3, Important to me 4, the rest
+// unlimited. Overflow cascades DOWN to the first tier with room (see setPriorityTier).
+const PRIORITY_CAPS: number[] = [3, 4, Infinity, Infinity]
+const PRIORITY_TIERS: { label: string; weight: string }[] = [
+  { label: 'Must have', weight: '3×' },
+  { label: 'Important to me', weight: '2×' },
+  { label: 'Would be nice', weight: '1×' },
+  { label: 'Not yet sorted', weight: '1×' },
+]
 
 export default function MM3Discover({ matches, profile, session, onAdvanceToConnect, initialMetro }: Props) {
   // Financial
@@ -286,7 +294,12 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const [ctaError, setCtaError] = useState<string | null>(null)
   const [committing, setCommitting] = useState(false)
   const [reportMatch, setReportMatch] = useState<CityMatch | null>(null)
-  const [mustHaveError, setMustHaveError] = useState(false)
+  // Track-and-ball priority slider — flashTier briefly highlights a full tier on cascade
+  // overflow (replaces the old mustHaveError toast); dragBall holds the live drag position
+  // (0-1, presentation-only — nothing persists until release/tap).
+  const [flashTier, setFlashTier] = useState<number | null>(null)
+  const [dragBall, setDragBall] = useState<{ key: keyof DNAScores; x: number } | null>(null)
+  const priorityDragRef = useRef<{ key: keyof DNAScores; trackEl: HTMLElement } | null>(null)
   const [originCity, setOriginCity] = useState<string | null>(null)
   const [originState, setOriginState] = useState<string | null>(null)
 
@@ -833,31 +846,78 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     return 'unassigned'
   }
 
-  function movePriority(key: keyof DNAScores, direction: 'up' | 'down') {
+  // Track-and-ball placement — moves `key` to `targetIdx` (0-3) over the SAME bucket state,
+  // enforcing PRIORITY_CAPS with cascade-down overflow, then persisting via the SAME
+  // debounceSavePriorities → sandbox_profile path (the filter-then-add + save is byte-for-byte
+  // identical to the retired movePriority). Read-back/dedupe (CP1) is untouched.
+  function setPriorityTier(key: keyof DNAScores, targetIdx: number) {
     setSandboxTouched(true)
-    const idx = TIER_ORDER.indexOf(currentTier(key))
-    const targetIdx = direction === 'up' ? idx - 1 : idx + 1
-    if (targetIdx < 0 || targetIdx >= TIER_ORDER.length) return
-    const targetTier = TIER_ORDER[targetIdx]
-
-    if (targetTier === 'mustHave' && mustHaves.length >= 3) {
-      setMustHaveError(true)
-      setTimeout(() => setMustHaveError(false), 3000)
-      return
+    const curIdx = TIER_ORDER.indexOf(currentTier(key))
+    const counts = [mustHaves.length, niceToHaves.length, notPriorities.length, unassigned.length]
+    const aimed = Math.max(0, Math.min(3, targetIdx))
+    let target = aimed
+    let guard = 0
+    // cascade DOWN past any full capped tier to the first tier with room
+    while (PRIORITY_CAPS[target] !== Infinity && (counts[target] - (curIdx === target ? 1 : 0)) >= PRIORITY_CAPS[target] && guard < 3) {
+      target += 1
+      guard += 1
     }
-
-    let newMH = mustHaves.filter(k => k !== key)
-    let newNH = niceToHaves.filter(k => k !== key)
-    let newNP = notPriorities.filter(k => k !== key)
-    let newUA = unassigned.filter(k => k !== key)
-
-    if (targetTier === 'mustHave') newMH = [...newMH, key]
-    else if (targetTier === 'important') newNH = [...newNH, key]
-    else if (targetTier === 'wouldBeNice') newNP = [...newNP, key]
-    else newUA = [...newUA, key]
-
+    if (target > 3) target = 3
+    if (target !== aimed) {
+      setFlashTier(aimed)
+      setTimeout(() => setFlashTier(null), 700)
+    }
+    if (target === curIdx) return
+    const newMH = mustHaves.filter(k => k !== key)
+    const newNH = niceToHaves.filter(k => k !== key)
+    const newNP = notPriorities.filter(k => k !== key)
+    const newUA = unassigned.filter(k => k !== key)
+    const targetTier = TIER_ORDER[target]
+    if (targetTier === 'mustHave') newMH.push(key)
+    else if (targetTier === 'important') newNH.push(key)
+    else if (targetTier === 'wouldBeNice') newNP.push(key)
+    else newUA.push(key)
     setMustHaves(newMH); setNiceToHaves(newNH); setNotPriorities(newNP); setUnassigned(newUA)
     debounceSavePriorities(newMH, newNH, newNP, newUA, nonNegotiables)
+  }
+
+  // Ball drag + tap-a-band (presentation-only until release; commits via setPriorityTier).
+  function priorityBandFromEvent(trackEl: HTMLElement, clientX: number): number {
+    const rect = trackEl.getBoundingClientRect()
+    const x = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width))
+    return Math.min(3, Math.floor(x * 4))
+  }
+  function handleBallPointerDown(e: React.PointerEvent, key: keyof DNAScores) {
+    e.stopPropagation()
+    const trackEl = (e.currentTarget as HTMLElement).parentElement as HTMLElement
+    priorityDragRef.current = { key, trackEl }
+    try { (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId) } catch {}
+    const rect = trackEl.getBoundingClientRect()
+    setDragBall({ key, x: Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width)) })
+  }
+  function handleBallPointerMove(e: React.PointerEvent) {
+    const d = priorityDragRef.current
+    if (!d) return
+    const rect = d.trackEl.getBoundingClientRect()
+    setDragBall({ key: d.key, x: Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width)) })
+  }
+  function handleBallPointerUp(e: React.PointerEvent) {
+    const d = priorityDragRef.current
+    if (!d) return
+    const band = priorityBandFromEvent(d.trackEl, e.clientX)
+    priorityDragRef.current = null
+    setDragBall(null)
+    setPriorityTier(d.key, band)
+  }
+  function handleTrackTap(e: React.PointerEvent, key: keyof DNAScores) {
+    // Fires only when the pointer lands on the track itself (the ball stops propagation).
+    setPriorityTier(key, priorityBandFromEvent(e.currentTarget as HTMLElement, e.clientX))
+  }
+  function ballStyle(idx: number): React.CSSProperties {
+    if (idx === 0) return { background: '#C5B783', border: '2px solid #a48f4e' }
+    if (idx === 1) return { background: '#0076B6', border: '2px solid #005e91' }
+    if (idx === 2) return { background: '#c9d3df', border: '2px solid #9aa7b8' }
+    return { background: '#fff', border: '2px dashed #c3c0b6' }
   }
 
   // Phase E, Brief 1 — Non-Negotiables. hoaStrict and anythingElse are captured
@@ -1007,11 +1067,6 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mustHaves, niceToHaves, notPriorities, unassigned, nonNegotiables, proceeds, savings, incomeVal, interestRate, loanTerm, isSelling, pinnedCities, personalityPreference])
 
-  // "Would Be Nice" shows only genuine quiz/sandbox picks — never-touched categories
-  // (fix_priorities_and_interim_weighting) are not surfaced anywhere in this panel,
-  // per Craig's confirmed display decision.
-  const lessImportant = notPriorities
-
   // Brief 4 C2 — ranks 4–10 for the browse expander (rankedCities minus the hero-3 set).
   // The old selectedMatch/selectedRankIdx/displayedCities (community preview + 1–10 list)
   // are removed with that UI; the hero-3 + browse read rankedCities directly.
@@ -1058,93 +1113,65 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         <p style={{ fontSize: '11px', color: '#6B6A65', lineHeight: 1.5, margin: 0 }}>{archetypeInfo.why}</p>
       </div>
 
-      <p style={{ fontSize: '10px', color: '#6a7180', margin: '0 0 8px' }}>Click to move between columns</p>
-
-      <p style={{ fontSize: '10px', color: '#6a7180', margin: '0 0 8px' }}>
-        <span style={{ color: mustHaves.length >= 3 ? '#1a6b35' : undefined, fontWeight: mustHaves.length >= 3 ? 500 : undefined }}>
-          {mustHaves.length}/3 Must Haves{mustHaves.length >= 3 ? ' ✓' : ''}
-        </span>
-        {' · '}{niceToHaves.length} Important{' · '}{lessImportant.length} Nice{' · '}{unassigned.length} Not Yet Sorted
+      <p style={{ fontSize: '10px', color: '#6a7180', margin: '0 0 10px', lineHeight: 1.5 }}>
+        Drag each dot — or tap a band — to set how much it matters. Higher tiers count for more.
       </p>
 
-      {mustHaveError && (
-        <p style={{ fontSize: '10px', color: '#F5A623', fontStyle: 'italic', margin: '0 0 6px' }}>
-          Must Have is limited to 3. Move one first.
-        </p>
-      )}
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '0', margin: '0 -16px 0' }}>
-        {/* Must Have — warm tint */}
-        <div style={{ background: '#FDFAF4', borderRight: '0.5px solid rgba(0,0,0,0.08)', padding: '10px 8px' }}>
-          <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.06em', color: '#8a6f00', textTransform: 'uppercase', margin: '0 0 2px' }}>Must have</p>
-          <p style={{ fontSize: '8px', color: '#aaa', margin: '0 0 8px' }}>Up to 3 · 3× weight</p>
-          {mustHaves.length === 0 && <p style={{ fontSize: '10px', color: 'rgba(0,0,0,0.22)', fontStyle: 'italic', margin: 0 }}>Empty</p>}
-          {mustHaves.map(key => {
-            const cat = DNA_CATEGORIES.find(c => c.key === key)!
+      {/* Tier header — live counts (n / cap) + weight; flashes on cascade overflow */}
+      <div style={{ display: 'grid', gridTemplateColumns: '92px 1fr', alignItems: 'end', marginBottom: '6px' }}>
+        <div />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)' }}>
+          {PRIORITY_TIERS.map((t, i) => {
+            const counts = [mustHaves.length, niceToHaves.length, notPriorities.length, unassigned.length]
+            const capTxt = PRIORITY_CAPS[i] === Infinity ? `${counts[i]} · ${t.weight}` : `${counts[i]}/${PRIORITY_CAPS[i]} · ${t.weight}`
+            const flashing = flashTier === i
             return (
-              <div key={key} onClick={() => movePriority(key, 'down')}
-                style={{ background: 'rgba(197,183,131,0.15)', borderRadius: '4px', padding: '4px 6px', marginBottom: '3px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', gap: '3px', border: '0.5px solid rgba(197,183,131,0.3)' }}>
-                <span style={{ fontSize: '9px', color: '#5a4a00', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cat.icon} {cat.label}</span>
-                <span style={{ color: '#0076B6', fontSize: '9px', flexShrink: 0 }}>→</span>
+              <div key={t.label} style={{ textAlign: 'center', fontSize: '9px', fontWeight: 600, color: flashing ? '#b5482f' : '#86868b', lineHeight: 1.15, padding: '0 2px', transition: 'color 0.2s' }}>
+                {t.label}
+                <span style={{ display: 'block', fontSize: '8px', fontWeight: 500, color: flashing ? '#b5482f' : '#b3b0a6' }}>{capTxt}</span>
               </div>
             )
           })}
         </div>
+      </div>
 
-        {/* Important to Me — neutral */}
-        <div style={{ background: '#FAFAFA', borderRight: '0.5px solid rgba(0,0,0,0.08)', padding: '10px 8px' }}>
-          <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.06em', color: '#444', textTransform: 'uppercase', margin: '0 0 2px' }}>Important to me</p>
-          <p style={{ fontSize: '8px', color: '#aaa', margin: '0 0 8px' }}>Up to 5 · 2× weight</p>
-          {niceToHaves.length === 0 && <p style={{ fontSize: '10px', color: 'rgba(0,0,0,0.22)', fontStyle: 'italic', margin: 0 }}>Empty</p>}
-          {niceToHaves.map(key => {
-            const cat = DNA_CATEGORIES.find(c => c.key === key)!
-            return (
-              <div key={key} style={{ background: '#F0F0F0', borderRadius: '4px', padding: '3px 4px', marginBottom: '3px', display: 'flex', alignItems: 'center', gap: '2px' }}>
-                <button type="button" onClick={() => movePriority(key, 'up')}
-                  style={{ color: '#0076B6', fontSize: '9px', background: 'none', border: 'none', cursor: 'pointer', padding: '0 1px', lineHeight: 1, flexShrink: 0 }}>←</button>
-                <span style={{ flex: 1, fontSize: '9px', color: '#1d1d1f', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cat.icon} {cat.label}</span>
-                <button type="button" onClick={() => movePriority(key, 'down')}
-                  style={{ color: '#0076B6', fontSize: '9px', background: 'none', border: 'none', cursor: 'pointer', padding: '0 1px', lineHeight: 1, flexShrink: 0 }}>→</button>
-              </div>
-            )
-          })}
-        </div>
+      {/* One track-and-ball per preference item (7 total) */}
+      {ALL_KEYS.map(key => {
+        const cat = DNA_CATEGORIES.find(c => c.key === key)!
+        const tierIdx = TIER_ORDER.indexOf(currentTier(key))
+        const dragging = dragBall?.key === key
+        const leftPct = dragging ? dragBall!.x * 100 : tierIdx * 25 + 12.5
+        return (
+          <div key={key} style={{ display: 'grid', gridTemplateColumns: '92px 1fr', alignItems: 'center', margin: '9px 0' }}>
+            <span style={{ fontSize: '11px', fontWeight: 500, color: '#1c2430', paddingRight: '8px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cat.icon} {cat.label}</span>
+            <div
+              onPointerDown={(e) => handleTrackTap(e, key)}
+              style={{ position: 'relative', height: '34px', borderRadius: '9px', background: '#EFEEE9', border: '1px solid #dcdad2', touchAction: 'none', cursor: 'pointer' }}>
+              <div style={{ position: 'absolute', top: 0, bottom: 0, left: '0%', width: '25%', background: 'rgba(197,183,131,0.14)', borderRight: '1px dashed #dcdad2' }} />
+              <div style={{ position: 'absolute', top: 0, bottom: 0, left: '25%', width: '25%', background: 'rgba(0,118,182,0.07)', borderRight: '1px dashed #dcdad2' }} />
+              <div style={{ position: 'absolute', top: 0, bottom: 0, left: '50%', width: '25%', borderRight: '1px dashed #dcdad2' }} />
+              <div style={{ position: 'absolute', top: 0, bottom: 0, left: '75%', width: '25%', background: 'repeating-linear-gradient(45deg,transparent,transparent 5px,rgba(0,0,0,0.03) 5px,rgba(0,0,0,0.03) 10px)' }} />
+              <div
+                onPointerDown={(e) => handleBallPointerDown(e, key)}
+                onPointerMove={handleBallPointerMove}
+                onPointerUp={handleBallPointerUp}
+                aria-label={`${cat.label}: ${PRIORITY_TIERS[tierIdx].label}`}
+                style={{
+                  position: 'absolute', top: '50%', left: `${leftPct}%`, width: '22px', height: '22px',
+                  marginTop: '-11px', marginLeft: '-11px', borderRadius: '50%',
+                  ...ballStyle(tierIdx),
+                  boxShadow: dragging ? '0 3px 8px rgba(0,0,0,0.28)' : '0 1px 3px rgba(0,0,0,0.18)',
+                  transition: dragging ? 'none' : 'left 0.18s cubic-bezier(0.34,1.4,0.5,1), background 0.18s, border-color 0.18s',
+                  cursor: dragging ? 'grabbing' : 'grab', touchAction: 'none',
+                }}
+              />
+            </div>
+          </div>
+        )
+      })}
 
-        {/* Would Be Nice — lightest */}
-        <div style={{ background: '#F7F7F7', borderRight: '0.5px solid rgba(0,0,0,0.08)', padding: '10px 8px' }}>
-          <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.06em', color: '#666', textTransform: 'uppercase', margin: '0 0 2px' }}>Would be nice</p>
-          <p style={{ fontSize: '8px', color: '#aaa', margin: '0 0 8px' }}>1× weight</p>
-          {lessImportant.length === 0 && <p style={{ fontSize: '10px', color: 'rgba(0,0,0,0.22)', fontStyle: 'italic', margin: 0 }}>Empty</p>}
-          {lessImportant.map(key => {
-            const cat = DNA_CATEGORIES.find(c => c.key === key)!
-            return (
-              <div key={key} style={{ background: 'rgba(0,0,0,0.04)', borderRadius: '4px', padding: '3px 4px', marginBottom: '3px', display: 'flex', alignItems: 'center', gap: '2px' }}>
-                <button type="button" onClick={() => movePriority(key, 'up')}
-                  style={{ color: '#0076B6', fontSize: '9px', background: 'none', border: 'none', cursor: 'pointer', padding: '0 1px', lineHeight: 1, flexShrink: 0 }}>←</button>
-                <span style={{ flex: 1, fontSize: '9px', color: '#1d1d1f', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cat.icon} {cat.label}</span>
-                <button type="button" onClick={() => movePriority(key, 'down')}
-                  style={{ color: '#0076B6', fontSize: '9px', background: 'none', border: 'none', cursor: 'pointer', padding: '0 1px', lineHeight: 1, flexShrink: 0 }}>→</button>
-              </div>
-            )
-          })}
-        </div>
-
-        {/* Not Yet Sorted — new 4th group (Phase B), unassigned_priorities bucket */}
-        <div style={{ background: '#F1F1F0', padding: '10px 8px' }}>
-          <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.06em', color: '#888', textTransform: 'uppercase', margin: '0 0 2px' }}>Not yet sorted</p>
-          <p style={{ fontSize: '8px', color: '#aaa', margin: '0 0 8px' }}>1× weight</p>
-          {unassigned.length === 0 && <p style={{ fontSize: '10px', color: 'rgba(0,0,0,0.22)', fontStyle: 'italic', margin: 0 }}>Empty</p>}
-          {unassigned.map(key => {
-            const cat = DNA_CATEGORIES.find(c => c.key === key)!
-            return (
-              <div key={key} style={{ background: 'rgba(0,0,0,0.05)', borderRadius: '4px', padding: '3px 4px', marginBottom: '3px', display: 'flex', alignItems: 'center', gap: '2px' }}>
-                <button type="button" onClick={() => movePriority(key, 'up')}
-                  style={{ color: '#0076B6', fontSize: '9px', background: 'none', border: 'none', cursor: 'pointer', padding: '0 1px', lineHeight: 1, flexShrink: 0 }}>←</button>
-                <span style={{ flex: 1, fontSize: '9px', color: '#1d1d1f', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cat.icon} {cat.label}</span>
-              </div>
-            )
-          })}
-        </div>
+      <div style={{ fontSize: '11px', color: '#6a7180', background: '#F2F1EE', borderRadius: '8px', padding: '9px 11px', marginTop: '12px', lineHeight: 1.5 }}>
+        Higher tiers count for more in your match — Must have counts most, then Important to me; Would be nice and Not yet sorted count least.
       </div>
 
       {/* Personality sliders */}
