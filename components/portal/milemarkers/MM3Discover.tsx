@@ -11,7 +11,7 @@ import { createClient } from '../../../lib/supabase/client'
 import { lookupZipCityState } from '../../../utils/zipLookup'
 import { txColIndex, txSafety, txPropertyTax, txJobMarket, txClimateV2 } from '../../../utils/txComparisonStats'
 import CompareModal from '../../results/CompareModal'
-import { SlidersHorizontal, CircleDollarSign, ShieldCheck, MessageCircle } from 'lucide-react'
+import { SlidersHorizontal, CircleDollarSign, ShieldCheck, MessageCircle, GraduationCap, Users, Briefcase, Mountain, TrendingUp, UtensilsCrossed, Gem } from 'lucide-react'
 
 const ALL_KEYS = DNA_CATEGORIES.map(c => c.key) as (keyof DNAScores)[]
 
@@ -257,6 +257,19 @@ const PRIORITY_TIERS: { label: string; weight: string }[] = [
   { label: 'Would be nice', weight: '1×' },
   { label: 'Not yet sorted', weight: '1×' },
 ]
+// Track-and-ball polish — per-category icons from the same Lucide set as the left rail
+// (SlidersHorizontal / CircleDollarSign / ShieldCheck / MessageCircle). Rendered with no
+// explicit color so they inherit currentColor — reading at their label's ink, matching the
+// rail's icon = adjacent-label-color pattern. DNA_CATEGORIES (shared) is left untouched.
+const PRIORITY_ICONS: Record<keyof DNAScores, typeof GraduationCap> = {
+  schoolQuality: GraduationCap,
+  familyLifestyle: Users,
+  careerAccess: Briefcase,
+  outdoorLifestyle: Mountain,
+  growthPotential: TrendingUp,
+  diningEntertainment: UtensilsCrossed,
+  luxuryLifestyle: Gem,
+}
 
 export default function MM3Discover({ matches, profile, session, onAdvanceToConnect, initialMetro }: Props) {
   // Financial
@@ -1118,7 +1131,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
       </p>
 
       {/* Tier header — live counts (n / cap) + weight; flashes on cascade overflow */}
-      <div style={{ display: 'grid', gridTemplateColumns: '92px 1fr', alignItems: 'end', marginBottom: '6px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '116px 1fr', alignItems: 'end', marginBottom: '6px' }}>
         <div />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)' }}>
           {PRIORITY_TIERS.map((t, i) => {
@@ -1138,12 +1151,16 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
       {/* One track-and-ball per preference item (7 total) */}
       {ALL_KEYS.map(key => {
         const cat = DNA_CATEGORIES.find(c => c.key === key)!
+        const Icon = PRIORITY_ICONS[key]
         const tierIdx = TIER_ORDER.indexOf(currentTier(key))
         const dragging = dragBall?.key === key
         const leftPct = dragging ? dragBall!.x * 100 : tierIdx * 25 + 12.5
         return (
-          <div key={key} style={{ display: 'grid', gridTemplateColumns: '92px 1fr', alignItems: 'center', margin: '9px 0' }}>
-            <span style={{ fontSize: '11px', fontWeight: 500, color: '#1c2430', paddingRight: '8px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cat.icon} {cat.label}</span>
+          <div key={key} style={{ display: 'grid', gridTemplateColumns: '116px 1fr', alignItems: 'center', margin: '9px 0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', paddingRight: '8px', color: '#1c2430', minWidth: 0 }}>
+              <Icon size={14} style={{ flexShrink: 0 }} />
+              <span style={{ fontSize: '11px', fontWeight: 500, lineHeight: 1.2 }}>{cat.label}</span>
+            </div>
             <div
               onPointerDown={(e) => handleTrackTap(e, key)}
               style={{ position: 'relative', height: '34px', borderRadius: '9px', background: '#EFEEE9', border: '1px solid #dcdad2', touchAction: 'none', cursor: 'pointer' }}>
@@ -1440,26 +1457,30 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
             {mustHaves.slice(0, 3).map(key => {
               const cat = DNA_CATEGORIES.find(c => c.key === key)
               if (!cat) return null
+              const Icon = PRIORITY_ICONS[key]
               return (
                 <span key={key} style={{
                   background: 'rgba(197,183,131,0.2)', color: '#C5B783',
                   border: '0.5px solid rgba(197,183,131,0.4)',
                   borderRadius: '12px', padding: '3px 8px', fontSize: '10px',
+                  display: 'inline-flex', alignItems: 'center', gap: '3px',
                 }}>
-                  {cat.icon} {cat.label}
+                  <Icon size={10} style={{ flexShrink: 0 }} />{cat.label}
                 </span>
               )
             })}
             {niceToHaves.slice(0, 3).map(key => {
               const cat = DNA_CATEGORIES.find(c => c.key === key)
               if (!cat) return null
+              const Icon = PRIORITY_ICONS[key]
               return (
                 <span key={key} style={{
                   background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.6)',
                   border: '0.5px solid rgba(255,255,255,0.15)',
                   borderRadius: '12px', padding: '3px 8px', fontSize: '10px',
+                  display: 'inline-flex', alignItems: 'center', gap: '3px',
                 }}>
-                  {cat.icon} {cat.label}
+                  <Icon size={10} style={{ flexShrink: 0 }} />{cat.label}
                 </span>
               )
             })}
