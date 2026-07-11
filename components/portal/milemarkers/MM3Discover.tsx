@@ -11,7 +11,7 @@ import { createClient } from '../../../lib/supabase/client'
 import { lookupZipCityState } from '../../../utils/zipLookup'
 import { txColIndex, txSafety, txPropertyTax, txJobMarket, txClimateV2 } from '../../../utils/txComparisonStats'
 import CompareModal from '../../results/CompareModal'
-import { SlidersHorizontal, CircleDollarSign, ShieldCheck, MessageCircle, GraduationCap, Users, Briefcase, Mountain, TrendingUp, UtensilsCrossed, Gem } from 'lucide-react'
+import { SlidersHorizontal, CircleDollarSign, ShieldCheck, MessageCircle, GraduationCap, Users, Briefcase, Mountain, TrendingUp, UtensilsCrossed, Gem, Pencil } from 'lucide-react'
 
 const ALL_KEYS = DNA_CATEGORIES.map(c => c.key) as (keyof DNAScores)[]
 
@@ -1478,48 +1478,8 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // ──────────────────────────────────────────────────────────
   const livingLedgerSummaryCard = (
     <div style={{ background: '#0A1E3D', borderRadius: '10px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '10px' }}>
-      {/* PRIORITIES SUMMARY */}
-      {(mustHaves.length > 0 || niceToHaves.length > 0) && (
-        <div>
-          <p style={{ fontSize: '9px', fontWeight: 500, letterSpacing: '0.1em', color: '#C5B783', textTransform: 'uppercase', margin: '0 0 6px' }}>
-            What Matters Most
-          </p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-            {mustHaves.slice(0, 3).map(key => {
-              const cat = DNA_CATEGORIES.find(c => c.key === key)
-              if (!cat) return null
-              const Icon = PRIORITY_ICONS[key]
-              return (
-                <span key={key} style={{
-                  background: 'rgba(197,183,131,0.2)', color: '#C5B783',
-                  border: '0.5px solid rgba(197,183,131,0.4)',
-                  borderRadius: '12px', padding: '3px 8px', fontSize: '10px',
-                  display: 'inline-flex', alignItems: 'center', gap: '3px',
-                }}>
-                  <Icon size={10} style={{ flexShrink: 0 }} />{cat.label}
-                </span>
-              )
-            })}
-            {niceToHaves.slice(0, 3).map(key => {
-              const cat = DNA_CATEGORIES.find(c => c.key === key)
-              if (!cat) return null
-              const Icon = PRIORITY_ICONS[key]
-              return (
-                <span key={key} style={{
-                  background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.6)',
-                  border: '0.5px solid rgba(255,255,255,0.15)',
-                  borderRadius: '12px', padding: '3px 8px', fontSize: '10px',
-                  display: 'inline-flex', alignItems: 'center', gap: '3px',
-                }}>
-                  <Icon size={10} style={{ flexShrink: 0 }} />{cat.label}
-                </span>
-              )
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* BUYING POWER 2×2 GRID */}
+      {/* BUYING POWER 2×2 GRID — What Matters Most was relocated to the split band below
+          the hero cards; this navy panel is now purely financial. */}
       <div>
         <p style={{ fontSize: '9px', fontWeight: 500, letterSpacing: '0.1em', color: '#C5B783', textTransform: 'uppercase', margin: '0 0 8px' }}>
           Your Buying Power
@@ -1826,20 +1786,67 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         </>
       )}
 
-      {/* Browse expander — ranks 4-10. Row click focuses; pin promotes into the hero set. */}
-      {browseCities.length > 0 && (
-        <div style={{ marginTop: '12px', background: '#fff', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: '10px', overflow: 'hidden' }}>
-          <button type="button" onClick={() => setShowAllCities(v => !v)}
-            style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff', border: 'none', padding: '12px 16px', cursor: 'pointer', fontFamily: 'inherit' }}>
-            <span style={{ fontSize: '13px', fontWeight: 600, color: '#0A1E3D' }}>
-              <span style={{ color: '#C5B783', marginRight: '7px' }}>{showAllCities ? '▾' : '▸'}</span>
-              Browse your full ranked field — <span style={{ color: '#0076B6' }}>{browseCities.length} more</span>
-            </span>
-            <span style={{ fontSize: '11px', color: '#86868b' }}>ranks 4–{3 + browseCities.length}</span>
-          </button>
-          {showAllCities && (
-            <div style={{ borderTop: '0.5px solid #F0EEE9' }}>
-              <p style={{ fontSize: '11px', color: '#86868b', padding: '8px 16px 2px', margin: 0 }}>Tap any to focus it; pin one to pull it into your Top Matches.</p>
+      {/* Split band (relocated) — "What Matters Most" (chips + Edit priorities) at ~3/4 left,
+          the ranks 4-10 trigger at ~1/4 right; the ranks list expands FULL-WIDTH below the band.
+          Reuses the existing chip derivation and browse rows verbatim; the only new behavior is
+          the pencil's setOpenDrawer('lifestyle') (opens the Lifestyle drawer at the top —
+          scroll-to-priorities deferred to the mobile-polish pass). */}
+      <div style={{ marginTop: '14px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : (browseCities.length > 0 ? '3fr 1fr' : '1fr'), gap: '10px' }}>
+          {/* Left ~3/4 — What Matters Most (chips + Edit priorities pencil) */}
+          <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: '10px', padding: '12px 14px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+              <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.06em', color: '#6a7180', textTransform: 'uppercase', margin: 0 }}>What Matters Most</p>
+              <button type="button" onClick={() => setOpenDrawer('lifestyle')} className="mm3-secondary-action" aria-label="Edit priorities"
+                style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'none', border: '0.5px solid rgba(0,0,0,0.12)', borderRadius: '7px', padding: '4px 9px', fontSize: '11px', fontWeight: 500, color: '#0076B6', cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>
+                <Pencil size={12} style={{ flexShrink: 0 }} />{!isMobile && 'Edit priorities'}
+              </button>
+            </div>
+            {(mustHaves.length > 0 || niceToHaves.length > 0) ? (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+                {mustHaves.slice(0, 3).map(key => {
+                  const cat = DNA_CATEGORIES.find(c => c.key === key)
+                  if (!cat) return null
+                  const Icon = PRIORITY_ICONS[key]
+                  return (
+                    <span key={key} style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', background: 'rgba(197,183,131,0.18)', color: '#8a6f00', border: '0.5px solid rgba(197,183,131,0.4)', borderRadius: '12px', padding: '3px 9px', fontSize: '11px' }}>
+                      <Icon size={11} style={{ flexShrink: 0 }} />{cat.label}
+                    </span>
+                  )
+                })}
+                {niceToHaves.slice(0, 3).map(key => {
+                  const cat = DNA_CATEGORIES.find(c => c.key === key)
+                  if (!cat) return null
+                  const Icon = PRIORITY_ICONS[key]
+                  return (
+                    <span key={key} style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', background: '#F2F1EE', color: '#1c2430', border: '0.5px solid #dcdad2', borderRadius: '12px', padding: '3px 9px', fontSize: '11px' }}>
+                      <Icon size={11} style={{ flexShrink: 0 }} />{cat.label}
+                    </span>
+                  )
+                })}
+              </div>
+            ) : (
+              <p style={{ fontSize: '11px', color: '#86868b', margin: 0 }}>No priorities set yet — tap Edit priorities to set them.</p>
+            )}
+          </div>
+
+          {/* Right ~1/4 — ranks 4-10 trigger */}
+          {browseCities.length > 0 && (
+            <button type="button" onClick={() => setShowAllCities(v => !v)}
+              style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: '10px', padding: '12px 14px', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+              <span>
+                <span style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#0A1E3D' }}>See {browseCities.length} more</span>
+                <span style={{ display: 'block', fontSize: '11px', color: '#86868b', marginTop: '1px' }}>ranks 4–{3 + browseCities.length}</span>
+              </span>
+              <span style={{ fontSize: '13px', color: '#C5B783', flexShrink: 0, transform: showAllCities ? 'rotate(90deg)' : 'none', transition: 'transform 0.18s' }}>▸</span>
+            </button>
+          )}
+        </div>
+
+        {/* Full-width expanded ranks 4-10 list — sibling below the band (browse rows verbatim) */}
+        {showAllCities && browseCities.length > 0 && (
+          <div style={{ marginTop: '10px', background: '#fff', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: '10px', overflow: 'hidden' }}>
+            <p style={{ fontSize: '11px', color: '#86868b', padding: '10px 16px 2px', margin: 0 }}>Tap any to focus it; pin one to pull it into your Top Matches.</p>
               {browseCities.map(match => {
                 const city = match.location
                 const isPinned = pinnedCities.includes(city.id)
@@ -1892,10 +1899,9 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                   </div>
                 )
               })}
-            </div>
-          )}
-        </div>
-      )}
+          </div>
+        )}
+      </div>
 
       {/* Removed-from-view restore (preserved from the old communities list) */}
       {removedCities.length > 0 && (
