@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react'
 import Image from 'next/image'
-import { CityMatch, UserProfile, UserSession, SandboxProfile, DNAScores, NonNegotiablesState } from '../../../types'
+import { CityMatch, UserProfile, UserSession, SandboxProfile, DNAScores, NonNegotiablesState, ArchetypeKey } from '../../../types'
 import FullReport from '../../results/FullReport'
 import { DNA_CATEGORIES } from '../../../utils/constants'
 import { getAllCities } from '../../../services/locationService'
@@ -47,6 +47,21 @@ function dedupePriorityBuckets(
 }
 
 const RATE_DEFAULT = 6.5
+
+// Brief 6 C2 — read-only archetype display. Labels follow the discovery quiz's own reason
+// framing (ARCHETYPE_MAP in Card2MovingReason); each "why" reflects ONLY what
+// services/archetypeService.ts actually does per archetype (categoryAdjustments + the
+// data-vs-feel blend). Blend-only archetypes read as balanced — no invented tilt, no
+// commute/work-flexibility or affordability claims. Read-only: never written back.
+const ARCHETYPE_DISPLAY: Record<ArchetypeKey, { label: string; why: string }> = {
+  family:    { label: 'Raising a family',      why: 'We weight school quality and family life more heavily and lean on community data over personal feel.' },
+  firsttime: { label: 'Buying our first home', why: 'A data-forward profile that eases off luxury-lifestyle factors.' },
+  executive: { label: 'Career-driven move',    why: 'A near-even balance of community data and personal feel, with no single category pushed ahead.' },
+  luxury:    { label: 'Higher-end lifestyle',  why: 'An even split between community data and personal feel, with no single category emphasized.' },
+  retiree:   { label: 'Our next chapter',      why: 'We weight outdoor access more, ease off schools and growth-focused areas, and lean a little more on personal feel.' },
+  youngpro:  { label: 'Freedom & flexibility', why: 'We weight career access and dining & entertainment more and ease off school-focused factors.' },
+  general:   { label: 'Exploring our options', why: 'A balanced profile with nothing pushed ahead until your priorities below tell us more.' },
+}
 
 // Brief 3 — icon rail + summoned drawer shell. The rail replaces the always-open
 // ~40% control panel; each launcher summons a single drawer (one open at a time).
@@ -298,6 +313,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const [confirmed, setConfirmed] = useState(false)
   const [summaryOpen, setSummaryOpen] = useState(false)
   const [reconfirmNudge, setReconfirmNudge] = useState(false)
+  const [profileOpen, setProfileOpen] = useState(false) // Brief 6 C2 — "Your Relocation Profile" read-only popup; deliberately NOT in the honesty-guard deps, so it can't touch `confirmed`
 
   const priorityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const incomeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -975,6 +991,14 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // unlocks Advance.
   const hasPinnedCity = pinnedCities.length > 0
 
+  // Brief 6 C2 — resolve the user's archetype for read-only display. Defensive: a missing
+  // or unknown key falls back to `general` — never crashes, never shows a raw key.
+  const rawArchetype = profile?.archetype
+  const archetypeKey: ArchetypeKey = rawArchetype && (rawArchetype in ARCHETYPE_DISPLAY)
+    ? (rawArchetype as ArchetypeKey)
+    : 'general'
+  const archetypeInfo = ARCHETYPE_DISPLAY[archetypeKey]
+
   // Honesty guard — any edit to a summary input after confirming silently un-confirms
   // and re-grays Advance, so the reviewed summary always matches the screen. Self-
   // guarded: confirming changes only `confirmed`/`summaryOpen` (not these deps), so it
@@ -1028,6 +1052,13 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // ──────────────────────────────────────────────────────────
   const lifestyleContent = (
     <div style={{ padding: '12px 16px' }}>
+      {/* Brief 6 C2 — read-only archetype line ("Why are you moving?"). Display only. */}
+      <div style={{ background: 'linear-gradient(180deg,#FBFAF6,#fff)', border: '0.5px solid #E8E6E2', borderRadius: '10px', padding: '10px 12px', margin: '0 0 12px' }}>
+        <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#86868b', margin: 0 }}>Why are you moving?</p>
+        <p style={{ fontSize: '13px', fontWeight: 600, color: '#0A1E3D', margin: '2px 0 4px' }}>{archetypeInfo.label}</p>
+        <p style={{ fontSize: '11px', color: '#6B6A65', lineHeight: 1.5, margin: 0 }}>{archetypeInfo.why}</p>
+      </div>
+
       <p style={{ fontSize: '10px', color: '#6B6A65', margin: '0 0 8px' }}>Click to move between columns</p>
 
       <p style={{ fontSize: '10px', color: '#6B6A65', margin: '0 0 8px' }}>
@@ -1586,10 +1617,14 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
       </div>
 
       {/* Heading */}
-      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '10px', gap: '10px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px', gap: '10px', flexWrap: 'wrap' }}>
         <p style={{ fontSize: '15px', fontWeight: 600, color: '#0A1E3D', margin: 0 }}>Your Top Matches</p>
-        <span style={{ fontSize: '11px', color: '#86868b' }}>Click a card to see how it fits your money.</span>
+        <button type="button" onClick={() => setProfileOpen(true)}
+          style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#fff', border: '0.5px solid rgba(0,0,0,0.12)', borderRadius: '9px', color: '#1c2430', fontFamily: 'inherit', fontSize: '12px', fontWeight: 500, padding: '6px 11px', cursor: 'pointer' }}>
+          <span aria-hidden="true">⚙</span> Your Relocation Profile
+        </button>
       </div>
+      <p style={{ fontSize: '11px', color: '#86868b', margin: '0 0 10px' }}>Click a card to see how it fits your money.</p>
 
       {/* Hero-3 — card body click FOCUSES (focusCity -> selectedKey, drives Buying Power +
           comparison); the report opens only via the deliberate "See summary report" link. */}
@@ -2016,6 +2051,102 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                   style={{ background: 'none', border: 'none', color: '#6a7180', fontSize: '13px', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>Keep editing</button>
                 <button type="button" onClick={() => { setConfirmed(true); setReconfirmNudge(false); setSummaryOpen(false) }}
                   style={{ background: '#C5B783', color: '#0A1E3D', border: 'none', borderRadius: '10px', padding: '11px 20px', fontWeight: 600, fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit' }}>Confirm &amp; continue →</button>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
+
+      {/* Brief 6 C2 — "Your Relocation Profile" read-only popup. Light duplicate of the
+          read-only sections (CP1's confirm modal is left byte-for-byte untouched); adds the
+          archetype line, omits top matches, single Close, no confirm interaction. `profileOpen`
+          is not in the honesty-guard deps, so opening/closing never touches `confirmed`. */}
+      {profileOpen && (() => {
+        const labelsFor = (keys: (keyof DNAScores)[]): string[] =>
+          keys.map(k => DNA_CATEGORIES.find(c => c.key === k)?.label).filter((l): l is string => Boolean(l))
+        const mustLabels = labelsFor(mustHaves)
+        const impLabels = labelsFor(niceToHaves)
+        const niceLabels = labelsFor(notPriorities)
+        const moneyRows: [string, string][] = [
+          ['Household income', incomeDisplay || (incomeVal ? fmtCurrency(String(incomeVal)) : '—')],
+          ['Toward down payment', totalFunds > 0 ? `${fmtK(totalFunds)}${isSelling ? ' (incl. home-sale proceeds)' : ''}` : '—'],
+          ['Rate · term (assumed)', `${interestRate}% · ${loanTerm} yr`],
+          ['Est. monthly', refMonthly > 0 ? `$${refMonthly.toLocaleString()}/mo` : '—'],
+        ]
+        const perRows: [string, number][] = [
+          ['Established ↔ Up-and-coming', personalityPreference.growthProfile],
+          ['Practical ↔ Upscale', personalityPreference.lifestyleOrientation],
+          ['Urban ↔ Rural', personalityPreference.environment],
+          ['Relaxed ↔ Fast-paced', personalityPreference.pace],
+        ]
+        const nnActive: string[] = []
+        if (nonNegotiables.crimeSafety) nnActive.push('Safe communities')
+        if (nonNegotiables.notWalkable) nnActive.push('Walkable')
+        if (nonNegotiables.medicalAccess) nnActive.push('Near medical care')
+        if (nonNegotiables.schoolMinGrade) nnActive.push(`Schools ${nonNegotiables.schoolMinGrade}+`)
+        if (nonNegotiables.propertyTaxMaxPct) nnActive.push(`Property tax ≤ ${(nonNegotiables.propertyTaxMaxPct * 100).toFixed(1)}%`)
+        if (nonNegotiables.hoaStrict) nnActive.push('No strict HOA (MD note)')
+        const secH: React.CSSProperties = { margin: '0 0 9px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#a48f4e' }
+        const chip: React.CSSProperties = { background: '#EFEEE9', border: '1px solid #dcdad2', borderRadius: '20px', padding: '3px 10px', fontSize: '12px', color: '#1c2430' }
+        return (
+          <div onClick={() => setProfileOpen(false)}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(10,30,61,0.58)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', overflowY: 'auto' }}>
+            <div onClick={e => e.stopPropagation()}
+              style={{ background: '#fff', width: '100%', maxWidth: '620px', maxHeight: '88vh', overflowY: 'auto', borderRadius: '16px', boxShadow: '0 30px 80px rgba(10,30,61,0.4)' }}>
+              <div style={{ background: 'linear-gradient(120deg,#0A1E3D,#0d284f)', color: '#fff', padding: '20px 24px' }}>
+                <h2 style={{ margin: '0 0 4px', fontSize: '19px', fontWeight: 600 }}>Your Relocation Profile</h2>
+                <p style={{ margin: 0, fontSize: '12.5px', color: '#c7d2e2', lineHeight: 1.5 }}>
+                  Everything shaping your matches, in one place. Adjust any of it from the rail on the left.
+                </p>
+              </div>
+              <div style={{ padding: '20px 24px' }}>
+                <div style={{ marginBottom: '18px' }}>
+                  <h4 style={secH}>Why you&rsquo;re moving</h4>
+                  <p style={{ fontSize: '14px', fontWeight: 600, color: '#0A1E3D', margin: '0 0 3px' }}>{archetypeInfo.label}</p>
+                  <p style={{ fontSize: '12px', color: '#6a7180', lineHeight: 1.5, margin: 0 }}>{archetypeInfo.why}</p>
+                </div>
+                <div style={{ marginBottom: '18px' }}>
+                  <h4 style={secH}>Your money picture</h4>
+                  {moneyRows.map(([k, v]) => (
+                    <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: '14px', fontSize: '13px', padding: '6px 0', borderBottom: '1px solid #E5E3DC' }}>
+                      <span style={{ color: '#6a7180' }}>{k}</span>
+                      <span style={{ color: '#1c2430', fontWeight: 500, textAlign: 'right' }}>{v}</span>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ marginBottom: '18px' }}>
+                  <h4 style={secH}>What matters most</h4>
+                  {([['Must have', mustLabels], ['Important to me', impLabels], ['Would be nice', niceLabels]] as [string, string[]][]).map(([tier, labels]) => (
+                    <div key={tier} style={{ marginBottom: '8px' }}>
+                      <p style={{ fontSize: '11px', color: '#6a7180', margin: '0 0 4px' }}>{tier}</p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                        {labels.length ? labels.map(l => <span key={l} style={chip}>{l}</span>) : <span style={{ ...chip, color: '#6a7180' }}>none set</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ marginBottom: 0 }}>
+                  <h4 style={secH}>Feel &amp; limits</h4>
+                  <div style={{ marginBottom: '10px' }}>
+                    {perRows.map(([label, val]) => (
+                      <div key={label} style={{ display: 'flex', justifyContent: 'space-between', gap: '14px', fontSize: '12.5px', padding: '3px 0' }}>
+                        <span style={{ color: '#6a7180' }}>{label}</span>
+                        <span style={{ color: '#1c2430', fontWeight: 500 }}>{val}/10</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p style={{ fontSize: '11px', color: '#6a7180', margin: '0 0 4px' }}>Non-negotiables</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '10px' }}>
+                    {nnActive.length ? nnActive.map(n => <span key={n} style={chip}>{n}</span>) : <span style={{ ...chip, color: '#6a7180' }}>none set</span>}
+                  </div>
+                  <p style={{ fontSize: '11px', color: '#6a7180', margin: 0 }}>
+                    Compared against <b style={{ color: '#1c2430' }}>{originCity ?? 'your origin'}</b> — the full side-by-side is on the page.
+                  </p>
+                </div>
+              </div>
+              <div style={{ position: 'sticky', bottom: 0, background: '#fff', borderTop: '1px solid #dcdad2', padding: '14px 24px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+                <button type="button" onClick={() => setProfileOpen(false)}
+                  style={{ background: '#0A1E3D', color: '#fff', border: 'none', borderRadius: '10px', padding: '11px 22px', fontWeight: 600, fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit' }}>Close</button>
               </div>
             </div>
           </div>
