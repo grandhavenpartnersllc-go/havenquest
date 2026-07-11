@@ -1172,40 +1172,44 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   )
 
   // ──────────────────────────────────────────────────────────
-  // Financials content — ported verbatim from the pre-rebuild "Your Financials" panel.
+  // Brief 5 CP-money — hover-definition label (desktop only, per Craig). On mobile it
+  // renders plain text (no tooltip). Presentation-only; no state that affects saved values.
+  // ──────────────────────────────────────────────────────────
+  const HelpLabel = ({ text, def }: { text: string; def?: string }) => {
+    if (isMobile || !def) return <>{text}</>
+    return <span className="mm3-help">{text}<span className="mm3-help-tip">{def}</span></span>
+  }
+
+  // ──────────────────────────────────────────────────────────
+  // Financials content (Money drawer) — Brief 5 CP-money restyle (UI/skin only; every
+  // handler, debounce, onBlur and persist path preserved byte-for-byte).
   // ──────────────────────────────────────────────────────────
   const financialsContent = (
-    <div style={{ padding: '12px 16px' }}>
-      <p style={{ fontSize: '10px', color: '#888', margin: '0 0 10px' }}>Adjust to update buying power live</p>
-
-      {/* Phase C2 Item 4 — Exposed Baselines banner. Fixed reference point, never
-          updates as fields below are edited (see baselineBudget/baselineMonthly). */}
+    <div style={{ padding: '14px 18px' }}>
+      {/* Baseline banner — restyled to the prototype .baseline pill */}
       {baselineBudget > 0 && (
-        <p style={{ fontSize: '9px', color: '#A9A79F', fontStyle: 'italic', margin: '0 0 10px' }}>
-          Your original Discovery estimate: {fmtK(baselineBudget)} budget · ~${baselineMonthly.toLocaleString()}/mo
-        </p>
+        <div style={{ fontSize: '11px', color: '#6a7180', background: '#F2F1EE', borderRadius: '7px', padding: '8px 11px', marginBottom: '14px', lineHeight: 1.5 }}>
+          Your original Discovery estimate: {fmtK(baselineBudget)} budget · ~${baselineMonthly.toLocaleString()}/mo. Edits here recalibrate every match.
+        </div>
       )}
 
-      {/* Selling toggle */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-        <span style={{ fontSize: '11px', color: '#1d1d1f' }}>Selling a home?</span>
-        {(['Yes', 'No'] as const).map(v => {
-          const active = (v === 'Yes') === isSelling
-          return (
-            <button key={v} type="button" onClick={() => { setIsSelling(v === 'Yes'); setSandboxTouched(true) }}
-              style={{ padding: '3px 10px', borderRadius: '20px', fontSize: '11px', background: active ? '#0A1E3D' : '#fff', color: active ? '#fff' : '#6B6A65', border: `0.5px solid ${active ? '#0A1E3D' : '#D0CEC8'}`, cursor: 'pointer' }}>
-              {v}
-            </button>
-          )
-        })}
+      {/* Selling a home? — .nn row + toggle switch (reuses NonNegToggle; same isSelling boolean) */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 0', borderBottom: '1px solid #E5E3DC', marginBottom: '4px' }}>
+        <div style={{ fontSize: '12.5px', color: '#1c2430' }}>
+          Selling a home?
+          <span style={{ display: 'block', color: '#6a7180', fontSize: '10.5px', marginTop: '1px' }}>Adds your expected proceeds to your down payment</span>
+        </div>
+        <NonNegToggle active={isSelling} onClick={() => { setIsSelling(!isSelling); setSandboxTouched(true) }} />
       </div>
 
-      {/* Proceeds */}
+      {/* Proceeds — .field */}
       {isSelling && (
-        <div style={{ marginBottom: '8px' }}>
-          <p style={{ fontSize: '10px', color: '#86868b', margin: '0 0 3px' }}>Expected sale proceeds</p>
-          <div style={{ display: 'flex', alignItems: 'center', background: '#fff', border: '0.5px solid #E0DED8', borderRadius: '7px', overflow: 'hidden' }}>
-            <span style={{ padding: '5px 7px', fontSize: '11px', color: '#86868b', borderRight: '0.5px solid #E0DED8', background: '#FAFAF8', flexShrink: 0 }}>$</span>
+        <div style={{ margin: '14px 0' }}>
+          <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, marginBottom: '5px', color: '#1c2430' }}>
+            <HelpLabel text="Expected home-sale proceeds" def="What you expect to walk away with after selling and paying off your current home; added to your down payment." />
+          </label>
+          <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #dcdad2', borderRadius: '9px', background: '#fff', padding: '0 12px', height: '42px' }}>
+            <span style={{ color: '#6a7180', fontSize: '14px' }}>$</span>
             <input type="text" value={proceedsDisplay.replace(/^\$/, '')}
               onChange={e => {
                 const formatted = fmtCurrency(e.target.value)
@@ -1218,16 +1222,18 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                 persistNumbers({ exact_home_proceeds: parseMoney(proceedsDisplay) || null })
               }}
               placeholder="340,000"
-              style={{ border: 'none', padding: '5px 8px', fontSize: '12px', color: '#1d1d1f', background: '#fff', outline: 'none', width: '100%', fontFamily: 'inherit' }} />
+              style={{ border: 'none', outline: 'none', fontFamily: 'inherit', fontSize: '15px', width: '100%', padding: '0 4px', color: '#1c2430', background: 'transparent' }} />
           </div>
         </div>
       )}
 
-      {/* Savings */}
-      <div style={{ marginBottom: '8px' }}>
-        <p style={{ fontSize: '10px', color: '#86868b', margin: '0 0 3px' }}>{isSelling ? 'Additional savings' : 'Available savings'}</p>
-        <div style={{ display: 'flex', alignItems: 'center', background: '#fff', border: '0.5px solid #E0DED8', borderRadius: '7px', overflow: 'hidden' }}>
-          <span style={{ padding: '5px 7px', fontSize: '11px', color: '#86868b', borderRight: '0.5px solid #E0DED8', background: '#FAFAF8', flexShrink: 0 }}>$</span>
+      {/* Savings — .field */}
+      <div style={{ margin: '14px 0' }}>
+        <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, marginBottom: '5px', color: '#1c2430' }}>
+          <HelpLabel text={isSelling ? 'Other savings / cash' : 'Savings toward down payment'} def="Savings you'll put toward the purchase — a bigger down payment means a smaller loan and lower monthly payment." />
+        </label>
+        <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #dcdad2', borderRadius: '9px', background: '#fff', padding: '0 12px', height: '42px' }}>
+          <span style={{ color: '#6a7180', fontSize: '14px' }}>$</span>
           <input type="text" value={savingsDisplay.replace(/^\$/, '')}
             onChange={e => {
               const formatted = fmtCurrency(e.target.value)
@@ -1240,15 +1246,17 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
               persistNumbers({ available_funds: parseMoney(savingsDisplay) || null })
             }}
             placeholder="75,000"
-            style={{ border: 'none', padding: '5px 8px', fontSize: '12px', color: '#1d1d1f', background: '#fff', outline: 'none', width: '100%', fontFamily: 'inherit' }} />
+            style={{ border: 'none', outline: 'none', fontFamily: 'inherit', fontSize: '15px', width: '100%', padding: '0 4px', color: '#1c2430', background: 'transparent' }} />
         </div>
       </div>
 
-      {/* Annual income */}
-      <div style={{ marginBottom: '8px' }}>
-        <p style={{ fontSize: '10px', color: '#86868b', margin: '0 0 3px' }}>Annual household income</p>
-        <div style={{ display: 'flex', alignItems: 'center', background: '#fff', border: '0.5px solid #E0DED8', borderRadius: '7px', overflow: 'hidden' }}>
-          <span style={{ padding: '5px 7px', fontSize: '11px', color: '#86868b', borderRight: '0.5px solid #E0DED8', background: '#FAFAF8', flexShrink: 0 }}>$</span>
+      {/* Annual income — .field */}
+      <div style={{ margin: '14px 0' }}>
+        <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, marginBottom: '5px', color: '#1c2430' }}>
+          <HelpLabel text="Annual household income" def="Your total pre-tax household income; it drives every affordability figure." />
+        </label>
+        <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #dcdad2', borderRadius: '9px', background: '#fff', padding: '0 12px', height: '42px' }}>
+          <span style={{ color: '#6a7180', fontSize: '14px' }}>$</span>
           <input type="text" value={incomeDisplay.replace(/^\$/, '')}
             onChange={e => {
               setIncomeDisplay(fmtCurrency(e.target.value)); setSandboxTouched(true)
@@ -1261,32 +1269,27 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
               if (parsed > 0) { setIncomeVal(parsed); persistNumbers({ annual_income_override: parsed }) }
             }}
             placeholder="100,000"
-            style={{ border: 'none', padding: '5px 8px', fontSize: '12px', color: '#1d1d1f', background: '#fff', outline: 'none', width: '100%', fontFamily: 'inherit' }} />
+            style={{ border: 'none', outline: 'none', fontFamily: 'inherit', fontSize: '15px', width: '100%', padding: '0 4px', color: '#1c2430', background: 'transparent' }} />
         </div>
       </div>
 
-      {/* Declutter pass — Interest rate + Loan term moved to Advanced Assumptions;
-          only a live summary + trigger stays in the always-visible flow. */}
-      <div style={{ marginBottom: '10px' }}>
+      {/* Advanced Assumptions trigger — KEPT (preserves advancedAssumptionsOpen wiring), restyled */}
+      <div style={{ margin: '16px 0 12px' }}>
         <button type="button" onClick={() => setAdvancedAssumptionsOpen(true)}
-          style={{
-            width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            padding: '8px 10px', borderRadius: '7px', border: '0.5px solid #E0DED8', background: '#FAFAF8',
-            cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
-          }}>
-          <span style={{ fontSize: '10px', color: '#6B6A65' }}>Advanced Assumptions</span>
-          <span style={{ fontSize: '10px', color: '#1d1d1f', fontWeight: 500 }}>{interestRate}% · {loanTerm}yr →</span>
+          style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', borderRadius: '9px', border: '1px solid #dcdad2', background: '#F2F1EE', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+          <span style={{ fontSize: '11px', color: '#6a7180' }}>Advanced assumptions</span>
+          <span style={{ fontSize: '11px', color: '#1c2430', fontWeight: 500 }}>{interestRate}% · {loanTerm}yr →</span>
         </button>
       </div>
 
-      {/* Monthly estimate */}
-      <div style={{ background: '#EDF2FF', borderRadius: '7px', padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      {/* Monthly estimate readout — restyled */}
+      <div style={{ background: 'rgba(0,118,182,0.07)', border: '1px solid rgba(0,118,182,0.18)', borderRadius: '9px', padding: '10px 13px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <p style={{ fontSize: '9px', color: '#0076B6', margin: '0 0 1px' }}>Est. monthly payment</p>
-          <p style={{ fontSize: '9px', color: '#86868b', margin: 0 }}>Principal + interest only</p>
+          <p style={{ fontSize: '10px', color: '#0076B6', margin: '0 0 1px', fontWeight: 500 }}>Est. monthly payment</p>
+          <p style={{ fontSize: '10px', color: '#6a7180', margin: 0 }}>Principal &amp; interest only</p>
         </div>
-        <p style={{ fontSize: '16px', fontWeight: 500, color: '#0A1E3D', margin: 0 }}>
-          {refMonthly > 0 ? `${refMonthly.toLocaleString()}` : '—'}
+        <p style={{ fontSize: '17px', fontWeight: 600, color: '#0A1E3D', margin: 0 }}>
+          {refMonthly > 0 ? `$${refMonthly.toLocaleString()}` : '—'}
         </p>
       </div>
     </div>
@@ -1301,11 +1304,13 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // ──────────────────────────────────────────────────────────
   const advancedAssumptionsContent = (
     <div>
-      {/* Rate slider */}
-      <div style={{ marginBottom: '10px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-          <p style={{ fontSize: '10px', color: '#86868b', margin: 0 }}>Interest rate</p>
-          <span style={{ fontSize: '11px', color: '#1d1d1f', fontWeight: 500 }}>{interestRate}%</span>
+      {/* Interest rate — .slrow skin + hover-def (handler preserved) */}
+      <div style={{ marginBottom: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+          <b style={{ fontSize: '12px', fontWeight: 500, color: '#1c2430' }}>
+            <HelpLabel text="Interest rate" def="The annual mortgage rate used to estimate your payment — a working assumption you can adjust." />
+          </b>
+          <span style={{ fontSize: '12px', color: '#6a7180' }}>{interestRate}%</span>
         </div>
         <div style={{ position: 'relative', height: '4px', background: 'rgba(0,0,0,0.12)', borderRadius: '2px', margin: '4px 0' }}>
           <div style={{ position: 'absolute', height: '100%', background: '#34C759', opacity: 0.7, borderRadius: '2px', left: '46.4%', width: '7.1%' }} />
@@ -1319,21 +1324,29 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
             pointerEvents: 'none', transition: 'left 0.1s',
           }} />
         </div>
-        <p style={{ fontSize: '9px', color: '#34C759', opacity: 0.8, margin: '2px 0 0' }}>● Current market: 6.25%–6.75%</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#b3b0a6', marginTop: '2px' }}>
+          <span>3%</span><span>10%</span>
+        </div>
+        <p style={{ fontSize: '9px', color: '#2f8f5b', margin: '4px 0 0' }}>● Current market: 6.25%–6.75%</p>
       </div>
 
-      {/* Loan term */}
-      <div style={{ display: 'flex', gap: '6px' }}>
-        {([30, 15] as const).map(term => {
-          const active = loanTerm === term
-          return (
-            <button key={term} type="button"
-              onClick={() => { setLoanTerm(term); setSandboxTouched(true); persistNumbers({ loan_term_preference: term }) }}
-              style={{ padding: '4px 12px', borderRadius: '20px', fontSize: '11px', background: active ? '#0A1E3D' : '#fff', color: active ? '#fff' : '#6B6A65', border: `0.5px solid ${active ? '#0A1E3D' : '#D0CEC8'}`, cursor: 'pointer' }}>
-              {term} year
-            </button>
-          )
-        })}
+      {/* Loan term — hover-def + pills (handler preserved) */}
+      <div>
+        <div style={{ fontSize: '12px', fontWeight: 500, color: '#1c2430', marginBottom: '6px' }}>
+          <HelpLabel text="Loan term" def="How long you pay the mortgage; 30 years lowers the monthly payment, 15 raises it but saves interest." />
+        </div>
+        <div style={{ display: 'flex', gap: '6px' }}>
+          {([30, 15] as const).map(term => {
+            const active = loanTerm === term
+            return (
+              <button key={term} type="button"
+                onClick={() => { setLoanTerm(term); setSandboxTouched(true); persistNumbers({ loan_term_preference: term }) }}
+                style={{ padding: '5px 14px', borderRadius: '20px', fontSize: '11px', background: active ? '#0A1E3D' : '#fff', color: active ? '#fff' : '#6B6A65', border: `0.5px solid ${active ? '#0A1E3D' : '#D0CEC8'}`, cursor: 'pointer', fontFamily: 'inherit' }}>
+                {term} year
+              </button>
+            )
+          })}
+        </div>
       </div>
     </div>
   )
@@ -1922,6 +1935,9 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
       <style>{`
         .mm3-secondary-action { transition: opacity 0.15s ease; }
         .mm3-secondary-action:hover, .mm3-secondary-action:focus-visible { opacity: 1 !important; }
+        .mm3-help { position: relative; border-bottom: 1px dotted #a9a69c; cursor: help; }
+        .mm3-help-tip { position: absolute; left: 0; top: calc(100% + 7px); width: 220px; background: #0A1E3D; color: #fff; font-size: 11px; font-weight: 400; line-height: 1.5; padding: 9px 11px; border-radius: 9px; box-shadow: 0 8px 20px rgba(10,30,61,0.28); opacity: 0; visibility: hidden; transform: translateY(-3px); transition: opacity 0.15s, transform 0.15s; z-index: 40; pointer-events: none; }
+        .mm3-help:hover .mm3-help-tip { opacity: 1; visibility: visible; transform: none; }
       `}</style>
 
       {/* Full report modal overlay */}
