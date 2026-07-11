@@ -363,8 +363,6 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // getComparePartnerId below, available from both the hero tabs and the expanded
   // 5-10 list.
   const [compareCityId, setCompareCityId] = useState<string | null>(null)
-  // Presentation-only — the inline "How Texas compares" accordion (default collapsed); saves nothing.
-  const [comparisonOpen, setComparisonOpen] = useState(false)
 
   // Brief 6 C1 — Consultation confirm-gate. Replaces the old pin+lock gate
   // (lifestyleLocked/financialsLocked). `confirmed` is the single gate that unlocks
@@ -1533,13 +1531,18 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // child's existing color choice stays correct unchanged).
   // ──────────────────────────────────────────────────────────
   const livingLedgerSummaryCard = (
-    <div style={{ background: '#0A1E3D', borderRadius: '10px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '10px' }}>
-      {/* BUYING POWER 2×2 GRID — What Matters Most was relocated to the split band below
-          the hero cards; this navy panel is now purely financial. */}
-      <div>
-        <p style={{ fontSize: '9px', fontWeight: 500, letterSpacing: '0.1em', color: '#C5B783', textTransform: 'uppercase', margin: '0 0 8px' }}>
-          Your Buying Power
-        </p>
+    <div style={{ background: '#0A1E3D', borderRadius: '10px', padding: '20px', marginBottom: '10px' }}>
+      {/* MM3 Brief 2 — two-zone financial shell (prototype .finzone, ~60/40). LEFT: buying
+          power (dominant); RIGHT: the origin comparison relocated here always-visible (was a
+          collapsed accordion under the financials). Collapses to one column below 1080px via
+          the .mm3-finzone media rule. Buying-power figures are the already-live-safe set only —
+          no gated per-city breakdown / gauge / rate-sensitivity added. */}
+      <div className="mm3-finzone">
+        {/* LEFT ZONE — Your Buying Power (2×2, already-live figures only) */}
+        <div>
+          <p style={{ fontSize: '9px', fontWeight: 500, letterSpacing: '0.1em', color: '#C5B783', textTransform: 'uppercase', margin: '0 0 8px' }}>
+            Your Buying Power
+          </p>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
           {[
             {
@@ -1643,19 +1646,16 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
 
         return (
           <div>
-            {/* Comparison accordion (layout-only) — collapsible header; the table markup
-                below is byte-for-byte unchanged, gated behind comparisonOpen via display. */}
-            <button type="button" onClick={() => setComparisonOpen(v => !v)} className="mm3-accordion-btn"
-              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '9px 12px', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', marginBottom: comparisonOpen ? '10px' : 0, transition: 'background 0.15s' }}>
+            {/* RIGHT ZONE — origin comparison, relocated here always-visible (Brief 2). The old
+                collapse toggle is replaced by a static header; the table markup below is
+                byte-for-byte unchanged. Keeps its own overflowX:auto so any narrow-column
+                overflow scrolls inside this zone, never the page. */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '9px 12px', marginBottom: '10px' }}>
               <span style={{ fontSize: '9px', fontWeight: 500, letterSpacing: '0.1em', color: '#C5B783', textTransform: 'uppercase' }}>
                 How Texas compares to {originLabel}{originData && originState ? `, ${originState}` : ''}
               </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '7px', flexShrink: 0 }}>
-                <span style={{ fontSize: '10px', color: 'rgba(197,183,131,0.85)', fontWeight: 500 }}>{comparisonOpen ? 'Hide' : 'See the breakdown'}</span>
-                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '20px', height: '20px', borderRadius: '6px', background: 'rgba(197,183,131,0.15)', color: '#C5B783', fontSize: '11px', flexShrink: 0, transform: comparisonOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.18s' }}>▸</span>
-              </span>
-            </button>
-            <div style={{ overflowX: 'auto', display: comparisonOpen ? 'block' : 'none' }}>
+            </div>
+            <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr>
@@ -1699,6 +1699,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           </div>
         )
       })()}
+      </div>
     </div>
   )
 
@@ -2057,7 +2058,8 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         .mm3-help { position: relative; border-bottom: 1px dotted #a9a69c; cursor: help; }
         .mm3-help-tip { position: absolute; left: 0; top: calc(100% + 7px); width: 220px; background: #0A1E3D; color: #fff; font-size: 11px; font-weight: 400; line-height: 1.5; padding: 9px 11px; border-radius: 9px; box-shadow: 0 8px 20px rgba(10,30,61,0.28); opacity: 0; visibility: hidden; transform: translateY(-3px); transition: opacity 0.15s, transform 0.15s; z-index: 40; pointer-events: none; }
         .mm3-help:hover .mm3-help-tip { opacity: 1; visibility: visible; transform: none; }
-        .mm3-accordion-btn:hover { background: rgba(255,255,255,0.09) !important; }
+        .mm3-finzone { display: grid; grid-template-columns: 1.55fr 1fr; gap: 16px; align-items: start; }
+        @media (max-width: 1080px) { .mm3-finzone { grid-template-columns: 1fr; } }
       `}</style>
 
       {/* Full report modal overlay */}
