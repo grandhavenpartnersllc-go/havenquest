@@ -11,7 +11,7 @@ import { createClient } from '../../../lib/supabase/client'
 import { lookupZipCityState } from '../../../utils/zipLookup'
 import { txColIndex, txSafety, txPropertyTax, txJobMarket, txClimateV2 } from '../../../utils/txComparisonStats'
 import CompareModal from '../../results/CompareModal'
-import { SlidersHorizontal, CircleDollarSign, ShieldCheck, MessageCircle, GraduationCap, Users, Briefcase, Mountain, TrendingUp, UtensilsCrossed, Gem, Pencil } from 'lucide-react'
+import { SlidersHorizontal, CircleDollarSign, ShieldCheck, MessageCircle, GraduationCap, Users, Briefcase, Mountain, TrendingUp, UtensilsCrossed, Gem, Pencil, Lock } from 'lucide-react'
 
 const ALL_KEYS = DNA_CATEGORIES.map(c => c.key) as (keyof DNAScores)[]
 
@@ -128,6 +128,11 @@ const METRO_FILTERS = [
   { label: 'Houston',      value: 'Houston' },
   { label: 'San Antonio',  value: 'San Antonio' },
 ]
+
+// MM3 header restructure — Version A generic metro-% hover (shown only under All Texas,
+// where the pills carry the top-1-city match score). Version B (per-metro reasoning) stays
+// PARKED. metroTopScores is the top-scoring city per metro, i.e. the strongest match there.
+const METRO_MATCH_HOVER = 'Your strongest match in this metro. Shown across Texas so you can see where your best options are — pick a metro to explore it.'
 
 function fmtCurrency(raw: string): string {
   const digits = raw.replace(/[^0-9]/g, '')
@@ -1427,45 +1432,100 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   )
 
   // ──────────────────────────────────────────────────────────
-  // Brief 6 C1 — top consultation gate: "Confirm your choices" + "Advance".
-  // Sticky at the top of the Living Ledger (desktop); the mobile bottom bar carries
-  // the same two controls. Both share the `confirmed`/`summaryOpen` gate state.
+  // MM3 header restructure — the header band replaces the old sticky navy ctaBlock.
+  // LEFT: intro line + "Your Relocation Profile" (relocated out of matchesArea) + the
+  // region tabs (moved up, metro-% + Version A hover under All Texas). RIGHT (desktop):
+  // the two STACKED gated CTAs — "Review and confirm your profile" (active) opens the
+  // existing Brief 6 C1 review modal, which sets `confirmed`; "Schedule your consultation"
+  // stays LOCKED until `confirmed`. Same gate state (`confirmed`/`summaryOpen`/hasPinnedCity),
+  // same handlers (setSummaryOpen / handleCommit), same edit-invalidation guard — no new
+  // persistence. Mobile keeps its two controls in the bottom bar; here it shows just the
+  // intro + relocation profile + tabs.
   // ──────────────────────────────────────────────────────────
-  const ctaBlock = (
-    <div style={{ flexShrink: 0, padding: '12px 14px', background: '#0A1E3D', borderRadius: '10px', border: '0.5px solid rgba(0,0,0,0.1)', marginBottom: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-      {ctaError && (
-        <p style={{ fontSize: '10px', color: '#FF6B6B', margin: 0, textAlign: 'center', lineHeight: 1.4 }}>{ctaError}</p>
-      )}
-      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-        <button type="button" onClick={() => { setReconfirmNudge(false); setSummaryOpen(true) }} disabled={!hasPinnedCity}
-          style={{
-            flex: 1, background: confirmed ? 'rgba(197,183,131,0.18)' : 'transparent',
-            color: hasPinnedCity ? '#C5B783' : 'rgba(197,183,131,0.4)',
-            border: `1px solid ${hasPinnedCity ? '#C5B783' : 'rgba(197,183,131,0.3)'}`,
-            borderRadius: '8px', padding: '10px', fontWeight: 600, fontSize: '12.5px',
-            cursor: hasPinnedCity ? 'pointer' : 'not-allowed', fontFamily: 'inherit',
-          }}>
-          {confirmed ? '✓ Choices confirmed' : 'Confirm your choices'}
-        </button>
-        <button type="button" onClick={handleCommit} disabled={committing || !confirmed}
-          style={{
-            flex: 1, background: confirmed ? '#C5B783' : '#2a3d5c', color: confirmed ? '#0A1E3D' : '#8194ad',
-            border: 'none', borderRadius: '8px', padding: '10px', fontWeight: 600, fontSize: '12.5px',
-            cursor: (committing || !confirmed) ? 'not-allowed' : 'pointer',
-            boxShadow: confirmed ? '0 0 0 3px rgba(197,183,131,0.30)' : 'none', fontFamily: 'inherit',
-          }}>
-          {committing ? 'Saving…' : 'Advance to your free consultation →'}
-        </button>
+  const headerBand = (
+    <div style={{
+      display: 'flex', flexDirection: isMobile ? 'column' : 'row',
+      alignItems: isMobile ? 'stretch' : 'flex-start',
+      justifyContent: 'space-between', gap: isMobile ? '10px' : '16px',
+      marginBottom: '12px',
+      ...(isMobile ? {} : { paddingBottom: '12px', borderBottom: '0.5px solid rgba(0,0,0,0.08)' }),
+    }}>
+      {/* LEFT — intro + relocation profile + region tabs */}
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '9px' }}>
+          <p style={{ fontSize: '13px', fontWeight: 500, color: '#0A1E3D', margin: 0 }}>Compare where you&rsquo;d land across Texas.</p>
+          <button type="button" onClick={() => setProfileOpen(true)}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#fff', border: '0.5px solid rgba(0,0,0,0.12)', borderRadius: '9px', color: '#1c2430', fontFamily: 'inherit', fontSize: '12px', fontWeight: 500, padding: '6px 11px', cursor: 'pointer', flexShrink: 0 }}>
+            <span aria-hidden="true">⚙</span> Your Relocation Profile
+          </button>
+        </div>
+        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+          {METRO_FILTERS.map(f => {
+            const active = selectedMetro === f.value
+            const pct = f.value !== 'State' ? metroTopScores[f.value] : undefined
+            return (
+              <button key={f.value} type="button"
+                onClick={() => handleMetroChange(f.value)}
+                title={pct != null ? METRO_MATCH_HOVER : undefined}
+                style={{
+                  padding: '5px 12px', borderRadius: '20px', fontSize: '11px',
+                  fontWeight: active ? 500 : 400,
+                  background: active ? '#0A1E3D' : '#fff',
+                  color: active ? '#fff' : '#1d1d1f',
+                  border: `0.5px solid ${active ? '#0A1E3D' : 'rgba(0,0,0,0.12)'}`,
+                  cursor: 'pointer', fontFamily: 'inherit',
+                }}>{f.label}{pct != null ? ` ${pct}% match` : ''}</button>
+            )
+          })}
+        </div>
       </div>
-      {!ctaError && !hasPinnedCity && (
-        <p style={{ fontSize: '9px', color: 'rgba(255,255,255,0.5)', textAlign: 'center', margin: 0, lineHeight: 1.4 }}>
-          Pin at least one community to confirm your choices.
-        </p>
-      )}
-      {!ctaError && hasPinnedCity && reconfirmNudge && !confirmed && (
-        <p style={{ fontSize: '9px', color: '#C5B783', textAlign: 'center', margin: 0, lineHeight: 1.4 }}>
-          Your choices changed — reconfirm before advancing.
-        </p>
+
+      {/* RIGHT — stacked gated CTAs (desktop only; mobile uses the bottom bar) */}
+      {!isMobile && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '7px', flexShrink: 0, width: '248px' }}>
+          <button type="button" onClick={() => { setReconfirmNudge(false); setSummaryOpen(true) }} disabled={!hasPinnedCity}
+            title="Lock in your priorities, budget, and matches. Confirming unlocks scheduling your consultation."
+            style={{
+              width: '100%',
+              background: confirmed ? 'rgba(197,183,131,0.16)' : (hasPinnedCity ? '#C5B783' : '#E7E5DF'),
+              color: confirmed ? '#8a6f00' : (hasPinnedCity ? '#0A1E3D' : '#a4a097'),
+              border: confirmed ? '1px solid rgba(197,183,131,0.6)' : 'none',
+              borderRadius: '9px', padding: '10px', fontWeight: 600, fontSize: '12.5px',
+              cursor: hasPinnedCity ? 'pointer' : 'not-allowed', fontFamily: 'inherit',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+            }}>
+            {confirmed ? '✓ Profile confirmed' : 'Review and confirm your profile'}
+          </button>
+          <button type="button" onClick={handleCommit} disabled={committing || !confirmed}
+            title={confirmed
+              ? 'Schedule your consultation with your Market Director.'
+              : 'Once you confirm your profile, you can schedule your consultation with your Market Director.'}
+            style={{
+              width: '100%',
+              background: confirmed ? '#C5B783' : '#EDEBE5',
+              color: confirmed ? '#0A1E3D' : '#a4a097',
+              border: 'none', borderRadius: '9px', padding: '10px', fontWeight: 600, fontSize: '12.5px',
+              cursor: (committing || !confirmed) ? 'not-allowed' : 'pointer',
+              boxShadow: confirmed ? '0 0 0 3px rgba(197,183,131,0.28)' : 'none', fontFamily: 'inherit',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+            }}>
+            {!confirmed && <Lock size={12} style={{ flexShrink: 0 }} />}
+            {committing ? 'Saving…' : (confirmed ? 'Schedule your consultation →' : 'Schedule your consultation')}
+          </button>
+          {ctaError && (
+            <p style={{ fontSize: '10px', color: '#c0392b', margin: 0, textAlign: 'center', lineHeight: 1.4 }}>{ctaError}</p>
+          )}
+          {!ctaError && !hasPinnedCity && (
+            <p style={{ fontSize: '9px', color: '#a4a097', textAlign: 'center', margin: 0, lineHeight: 1.4 }}>
+              Pin at least one community to confirm your choices.
+            </p>
+          )}
+          {!ctaError && hasPinnedCity && reconfirmNudge && !confirmed && (
+            <p style={{ fontSize: '9px', color: '#a48f4e', textAlign: 'center', margin: 0, lineHeight: 1.4 }}>
+              Your choices changed — reconfirm before scheduling.
+            </p>
+          )}
+        </div>
       )}
     </div>
   )
@@ -1657,34 +1717,8 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // summary card (Brief 5). No save/persistence handler changed.
   const matchesArea = (
     <div style={{ marginBottom: '10px' }}>
-      {/* Metro pills */}
-      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '12px' }}>
-        {METRO_FILTERS.map(f => {
-          const active = selectedMetro === f.value
-          const pct = f.value !== 'State' ? metroTopScores[f.value] : undefined
-          return (
-            <button key={f.value} type="button"
-              onClick={() => handleMetroChange(f.value)}
-              style={{
-                padding: '5px 12px', borderRadius: '20px', fontSize: '11px',
-                fontWeight: active ? 500 : 400,
-                background: active ? '#0A1E3D' : '#fff',
-                color: active ? '#fff' : '#1d1d1f',
-                border: `0.5px solid ${active ? '#0A1E3D' : 'rgba(0,0,0,0.12)'}`,
-                cursor: 'pointer', fontFamily: 'inherit',
-              }}>{f.label}{pct != null ? ` · ${pct}%` : ''}</button>
-          )
-        })}
-      </div>
-
-      {/* Heading */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px', gap: '10px', flexWrap: 'wrap' }}>
-        <p style={{ fontSize: '15px', fontWeight: 600, color: '#0A1E3D', margin: 0 }}>Your Top Matches</p>
-        <button type="button" onClick={() => setProfileOpen(true)}
-          style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#fff', border: '0.5px solid rgba(0,0,0,0.12)', borderRadius: '9px', color: '#1c2430', fontFamily: 'inherit', fontSize: '12px', fontWeight: 500, padding: '6px 11px', cursor: 'pointer' }}>
-          <span aria-hidden="true">⚙</span> Your Relocation Profile
-        </button>
-      </div>
+      {/* Heading — region tabs + "Your Relocation Profile" moved up into the header band */}
+      <p style={{ fontSize: '15px', fontWeight: 600, color: '#0A1E3D', margin: '0 0 4px' }}>Your Top Matches</p>
       <p style={{ fontSize: '11px', color: '#86868b', margin: '0 0 10px' }}>Click a card to see how it fits your money.</p>
 
       {/* Hero-3 — card body click FOCUSES (focusCity -> selectedKey, drives Buying Power +
@@ -1754,7 +1788,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                         {isPinnedHero ? '★' : '☆'}
                       </button>
                     </div>
-                    <p style={{ position: 'relative', margin: 0, fontSize: '13px', fontWeight: 600, color: '#fff', textShadow: '0 1px 4px rgba(0,0,0,0.5)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <p style={{ position: 'relative', margin: 0, fontSize: '13px', fontWeight: 700, color: '#fff', textShadow: '0 1px 4px rgba(0,0,0,0.5)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {cityLoc.name}
                     </p>
                   </div>
@@ -1835,8 +1869,8 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
             <button type="button" onClick={() => setShowAllCities(v => !v)}
               style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: '10px', padding: '12px 14px', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
               <span>
-                <span style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#0A1E3D' }}>See {browseCities.length} more</span>
-                <span style={{ display: 'block', fontSize: '11px', color: '#86868b', marginTop: '1px' }}>ranks 4–{3 + browseCities.length}</span>
+                <span style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#0A1E3D' }}>See your full top 10</span>
+                <span style={{ display: 'block', fontSize: '11px', color: '#86868b', marginTop: '1px' }}>the next {browseCities.length} (ranks 4–{3 + browseCities.length})</span>
               </span>
               <span style={{ fontSize: '13px', color: '#C5B783', flexShrink: 0, transform: showAllCities ? 'rotate(90deg)' : 'none', transition: 'transform 0.18s' }}>▸</span>
             </button>
@@ -2407,18 +2441,22 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
 
         {/* ── RESULTS CANVAS (Living Ledger) — full width on mobile ── */}
         <div style={{ flex: 1, background: '#F2F1EE', minWidth: 0, padding: '16px', overflowY: 'auto', paddingBottom: isMobile ? '132px' : '16px' }}>
-          {/* Persistent CTA, top-right — desktop only. Sticky within this column's
-              own scroll container so it stays visible above Your Direction as the
-              Living Ledger's content scrolls, per Craig's "permanently visible,
-              not scrolling out of view, not below the fold" requirement. */}
-          {!isMobile && (
-            <div style={{ position: 'sticky', top: 0, zIndex: 10 }}>
-              {ctaBlock}
+          {/* MM3 header restructure — the header band (intro + region tabs + relocation
+              profile + stacked gated CTAs) replaces the old sticky navy ctaBlock. Desktop:
+              sticky at the top of this scroll column (opaque canvas bg so content scrolls
+              cleanly under it), keeping the CTAs permanently visible per Craig's "not
+              scrolling out of view" requirement. Mobile: renders inline above the matches;
+              its two CTAs live in the fixed bottom bar instead. */}
+          {!isMobile ? (
+            <div style={{ position: 'sticky', top: 0, zIndex: 10, background: '#F2F1EE' }}>
+              {headerBand}
             </div>
+          ) : (
+            headerBand
           )}
-          {/* Brief 4 C2 — matches area (metro pills + Your Top Matches hero-3 + browse
-              expander) on top, then the financial summary card below (Buying Power +
-              comparison stay per Brief 5; the hero-3 was lifted out of it into here). */}
+          {/* Brief 4 C2 — matches area (Your Top Matches hero-3 + browse expander) on top,
+              then the financial summary card below (Buying Power + comparison stay per Brief 5;
+              the hero-3 was lifted out of it into here). */}
           {matchesArea}
           {livingLedgerSummaryCard}
         </div>
@@ -2460,15 +2498,17 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                     borderRadius: '8px', padding: '11px', fontWeight: 600, fontSize: '12px',
                     cursor: hasPinnedCity ? 'pointer' : 'not-allowed', fontFamily: 'inherit',
                   }}>
-                  {confirmed ? '✓ Confirmed' : 'Confirm'}
+                  {confirmed ? '✓ Confirmed' : 'Review & confirm'}
                 </button>
                 <button type="button" onClick={handleCommit} disabled={committing || !confirmed}
                   style={{
                     flex: 1, background: confirmed ? '#C5B783' : '#2a3d5c', color: confirmed ? '#0A1E3D' : '#8194ad',
                     border: 'none', borderRadius: '8px', padding: '11px', fontWeight: 600, fontSize: '12px',
                     cursor: (committing || !confirmed) ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px',
                   }}>
-                  {committing ? 'Saving…' : 'Advance →'}
+                  {!confirmed && <Lock size={11} style={{ flexShrink: 0 }} />}
+                  {committing ? 'Saving…' : (confirmed ? 'Schedule →' : 'Schedule')}
                 </button>
               </div>
               {!ctaError && !hasPinnedCity && (
