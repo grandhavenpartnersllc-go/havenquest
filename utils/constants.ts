@@ -29,14 +29,16 @@ export const DNA_CATEGORIES: {
   icon: string
   label: string
   description: string
+  whatItIs: string
+  howItCounts: string
 }[] = [
-  { key: 'schoolQuality', icon: '🎓', label: 'School Quality', description: 'TEA ratings, STAAR scores, graduation and college-readiness rates' },
-  { key: 'familyLifestyle', icon: '👨‍👩‍👧', label: 'Family Lifestyle', description: 'Parks, youth sports, pediatric healthcare, family-oriented retail' },
-  { key: 'careerAccess', icon: '💼', label: 'Career Access', description: 'Employment growth, employer diversity, commute access' },
-  { key: 'outdoorLifestyle', icon: '🏞️', label: 'Outdoor Lifestyle', description: 'Trails, lakes, parks, and outdoor recreation access' },
-  { key: 'growthPotential', icon: '📈', label: 'Growth Potential', description: 'Population growth, new development, employer expansion' },
-  { key: 'diningEntertainment', icon: '🍽️', label: 'Dining & Entertainment', description: 'Restaurants, nightlife, arts, and walkable entertainment districts' },
-  { key: 'luxuryLifestyle', icon: '💎', label: 'Luxury Lifestyle', description: 'High-end retail, country clubs, premium amenities' },
+  { key: 'schoolQuality', icon: '🎓', label: 'School Quality', description: 'TEA ratings, STAAR scores, graduation and college-readiness rates', whatItIs: "the strength of local public and private schools, from ratings to district reputation.", howItCounts: "one of the heaviest factors in your match by default, and it counts for even more when you mark it a priority." },
+  { key: 'familyLifestyle', icon: '👨‍👩‍👧', label: 'Family Lifestyle', description: 'Parks, youth sports, pediatric healthcare, family-oriented retail', whatItIs: "how well a place suits family life: parks, kid-friendly amenities, safety, and a family-oriented community feel.", howItCounts: "a strong factor in your match by default, and it counts for more when you mark it a priority." },
+  { key: 'careerAccess', icon: '💼', label: 'Career Access', description: 'Employment growth, employer diversity, commute access', whatItIs: "the strength of the local job market and access to employers in your field.", howItCounts: "a strong factor in your match by default, and it counts for more when you mark it a priority." },
+  { key: 'outdoorLifestyle', icon: '🏞️', label: 'Outdoor Lifestyle', description: 'Trails, lakes, parks, and outdoor recreation access', whatItIs: "access to nature, parks, trails, and outdoor recreation.", howItCounts: "a solid mid-weight factor by default, and it counts for more when you mark it a priority." },
+  { key: 'growthPotential', icon: '📈', label: 'Growth Potential', description: 'Population growth, new development, employer expansion', whatItIs: "the area’s economic momentum and how much it’s expected to grow and appreciate over time.", howItCounts: "a solid mid-weight factor by default, and it counts for more when you mark it a priority." },
+  { key: 'diningEntertainment', icon: '🍽️', label: 'Dining & Entertainment', description: 'Restaurants, nightlife, arts, and walkable entertainment districts', whatItIs: "the local food scene, nightlife, and things to do.", howItCounts: "a moderate factor by default, and it counts for more when you mark it a priority." },
+  { key: 'luxuryLifestyle', icon: '💎', label: 'Luxury Lifestyle', description: 'High-end retail, country clubs, premium amenities', whatItIs: "access to upscale amenities, high-end shopping, dining, and premium services.", howItCounts: "a lighter factor by default, but it counts for more when you mark it a priority." },
 ]
 
 export const TIER_LABELS: Record<string, string> = {

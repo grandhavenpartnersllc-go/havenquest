@@ -284,11 +284,15 @@ const TIER_ORDER: Tier[] = ['mustHave', 'important', 'wouldBeNice', 'unassigned'
 // Track-and-ball priority caps (Craig's rule): Must have 3, Important to me 4, the rest
 // unlimited. Overflow cascades DOWN to the first tier with room (see setPriorityTier).
 const PRIORITY_CAPS: number[] = [3, 4, Infinity, Infinity]
-const PRIORITY_TIERS: { label: string; weight: string }[] = [
-  { label: 'Must have', weight: '3×' },
-  { label: 'Important to me', weight: '2×' },
-  { label: 'Would be nice', weight: '1×' },
-  { label: 'Not yet sorted', weight: '1×' },
+// Brief 3 — the per-tier `weight` labels ('3×'/'2×'/'1×') were removed: they DISPLAYED
+// multipliers the engine doesn't apply (real TIER_MULTIPLIERS are 1.5/1.25/1.0). Tier
+// headers now show the name only; the soft "counts for more when you mark it a priority"
+// hover copy carries the meaning without a contradicting number. Engine values untouched.
+const PRIORITY_TIERS: { label: string }[] = [
+  { label: 'Must have' },
+  { label: 'Important to me' },
+  { label: 'Would be nice' },
+  { label: 'Not yet sorted' },
 ]
 // Track-and-ball polish — per-category icons from the same Lucide set as the left rail
 // (SlidersHorizontal / CircleDollarSign / ShieldCheck / MessageCircle). Rendered with no
@@ -1163,18 +1167,16 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         Drag each dot — or tap a band — to set how much it matters. Higher tiers count for more.
       </p>
 
-      {/* Tier header — live counts (n / cap) + weight; flashes on cascade overflow */}
+      {/* Tier header — tier names only (Brief 3: count/multiplier sub-labels removed);
+          the name still flashes on cascade overflow */}
       <div style={{ display: 'grid', gridTemplateColumns: '116px 1fr', alignItems: 'end', marginBottom: '6px' }}>
         <div />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)' }}>
           {PRIORITY_TIERS.map((t, i) => {
-            const counts = [mustHaves.length, niceToHaves.length, notPriorities.length, unassigned.length]
-            const capTxt = PRIORITY_CAPS[i] === Infinity ? `${counts[i]} · ${t.weight}` : `${counts[i]}/${PRIORITY_CAPS[i]} · ${t.weight}`
             const flashing = flashTier === i
             return (
               <div key={t.label} style={{ textAlign: 'center', fontSize: '9px', fontWeight: 600, color: flashing ? '#b5482f' : '#86868b', lineHeight: 1.15, padding: '0 2px', transition: 'color 0.2s' }}>
                 {t.label}
-                <span style={{ display: 'block', fontSize: '8px', fontWeight: 500, color: flashing ? '#b5482f' : '#b3b0a6' }}>{capTxt}</span>
               </div>
             )
           })}
@@ -1192,7 +1194,20 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           <div key={key} style={{ display: 'grid', gridTemplateColumns: '116px 1fr', alignItems: 'center', margin: '9px 0' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '5px', paddingRight: '8px', color: '#1c2430', minWidth: 0 }}>
               <Icon size={14} style={{ flexShrink: 0 }} />
-              <span style={{ fontSize: '11px', fontWeight: 500, lineHeight: 1.2 }}>{cat.label}</span>
+              {/* Brief 3 — two-part category hover (what it is · how it counts), sourced from
+                  DNA_CATEGORIES.whatItIs/howItCounts, rendered through the shared .mm3-help
+                  tooltip. Desktop-only, matching the personality sliders (mobile gets plain text). */}
+              {isMobile ? (
+                <span style={{ fontSize: '11px', fontWeight: 500, lineHeight: 1.2 }}>{cat.label}</span>
+              ) : (
+                <span className="mm3-help" style={{ fontSize: '11px', fontWeight: 500, lineHeight: 1.2 }}>
+                  {cat.label}
+                  <span className="mm3-help-tip">
+                    <b>{cat.label}</b> — {cat.whatItIs}
+                    <span style={{ display: 'block', marginTop: '5px', opacity: 0.85 }}>How it counts: {cat.howItCounts}</span>
+                  </span>
+                </span>
+              )}
             </div>
             <div
               onPointerDown={(e) => handleTrackTap(e, key)}
