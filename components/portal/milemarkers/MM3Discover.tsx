@@ -2285,7 +2285,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           transient during the width transition, so nothing can leak into WorkspacePanel's
           implicit overflow-x:auto (CLAUDE.md §5). Because the width can never grow the
           page, the push transition is safe to keep (no fade fallback needed). */}
-      <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', minHeight: '100%', overflowX: 'hidden' }}>
+      <div style={{ display: 'flex', flex: 1, minWidth: 0, flexDirection: isMobile ? 'column' : 'row', minHeight: '100%', overflowX: 'hidden' }}>
 
         {/* ── ICON RAIL — desktop only ── */}
         {!isMobile && (
