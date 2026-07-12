@@ -1,11 +1,16 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Poppins } from 'next/font/google'
 import './globals.css'
 import BetaGate from '@/components/BetaGate'
 
-const inter = Inter({
+// Brief 4 — app-wide font swap Inter → Poppins (matches the approved prototype). Poppins is
+// not a variable font, so next/font requires explicit weights; 400/500/600/700 are the only
+// weights the app uses (confirmed in Phase 0). Exposed as --font-poppins, consumed by
+// Tailwind v4's --font-sans in globals.css, so the whole app inherits it.
+const poppins = Poppins({
+  weight: ['400', '500', '600', '700'],
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-poppins',
   display: 'swap',
 })
 
@@ -29,7 +34,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} h-full`}>
+    <html lang="en" className={`${poppins.variable} h-full`}>
       <body className="min-h-full flex flex-col antialiased">
         <BetaGate />
         {children}

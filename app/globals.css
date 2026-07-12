@@ -8,7 +8,7 @@
   --color-success-text: #3B6D11;
   --color-warning-bg: #FCEBEB;
   --color-warning-text: #A32D2D;
-  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-sans: var(--font-poppins), system-ui, -apple-system, sans-serif;
 }
 
 :root {
