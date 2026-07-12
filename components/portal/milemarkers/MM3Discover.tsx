@@ -134,6 +134,15 @@ const METRO_FILTERS = [
 // PARKED. metroTopScores is the top-scoring city per metro, i.e. the strongest match there.
 const METRO_MATCH_HOVER = 'Your strongest match in this metro. Shown across Texas so you can see where your best options are — pick a metro to explore it.'
 
+// Brief 7B — per-city hero-photo gradient palette (prototype PALETTE), cycled by card index
+// (i % length). Renders as linear-gradient(150deg, c1, c2) behind the city <Image>; shows when
+// the image is absent/errors, replacing the old flat navy fallback. Presentation only.
+const CARD_GRADIENTS: [string, string][] = [
+  ['#3a6ea5', '#1f3d63'], ['#4a7c59', '#274332'], ['#7a5a7d', '#452845'], ['#8a6a4a', '#4f3a28'],
+  ['#356b8a', '#1d3d50'], ['#5c7a56', '#33472f'], ['#6a6a8a', '#3a3a52'], ['#7d5a6a', '#45303a'],
+  ['#3f7d5a', '#234433'], ['#4a6a95', '#293c56'],
+]
+
 function fmtCurrency(raw: string): string {
   const digits = raw.replace(/[^0-9]/g, '')
   if (!digits) return ''
@@ -1455,69 +1464,33 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // intro + relocation profile + tabs.
   // ──────────────────────────────────────────────────────────
   const headerBand = (
-    <div style={{
-      display: 'flex', flexDirection: isMobile ? 'column' : 'row',
-      alignItems: isMobile ? 'stretch' : 'flex-start',
-      justifyContent: 'space-between', gap: isMobile ? '10px' : '16px',
-      marginBottom: '12px',
-      ...(isMobile ? {} : { paddingBottom: '12px', borderBottom: '0.5px solid rgba(0,0,0,0.08)' }),
-    }}>
-      {/* LEFT — intro + relocation profile + region tabs */}
-      <div style={{ minWidth: 0, flex: 1 }}>
-        {/* MM3 Brief 1 — the standalone "Your Relocation Profile" button was removed here; the
-            "Review and confirm your profile" CTA is now the single review entry (its modal also
-            carries the archetype "why you're moving" line the old read-only popup used to show). */}
-        <p style={{ fontSize: '13px', fontWeight: 500, color: '#0A1E3D', margin: '0 0 9px' }}>Compare where you&rsquo;d land across Texas.</p>
-        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-          {METRO_FILTERS.map(f => {
-            const active = selectedMetro === f.value
-            const pct = f.value !== 'State' ? metroTopScores[f.value] : undefined
-            return (
-              <button key={f.value} type="button"
-                onClick={() => handleMetroChange(f.value)}
-                title={pct != null ? METRO_MATCH_HOVER : undefined}
-                style={{
-                  padding: '5px 12px', borderRadius: '20px', fontSize: '11px',
-                  fontWeight: active ? 500 : 400,
-                  background: active ? '#0A1E3D' : '#fff',
-                  color: active ? '#fff' : '#1d1d1f',
-                  border: `0.5px solid ${active ? '#0A1E3D' : 'rgba(0,0,0,0.12)'}`,
-                  cursor: 'pointer', fontFamily: 'inherit',
-                }}>{f.label}{pct != null ? ` ${pct}% match` : ''}</button>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* RIGHT — gated CTAs (desktop only; mobile uses the bottom bar). Brief 6 — side-by-side
-          in one row (prototype .hactions): Confirm = gold OUTLINE, Advance = gold FILL when
-          unlocked / light-grey locked while gated. Placement + sizing only — the onClick handlers,
-          disabled conditions, `confirmed`/`summaryOpen`/`handleCommit` gate are byte-identical. */}
+    <div style={{ marginBottom: '12px', ...(isMobile ? {} : { paddingBottom: '12px', borderBottom: '0.5px solid rgba(0,0,0,0.08)' }) }}>
+      {/* Brief 7B — CTA strip: its OWN row, right-aligned, ABOVE the metro row (desktop only;
+          mobile uses the fixed bottom bar). Vertically stacked over the metro pills, so the CTAs
+          never share a row with / wrap under the pills at any width. The intro heading was removed
+          (Brief 7B Item A). Gate logic/handlers unchanged — only placement + styling. */}
       {!isMobile && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flexShrink: 0, alignItems: 'flex-end' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-end', marginBottom: '12px' }}>
           <div style={{ display: 'flex', flexDirection: 'row', gap: '10px', alignItems: 'stretch' }}>
-            <button type="button" onClick={() => { setReconfirmNudge(false); setSummaryOpen(true) }} disabled={!hasPinnedCity}
+            {/* Review — navy fill / gold text, card-like hover; opens the existing review/profile modal */}
+            <button type="button" className="mm3-review-cta" onClick={() => { setReconfirmNudge(false); setSummaryOpen(true) }} disabled={!hasPinnedCity}
               title="Lock in your priorities, budget, and matches. Confirming unlocks scheduling your consultation."
               style={{
-                background: confirmed ? '#C5B783' : 'transparent',
-                color: confirmed ? '#0A1E3D' : (hasPinnedCity ? '#a48f4e' : '#b8b3a6'),
-                border: `1.5px solid ${confirmed ? '#C5B783' : (hasPinnedCity ? '#C5B783' : 'rgba(197,183,131,0.4)')}`,
-                borderRadius: '10px', padding: '7px 14px', fontWeight: 600, fontSize: '12px',
+                background: '#0A1E3D', color: '#C5B783', border: '1.5px solid #0A1E3D',
+                borderRadius: '8px', padding: '7px 13px', fontWeight: 600, fontSize: '12.5px',
                 cursor: hasPinnedCity ? 'pointer' : 'not-allowed', fontFamily: 'inherit',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap',
+                opacity: hasPinnedCity ? 1 : 0.55,
               }}>
               {confirmed ? '✓ Profile confirmed' : 'Review and confirm your profile'}
             </button>
+            {/* Schedule — greyed + lock while gated; GOLD fill once confirmed. Gate logic unchanged. */}
             <button type="button" onClick={handleCommit} disabled={committing || !confirmed}
-              title={confirmed
-                ? 'Schedule your consultation with your Market Director.'
-                : 'Once you confirm your profile, you can schedule your consultation with your Market Director.'}
+              title={confirmed ? 'Schedule your consultation with your Market Director.' : 'Confirm your profile to unlock'}
               style={{
-                background: confirmed ? '#C5B783' : '#EDEBE5',
-                color: confirmed ? '#0A1E3D' : '#a4a097',
-                border: 'none', borderRadius: '10px', padding: '9px 15px', fontWeight: 600, fontSize: '12px',
-                cursor: (committing || !confirmed) ? 'not-allowed' : 'pointer',
-                boxShadow: confirmed ? '0 0 0 3px rgba(197,183,131,0.30)' : 'none', fontFamily: 'inherit',
+                background: confirmed ? '#C5B783' : '#e9e6df', color: confirmed ? '#0A1E3D' : '#a7a299',
+                border: 'none', borderRadius: '8px', padding: '7px 13px', fontWeight: 600, fontSize: '12.5px',
+                cursor: (committing || !confirmed) ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap',
               }}>
               {!confirmed && <Lock size={12} style={{ flexShrink: 0 }} />}
@@ -1539,6 +1512,30 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           )}
         </div>
       )}
+
+      {/* Metro row — Brief 7B: bolder pills; active = navy fill/white; metro-% in its own gold span
+          (#C5B783 on white, #d3c493 on the navy active pill). The "% only shows when All Texas is
+          active" logic is unchanged. */}
+      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+        {METRO_FILTERS.map(f => {
+          const active = selectedMetro === f.value
+          const pct = f.value !== 'State' ? metroTopScores[f.value] : undefined
+          return (
+            <button key={f.value} type="button"
+              onClick={() => handleMetroChange(f.value)}
+              title={pct != null ? METRO_MATCH_HOVER : undefined}
+              style={{
+                padding: '9px 17px', borderRadius: '20px', fontSize: '13.5px', fontWeight: 600,
+                background: active ? '#0A1E3D' : '#fff',
+                color: active ? '#fff' : '#1d1d1f',
+                border: `0.5px solid ${active ? '#0A1E3D' : 'rgba(0,0,0,0.12)'}`,
+                cursor: 'pointer', fontFamily: 'inherit',
+              }}>
+              {f.label}{pct != null ? <span style={{ color: active ? '#d3c493' : '#C5B783', fontWeight: 600 }}> {pct}% match</span> : ''}
+            </button>
+          )
+        })}
+      </div>
     </div>
   )
 
@@ -1758,10 +1755,10 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
               if (!cityLoc) return null
               const status = afStatus(cityLoc.housing.medianHomePrice)
               const badge = status === 'comfortable'
-                ? { bg: '#E8F5EE', color: '#1a6b35' }
+                ? { bg: 'rgba(47,143,91,0.13)', color: '#2f8f5b' }
                 : status === 'moderate'
-                ? { bg: '#FAEEDA', color: '#633806' }
-                : { bg: '#FCEBEB', color: '#A32D2D' }
+                ? { bg: 'rgba(185,130,43,0.14)', color: '#b9822b' }
+                : { bg: 'rgba(181,72,47,0.13)', color: '#b5482f' }
               const isPinnedHero = pinnedCities.includes(cityLoc.id)
               const isFocused = cityLoc.id === effectiveSelectedKey
               const cityBalance = Math.max(0, cityLoc.housing.medianHomePrice - totalFunds)
@@ -1770,20 +1767,21 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
               const comparePartner = getComparePartnerId(cityLoc.id)
               return (
                 <div key={id} onClick={() => focusCity(cityLoc.id)}
+                  className={`mm3-hero-card${isFocused ? ' sel' : ''}`}
                   style={{
                     background: '#fff', borderRadius: '14px', overflow: 'hidden', cursor: 'pointer',
                     border: isFocused ? '1.5px solid #C5B783' : '0.5px solid rgba(0,0,0,0.1)',
-                    boxShadow: isFocused ? '0 0 0 2px rgba(197,183,131,0.45)' : 'none',
+                    boxShadow: isFocused ? '0 0 0 2px #C5B783, 0 8px 22px rgba(197,183,131,0.45)' : 'none',
                     display: 'flex', flexDirection: 'column',
                   }}>
                   {/* Photo + rank/pin/compare */}
-                  <div style={{ height: '112px', position: 'relative', background: '#2D4A6B', display: 'flex', alignItems: 'flex-end', padding: '8px 10px' }}>
+                  <div style={{ height: '112px', position: 'relative', background: `linear-gradient(150deg, ${CARD_GRADIENTS[i % CARD_GRADIENTS.length][0]}, ${CARD_GRADIENTS[i % CARD_GRADIENTS.length][1]})`, display: 'flex', alignItems: 'flex-end', padding: '8px 10px' }}>
                     <Image
                       src={cityLoc.cityImageUrl ?? `/images/cities/${cityLoc.id}.jpg`}
                       alt={cityLoc.name} fill style={{ objectFit: 'cover' }}
                       onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
                     />
-                    <span style={{ position: 'absolute', top: '7px', left: '8px', fontSize: '9px', fontWeight: 600, color: '#fff', background: 'rgba(10,30,61,0.72)', padding: '2px 7px', borderRadius: '10px' }}>
+                    <span style={{ position: 'absolute', top: '7px', left: '8px', fontSize: '10px', fontWeight: 600, color: '#fff', background: 'rgba(10,30,61,0.72)', padding: '3px 8px', borderRadius: '20px' }}>
                       {isPinnedHero ? '★ Pinned' : `Match ${i + 1}`}
                     </span>
                     <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', gap: '4px' }}>
@@ -1812,7 +1810,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                     </p>
                   </div>
                   {/* Body — match %, fit badge, median + monthly, See summary report */}
-                  <div style={{ padding: '9px 10px 10px' }}>
+                  <div style={{ padding: '12px 14px 14px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                       <span style={{ fontSize: '19px', fontWeight: 700, color: '#0A1E3D', lineHeight: 1 }}>
                         {match ? match.matchScore : '—'}<span style={{ fontSize: '11px', fontWeight: 500, color: '#86868b' }}>% match</span>
@@ -1822,13 +1820,13 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                       </span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11.5px', color: '#86868b', marginBottom: '7px' }}>
-                      <span>Median <b style={{ color: '#1d1d1f', fontWeight: 600 }}>{fmtK(cityLoc.housing.medianHomePrice)}</b></span>
+                      <span>Median <b style={{ color: '#1d1d1f', fontWeight: 600 }}>${cityLoc.housing.medianHomePrice.toLocaleString()}</b></span>
                       <span>~<b style={{ color: '#1d1d1f', fontWeight: 600 }}>${cityMonthly.toLocaleString()}</b>/mo</span>
                     </div>
-                    <button type="button"
+                    <button type="button" className="mm3-report-link"
                       onClick={e => { e.stopPropagation(); if (match) openReport(match) }}
                       disabled={!match}
-                      style={{ background: 'none', border: 'none', padding: 0, fontFamily: 'inherit', fontSize: '10px', color: '#0076B6', cursor: match ? 'pointer' : 'default' }}>
+                      style={{ background: 'none', border: 'none', padding: 0, fontFamily: 'inherit', fontSize: '10.5px', fontWeight: 500, color: '#0076B6', cursor: match ? 'pointer' : 'default' }}>
                       ▾ See summary report
                     </button>
                   </div>
@@ -2082,6 +2080,15 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         .mm3-help:hover .mm3-help-tip { opacity: 1; visibility: visible; transform: none; }
         .mm3-finzone { display: grid; grid-template-columns: 1.55fr 1fr; gap: 16px; align-items: start; }
         @media (max-width: 1080px) { .mm3-finzone { grid-template-columns: 1fr; } }
+        /* Brief 7B — Review CTA card-like response (navy fill, gold text) */
+        .mm3-review-cta { transition: background 0.18s, box-shadow 0.18s, transform 0.12s; }
+        .mm3-review-cta:not(:disabled):hover { background: #0d284f !important; box-shadow: 0 4px 14px rgba(10,30,61,0.28); transform: translateY(-1px); }
+        .mm3-review-cta:not(:disabled):active { transform: translateY(0) scale(0.985); }
+        /* Brief 7B — hero card hover (border + shadow, NO lift); selected cards keep their gold ring */
+        .mm3-hero-card { transition: border-color 0.16s, box-shadow 0.16s; }
+        .mm3-hero-card:not(.sel):hover { border-color: #c3c0b6 !important; box-shadow: 0 4px 14px rgba(10,30,61,0.09) !important; }
+        /* Brief 7B — "See summary report" underline on hover */
+        .mm3-report-link:not(:disabled):hover { text-decoration: underline; }
       `}</style>
 
       {/* Full report modal overlay */}
