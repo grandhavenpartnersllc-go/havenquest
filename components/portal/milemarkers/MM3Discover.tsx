@@ -1489,48 +1489,51 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         </div>
       </div>
 
-      {/* RIGHT — stacked gated CTAs (desktop only; mobile uses the bottom bar) */}
+      {/* RIGHT — gated CTAs (desktop only; mobile uses the bottom bar). Brief 6 — side-by-side
+          in one row (prototype .hactions): Confirm = gold OUTLINE, Advance = gold FILL when
+          unlocked / light-grey locked while gated. Placement + sizing only — the onClick handlers,
+          disabled conditions, `confirmed`/`summaryOpen`/`handleCommit` gate are byte-identical. */}
       {!isMobile && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '7px', flexShrink: 0, width: '248px' }}>
-          <button type="button" onClick={() => { setReconfirmNudge(false); setSummaryOpen(true) }} disabled={!hasPinnedCity}
-            title="Lock in your priorities, budget, and matches. Confirming unlocks scheduling your consultation."
-            style={{
-              width: '100%',
-              background: confirmed ? 'rgba(197,183,131,0.16)' : (hasPinnedCity ? '#C5B783' : '#E7E5DF'),
-              color: confirmed ? '#8a6f00' : (hasPinnedCity ? '#0A1E3D' : '#a4a097'),
-              border: confirmed ? '1px solid rgba(197,183,131,0.6)' : 'none',
-              borderRadius: '9px', padding: '10px', fontWeight: 600, fontSize: '12.5px',
-              cursor: hasPinnedCity ? 'pointer' : 'not-allowed', fontFamily: 'inherit',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-            }}>
-            {confirmed ? '✓ Profile confirmed' : 'Review and confirm your profile'}
-          </button>
-          <button type="button" onClick={handleCommit} disabled={committing || !confirmed}
-            title={confirmed
-              ? 'Schedule your consultation with your Market Director.'
-              : 'Once you confirm your profile, you can schedule your consultation with your Market Director.'}
-            style={{
-              width: '100%',
-              background: confirmed ? '#C5B783' : '#EDEBE5',
-              color: confirmed ? '#0A1E3D' : '#a4a097',
-              border: 'none', borderRadius: '9px', padding: '10px', fontWeight: 600, fontSize: '12.5px',
-              cursor: (committing || !confirmed) ? 'not-allowed' : 'pointer',
-              boxShadow: confirmed ? '0 0 0 3px rgba(197,183,131,0.28)' : 'none', fontFamily: 'inherit',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-            }}>
-            {!confirmed && <Lock size={12} style={{ flexShrink: 0 }} />}
-            {committing ? 'Saving…' : (confirmed ? 'Schedule your consultation →' : 'Schedule your consultation')}
-          </button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flexShrink: 0, alignItems: 'flex-end' }}>
+          <div style={{ display: 'flex', flexDirection: 'row', gap: '10px', alignItems: 'stretch' }}>
+            <button type="button" onClick={() => { setReconfirmNudge(false); setSummaryOpen(true) }} disabled={!hasPinnedCity}
+              title="Lock in your priorities, budget, and matches. Confirming unlocks scheduling your consultation."
+              style={{
+                background: confirmed ? '#C5B783' : 'transparent',
+                color: confirmed ? '#0A1E3D' : (hasPinnedCity ? '#a48f4e' : '#b8b3a6'),
+                border: `1.5px solid ${confirmed ? '#C5B783' : (hasPinnedCity ? '#C5B783' : 'rgba(197,183,131,0.4)')}`,
+                borderRadius: '10px', padding: '7px 14px', fontWeight: 600, fontSize: '12px',
+                cursor: hasPinnedCity ? 'pointer' : 'not-allowed', fontFamily: 'inherit',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap',
+              }}>
+              {confirmed ? '✓ Profile confirmed' : 'Review and confirm your profile'}
+            </button>
+            <button type="button" onClick={handleCommit} disabled={committing || !confirmed}
+              title={confirmed
+                ? 'Schedule your consultation with your Market Director.'
+                : 'Once you confirm your profile, you can schedule your consultation with your Market Director.'}
+              style={{
+                background: confirmed ? '#C5B783' : '#EDEBE5',
+                color: confirmed ? '#0A1E3D' : '#a4a097',
+                border: 'none', borderRadius: '10px', padding: '9px 15px', fontWeight: 600, fontSize: '12px',
+                cursor: (committing || !confirmed) ? 'not-allowed' : 'pointer',
+                boxShadow: confirmed ? '0 0 0 3px rgba(197,183,131,0.30)' : 'none', fontFamily: 'inherit',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap',
+              }}>
+              {!confirmed && <Lock size={12} style={{ flexShrink: 0 }} />}
+              {committing ? 'Saving…' : (confirmed ? 'Schedule your consultation →' : 'Schedule your consultation')}
+            </button>
+          </div>
           {ctaError && (
-            <p style={{ fontSize: '10px', color: '#c0392b', margin: 0, textAlign: 'center', lineHeight: 1.4 }}>{ctaError}</p>
+            <p style={{ fontSize: '10px', color: '#c0392b', margin: 0, textAlign: 'right', lineHeight: 1.4 }}>{ctaError}</p>
           )}
           {!ctaError && !hasPinnedCity && (
-            <p style={{ fontSize: '9px', color: '#a4a097', textAlign: 'center', margin: 0, lineHeight: 1.4 }}>
+            <p style={{ fontSize: '9px', color: '#a4a097', textAlign: 'right', margin: 0, lineHeight: 1.4 }}>
               Pin at least one community to confirm your choices.
             </p>
           )}
           {!ctaError && hasPinnedCity && reconfirmNudge && !confirmed && (
-            <p style={{ fontSize: '9px', color: '#a48f4e', textAlign: 'center', margin: 0, lineHeight: 1.4 }}>
+            <p style={{ fontSize: '9px', color: '#a48f4e', textAlign: 'right', margin: 0, lineHeight: 1.4 }}>
               Your choices changed — reconfirm before scheduling.
             </p>
           )}
@@ -1734,7 +1737,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const matchesArea = (
     <div style={{ marginBottom: '10px' }}>
       {/* Heading — region tabs + "Your Relocation Profile" moved up into the header band */}
-      <p style={{ fontSize: '15px', fontWeight: 600, color: '#0A1E3D', margin: '0 0 4px' }}>Your Top Matches</p>
+      <p style={{ fontSize: '21px', fontWeight: 600, color: '#0A1E3D', margin: '0 0 4px' }}>Your Top Matches</p>
       <p style={{ fontSize: '11px', color: '#86868b', margin: '0 0 10px' }}>Click a card to see how it fits your money.</p>
 
       {/* Hero-3 — card body click FOCUSES (focusCity -> selectedKey, drives Buying Power +
@@ -1748,7 +1751,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           {rankChangeExplanation && (
             <div style={{ marginBottom: '10px' }}><RankChangeAlert message={rankChangeExplanation} /></div>
           )}
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '16px' }}>
             {heroSlots.map((id, i) => {
               const match = findMatch(id)
               const cityLoc = match?.location ?? getAllCities().find(c => c.id === id)
@@ -1768,13 +1771,13 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
               return (
                 <div key={id} onClick={() => focusCity(cityLoc.id)}
                   style={{
-                    background: '#fff', borderRadius: '12px', overflow: 'hidden', cursor: 'pointer',
+                    background: '#fff', borderRadius: '14px', overflow: 'hidden', cursor: 'pointer',
                     border: isFocused ? '1.5px solid #C5B783' : '0.5px solid rgba(0,0,0,0.1)',
                     boxShadow: isFocused ? '0 0 0 2px rgba(197,183,131,0.45)' : 'none',
                     display: 'flex', flexDirection: 'column',
                   }}>
                   {/* Photo + rank/pin/compare */}
-                  <div style={{ height: '92px', position: 'relative', background: '#2D4A6B', display: 'flex', alignItems: 'flex-end', padding: '8px 10px' }}>
+                  <div style={{ height: '112px', position: 'relative', background: '#2D4A6B', display: 'flex', alignItems: 'flex-end', padding: '8px 10px' }}>
                     <Image
                       src={cityLoc.cityImageUrl ?? `/images/cities/${cityLoc.id}.jpg`}
                       alt={cityLoc.name} fill style={{ objectFit: 'cover' }}
@@ -1787,7 +1790,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                       {comparePartner && (
                         <button type="button" className="mm3-secondary-action" aria-label="Compare"
                           onClick={e => { e.stopPropagation(); setCompareCityId(cityLoc.id) }}
-                          style={{ width: '22px', height: '22px', borderRadius: '7px', border: 'none', background: 'rgba(255,255,255,0.9)', color: '#0A1E3D', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'inherit' }}>
+                          style={{ width: '28px', height: '28px', borderRadius: '8px', border: 'none', background: 'rgba(255,255,255,0.9)', color: '#0A1E3D', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'inherit' }}>
                           ⇄
                         </button>
                       )}
@@ -1795,8 +1798,8 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                         onClick={e => { e.stopPropagation(); isPinnedHero ? unpinCity(cityLoc.id) : pinCity(cityLoc.id) }}
                         disabled={!isPinnedHero && pinnedCities.length >= 3}
                         style={{
-                          width: '22px', height: '22px', borderRadius: '7px', border: 'none',
-                          background: isPinnedHero ? '#C5B783' : 'rgba(255,255,255,0.9)', color: '#0A1E3D', fontSize: '11px',
+                          width: '28px', height: '28px', borderRadius: '8px', border: 'none',
+                          background: isPinnedHero ? '#C5B783' : 'rgba(255,255,255,0.9)', color: '#0A1E3D', fontSize: '13px',
                           cursor: (!isPinnedHero && pinnedCities.length >= 3) ? 'not-allowed' : 'pointer',
                           opacity: (!isPinnedHero && pinnedCities.length >= 3) ? 0.5 : 1,
                           display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'inherit',
@@ -1804,21 +1807,21 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                         {isPinnedHero ? '★' : '☆'}
                       </button>
                     </div>
-                    <p style={{ position: 'relative', margin: 0, fontSize: '13px', fontWeight: 700, color: '#fff', textShadow: '0 1px 4px rgba(0,0,0,0.5)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <p style={{ position: 'relative', margin: 0, fontSize: '16px', fontWeight: 700, color: '#fff', textShadow: '0 1px 4px rgba(0,0,0,0.5)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {cityLoc.name}
                     </p>
                   </div>
                   {/* Body — match %, fit badge, median + monthly, See summary report */}
                   <div style={{ padding: '9px 10px 10px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                      <span style={{ fontSize: '16px', fontWeight: 700, color: '#0A1E3D', lineHeight: 1 }}>
-                        {match ? match.matchScore : '—'}<span style={{ fontSize: '9px', fontWeight: 500, color: '#86868b' }}>% match</span>
+                      <span style={{ fontSize: '19px', fontWeight: 700, color: '#0A1E3D', lineHeight: 1 }}>
+                        {match ? match.matchScore : '—'}<span style={{ fontSize: '11px', fontWeight: 500, color: '#86868b' }}>% match</span>
                       </span>
-                      <span style={{ fontSize: '9.5px', fontWeight: 600, padding: '2px 7px', borderRadius: '10px', background: badge.bg, color: badge.color }}>
+                      <span style={{ fontSize: '10.5px', fontWeight: 600, padding: '2px 7px', borderRadius: '10px', background: badge.bg, color: badge.color }}>
                         {afLabel(status)}
                       </span>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#86868b', marginBottom: '7px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11.5px', color: '#86868b', marginBottom: '7px' }}>
                       <span>Median <b style={{ color: '#1d1d1f', fontWeight: 600 }}>{fmtK(cityLoc.housing.medianHomePrice)}</b></span>
                       <span>~<b style={{ color: '#1d1d1f', fontWeight: 600 }}>${cityMonthly.toLocaleString()}</b>/mo</span>
                     </div>
