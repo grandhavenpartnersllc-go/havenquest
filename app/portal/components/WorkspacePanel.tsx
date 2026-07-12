@@ -21,6 +21,8 @@ export default function WorkspacePanel({ children }: { children: ReactNode }) {
         key={pathname}
         style={{
           minHeight: '100%',
+          display: 'flex',
+          flexDirection: 'column',
           animation: 'workspaceFadeIn 150ms ease-out',
         }}
       >
