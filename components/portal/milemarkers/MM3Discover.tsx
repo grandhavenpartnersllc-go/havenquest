@@ -1546,16 +1546,21 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // child's existing color choice stays correct unchanged).
   // ──────────────────────────────────────────────────────────
   const livingLedgerSummaryCard = (
-    <div style={{ background: '#0A1E3D', borderRadius: '10px', padding: '20px', marginBottom: '10px' }}>
+    // MM3 Brief 5 — finzone surface restyle: the single navy card became a transparent grid
+    // wrapper; each zone is now its own WHITE card on the stone canvas (prototype .finpanel /
+    // .cmpx tokens: #fff, 1px #dcdad2, 16px radius). All text flipped light-on-navy → navy/ink/
+    // muted on white; section headers navy; pinned-city names keep a gold-d accent. Grid,
+    // comparison position, figures/math, and fonts (Poppins) all untouched.
+    <div style={{ marginBottom: '10px' }}>
       {/* MM3 Brief 2 — two-zone financial shell (prototype .finzone, ~60/40). LEFT: buying
           power (dominant); RIGHT: the origin comparison relocated here always-visible (was a
           collapsed accordion under the financials). Collapses to one column below 1080px via
           the .mm3-finzone media rule. Buying-power figures are the already-live-safe set only —
           no gated per-city breakdown / gauge / rate-sensitivity added. */}
       <div className="mm3-finzone">
-        {/* LEFT ZONE — Your Buying Power (2×2, already-live figures only) */}
-        <div>
-          <p style={{ fontSize: '9px', fontWeight: 500, letterSpacing: '0.1em', color: '#C5B783', textTransform: 'uppercase', margin: '0 0 8px' }}>
+        {/* LEFT ZONE — Your Buying Power (2×2). Brief 5 — white card on stone; header navy. */}
+        <div style={{ background: '#fff', border: '1px solid #dcdad2', borderRadius: '16px', padding: '18px 20px' }}>
+          <p style={{ fontSize: '9px', fontWeight: 500, letterSpacing: '0.1em', color: '#0A1E3D', textTransform: 'uppercase', margin: '0 0 8px' }}>
             Your Buying Power
           </p>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
@@ -1582,13 +1587,13 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
               label: 'Interest rate',
               value: `${interestRate}%`,
               sub: interestRate >= 6.25 && interestRate <= 6.75 ? '● In market band' : 'Market: 6.25–6.75%',
-              subColor: interestRate >= 6.25 && interestRate <= 6.75 ? '#48c78e' : undefined,
+              subColor: interestRate >= 6.25 && interestRate <= 6.75 ? '#2f8f5b' : undefined,
             },
           ].map(cell => (
-            <div key={cell.label} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '6px', padding: '7px 9px' }}>
-              <p style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', margin: '0 0 3px' }}>{cell.label}</p>
-              <p style={{ fontSize: '15px', fontWeight: 500, color: '#fff', margin: '0 0 2px', lineHeight: 1.1 }}>{cell.value}</p>
-              <p style={{ fontSize: '9px', color: cell.subColor ?? 'rgba(255,255,255,0.4)', margin: 0 }}>{cell.sub}</p>
+            <div key={cell.label} style={{ background: '#F5F4F1', borderRadius: '6px', padding: '7px 9px' }}>
+              <p style={{ fontSize: '9px', color: '#6a7180', margin: '0 0 3px' }}>{cell.label}</p>
+              <p style={{ fontSize: '15px', fontWeight: 500, color: '#0A1E3D', margin: '0 0 2px', lineHeight: 1.1 }}>{cell.value}</p>
+              <p style={{ fontSize: '9px', color: cell.subColor ?? '#6a7180', margin: 0 }}>{cell.sub}</p>
             </div>
           ))}
         </div>
@@ -1660,13 +1665,12 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         ]
 
         return (
-          <div>
-            {/* RIGHT ZONE — origin comparison, relocated here always-visible (Brief 2). The old
-                collapse toggle is replaced by a static header; the table markup below is
-                byte-for-byte unchanged. Keeps its own overflowX:auto so any narrow-column
-                overflow scrolls inside this zone, never the page. */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '9px 12px', marginBottom: '10px' }}>
-              <span style={{ fontSize: '9px', fontWeight: 500, letterSpacing: '0.1em', color: '#C5B783', textTransform: 'uppercase' }}>
+          <div style={{ background: '#fff', border: '1px solid #dcdad2', borderRadius: '16px', padding: '18px 20px' }}>
+            {/* RIGHT ZONE — origin comparison, always-visible (Brief 2). Brief 5 — white card on
+                stone; navy header with a bottom divider (prototype .cmpx-h). Table markup unchanged;
+                keeps its own overflowX:auto so any narrow-column overflow scrolls inside this zone. */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', borderBottom: '1px solid #dcdad2', padding: '0 0 10px', marginBottom: '10px' }}>
+              <span style={{ fontSize: '9px', fontWeight: 500, letterSpacing: '0.1em', color: '#0A1E3D', textTransform: 'uppercase' }}>
                 How Texas compares to {originLabel}{originData && originState ? `, ${originState}` : ''}
               </span>
             </div>
@@ -1674,12 +1678,12 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr>
-                    <th style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', padding: '4px 6px', textAlign: 'left', fontWeight: 400 }}></th>
-                    <th style={{ fontSize: '9px', color: 'rgba(255,255,255,0.5)', padding: '4px 6px', textAlign: 'right', fontWeight: 400, whiteSpace: 'nowrap' }}>
+                    <th style={{ fontSize: '9px', color: '#6a7180', padding: '4px 6px', textAlign: 'left', fontWeight: 400 }}></th>
+                    <th style={{ fontSize: '9px', color: '#6a7180', padding: '4px 6px', textAlign: 'right', fontWeight: 400, whiteSpace: 'nowrap' }}>
                       {originLabel}
                     </th>
                     {pinnedCols.map((c, i) => (
-                      <th key={i} style={{ fontSize: '9px', color: c ? '#C5B783' : 'rgba(255,255,255,0.2)', padding: '4px 6px', textAlign: 'right', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                      <th key={i} style={{ fontSize: '9px', color: c ? '#a48f4e' : '#b3b0a6', padding: '4px 6px', textAlign: 'right', fontWeight: 500, whiteSpace: 'nowrap' }}>
                         {c ? c.name : 'Pin a city'}
                       </th>
                     ))}
@@ -1687,16 +1691,16 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                 </thead>
                 <tbody>
                   {chartRows.map(row => (
-                    <tr key={row.label} style={{ borderTop: '0.5px solid rgba(255,255,255,0.08)' }}>
-                      <td style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', padding: '5px 6px', whiteSpace: 'nowrap' }}>{row.label}</td>
-                      <td style={{ fontSize: '10px', color: 'rgba(255,255,255,0.7)', padding: '5px 6px', textAlign: 'right', whiteSpace: 'nowrap' }}>{row.originVal}</td>
+                    <tr key={row.label} style={{ borderTop: '0.5px solid #E5E3DC' }}>
+                      <td style={{ fontSize: '9px', color: '#6a7180', padding: '5px 6px', whiteSpace: 'nowrap' }}>{row.label}</td>
+                      <td style={{ fontSize: '10px', color: '#1c2430', padding: '5px 6px', textAlign: 'right', whiteSpace: 'nowrap' }}>{row.originVal}</td>
                       {row.txVals.map((val, ci) => {
                         const isEmpty = val === '—' && !pinnedCols[ci]
                         const isBetter = !isEmpty && (row.alwaysGreen === true || (row.better ? row.better(val, ci) : false))
                         return (
                           <td key={ci} style={{
                             fontSize: '10px',
-                            color: isEmpty ? 'rgba(255,255,255,0.2)' : isBetter ? '#48c78e' : 'rgba(255,255,255,0.7)',
+                            color: isEmpty ? '#b3b0a6' : isBetter ? '#2f8f5b' : '#1c2430',
                             fontWeight: isBetter ? 500 : 400,
                             padding: '5px 6px',
                             textAlign: 'right',
