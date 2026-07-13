@@ -11,19 +11,19 @@ const STEPS = [
     num: '02', key: 'connect', name: 'CONNECT',
     title: 'Meet your Market Director.',
     body: 'A dedicated guide becomes your partner for the whole journey — learning your family, your priorities, and your worries.',
-    accent: null,
+    accent: 'Now you have a partner.',
   },
   {
     num: '03', key: 'navigate', name: 'NAVIGATE',
     title: 'The whole move, handled.',
     body: 'Your guide steers the real work — the home purchase, financing, vendors, schools, and the move itself — so nothing falls through the cracks.',
-    accent: null,
+    accent: 'We help carry the load.',
   },
   {
     num: '04', key: 'breathe', name: 'BREATHE',
     title: 'Home, Texan.',
     body: 'Settled, rooted, and finally able to exhale — not just a closed transaction, but a life that fits.',
-    accent: null,
+    accent: "You're finally home.",
   },
 ]
 
@@ -42,7 +42,7 @@ export default function HowItWorks() {
           From first curiosity to truly home &mdash; a single continuous journey, not a series of handoffs.
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 nav:grid-cols-4" style={{ gap: '22px', marginTop: '48px' }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4" style={{ gap: '22px', marginTop: '48px' }}>
           {STEPS.map((s) => (
             <div
               key={s.num}
@@ -91,7 +91,7 @@ export default function HowItWorks() {
                   {s.body}
                 </p>
                 {s.accent && (
-                  <p className="hq-serif" style={{ fontFamily: SERIF, fontStyle: 'italic', fontSize: '14px', color: HQ.gold, margin: '14px 0 0' }}>
+                  <p className="hq-serif" style={{ fontFamily: SERIF, fontStyle: 'italic', fontSize: '14px', color: HQ.gold, marginTop: 'auto', paddingTop: '14px' }}>
                     {s.accent}
                   </p>
                 )}
