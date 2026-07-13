@@ -1482,7 +1482,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                 borderRadius: '8px', padding: '7px 13px', fontWeight: 600, fontSize: '12.5px',
                 cursor: hasPinnedCity ? 'pointer' : 'not-allowed', fontFamily: 'inherit',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap',
-                opacity: hasPinnedCity ? 1 : 0.55,
+                opacity: 1,
               }}>
               {confirmed ? '✓ Profile confirmed' : 'Review and confirm your profile'}
             </button>
@@ -1974,13 +1974,17 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // ──────────────────────────────────────────────────────────
   const nonNegItems: { key: 'hoaStrict' | 'crimeSafety' | 'notWalkable' | 'medicalAccess'; label: string; help: string }[] = [
     { key: 'hoaStrict', label: 'Strict HOA', help: "HOA strictness varies house to house within the same city — this won't filter your matches. We'll flag it for your Market Director to factor in when evaluating specific homes." },
-    { key: 'crimeSafety', label: 'High crime/safety concern', help: 'Excludes communities with a Higher Risk safety rating.' },
-    { key: 'notWalkable', label: 'Not walkable', help: 'Excludes communities with low walkability scores.' },
+    { key: 'crimeSafety', label: 'High crime / safety concerns', help: 'Excludes communities with a Higher Risk safety rating.' },
+    { key: 'notWalkable', label: 'Poor Walkability', help: 'Excludes communities with low walkability scores.' },
     { key: 'medicalAccess', label: 'Limited nearby medical care', help: 'Excludes communities with low healthcare-access scores.' },
   ]
-  const nonNegSetCount = [
+  // Revision — per-section active counts for the split Limits drawer (display only; the
+  // "Anything else" MD note is deliberately not counted in either section).
+  const ruleOutSetCount = [
     nonNegotiables.hoaStrict, nonNegotiables.crimeSafety, nonNegotiables.notWalkable, nonNegotiables.medicalAccess,
-    nonNegotiables.schoolMinGrade != null, nonNegotiables.propertyTaxMaxPct != null, nonNegotiables.anythingElse.trim().length > 0,
+  ].filter(Boolean).length
+  const minStandardsSetCount = [
+    nonNegotiables.schoolMinGrade != null, nonNegotiables.propertyTaxMaxPct != null,
   ].filter(Boolean).length
   const helpIconStyle: React.CSSProperties = {
     fontSize: '9px', color: '#86868b', border: '0.5px solid #D0CEC8', borderRadius: '50%',
@@ -1992,10 +1996,11 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     <div style={{ padding: '14px 18px' }}>
       {/* Drawer-polish — always-expanded (prototype has no collapse); restyled to .nn rows.
           Handlers (updateNonNegotiables / setNonNegotiables / debounceSavePriorities) unchanged. */}
+      {/* Section 1 — Rule Out (dealbreaker toggles) */}
       <p style={{ fontSize: '13px', fontWeight: 600, color: '#0A1E3D', margin: '0 0 2px' }}>
-        Limits{nonNegSetCount > 0 && <span style={{ fontWeight: 400, color: '#6a7180' }}> · {nonNegSetCount} set</span>}
+        Rule Out{ruleOutSetCount > 0 && <span style={{ fontWeight: 400, color: '#6a7180' }}> · {ruleOutSetCount} set</span>}
       </p>
-      <p style={{ fontSize: '11px', color: '#6a7180', margin: '0 0 8px', lineHeight: 1.5 }}><b style={{ fontWeight: 600, color: '#1c2430' }}>Limits</b> are your hard lines — what a community must have, or must avoid, for it to work for your family. Set them here and we&rsquo;ll hold your matches to them.</p>
+      <p style={{ fontSize: '11px', color: '#6a7180', margin: '0 0 8px', lineHeight: 1.5 }}>Turn on any dealbreaker — we&rsquo;ll hide communities that have it.</p>
 
       {nonNegItems.map(item => (
         <div key={item.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 0', borderBottom: '1px solid #E5E3DC', gap: '10px' }}>
@@ -2006,6 +2011,12 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           <NonNegToggle active={nonNegotiables[item.key]} onClick={() => updateNonNegotiables({ [item.key]: !nonNegotiables[item.key] })} />
         </div>
       ))}
+
+      {/* Section 2 — Minimum Standards (threshold dropdowns) */}
+      <p style={{ fontSize: '13px', fontWeight: 600, color: '#0A1E3D', margin: '18px 0 2px' }}>
+        Minimum Standards{minStandardsSetCount > 0 && <span style={{ fontWeight: 400, color: '#6a7180' }}> · {minStandardsSetCount} set</span>}
+      </p>
+      <p style={{ fontSize: '11px', color: '#6a7180', margin: '0 0 8px', lineHeight: 1.5 }}>Set the bars a community has to meet.</p>
 
       {/* School rating threshold — .nn + .thresh */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 0', borderBottom: '1px solid #E5E3DC', gap: '10px' }}>
