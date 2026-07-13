@@ -4,24 +4,27 @@ import { HQ, SANS } from './theme'
 
 export type MetroKey = 'dallas' | 'austin' | 'houston' | 'sanAntonio'
 
-// Stylized positions (viewBox 0 0 640 660) — NOT pin-accurate (the city data has no
-// lat/lng). DFW north-central, Austin center, San Antonio just below Austin, Houston
-// to the southeast.
+// viewBox cropped to the Texas outline's bounding box (+ padding).
+const VB = { x: 553, y: 334, w: 270, h: 263 }
+
+// Metro markers geo-calibrated onto the real outline: an affine lon/lat -> path fit
+// anchored on El Paso's west tip, the southern tip, and the Panhandle's NW corner;
+// each point was verified to sit inside the state fill. DFW north-central, Houston
+// southeast (Gulf), Austin center, San Antonio center-south.
 const METROS: { key: MetroKey; label: string; x: number; y: number }[] = [
-  { key: 'dallas', label: 'Dallas–Fort Worth', x: 360, y: 206 },
-  { key: 'houston', label: 'Houston', x: 452, y: 392 },
-  { key: 'austin', label: 'Austin', x: 322, y: 372 },
-  { key: 'sanAntonio', label: 'San Antonio', x: 280, y: 432 },
+  { key: 'dallas', label: 'Dallas–Fort Worth', x: 758.3, y: 437.1 },
+  { key: 'houston', label: 'Houston', x: 782.8, y: 505.7 },
+  { key: 'austin', label: 'Austin', x: 736.6, y: 490.0 },
+  { key: 'sanAntonio', label: 'San Antonio', x: 720.7, y: 507.1 },
 ]
 
-// Stylized Texas silhouette.
+// Real, recognizable Texas state outline (Panhandle, El Paso point, Gulf coast).
+// Source: @svg-maps/usa (MIT) — the standard US-states silhouette, a fixed path.
 const TX_PATH =
-  'M 196 40 L 300 40 L 300 152 L 362 166 L 420 150 L 470 172 L 506 150 L 542 178 ' +
-  'L 542 252 L 526 298 L 506 302 L 506 356 ' +
-  'C 468 402 424 442 366 478 C 336 498 314 522 300 558 ' +
-  'C 282 508 244 482 224 448 C 196 460 180 452 168 470 ' +
-  'C 150 452 138 452 132 470 C 104 402 74 360 44 300 ' +
-  'L 176 238 L 196 150 Z'
+  'M793.98,412.15l0.99,1.07l0.79,0.3l0.23,0.43l0.38,0.11l0.47,-0.1l0.7,-0.51l1.05,0.12l0.87,-0.19l1.73,0.22l0.97,0.49l0.09,3.02l0.09,3.03l0.09,3.03l0.09,3.03l0.06,2.83l0.06,2.83l0.06,2.83l0.06,2.83l0.06,2.83l0.06,2.83l0.06,2.83l0.06,2.83l2.7,2.67l1.18,1.85l0.38,0.95l0.19,3.27l0.28,0.78l1.36,1.2l0.05,0.81l1.45,2.33l-0.01,1.11l1.39,2.49l0.77,0.64l0.17,1.71l0.44,1.29l-0.59,0.94l0.29,1.27l-0.34,1.2l-0.16,1.59l-0.82,2.48l-0.75,1.22l-1.01,2.32l0.14,1.91l-0.56,2.1l-0.05,0.8l0.61,1.37l0.3,3.81l-0.3,0.81l-1.25,2.27l-0.93,-0.03l-1.96,3.75l1.22,2.05l-0.06,0.75l-4.1,0.52l-9.25,4.35l-3.61,2.31l0.18,-0.76l4.36,-2.99l-1.56,-0.42l-2.49,0.77l-0.9,-0.27l1.03,-2.43l-0.37,-2.13l-1.77,-0.03l-1.11,1.71l-0.79,-0.06l-1.04,-0.72l-0.79,0.24l0.63,3.85l1.14,1.57l0.96,2.01l-2.54,2.53l-2.36,2.09l-0.24,2l-2.38,2.62l-2.25,1.49l-5.3,3.49l-1.52,0.75l-2.4,1.62l-3.32,1.21l-3.19,1.91l-1.08,0.29l2.04,-1.62l2.41,-1.6l-2.07,0.22l-3.19,-0.75l-1.95,-0.05l-0.02,0.58l-1.49,0.82l-1.53,-1.22l-0.66,-0.82l-0.31,-0.71l-0.65,-0.17l-0.63,0.32l2.26,4.98l0.98,0.22l1.08,0.5l-1.36,1.15l-1.46,0.87l-2.29,0.57l-1.92,-1.83l-0.44,2.27l-0.27,2.27l-0.66,0.58l-1.05,0.82l-0.56,-0.63l-0.26,-0.88l-0.67,0.78l-0.98,0.58l-1.61,0.1l-1.21,0.3l0.02,0.94l0.27,0.95l2.15,-0.72l-0.8,2.42l-2,2.38l-1.62,0.54l-2.46,-0.39l-0.61,0.23l-0.55,0.49l2.81,3.81l-1.93,5.65l-1.22,2.04l-0.83,0.25l-0.89,0.04l-3.17,-1.89l-1.71,-1.45l1.46,3.88l4.17,1.2l0.19,1.46l-0.04,1.25l-0.85,1.45l-0.81,1.93l0.55,1.36l0.61,3.36l0.54,1.55l0.55,4.68l0.64,2.04l3.75,7.52l1.3,0.08l0.2,0.81l-0.14,1.55l-2.79,0.41l-1.18,0.67l-0.24,0.6l-0.18,0.32l-0.36,-0.04l-1.32,-0.45l-2.99,-2.17l-4.37,-1.4l-5.76,-0.63l-3.92,-1.16l-2.07,-1.67l-2.18,-1.02l-2.29,-0.37l-1.88,-0.93l-1.47,-1.5l-2.18,-1l-2.89,-0.5l-1.85,-1.15l-1.22,-2.7l0,-0.04l-1.02,-4.48l-1.37,-2.83l-2.73,-3.55l-0.25,-0.46v0l0,-0.57l0.43,-1.99l-0.25,-1.45l-0.86,-1.21l-0.16,-1.25l0.54,-1.29l0.09,-1.57l-0.35,-1.85l-1.74,-2.05l-3.11,-2.25l-2.59,-3.21l-2.06,-4.17l-2.08,-2.92l-2.11,-1.67l-1.4,-1.99l-0.69,-2.3l-0.17,-1.32l0.34,-0.35l-1.22,-2.58l-2.76,-4.81l-1.54,-3.49l-0.33,-2.17l-1.76,-2.66l-3.18,-3.15l-1.71,-2.03l-0.37,-1.36l-0.01,0l-4.97,-4.19l-1.36,-2.52l-1.13,-0.84l-1.35,0l-0.68,-0.28v-0.55l-0.44,-0.05l-0.87,0.45l-2.76,-0.07l-4.65,-0.6l-3.32,-0.89l-2,-1.17l-1.46,0.04l-0.92,1.25l-1.83,0.72l-2.74,0.18l-2.51,2.26l-2.29,4.34l-1.08,2.82l0.14,1.3l-0.59,0.89l-1.32,0.49l-1.4,1.21l-1.48,1.92l-1.62,0.86l-1.76,-0.21l-3.13,-1.83l-4.49,-3.45l-3.55,-2.21l-2.63,-0.95l-2.25,-1.62l-1.87,-2.29l-1.77,-1.57l-1.67,-0.86l-1.8,-2.51l-1.94,-4.17l-0.86,-3.16l0.31,-3.21l-2.32,-7.29l-1.29,-3.18l-1.04,-1.51l-2.14,-1.89l-3.23,-2.28l-4.18,-4.34l-5.11,-6.41l-3.66,-3.93l-2.23,-1.45l-1.82,-2.32l-1.4,-3.19l-1.47,-2.09l-0.17,-0.11l-2.16,-1.4h0l-1.46,-4.26l0.12,0.01l4.25,0.49l4.26,0.49l4.26,0.47l4.26,0.46l4.26,0.45l4.26,0.44l4.26,0.43l4.26,0.42l4.26,0.41l4.26,0.4l4.27,0.39l4.27,0.38l4.27,0.37l4.27,0.36l4.27,0.35l4.27,0.33l0.52,-6.26l0.51,-6.26l0.52,-6.26l0.51,-6.25l0.52,-6.25l0.51,-6.25l0.51,-6.25l0.51,-6.24l0.51,-6.24l0.51,-6.24l0.51,-6.24l0.51,-6.24l0.51,-6.23l0.51,-6.23l0.51,-6.23l0.51,-6.23l0.75,0.04l3.35,0.26l3.35,0.25l3.35,0.24l3.36,0.23l3.36,0.23l3.36,0.22l3.36,0.21l3.36,0.21l3.36,0.2l3.36,0.19l3.36,0.19l3.36,0.18l3.36,0.17l3.36,0.17l3.36,0.16l3.36,0.15l-0.11,2.66l-0.11,2.66l-0.11,2.66l-0.11,2.66l-0.11,2.66l-0.11,2.66l-0.11,2.66l-0.12,2.66l-0.11,2.66l-0.11,2.66l-0.11,2.66l-0.11,2.66l-0.11,2.66l-0.11,2.66l-0.11,2.66l-0.11,2.66l1.07,0.28l1.32,0.79l3.23,2.98l0.96,0.65l1.78,-0.29l1.9,0.42l0.51,-0.04l0.42,-1.2l0.19,-0.24l0.27,0.05l1.62,1.15l0.31,0.44l0.92,1.59l0.18,1.85l0.53,0.29l1.01,0.25l2.47,0.19l3.11,1.3l1.27,0.22l2.26,-0.26l2.08,1.67l0.74,0.26l0.62,-0.21l1.23,-1.16l2.63,0.2l2.14,-0.16l0.14,1.36l0.35,0.98l1.75,1.08l0.41,0.51l0.05,1.65l0.45,0.43l0.72,0.18l0.75,-0.09l0.89,-0.5l1.95,-1.59l0.59,-0.39l0.36,-0.03l0.35,0.09l0.29,0.36l0.62,1.25l1.66,0.7l0.94,1.07l0.59,0.17l0.65,-0.19l1.04,-0.63l0.81,0.04l0.93,-0.64l0.37,0.15l0.15,0.46l-0.29,1.38l0.15,0.53l0.37,0.62l0.5,0.43l0.49,0.07l0.38,-0.34l0.72,-1.73l-0.04,-0.63l0.79,-0.21l0.36,-0.33l0.47,-1.25l0.81,-0.34l0.43,0.07l0.39,0.36l0.78,1.15l1.88,0.66l0.49,0.04l0.49,-0.24l0.85,-0.94l0.44,-0.11l0.35,0.13l0.2,0.14l0.06,1.12l1.93,1.28l1.42,0.39l1.38,1.29l0.4,0.15l0.68,-1.04l1.33,-0.36l1.27,-1.06l3.68,-1.36l1.46,0.43l1.47,-0.03l0.38,-0.6l2.61,-0.87l0.53,-0.33l0.72,0.42l0.26,0.62l0.34,0.26l1.79,0.3l0.99,-0.04l1.81,-0.82l0.7,-1.03l0.41,-0.06l1.3,0.49l3.44,2.04l1.75,1.66l1.94,0.79l1.06,0.71L793.98,412.15zM784.68,513.12l-0.99,0.23l4.27,-3.51l0.89,-1.16l1.15,0.04l-1.89,1.96L784.68,513.12zM750.41,535.55l-0.74,0.09l0.92,-1.21l1.48,-0.6l3.26,-2.32l1.32,-0.15l0.69,-0.8l0.3,-0.12l-0.2,0.99l-2.61,1.39L750.41,535.55zM745.35,541.16l-0.44,0.05l0.99,-1.84l0.19,-0.74l1.61,-2.32l0.84,-0.34l0.34,1l-1.65,1.63L745.35,541.16zM738.34,554.67l-0.65,1.29l0.2,-1.94l1.7,-4.38l3.4,-5.74l1.41,-0.95l-3.91,6.3L738.34,554.67zM741.7,580.59l-0.3,1.05l-1.63,-4.95l-2.58,-11.17l-0.01,-6.34l0.46,-2.17l0.57,8.96l2.88,11.42L741.7,580.59z'
+
+const pctX = (x: number) => ((x - VB.x) / VB.w) * 100
+const pctY = (y: number) => ((y - VB.y) / VB.h) * 100
 
 export default function TexasMap({
   selected,
@@ -32,7 +35,11 @@ export default function TexasMap({
 }) {
   return (
     <div style={{ position: 'relative', width: '100%' }}>
-      <svg viewBox="0 0 640 660" style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }} aria-hidden>
+      <svg
+        viewBox={`${VB.x} ${VB.y} ${VB.w} ${VB.h}`}
+        style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }}
+        aria-hidden
+      >
         <defs>
           <linearGradient id="hq-tx-fill" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor={HQ.navy3} />
@@ -46,21 +53,21 @@ export default function TexasMap({
           </radialGradient>
         </defs>
 
-        <path d={TX_PATH} fill="url(#hq-tx-fill)" stroke="rgba(201,169,97,0.30)" strokeWidth="1.5" />
+        <path d={TX_PATH} fill="url(#hq-tx-fill)" stroke="rgba(201,169,97,0.32)" strokeWidth={0.8} strokeLinejoin="round" />
 
         {/* City-light glows */}
         {METROS.map((m) => {
           const isSel = m.key === selected
           return (
             <g key={m.key}>
-              <circle cx={m.x} cy={m.y} r={isSel ? 40 : 30} fill="url(#hq-glow)" className={isSel ? undefined : 'hq-glow'} />
-              <circle cx={m.x} cy={m.y} r={isSel ? 6 : 4} fill={isSel ? HQ.goldBright : HQ.gold} />
+              <circle cx={m.x} cy={m.y} r={isSel ? 20 : 15} fill="url(#hq-glow)" className={isSel ? undefined : 'hq-glow'} />
+              <circle cx={m.x} cy={m.y} r={isSel ? 4.2 : 3} fill={isSel ? HQ.goldBright : HQ.gold} />
             </g>
           )
         })}
       </svg>
 
-      {/* Chip labels — the actual interactive metro selector */}
+      {/* Chip labels — the interactive metro selector */}
       {METROS.map((m) => {
         const isSel = m.key === selected
         return (
@@ -74,8 +81,8 @@ export default function TexasMap({
             aria-label={`Show ${m.label} communities`}
             style={{
               position: 'absolute',
-              left: `${(m.x / 640) * 100}%`,
-              top: `${(m.y / 660) * 100}%`,
+              left: `${pctX(m.x)}%`,
+              top: `${pctY(m.y)}%`,
               transform: 'translate(-50%, -50%)',
               display: 'flex',
               alignItems: 'center',
