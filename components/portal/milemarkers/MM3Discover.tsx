@@ -11,6 +11,7 @@ import { createClient } from '../../../lib/supabase/client'
 import { lookupZipCityState } from '../../../utils/zipLookup'
 import { txColIndex, txSafety, txPropertyTax, txJobMarket, txClimateV2 } from '../../../utils/txComparisonStats'
 import CompareModal from '../../results/CompareModal'
+import AmyPanel from '../amy/AmyPanel'
 import { SlidersHorizontal, CircleDollarSign, ShieldCheck, MessageCircle, GraduationCap, Users, Briefcase, Mountain, TrendingUp, UtensilsCrossed, Gem, Pencil, Lock } from 'lucide-react'
 
 const ALL_KEYS = DNA_CATEGORIES.map(c => c.key) as (keyof DNAScores)[]
@@ -369,6 +370,11 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // open at a time." Replaces the prior desktop activePanel tab switch and the mobile
   // mobileDrawerOpen flag — both were UI-only, no persistence rode on them. null = closed.
   const [openDrawer, setOpenDrawer] = useState<DrawerKey | null>(null)
+  // Ask Amy (Part 1) — Amy reuses the single openDrawer state (so it stays mutually exclusive
+  // with the three Refine drawers) but renders as a dedicated RIGHT-side panel after the canvas.
+  // The shared LEFT drawer must therefore NOT open for 'guide'.
+  const leftDrawerOpen = openDrawer !== null && openDrawer !== 'guide'
+  const amyDrawerOpen = openDrawer === 'guide'
   const [isMobile, setIsMobile] = useState(false)
   const [advancedAssumptionsOpen, setAdvancedAssumptionsOpen] = useState(false) // Declutter pass — Interest rate + Loan term moved behind this
   const [nonNegotiables, setNonNegotiables] = useState<NonNegotiablesState>(DEFAULT_NON_NEGOTIABLES)
@@ -2063,19 +2069,9 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     </div>
   )
 
-  // Brief 3 — Ask Amy launcher is present per the prototype, but its glossary/Q&A
-  // content is deferred to Brief 7. For now the drawer opens this minimal placeholder.
-  const askAmyPlaceholder = (
-    <div style={{ padding: '20px 22px' }}>
-      <p style={{ fontSize: '12.5px', color: '#1d1d1f', lineHeight: 1.6, margin: '0 0 10px' }}>
-        <b style={{ color: '#0A1E3D' }}>Amy</b> is your relocation guide. She&rsquo;ll answer Texas
-        terms and home-buying-process basics right here.
-      </p>
-      <p style={{ fontSize: '11px', color: '#86868b', lineHeight: 1.6, margin: 0 }}>
-        Coming soon. For anything specific to your move, your Market Director is the person to ask.
-      </p>
-    </div>
-  )
+  // Brief 3 — Ask Amy launcher is present per the prototype. Part 1 (Ask Amy shell) replaces
+  // the old inline placeholder with the self-contained <AmyPanel> (right-side panel / mobile
+  // sheet). Curated Q&A + glossary + MD handoff + logging land in Part 2.
 
   // ──────────────────────────────────────────────────────────
   // RENDER
@@ -2356,18 +2352,20 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           </nav>
         )}
 
-        {/* ── SUMMONED DRAWER — desktop only; push model (flex sibling, never overlays) ── */}
+        {/* ── SUMMONED DRAWER (Refine) — desktop only; push model (flex sibling, never overlays).
+             Opens for lifestyle/financials/nonneg only; 'guide' (Ask Amy) has its own right-side
+             panel after the canvas, so this left drawer stays closed for it (leftDrawerOpen). ── */}
         {!isMobile && (
           <aside style={{
             flexShrink: 0,
-            flexBasis: openDrawer ? '404px' : '0px', width: openDrawer ? '404px' : '0px',
+            flexBasis: leftDrawerOpen ? '404px' : '0px', width: leftDrawerOpen ? '404px' : '0px',
             background: '#fff', overflow: 'hidden',
-            borderRight: openDrawer ? '0.5px solid rgba(0,0,0,0.1)' : 'none',
+            borderRight: leftDrawerOpen ? '0.5px solid rgba(0,0,0,0.1)' : 'none',
             transition: 'width 0.28s cubic-bezier(0.4,0,0.2,1), flex-basis 0.28s cubic-bezier(0.4,0,0.2,1)',
             position: 'sticky', top: 0, alignSelf: 'stretch',
             display: 'flex', flexDirection: 'column',
           }}>
-            {openDrawer && (
+            {openDrawer && openDrawer !== 'guide' && (
               <div style={{ width: '404px', height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '20px 22px 14px', borderBottom: '0.5px solid rgba(0,0,0,0.1)', flexShrink: 0 }}>
                   <div>
@@ -2383,7 +2381,6 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                   {openDrawer === 'lifestyle' && lifestyleContent}
                   {openDrawer === 'financials' && financialsContent}
                   {openDrawer === 'nonneg' && nonNegotiablesSection}
-                  {openDrawer === 'guide' && askAmyPlaceholder}
                 </div>
               </div>
             )}
@@ -2418,6 +2415,30 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           {livingLedgerSummaryCard}
           </div>
         </div>
+
+        {/* ── ASK AMY PANEL — desktop only; dedicated RIGHT-side push panel (Part 1 shell).
+             Reuses openDrawer==='guide' (amyDrawerOpen) for mutual exclusivity with the Refine
+             drawers, but renders AFTER the canvas so it slides in from the right and pushes the
+             match field toward center. Same invariant as the left drawer: the canvas (flex:1,
+             min-width:0) shrinks by exactly this panel's width and the row's overflowX:hidden
+             clips any transient, so the panel can never cause horizontal page scroll. */}
+        {!isMobile && (
+          <aside aria-label="Ask Amy" style={{
+            flexShrink: 0,
+            flexBasis: amyDrawerOpen ? '404px' : '0px', width: amyDrawerOpen ? '404px' : '0px',
+            background: '#fff', overflow: 'hidden',
+            borderLeft: amyDrawerOpen ? '0.5px solid rgba(0,0,0,0.1)' : 'none',
+            transition: 'width 0.28s cubic-bezier(0.4,0,0.2,1), flex-basis 0.28s cubic-bezier(0.4,0,0.2,1)',
+            position: 'sticky', top: 0, alignSelf: 'stretch',
+            display: 'flex', flexDirection: 'column',
+          }}>
+            {amyDrawerOpen && (
+              <div style={{ width: '404px', height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                <AmyPanel onClose={() => setOpenDrawer(null)} />
+              </div>
+            )}
+          </aside>
+        )}
       </div>
 
       {/* ── MOBILE STICKY BOTTOM BAR + SUMMONED SHEET ── */}
@@ -2498,15 +2519,19 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                   animation: 'mm3-drawer-up 0.25s ease-out',
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px 0' }}>
-                  <p style={{ fontSize: '13px', fontWeight: 500, color: '#0A1E3D', margin: 0 }}>
-                    {openDrawer === 'financials' && advancedAssumptionsOpen ? 'Advanced Assumptions' : DRAWER_META[openDrawer].title}
-                  </p>
-                  <button type="button" onClick={() => { setOpenDrawer(null); setAdvancedAssumptionsOpen(false) }}
-                    style={{ fontSize: '13px', color: '#86868b', background: 'none', border: 'none', cursor: 'pointer' }}>
-                    ✕ Close
-                  </button>
-                </div>
+                {/* Ask Amy brings its own avatar header (AmyPanel); the shared sheet header is
+                    suppressed for 'guide' so Amy reads as her own space, not a Refine drawer. */}
+                {openDrawer !== 'guide' && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px 0' }}>
+                    <p style={{ fontSize: '13px', fontWeight: 500, color: '#0A1E3D', margin: 0 }}>
+                      {openDrawer === 'financials' && advancedAssumptionsOpen ? 'Advanced Assumptions' : DRAWER_META[openDrawer].title}
+                    </p>
+                    <button type="button" onClick={() => { setOpenDrawer(null); setAdvancedAssumptionsOpen(false) }}
+                      style={{ fontSize: '13px', color: '#86868b', background: 'none', border: 'none', cursor: 'pointer' }}>
+                      ✕ Close
+                    </button>
+                  </div>
+                )}
                 {openDrawer === 'lifestyle' && lifestyleContent}
                 {openDrawer === 'financials' && (
                   advancedAssumptionsOpen ? (
@@ -2520,7 +2545,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                   ) : financialsContent
                 )}
                 {openDrawer === 'nonneg' && nonNegotiablesSection}
-                {openDrawer === 'guide' && askAmyPlaceholder}
+                {openDrawer === 'guide' && <AmyPanel onClose={() => { setOpenDrawer(null); setAdvancedAssumptionsOpen(false) }} />}
               </div>
               <style>{`
                 @keyframes mm3-drawer-up {
