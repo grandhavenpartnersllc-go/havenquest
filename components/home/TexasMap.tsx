@@ -51,9 +51,14 @@ export default function TexasMap({
             <stop offset="45%" stopColor={HQ.gold} stopOpacity="0.35" />
             <stop offset="100%" stopColor={HQ.gold} stopOpacity="0" />
           </radialGradient>
+          {/* Phase 1b — soft low shadow so the state lifts off the cream (shape-only, not
+              the chips). Coordinates are viewBox units (~2px each at render). Live dial-in. */}
+          <filter id="hq-tx-shadow" x="-30%" y="-25%" width="160%" height="170%">
+            <feDropShadow dx="0" dy="7" stdDeviation="6" floodColor="#081426" floodOpacity="0.3" />
+          </filter>
         </defs>
 
-        <path d={TX_PATH} fill="url(#hq-tx-fill)" stroke="rgba(201,169,97,0.32)" strokeWidth={0.8} strokeLinejoin="round" />
+        <path d={TX_PATH} fill="url(#hq-tx-fill)" stroke="rgba(201,169,97,0.32)" strokeWidth={0.8} strokeLinejoin="round" filter="url(#hq-tx-shadow)" />
 
         {/* City-light glows */}
         {METROS.map((m) => {

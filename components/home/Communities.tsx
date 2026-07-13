@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import TexasMap, { type MetroKey } from './TexasMap'
@@ -35,12 +36,29 @@ const METRO_META: Record<MetroKey, { name: string; countyLine: string; summary: 
   },
 }
 
-// Phase A: static default. Interactivity (hover/tap swapping) is wired in Phase B.
-const SELECTED: MetroKey = 'dallas'
+// Phase 1b — map presence (desktop ≥1080px only). Applied inline, gated by a matchMedia
+// state (not a CSS media query) so it reliably turns OFF on mobile where the section stacks
+// and the map is full-width. The transform lives on the wrapper so it carries BOTH the SVG
+// shape and the 4 chips together (labels stay pinned). Magnitude is a live dial-in.
+const MAP_TRANSFORM = 'perspective(1600px) rotateY(12deg) scale(1.06)'
 
 export default function Communities({ cities }: { cities: Record<MetroKey, CityCard[]> }) {
-  const meta = METRO_META[SELECTED]
-  const cards = cities[SELECTED] ?? []
+  // Phase B — metro selector state. Default Dallas–Fort Worth (matches today). TexasMap's
+  // chips call setSelected on hover (desktop) and on click/tap (keyboard/touch/mobile).
+  const [selected, setSelected] = useState<MetroKey>('dallas')
+
+  // Desktop gate for the map transform (see MAP_TRANSFORM). Starts false so SSR/first paint
+  // match; the effect flips it on ≥1080px and tracks resizes.
+  const [isDesktop, setIsDesktop] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1080px)')
+    const update = () => setIsDesktop(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [])
+  const meta = METRO_META[selected]
+  const cards = cities[selected] ?? []
 
   return (
     <section id="communities" style={{ background: HQ.cream, padding: '96px 24px' }}>
@@ -61,8 +79,11 @@ export default function Communities({ cities }: { cities: Record<MetroKey, CityC
         >
           {/* Map */}
           <div style={{ position: 'relative', zIndex: 1 }}>
-            <div className="hq-tx-wrap">
-              <TexasMap selected={SELECTED} onSelect={() => {}} />
+            <div
+              className="hq-tx-wrap"
+              style={{ transformOrigin: 'center center', transform: isDesktop ? MAP_TRANSFORM : undefined }}
+            >
+              <TexasMap selected={selected} onSelect={setSelected} />
             </div>
           </div>
 
