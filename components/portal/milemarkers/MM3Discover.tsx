@@ -93,18 +93,20 @@ const ARCHETYPE_DISPLAY: Record<ArchetypeKey, { label: string; why: string; expl
 
 // Brief 3 — icon rail + summoned drawer shell. The rail replaces the always-open
 // ~40% control panel; each launcher summons a single drawer (one open at a time).
-// "Non-Negotiables" is kept verbatim as the established, shipped term (not "Limits").
+// "Limits" is the shipped user-facing term (as of July 12, 2026); the internal nonNeg /
+// nonNegotiables naming and the persisted `nonNegotiables` sandbox_profile key are kept
+// unchanged for stability — renaming those would corrupt matching/persistence.
 type DrawerKey = 'lifestyle' | 'financials' | 'nonneg' | 'guide'
 const RAIL_ITEMS: { k: DrawerKey; label: string; Icon: typeof SlidersHorizontal; group: 'refine' | 'learn' }[] = [
   { k: 'lifestyle',  label: 'Lifestyle',       Icon: SlidersHorizontal, group: 'refine' },
   { k: 'financials', label: 'Money',           Icon: CircleDollarSign,  group: 'refine' },
-  { k: 'nonneg',     label: 'Non-Negotiables', Icon: ShieldCheck,       group: 'refine' },
+  { k: 'nonneg',     label: 'Limits',          Icon: ShieldCheck,       group: 'refine' },
   { k: 'guide',      label: 'Ask Amy',         Icon: MessageCircle,     group: 'learn'  },
 ]
 const DRAWER_META: Record<DrawerKey, { title: string; subtitle: string }> = {
   lifestyle:  { title: 'Lifestyle',       subtitle: 'What matters most in where you land.' },
   financials: { title: 'Money',           subtitle: 'Your real numbers drive every match live.' },
-  nonneg:     { title: 'Non-Negotiables', subtitle: 'Hard filters — we only show what clears them.' },
+  nonneg:     { title: 'Limits', subtitle: 'Hard filters — we only show what clears them.' },
   guide:      { title: 'Ask Amy',         subtitle: 'Texas terms & buying-process basics.' },
 }
 
@@ -1991,9 +1993,9 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
       {/* Drawer-polish — always-expanded (prototype has no collapse); restyled to .nn rows.
           Handlers (updateNonNegotiables / setNonNegotiables / debounceSavePriorities) unchanged. */}
       <p style={{ fontSize: '13px', fontWeight: 600, color: '#0A1E3D', margin: '0 0 2px' }}>
-        Non-Negotiables{nonNegSetCount > 0 && <span style={{ fontWeight: 400, color: '#6a7180' }}> · {nonNegSetCount} set</span>}
+        Limits{nonNegSetCount > 0 && <span style={{ fontWeight: 400, color: '#6a7180' }}> · {nonNegSetCount} set</span>}
       </p>
-      <p style={{ fontSize: '11px', color: '#6a7180', margin: '0 0 8px', lineHeight: 1.5 }}>Hard filters — we only show communities that clear them.</p>
+      <p style={{ fontSize: '11px', color: '#6a7180', margin: '0 0 8px', lineHeight: 1.5 }}><b style={{ fontWeight: 600, color: '#1c2430' }}>Limits</b> are your hard lines — what a community must have, or must avoid, for it to work for your family. Set them here and we&rsquo;ll hold your matches to them.</p>
 
       {nonNegItems.map(item => (
         <div key={item.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 0', borderBottom: '1px solid #E5E3DC', gap: '10px' }}>
@@ -2211,7 +2213,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                       </div>
                     ))}
                   </div>
-                  <p style={{ fontSize: '11px', color: '#6a7180', margin: '0 0 4px' }}>Non-negotiables</p>
+                  <p style={{ fontSize: '11px', color: '#6a7180', margin: '0 0 4px' }}>Limits</p>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '10px' }}>
                     {nnActive.length ? nnActive.map(n => <span key={n} style={chip}>{n}</span>) : <span style={{ ...chip, color: '#6a7180' }}>none set</span>}
                   </div>
