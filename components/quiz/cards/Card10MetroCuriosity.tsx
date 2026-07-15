@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import OptionCard from '../OptionCard'
-import { NAVY, BLUE } from '../quizTheme'
+import { NAVY, GOLD } from '../quizTheme'
+import CardEyebrow from '../CardEyebrow'
 
 const AREAS = ['Dallas–Fort Worth', 'Austin', 'Houston', 'San Antonio'] as const
 const NO_PREFERENCE = 'No preference — show me the best match'
@@ -28,6 +29,7 @@ export default function Card10MetroCuriosity({ initialValue, onComplete }: Card1
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
+      <CardEyebrow>Texas Areas</CardEyebrow>
       <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2" style={{ color: NAVY }}>
         Are there any Texas areas you&apos;re already drawn to?
       </h1>
@@ -47,7 +49,7 @@ export default function Card10MetroCuriosity({ initialValue, onComplete }: Card1
         disabled={selected.length === 0 && !noPreference}
         onClick={() => onComplete(selected)}
         className="w-full py-3.5 rounded-xl font-bold text-sm transition-opacity disabled:opacity-40 disabled:cursor-not-allowed mb-3"
-        style={{ backgroundColor: BLUE, color: '#FFFFFF' }}
+        style={{ backgroundColor: GOLD, color: NAVY }}
       >
         Continue
       </button>

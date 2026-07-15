@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { Minus, Plus } from 'lucide-react'
-import { NAVY, BLUE } from '../quizTheme'
+import { NAVY, GOLD } from '../quizTheme'
+import CardEyebrow from '../CardEyebrow'
 
 interface Card1HouseholdProps {
   initialValue?: number
@@ -18,6 +19,7 @@ export default function Card1Household({ initialValue, onComplete, onChangeJourn
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
       <div className="flex flex-col items-center text-center">
+        <CardEyebrow center>Your Household</CardEyebrow>
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2" style={{ color: NAVY }}>
           Tell us about your household.
         </h1>
@@ -53,7 +55,7 @@ export default function Card1Household({ initialValue, onComplete, onChangeJourn
         disabled={size === null}
         onClick={() => size !== null && onComplete(size)}
         className="w-full py-3.5 rounded-xl font-bold text-sm transition-opacity disabled:opacity-40 disabled:cursor-not-allowed mb-4"
-        style={{ backgroundColor: BLUE, color: '#FFFFFF' }}
+        style={{ backgroundColor: GOLD, color: NAVY }}
       >
         Continue
       </button>

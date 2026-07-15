@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import PhotoOptionCard from '../PhotoOptionCard'
-import { NAVY, BLUE } from '../quizTheme'
+import { NAVY, GOLD } from '../quizTheme'
+import CardEyebrow from '../CardEyebrow'
 
 const OPTIONS = [
   { key: 'town_square', label: 'Established / Town Square', image: '/images/quiz/town-square.jpg' },
@@ -38,6 +39,7 @@ export default function Card4CommunityFeel({ initialValue, onComplete }: Card4Co
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
+      <CardEyebrow>The Kind of Place</CardEyebrow>
       <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2" style={{ color: NAVY }}>
         Which of these feels most like the life you&apos;re looking for?
       </h1>
@@ -60,7 +62,7 @@ export default function Card4CommunityFeel({ initialValue, onComplete }: Card4Co
         disabled={!selected}
         onClick={() => selected && onComplete(selected, PERSONALITY_MAP[selected])}
         className="w-full py-3.5 rounded-xl font-bold text-sm transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-        style={{ backgroundColor: BLUE, color: '#FFFFFF' }}
+        style={{ backgroundColor: GOLD, color: NAVY }}
       >
         Continue
       </button>

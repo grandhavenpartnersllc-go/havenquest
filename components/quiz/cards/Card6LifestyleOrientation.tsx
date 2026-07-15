@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import Slider from '../Slider'
-import { NAVY, BLUE } from '../quizTheme'
+import { NAVY, GOLD } from '../quizTheme'
+import CardEyebrow from '../CardEyebrow'
 
 interface Card6LifestyleOrientationProps {
   initialValue?: number
@@ -14,6 +15,7 @@ export default function Card6LifestyleOrientation({ initialValue, onComplete }: 
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
+      <CardEyebrow>The Feel</CardEyebrow>
       <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-10" style={{ color: NAVY }}>
         How would you describe your ideal lifestyle?
       </h1>
@@ -26,7 +28,7 @@ export default function Card6LifestyleOrientation({ initialValue, onComplete }: 
         type="button"
         onClick={() => onComplete(value)}
         className="w-full py-3.5 rounded-xl font-bold text-sm"
-        style={{ backgroundColor: BLUE, color: '#FFFFFF' }}
+        style={{ backgroundColor: GOLD, color: NAVY }}
       >
         Continue
       </button>

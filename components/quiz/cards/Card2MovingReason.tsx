@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import OptionCard from '../OptionCard'
 import PhotoOptionCard from '../PhotoOptionCard'
-import { NAVY, BLUE } from '../quizTheme'
+import { NAVY, GOLD } from '../quizTheme'
+import CardEyebrow from '../CardEyebrow'
 import type { EntryPath } from '../../../utils/quizFlow'
 import { Home, GraduationCap, Briefcase, Car, Users, Compass } from 'lucide-react'
 
@@ -45,6 +46,7 @@ export default function Card2MovingReason({ initialValue, path, onComplete }: Ca
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
+      <CardEyebrow>Your Move</CardEyebrow>
       <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2" style={{ color: NAVY }}>
         {path === 'instate' ? "What's driving your next move?" : "What's bringing you to Texas?"}
       </h1>
@@ -77,7 +79,7 @@ export default function Card2MovingReason({ initialValue, path, onComplete }: Ca
         disabled={!selected}
         onClick={() => selected && onComplete(selected, path === 'instate' ? undefined : ARCHETYPE_MAP[selected])}
         className="w-full py-3.5 rounded-xl font-bold text-sm transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-        style={{ backgroundColor: BLUE, color: '#FFFFFF' }}
+        style={{ backgroundColor: GOLD, color: NAVY }}
       >
         Continue
       </button>

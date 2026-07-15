@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import ButtonSelectRow from '../ButtonSelectRow'
-import { NAVY, BLUE } from '../quizTheme'
+import { NAVY, GOLD } from '../quizTheme'
+import CardEyebrow from '../CardEyebrow'
 import type { EntryPath } from '../../../utils/quizFlow'
 import type {
   Card9Answers,
@@ -67,6 +68,7 @@ export default function Card9Financial({ initialValue, path, onComplete }: Card9
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
+      <CardEyebrow>Your Budget</CardEyebrow>
       <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2" style={{ color: NAVY }}>
         Let&apos;s make sure your matches are realistic.
       </h1>
@@ -124,7 +126,7 @@ export default function Card9Financial({ initialValue, path, onComplete }: Card9
         disabled={!incomeRange}
         onClick={handleSubmit}
         className="w-full py-3.5 rounded-xl font-bold text-sm transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-        style={{ backgroundColor: BLUE, color: '#FFFFFF' }}
+        style={{ backgroundColor: GOLD, color: NAVY }}
       >
         Continue
       </button>

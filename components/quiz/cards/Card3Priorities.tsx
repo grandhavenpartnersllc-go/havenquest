@@ -5,7 +5,8 @@ import PrioritySelector from '../../form/PrioritySelector'
 import MobilePriorityBuckets, { type PriorityBucket } from '../MobilePriorityBuckets'
 import { PRIORITY_SELECTABLE_CATEGORIES, MUST_HAVE_MAX, NICE_TO_HAVE_MAX } from '../../../utils/constants'
 import { DNA_CATEGORY_ICONS } from '../../../utils/categoryIcons'
-import { NAVY, BLUE } from '../quizTheme'
+import { NAVY, GOLD } from '../quizTheme'
+import CardEyebrow from '../CardEyebrow'
 import type { DNAScores } from '../../../types'
 import type { PriorityWeight } from '../../../types'
 
@@ -95,6 +96,7 @@ export default function Card3Priorities({ initialValue, onComplete }: Card3Prior
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
+      <CardEyebrow>What Matters Most</CardEyebrow>
       <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2" style={{ color: NAVY }}>
         What matters most to you in a community?
       </h1>
@@ -116,7 +118,7 @@ export default function Card3Priorities({ initialValue, onComplete }: Card3Prior
             disabled={mustHaveCount < 1}
             onClick={handleMobileContinue}
             className="w-full mt-6 py-3.5 rounded-xl font-bold text-sm transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-            style={{ backgroundColor: BLUE, color: '#FFFFFF' }}
+            style={{ backgroundColor: GOLD, color: NAVY }}
           >
             {mustHaveCount >= 1 ? 'Continue' : 'Select at least 1 Must Have to continue'}
           </button>

@@ -5,6 +5,7 @@ import { type LucideIcon } from 'lucide-react'
 import { DNAScores } from '../../types'
 import { DNA_CATEGORIES, PRIORITY_SELECTABLE_CATEGORIES, MUST_HAVE_MAX, NICE_TO_HAVE_MAX } from '../../utils/constants'
 import { DNA_CATEGORY_ICONS } from '../../utils/categoryIcons'
+import { NAVY, GOLD } from '../quiz/quizTheme'
 
 const CHIP_BASE = 'bg-blue-900 border border-blue-400/40 text-white shadow-lg shadow-blue-900/40 hover:bg-blue-800 hover:border-blue-400/70 rounded-xl px-4 py-2 cursor-grab active:cursor-grabbing select-none transition-all duration-200 flex items-center gap-2'
 
@@ -309,7 +310,8 @@ export default function PrioritySelector({ onComplete, categories = PRIORITY_SEL
       <button
         onClick={handleSubmit}
         disabled={!canSubmit}
-        className="w-full bg-accent text-white py-4 rounded-xl font-bold text-base hover:bg-[#154d8a] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        className="w-full py-4 rounded-xl font-bold text-base transition-opacity hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+        style={{ backgroundColor: GOLD, color: NAVY }}
       >
         {canSubmit ? 'Find My Matches →' : 'Select at least 1 Must Have to continue'}
       </button>

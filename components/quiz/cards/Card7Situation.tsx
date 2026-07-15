@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import ButtonSelectRow from '../ButtonSelectRow'
-import { NAVY, BLUE } from '../quizTheme'
+import { NAVY, GOLD } from '../quizTheme'
+import CardEyebrow from '../CardEyebrow'
 import type { EntryPath } from '../../../utils/quizFlow'
 import type { MoveTimelineValue } from '../../../utils/quizProfileMapping'
 
@@ -33,6 +34,7 @@ export default function Card7Situation({ initialValue, path, onComplete }: Card7
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
+      <CardEyebrow>Where You Are</CardEyebrow>
       <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-8" style={{ color: NAVY }}>
         {path === 'instate' ? 'Your Current Texas Situation' : 'Where are you in your move?'}
       </h1>
@@ -59,7 +61,7 @@ export default function Card7Situation({ initialValue, path, onComplete }: Card7
         disabled={!homeStatus || !timeline}
         onClick={() => homeStatus && timeline && onComplete(homeStatus, timeline)}
         className="w-full py-3.5 rounded-xl font-bold text-sm transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-        style={{ backgroundColor: BLUE, color: '#FFFFFF' }}
+        style={{ backgroundColor: GOLD, color: NAVY }}
       >
         Continue
       </button>
