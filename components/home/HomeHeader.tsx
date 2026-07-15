@@ -10,7 +10,6 @@ const NAV_LINKS = [
   { label: 'Communities', href: '#communities' },
   { label: 'Resources', href: '#' },
   { label: 'About', href: '#' },
-  { label: 'Stories', href: '#' },
   { label: 'Contact', href: '#' },
 ]
 
@@ -59,7 +58,8 @@ export default function HomeHeader() {
             position: 'relative',
             maxWidth: '1360px',
             margin: '0 auto',
-            padding: '18px 48px',
+            height: 'var(--hq-header-h)',
+            padding: '0 48px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',

@@ -3,9 +3,9 @@ import { HQ, SANS, SERIF } from './theme'
 const STEPS = [
   {
     num: '01', key: 'explore', name: 'EXPLORE',
-    title: 'Where in Texas is actually yours?',
-    body: 'You research the places, communities, and trade-offs on your own — before any pressure, before any contact.',
-    accent: 'The one phase you do solo.',
+    title: 'Find Your Texas',
+    body: 'Answer a few questions and watch the map narrow to the places that fit your money and your life. Explore as long as you want. Nobody calls you until you ask.',
+    accent: 'Have fun exploring.',
   },
   {
     num: '02', key: 'connect', name: 'CONNECT',
@@ -65,24 +65,14 @@ export default function HowItWorks() {
                   backgroundPosition: 'center',
                   backgroundRepeat: 'no-repeat',
                 }}
-              >
-                <span
-                  style={{
-                    position: 'absolute', top: '14px', left: '14px',
-                    width: '38px', height: '38px', borderRadius: '10px',
-                    background: 'rgba(8,20,38,0.72)', border: '1px solid rgba(201,169,97,0.4)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontFamily: SERIF, fontSize: '16px', fontWeight: 600, color: HQ.gold,
-                  }}
-                >
-                  {s.num}
-                </span>
-              </div>
+              />
+
+              {/* Number badge removed — the step number now lives in the eyebrow below */}
 
               {/* Content */}
               <div style={{ padding: '20px 22px 24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
                 <p style={{ fontFamily: SANS, fontSize: '12px', letterSpacing: '2.5px', textTransform: 'uppercase', color: HQ.gold, margin: '0 0 8px', fontWeight: 600 }}>
-                  {s.name}
+                  {s.num} &mdash; {s.name}
                 </p>
                 <h3 style={{ fontFamily: SANS, fontSize: '18px', fontWeight: 600, color: HQ.offwhite, margin: '0 0 10px', lineHeight: 1.3 }}>
                   {s.title}

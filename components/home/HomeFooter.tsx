@@ -12,7 +12,6 @@ const COLUMNS = [
       { label: 'Communities', href: '#communities' },
       { label: 'Resources', href: '#' },
       { label: 'About', href: '#' },
-      { label: 'Stories', href: '#' },
       { label: 'Contact', href: '#' },
     ],
   },

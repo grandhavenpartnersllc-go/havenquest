@@ -28,7 +28,7 @@ export default function Hero() {
         backgroundRepeat: 'no-repeat',
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'flex-end',
+        justifyContent: 'center',
       }}
     >
       <div
@@ -36,7 +36,10 @@ export default function Hero() {
           width: '100%',
           maxWidth: '1360px',
           margin: '0 auto',
-          padding: '150px 48px 9vh',
+          // padding-top clears the fixed header (same token drives the header's own
+          // height, so they can't drift); bottom is 0 so justify-content:center yields
+          // equal space above the headline and below the trust bar at any viewport height.
+          padding: 'var(--hq-header-h) 48px 0',
           boxSizing: 'border-box',
         }}
         className="hq-hero-inner"
@@ -64,19 +67,19 @@ export default function Hero() {
           Intelligent technology. Personal guidance. One trusted relationship from discovery to home.
         </p>
 
-        {/* CTAs */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', marginTop: '34px' }}>
+        {/* CTAs — spine grid (col1 + shared gap) via .hq-cta-row; stacks on mobile */}
+        <div className="hq-cta-row" style={{ marginTop: '34px' }}>
           <Link
             href={FIND_MY_TEXAS_HREF}
             className="hq-btn-gold"
-            style={{ borderRadius: '9px', padding: '15px 30px', textDecoration: 'none', fontFamily: SANS, fontSize: '15px', fontWeight: 600 }}
+            style={{ borderRadius: '9px', padding: '15px 30px', textDecoration: 'none', fontFamily: SANS, fontSize: '15px', fontWeight: 600, whiteSpace: 'nowrap' }}
           >
             Find My Texas &rarr;
           </Link>
           <a
             href="#"
             className="hq-btn-outline"
-            style={{ borderRadius: '9px', padding: '15px 30px', textDecoration: 'none', fontFamily: SANS, fontSize: '15px', fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: '9px' }}
+            style={{ borderRadius: '9px', padding: '15px 30px', textDecoration: 'none', fontFamily: SANS, fontSize: '15px', fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: '9px', whiteSpace: 'nowrap' }}
           >
             <span
               aria-hidden
@@ -91,16 +94,11 @@ export default function Hero() {
           </a>
         </div>
 
-        {/* Trust row */}
+        {/* Trust row — spine grid (col1 + shared gap) via .hq-trust-row; col 2 sizes to
+            content so "Personal Guidance"/"Vetted Network" share the CTA's left edge */}
         <div
           className="hq-trust-row"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-            gap: '20px 32px',
-            marginTop: '64px',
-            maxWidth: '760px',
-          }}
+          style={{ marginTop: '64px' }}
         >
           {TRUST.map(({ Icon, label, sub }) => (
             <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
