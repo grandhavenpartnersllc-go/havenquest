@@ -180,12 +180,16 @@ function weightedDNASum(city: Location, weights: Record<keyof DNAScores, number>
 // As of fix_priorities_and_interim_weighting, notPriorities holds only genuine
 // "Would Be Nice" picks — the never-touched set now lives in its own
 // unassignedPriorities field (Card 3 no longer merges the two). Categories absent
-// from all four arrays (shouldn't happen given Card 3's logic always places every
-// category in exactly one of them, but handled defensively) default to
-// 'would_be_nice' per the brief.
+// from all four arrays (the normal case for the now-unselectable growthPotential/
+// careerAccess, and defensively for any malformed profile) default to 'unassigned'
+// (1.0 baseline) so no-signal never inherits the deliberate low tier — see the init below.
 export function buildClientBuckets(profile: UserProfile): Record<keyof DNAScores, DNABucket> {
+  // Default 'unassigned' (1.0 baseline), not 'would_be_nice': a dim absent from all four
+  // arrays reflects no user signal, so it must keep base weight rather than inherit the
+  // deliberate low tier (0.5 after Priority Engine B1). This is what preserves 1.0x for the
+  // now-unselectable growthPotential/careerAccess for a new 5-dim user.
   const buckets = (Object.keys(BASE_DNA_WEIGHTS) as (keyof DNAScores)[])
-    .reduce((acc, k) => ({ ...acc, [k]: 'would_be_nice' as DNABucket }), {} as Record<keyof DNAScores, DNABucket>)
+    .reduce((acc, k) => ({ ...acc, [k]: 'unassigned' as DNABucket }), {} as Record<keyof DNAScores, DNABucket>)
   profile.mustHaves.forEach(k => { buckets[k] = 'must_have' })
   profile.niceToHaves.forEach(k => { buckets[k] = 'important' })
   profile.notPriorities.forEach(k => { buckets[k] = 'would_be_nice' })

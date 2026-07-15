@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 import Image from 'next/image'
 import { CityMatch, UserProfile, UserSession, SandboxProfile, DNAScores, NonNegotiablesState, ArchetypeKey } from '../../../types'
 import FullReport from '../../results/FullReport'
-import { DNA_CATEGORIES } from '../../../utils/constants'
+import { DNA_CATEGORIES, PRIORITY_SELECTABLE_CATEGORIES } from '../../../utils/constants'
 import { getAllCities } from '../../../services/locationService'
 import { getTopMatches, getDownPaymentMidpoint, getProceedsMidpoint } from '../../../services/matchingService'
 import { createClient } from '../../../lib/supabase/client'
@@ -15,6 +15,10 @@ import AmyPanel from '../amy/AmyPanel'
 import { SlidersHorizontal, CircleDollarSign, ShieldCheck, MessageCircle, GraduationCap, Users, Briefcase, Mountain, TrendingUp, UtensilsCrossed, Gem, Pencil, Lock } from 'lucide-react'
 
 const ALL_KEYS = DNA_CATEGORIES.map(c => c.key) as (keyof DNAScores)[]
+// Priority Engine B1 — the user-selectable subset (growthPotential/careerAccess removed).
+// ALL_KEYS is kept for read-back dedupe + completeness so legacy career/growth placements
+// hydrate and still resolve; SELECTABLE_KEYS drives what the Lifestyle drawer offers.
+const SELECTABLE_KEYS = PRIORITY_SELECTABLE_CATEGORIES.map(c => c.key) as (keyof DNAScores)[]
 
 // Brief 4, Checkpoint 1 — read-back dedupe. Resolves internally-inconsistent stored
 // priority data (a category recorded under multiple buckets) into exclusive membership,
@@ -620,7 +624,10 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         setNotPriorities(d.notPriorities)
         setUnassigned(d.unassigned)
       } else {
-        setNiceToHaves(ALL_KEYS)
+        // No stored priority data → seed the 5 selectable dims to Important. The two
+        // unselectable dims are intentionally left out of every bucket so they fall to the
+        // 'unassigned' default (1.0 base weight), never the boosted Important tier.
+        setNiceToHaves(SELECTABLE_KEYS)
         setUnassigned([])
       }
     }
@@ -1200,8 +1207,9 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         </div>
       </div>
 
-      {/* One track-and-ball per preference item (7 total) */}
-      {ALL_KEYS.map(key => {
+      {/* One track-and-ball per selectable preference item (Priority Engine B1: 5, not 7 —
+          growthPotential/careerAccess have no selector lever). */}
+      {SELECTABLE_KEYS.map(key => {
         const cat = DNA_CATEGORIES.find(c => c.key === key)!
         const Icon = PRIORITY_ICONS[key]
         const tierIdx = TIER_ORDER.indexOf(currentTier(key))

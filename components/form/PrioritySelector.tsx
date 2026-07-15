@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import { type LucideIcon } from 'lucide-react'
 import { DNAScores } from '../../types'
-import { DNA_CATEGORIES, MUST_HAVE_MAX, NICE_TO_HAVE_MAX } from '../../utils/constants'
+import { DNA_CATEGORIES, PRIORITY_SELECTABLE_CATEGORIES, MUST_HAVE_MAX, NICE_TO_HAVE_MAX } from '../../utils/constants'
 import { DNA_CATEGORY_ICONS } from '../../utils/categoryIcons'
 
 const CHIP_BASE = 'bg-blue-900 border border-blue-400/40 text-white shadow-lg shadow-blue-900/40 hover:bg-blue-800 hover:border-blue-400/70 rounded-xl px-4 py-2 cursor-grab active:cursor-grabbing select-none transition-all duration-200 flex items-center gap-2'
@@ -85,7 +85,7 @@ interface PrioritySelectorProps {
   }
 }
 
-export default function PrioritySelector({ onComplete, categories = DNA_CATEGORIES, initialValue }: PrioritySelectorProps) {
+export default function PrioritySelector({ onComplete, categories = PRIORITY_SELECTABLE_CATEGORIES, initialValue }: PrioritySelectorProps) {
   const [items, setItems] = useState<CategoryItem[]>(
     categories.map(c => ({
       key: c.key,

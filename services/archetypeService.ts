@@ -73,7 +73,7 @@ export function getWeightedDNACategories(archetype: ArchetypeKey): Record<keyof 
   return adjusted
 }
 
-export const WEIGHTING_MODEL_VERSION = '2.0'
+export const WEIGHTING_MODEL_VERSION = '2.1'
 
 // Interim weighting model (fix_priorities_and_interim_weighting, July 2026).
 // Effective weight per category = archetype-adjusted baseline importance × tier
@@ -92,9 +92,9 @@ export const WEIGHTING_MODEL_VERSION = '2.0'
 // known cost of preserving baseline weight for unassigned categories, deferred to
 // the future Dynamic Zero-Out model (quiz redesign) to address properly.
 export const TIER_MULTIPLIERS: Record<DNABucket, number> = {
-  must_have: 1.5,
-  important: 1.25,
-  would_be_nice: 1.0,
+  must_have: 2.5,
+  important: 1.75,
+  would_be_nice: 0.5,
   unassigned: 1.0,
 }
 
@@ -107,7 +107,11 @@ export function applyClientWeighting(
   const effectiveWeights: Record<keyof DNAScores, number> = {} as Record<keyof DNAScores, number>
 
   for (const key of Object.keys(archetypeWeights) as (keyof DNAScores)[]) {
-    const bucket = clientBuckets[key] ?? 'would_be_nice'
+    // Absent-from-all-buckets means the user expressed NO signal for this dim, which is
+    // semantically 'unassigned' (1.0 baseline), NOT the deliberate low tier. Defaulting to
+    // 'would_be_nice' (0.5 after Priority Engine B1) would silently halve any absent dim's
+    // weight — including growthPotential/careerAccess once their selector lever is removed.
+    const bucket = clientBuckets[key] ?? 'unassigned'
     const multiplier = TIER_MULTIPLIERS[bucket]
     clientAdjustments[key] = multiplier
     effectiveWeights[key] = archetypeWeights[key] * multiplier

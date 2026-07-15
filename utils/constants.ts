@@ -41,6 +41,18 @@ export const DNA_CATEGORIES: {
   { key: 'luxuryLifestyle', icon: '💎', label: 'Luxury Lifestyle', description: 'High-end retail, country clubs, premium amenities', whatItIs: "access to upscale amenities, high-end shopping, dining, and premium services.", howItCounts: "a lighter factor by default, but it counts for more when you mark it a priority." },
 ]
 
+// Priority-selection subset (Priority Engine B1). growthPotential and careerAccess are
+// omitted from the user-facing priority selectors because their per-city data is a
+// neutral-5 stub for ~72-74% of cities, so letting a user prioritize them would sort on
+// noise. They remain in DNAScores / BASE_DNA_WEIGHTS and are STILL scored at their base
+// weight (the removed selector lever leaves them in the 'unassigned' tier = 1.0x) — only
+// the lever is gone, not the dimension. DNA_CATEGORIES above stays WHOLE so every display/
+// lookup site (incl. non-null-asserted .find on legacy careerAccess/growthPotential values)
+// keeps resolving. Consumed ONLY by the three priority-selection UIs.
+export const PRIORITY_SELECTABLE_CATEGORIES = DNA_CATEGORIES.filter(
+  c => c.key !== 'growthPotential' && c.key !== 'careerAccess'
+)
+
 export const TIER_LABELS: Record<string, string> = {
   tier1: 'Major Metro',
   tier2: 'Growing Suburb',
@@ -62,7 +74,10 @@ export const HOUSEHOLD_OPTIONS: { value: UserProfile['householdSize']; label: st
 ]
 
 export const MUST_HAVE_MAX = 3
-export const NICE_TO_HAVE_MAX = 5
+// Lowered 5 -> 3 (Priority Engine B1). With only 5 selectable dims, a cap of 5 let a user
+// put all five in one tier, which is a strict no-op (uniform tiers cancel under
+// renormalization). Capping at 3 forces genuine selectivity.
+export const NICE_TO_HAVE_MAX = 3
 
 export const SESSION_PROFILE_KEY = 'hq_profile'
 export const SESSION_METRO_KEY = 'hq_metro'

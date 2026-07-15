@@ -3,14 +3,15 @@
 import { useEffect, useState } from 'react'
 import PrioritySelector from '../../form/PrioritySelector'
 import MobilePriorityBuckets, { type PriorityBucket } from '../MobilePriorityBuckets'
-import { DNA_CATEGORIES, MUST_HAVE_MAX, NICE_TO_HAVE_MAX } from '../../../utils/constants'
+import { PRIORITY_SELECTABLE_CATEGORIES, MUST_HAVE_MAX, NICE_TO_HAVE_MAX } from '../../../utils/constants'
 import { DNA_CATEGORY_ICONS } from '../../../utils/categoryIcons'
 import { NAVY, BLUE } from '../quizTheme'
 import type { DNAScores } from '../../../types'
 import type { PriorityWeight } from '../../../types'
 
-// Brief 2a re-skin: all 7 DNA categories apply, unlike the old 12-of-13 lifestyle filter.
-const QUIZ_CATEGORIES = DNA_CATEGORIES
+// Priority Engine B1: the selectable set is the 5-dim subset (growthPotential/careerAccess
+// removed — unbacked stub data). DNA_CATEGORIES stays whole for display elsewhere.
+const QUIZ_CATEGORIES = PRIORITY_SELECTABLE_CATEGORIES
 
 export interface Card3Result {
   priorities: Record<string, PriorityWeight>
