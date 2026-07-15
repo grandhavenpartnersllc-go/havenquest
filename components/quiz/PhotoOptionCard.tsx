@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Check } from 'lucide-react'
-import { NAVY, GOLD } from './quizTheme'
+import { NAVY, GOLD, LINE, SHADOW } from './quizTheme'
 
 interface PhotoOptionCardProps {
   imageUrl: string
@@ -18,8 +18,11 @@ export default function PhotoOptionCard({ imageUrl, title, selected, onClick }: 
     <button
       type="button"
       onClick={onClick}
-      className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden border-2 text-left transition-all hover:shadow-md"
-      style={{ borderColor: selected ? NAVY : '#E5E7EB' }}
+      className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden border-2 text-left transition-all"
+      style={{
+        borderColor: selected ? GOLD : LINE,
+        boxShadow: selected ? `0 0 0 3px rgba(201,169,97,0.22), ${SHADOW}` : SHADOW,
+      }}
     >
       {imgError ? (
         <div className="absolute inset-0" style={{ backgroundColor: NAVY }} />
@@ -46,7 +49,7 @@ export default function PhotoOptionCard({ imageUrl, title, selected, onClick }: 
 
       {selected && (
         <>
-          <div className="absolute inset-0" style={{ backgroundColor: 'rgba(10,30,61,0.3)' }} />
+          <div className="absolute inset-0" style={{ backgroundColor: 'rgba(8,20,38,0.28)' }} />
           <span
             className="absolute top-1/2 left-1/2 w-9 h-9 rounded-full flex items-center justify-center"
             style={{ backgroundColor: GOLD, transform: 'translate(-50%, -50%)' }}

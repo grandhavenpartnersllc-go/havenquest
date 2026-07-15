@@ -1,7 +1,7 @@
 'use client'
 
 import { Check, LucideIcon } from 'lucide-react'
-import { NAVY, GOLD } from './quizTheme'
+import { NAVY, GOLD, LINE, MUTED, SHADOW } from './quizTheme'
 
 interface OptionCardProps {
   icon?: LucideIcon
@@ -16,19 +16,19 @@ export default function OptionCard({ icon: Icon, title, subtitle, selected, onCl
     <button
       type="button"
       onClick={onClick}
-      className="relative flex flex-col items-start p-5 sm:p-6 rounded-2xl border-2 text-left transition-all hover:shadow-md w-full"
+      className="relative flex flex-col items-start p-5 sm:p-6 rounded-2xl border-2 text-left transition-all w-full"
       style={{
-        borderColor: selected ? NAVY : '#E5E7EB',
-        backgroundColor: selected ? NAVY : '#FFFFFF',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06)',
+        borderColor: selected ? GOLD : LINE,
+        backgroundColor: '#FFFFFF',
+        boxShadow: selected ? `0 0 0 3px rgba(201,169,97,0.22), ${SHADOW}` : SHADOW,
       }}
     >
-      {Icon && <Icon className="w-6 h-6 mb-2" style={{ color: selected ? '#FFFFFF' : NAVY }} />}
-      <h3 className="font-bold tracking-tight mb-1" style={{ color: selected ? '#FFFFFF' : NAVY }}>
+      {Icon && <Icon className="w-6 h-6 mb-2" style={{ color: NAVY }} />}
+      <h3 className="font-bold tracking-tight mb-1" style={{ color: NAVY }}>
         {title}
       </h3>
       {subtitle && (
-        <p className="text-sm leading-relaxed" style={{ color: selected ? 'rgba(255,255,255,0.75)' : '#6B7280' }}>
+        <p className="text-sm leading-relaxed" style={{ color: MUTED }}>
           {subtitle}
         </p>
       )}

@@ -1,24 +1,53 @@
 'use client'
 
-import { BLUE } from './quizTheme'
+import { NAVY, GOLD, LINE, MUTED } from './quizTheme'
 
 interface QuizProgressProps {
   current: number
   total: number
 }
 
+// Step label + a row of dots. Dot count is driven entirely by `total`, which the
+// driver computes per entry path via getProgressLabel (5 on the exploring path, 10
+// otherwise) — never a hardcoded number. Dot states per the reskin brief: --line by
+// default, gold when done, navy at scale(1.25) when current.
 export default function QuizProgress({ current, total }: QuizProgressProps) {
-  const pct = total > 0 ? Math.min(100, Math.round((current / total) * 100)) : 0
   return (
-    <div className="w-full max-w-5xl mx-auto mb-6">
-      <p className="text-xs font-medium text-gray-400 mb-2">
-        Card {current} of {total}
-      </p>
-      <div className="w-full h-1 rounded-full bg-gray-200 overflow-hidden">
-        <div
-          className="h-full rounded-full transition-all duration-300"
-          style={{ width: `${pct}%`, backgroundColor: BLUE }}
-        />
+    <div className="w-full max-w-5xl mx-auto mb-8">
+      <div className="flex items-center justify-between">
+        <span
+          style={{
+            fontSize: '11px',
+            letterSpacing: '0.16em',
+            textTransform: 'uppercase',
+            color: MUTED,
+            fontWeight: 600,
+          }}
+        >
+          Step {current} of {total}
+        </span>
+        <div style={{ display: 'flex', gap: '7px', alignItems: 'center' }}>
+          {Array.from({ length: total }).map((_, idx) => {
+            const i = idx + 1
+            const done = i < current
+            const isCurrent = i === current
+            return (
+              <span
+                key={i}
+                aria-hidden
+                style={{
+                  width: '7px',
+                  height: '7px',
+                  borderRadius: '50%',
+                  background: done ? GOLD : isCurrent ? NAVY : LINE,
+                  transform: isCurrent ? 'scale(1.25)' : 'scale(1)',
+                  transition: 'all .35s ease',
+                  display: 'inline-block',
+                }}
+              />
+            )
+          })}
+        </div>
       </div>
     </div>
   )

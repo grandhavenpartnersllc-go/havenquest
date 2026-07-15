@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Header from '../../components/shared/Header'
+import BeginHeader from '../../components/quiz/BeginHeader'
 import Footer from '../../components/shared/Footer'
 import { Check } from 'lucide-react'
 import Gateway from '../../components/quiz/Gateway'
 import MetroCaptureCard, { type MetroCaptureValue } from '../../components/quiz/MetroCaptureCard'
 import QuizProgress from '../../components/quiz/QuizProgress'
-import { NAVY, BLUE } from '../../components/quiz/quizTheme'
+import { NAVY, BLUE, STONE } from '../../components/quiz/quizTheme'
 import Card1Household from '../../components/quiz/cards/Card1Household'
 import Card2MovingReason from '../../components/quiz/cards/Card2MovingReason'
 import Card3Priorities, { type Card3Result } from '../../components/quiz/cards/Card3Priorities'
@@ -385,8 +385,8 @@ export default function BeginPage() {
 
   return (
     <>
-      <Header />
-      <main className="flex-1 bg-surface">
+      <BeginHeader />
+      <main className="flex-1" style={{ background: STONE }}>
         <div className="max-w-6xl mx-auto px-4 py-16 pb-24">
 
           {phase === 'resume' && resumeData && (
