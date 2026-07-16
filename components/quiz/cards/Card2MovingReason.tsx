@@ -3,8 +3,7 @@
 import { useState } from 'react'
 import OptionCard from '../OptionCard'
 import PhotoOptionCard from '../PhotoOptionCard'
-import { NAVY, GOLD } from '../quizTheme'
-import CardEyebrow from '../CardEyebrow'
+import CardShell, { PILL_CLASS } from '../CardShell'
 import type { EntryPath } from '../../../utils/quizFlow'
 import { Home, GraduationCap, Briefcase, Car, Users, Compass } from 'lucide-react'
 
@@ -39,21 +38,33 @@ interface Card2MovingReasonProps {
   initialValue?: string
   path: EntryPath
   onComplete: (optionKey: string, archetype?: string) => void
+  onBack?: () => void
 }
 
-export default function Card2MovingReason({ initialValue, path, onComplete }: Card2MovingReasonProps) {
+export default function Card2MovingReason({ initialValue, path, onComplete, onBack }: Card2MovingReasonProps) {
   const [selected, setSelected] = useState<string | null>(initialValue ?? null)
+  const isInstate = path === 'instate'
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
-      <CardEyebrow>Your Move</CardEyebrow>
-      <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2" style={{ color: NAVY }}>
-        {path === 'instate' ? "What's driving your next move?" : "What's bringing you to Texas?"}
-      </h1>
-      <p className="text-gray-500 mb-8">We&apos;ll use this to tailor your community recommendations.</p>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
-        {path === 'instate'
+    <CardShell
+      eyebrow="Your Move"
+      title={isInstate ? "What's driving your next move?" : "What's bringing you to Texas?"}
+      sub="We'll use this to tailor your community recommendations."
+      panel={isInstate}
+      onBack={onBack}
+      next={
+        <button
+          type="button"
+          disabled={!selected}
+          onClick={() => selected && onComplete(selected, isInstate ? undefined : ARCHETYPE_MAP[selected])}
+          className={PILL_CLASS}
+        >
+          Continue
+        </button>
+      }
+    >
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {isInstate
           ? INSTATE_OPTIONS.map(opt => (
               <OptionCard
                 key={opt.key}
@@ -73,16 +84,6 @@ export default function Card2MovingReason({ initialValue, path, onComplete }: Ca
               />
             ))}
       </div>
-
-      <button
-        type="button"
-        disabled={!selected}
-        onClick={() => selected && onComplete(selected, path === 'instate' ? undefined : ARCHETYPE_MAP[selected])}
-        className="w-full py-3.5 rounded-xl font-bold text-sm transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-        style={{ backgroundColor: GOLD, color: NAVY }}
-      >
-        Continue
-      </button>
-    </div>
+    </CardShell>
   )
 }

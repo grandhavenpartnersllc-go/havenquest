@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { Minus, Plus } from 'lucide-react'
-import { NAVY, GOLD } from '../quizTheme'
-import CardEyebrow from '../CardEyebrow'
+import { NAVY } from '../quizTheme'
+import CardShell, { PILL_CLASS } from '../CardShell'
 
 interface Card1HouseholdProps {
   initialValue?: number
@@ -17,56 +17,58 @@ export default function Card1Household({ initialValue, onComplete, onChangeJourn
   const display = (n: number) => (n >= 8 ? '8+' : String(n))
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
-      <div className="flex flex-col items-center text-center">
-        <CardEyebrow center>Your Household</CardEyebrow>
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2" style={{ color: NAVY }}>
-          Tell us about your household.
-        </h1>
-        <p className="text-gray-500 mb-8">This helps us find communities that fit your family&apos;s needs.</p>
-
-        <p className="text-sm font-semibold mb-3" style={{ color: NAVY }}>Number of people in your household</p>
-        <div className="flex items-center justify-center gap-6 mb-10">
+    <>
+      <CardShell
+        eyebrow="Your Household"
+        title="Tell us about your household."
+        sub="This helps us find communities that fit your family's needs."
+        next={
           <button
             type="button"
-            onClick={() => setSize(s => Math.max(1, (s ?? 1) - 1))}
             disabled={size === null}
-            className="w-11 h-11 rounded-full border-2 flex items-center justify-center disabled:opacity-30"
-            style={{ borderColor: NAVY, color: NAVY }}
+            onClick={() => size !== null && onComplete(size)}
+            className={PILL_CLASS}
           >
-            <Minus size={18} />
+            Continue
           </button>
-          <span className="text-3xl font-bold w-16 text-center" style={{ color: NAVY }}>
-            {size === null ? '—' : display(size)}
-          </span>
-          <button
-            type="button"
-            onClick={() => setSize(s => Math.min(10, (s ?? 0) + 1))}
-            className="w-11 h-11 rounded-full border-2 flex items-center justify-center"
-            style={{ borderColor: NAVY, color: NAVY }}
-          >
-            <Plus size={18} />
-          </button>
+        }
+      >
+        <div className="flex flex-col items-center text-center">
+          <p className="text-sm font-semibold mb-3" style={{ color: NAVY }}>Number of people in your household</p>
+          <div className="flex items-center justify-center gap-6">
+            <button
+              type="button"
+              onClick={() => setSize(s => Math.max(1, (s ?? 1) - 1))}
+              disabled={size === null}
+              className="w-11 h-11 rounded-full border-2 flex items-center justify-center disabled:opacity-30 hq-focus"
+              style={{ borderColor: NAVY, color: NAVY }}
+            >
+              <Minus size={18} />
+            </button>
+            <span className="text-3xl font-bold w-16 text-center" style={{ color: NAVY }}>
+              {size === null ? '—' : display(size)}
+            </span>
+            <button
+              type="button"
+              onClick={() => setSize(s => Math.min(10, (s ?? 0) + 1))}
+              className="w-11 h-11 rounded-full border-2 flex items-center justify-center hq-focus"
+              style={{ borderColor: NAVY, color: NAVY }}
+            >
+              <Plus size={18} />
+            </button>
+          </div>
         </div>
+      </CardShell>
+
+      <div className="text-center mt-4">
+        <button
+          type="button"
+          onClick={onChangeJourney}
+          className="text-sm text-gray-400 hover:text-gray-600 transition-colors hq-focus"
+        >
+          ← Change journey type
+        </button>
       </div>
-
-      <button
-        type="button"
-        disabled={size === null}
-        onClick={() => size !== null && onComplete(size)}
-        className="w-full py-3.5 rounded-xl font-bold text-sm transition-opacity disabled:opacity-40 disabled:cursor-not-allowed mb-4"
-        style={{ backgroundColor: GOLD, color: NAVY }}
-      >
-        Continue
-      </button>
-
-      <button
-        type="button"
-        onClick={onChangeJourney}
-        className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
-      >
-        ← Change journey type
-      </button>
-    </div>
+    </>
   )
 }

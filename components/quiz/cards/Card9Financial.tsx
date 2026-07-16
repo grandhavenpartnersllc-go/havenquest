@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import ButtonSelectRow from '../ButtonSelectRow'
-import { NAVY, GOLD } from '../quizTheme'
-import CardEyebrow from '../CardEyebrow'
+import { NAVY } from '../quizTheme'
+import CardShell, { PILL_CLASS } from '../CardShell'
 import type { EntryPath } from '../../../utils/quizFlow'
 import type {
   Card9Answers,
@@ -48,9 +48,10 @@ interface Card9FinancialProps {
   initialValue?: Card9Answers
   path: EntryPath
   onComplete: (answers: Card9Answers) => void
+  onBack?: () => void
 }
 
-export default function Card9Financial({ initialValue, path, onComplete }: Card9FinancialProps) {
+export default function Card9Financial({ initialValue, path, onComplete, onBack }: Card9FinancialProps) {
   const [incomeRange, setIncomeRange] = useState<IncomeRangeValue | null>(initialValue?.incomeRange ?? null)
   const [proceedsApplicable, setProceedsApplicable] = useState<'yes' | 'no' | 'not_sure' | null>(initialValue?.proceedsApplicable ?? null)
   const [homeProceeds, setHomeProceeds] = useState<HomeProceedsValue | null>(initialValue?.homeProceeds ?? null)
@@ -67,18 +68,26 @@ export default function Card9Financial({ initialValue, path, onComplete }: Card9
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
-      <CardEyebrow>Your Budget</CardEyebrow>
-      <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2" style={{ color: NAVY }}>
-        Let&apos;s make sure your matches are realistic.
-      </h1>
-      <p className="text-gray-500 mb-8">
-        {path === 'instate'
-          ? 'How do you expect your next Texas move to work financially?'
-          : 'We use ranges — no exact numbers needed.'}
-      </p>
-
-      <div className="mb-8">
+    <CardShell
+      eyebrow="Your Budget"
+      title="Let's make sure your matches are realistic."
+      sub={path === 'instate'
+        ? 'How do you expect your next Texas move to work financially?'
+        : 'We use ranges — no exact numbers needed.'}
+      helper="Separate from any home sale proceeds above — savings, investments, gifts, etc."
+      onBack={onBack}
+      next={
+        <button
+          type="button"
+          disabled={!incomeRange}
+          onClick={handleSubmit}
+          className={PILL_CLASS}
+        >
+          Continue
+        </button>
+      }
+    >
+      <div>
         <p className="text-sm font-semibold mb-3" style={{ color: NAVY }}>Annual Household Income</p>
         <ButtonSelectRow
           options={INCOME_OPTIONS}
@@ -87,7 +96,7 @@ export default function Card9Financial({ initialValue, path, onComplete }: Card9
         />
       </div>
 
-      <div className="mb-8">
+      <div className="hq-qblock">
         <p className="text-sm font-semibold mb-3" style={{ color: NAVY }}>
           Will proceeds from your current home be part of your Texas purchase?
         </p>
@@ -107,12 +116,9 @@ export default function Card9Financial({ initialValue, path, onComplete }: Card9
         )}
       </div>
 
-      <div className="mb-10">
-        <p className="text-sm font-semibold mb-1" style={{ color: NAVY }}>
+      <div className="hq-qblock">
+        <p className="text-sm font-semibold mb-3" style={{ color: NAVY }}>
           Additional funds available for your move and purchase
-        </p>
-        <p className="text-sm text-gray-500 mb-3">
-          Separate from any home sale proceeds above — savings, investments, gifts, etc.
         </p>
         <ButtonSelectRow
           options={FUNDS_OPTIONS}
@@ -120,16 +126,6 @@ export default function Card9Financial({ initialValue, path, onComplete }: Card9
           onSelect={v => setAvailableFunds(v as AvailableFundsValue)}
         />
       </div>
-
-      <button
-        type="button"
-        disabled={!incomeRange}
-        onClick={handleSubmit}
-        className="w-full py-3.5 rounded-xl font-bold text-sm transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-        style={{ backgroundColor: GOLD, color: NAVY }}
-      >
-        Continue
-      </button>
-    </div>
+    </CardShell>
   )
 }

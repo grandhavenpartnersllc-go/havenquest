@@ -5,9 +5,10 @@ import { type LucideIcon } from 'lucide-react'
 import { DNAScores } from '../../types'
 import { DNA_CATEGORIES, PRIORITY_SELECTABLE_CATEGORIES, MUST_HAVE_MAX, NICE_TO_HAVE_MAX } from '../../utils/constants'
 import { DNA_CATEGORY_ICONS } from '../../utils/categoryIcons'
-import { NAVY, GOLD } from '../quiz/quizTheme'
+import { NAVY } from '../quiz/quizTheme'
+import { PILL_CLASS } from '../quiz/CardShell'
 
-const CHIP_BASE = 'bg-blue-900 border border-blue-400/40 text-white shadow-lg shadow-blue-900/40 hover:bg-blue-800 hover:border-blue-400/70 rounded-xl px-4 py-2 cursor-grab active:cursor-grabbing select-none transition-all duration-200 flex items-center gap-2'
+const CHIP_BASE = 'bg-[#081426] border border-[#081426] text-white shadow-lg shadow-black/20 hover:bg-[#0d2036] hover:border-[#0d2036] rounded-xl px-4 py-2 cursor-grab active:cursor-grabbing select-none transition-all duration-200 flex items-center gap-2'
 
 type Bucket = 'mustHave' | 'important' | 'wouldBeNice' | 'unassigned'
 
@@ -162,7 +163,7 @@ export default function PrioritySelector({ onComplete, categories = PRIORITY_SEL
       <div className="mb-5">
         <h2 className="text-xl font-bold text-gray-900 tracking-tight mb-4">Rank your priorities</h2>
 
-        <p style={{ fontSize: '15px', fontWeight: 600, color: '#1A5FA8', marginBottom: '8px' }}>
+        <p style={{ fontSize: '15px', fontWeight: 600, color: NAVY, marginBottom: '8px' }}>
           This is where your results get personal.
         </p>
         <p style={{ fontSize: '14px', color: '#6B7280', lineHeight: 1.6, marginBottom: '8px' }}>
@@ -198,7 +199,7 @@ export default function PrioritySelector({ onComplete, categories = PRIORITY_SEL
             label: 'Must Have',
             sublabel: `Up to ${MUST_HAVE_MAX} · 3× weight`,
             max: MUST_HAVE_MAX as number | null,
-            color: 'text-accent',
+            color: 'text-[#081426]',
           },
           {
             bucket: 'important' as Bucket,
@@ -221,7 +222,7 @@ export default function PrioritySelector({ onComplete, categories = PRIORITY_SEL
             key={bucket}
             className={`flex-1 min-h-[120px] rounded-xl border-2 border-dashed p-3 transition-all ${
               dragOverBucket === bucket && canDrop(bucket)
-                ? 'border-accent bg-blue-50'
+                ? 'border-[#C9A961] bg-[#FAF6EC]'
                 : dragOverBucket === bucket && !canDrop(bucket)
                 ? 'border-red-300 bg-red-50'
                 : 'border-gray-200 bg-white'
@@ -279,7 +280,7 @@ export default function PrioritySelector({ onComplete, categories = PRIORITY_SEL
                     <button
                       onClick={() => handleBucketAssign(key, 'mustHave')}
                       disabled={!canDrop('mustHave')}
-                      className="text-left px-3 py-1.5 rounded text-sm text-accent font-medium hover:bg-blue-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      className="text-left px-3 py-1.5 rounded text-sm text-[#081426] font-medium hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
                       Must Have {mustHaves.length}/{MUST_HAVE_MAX}
                     </button>
@@ -307,14 +308,11 @@ export default function PrioritySelector({ onComplete, categories = PRIORITY_SEL
         </div>
       </div>
 
-      <button
-        onClick={handleSubmit}
-        disabled={!canSubmit}
-        className="w-full py-4 rounded-xl font-bold text-base transition-opacity hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
-        style={{ backgroundColor: GOLD, color: NAVY }}
-      >
-        {canSubmit ? 'Find My Matches →' : 'Select at least 1 Must Have to continue'}
-      </button>
+      <div className="flex justify-end">
+        <button onClick={handleSubmit} disabled={!canSubmit} className={PILL_CLASS}>
+          {canSubmit ? 'Find My Matches →' : 'Select at least 1 Must Have to continue'}
+        </button>
+      </div>
     </div>
   )
 }

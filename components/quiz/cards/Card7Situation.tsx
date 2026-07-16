@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import ButtonSelectRow from '../ButtonSelectRow'
-import { NAVY, GOLD } from '../quizTheme'
-import CardEyebrow from '../CardEyebrow'
+import { NAVY } from '../quizTheme'
+import CardShell, { PILL_CLASS } from '../CardShell'
 import type { EntryPath } from '../../../utils/quizFlow'
 import type { MoveTimelineValue } from '../../../utils/quizProfileMapping'
 
@@ -26,20 +26,30 @@ interface Card7SituationProps {
   initialValue?: { homeStatus: string; moveTimeline: MoveTimelineValue }
   path: EntryPath
   onComplete: (homeStatus: string, moveTimeline: MoveTimelineValue) => void
+  onBack?: () => void
 }
 
-export default function Card7Situation({ initialValue, path, onComplete }: Card7SituationProps) {
+export default function Card7Situation({ initialValue, path, onComplete, onBack }: Card7SituationProps) {
   const [homeStatus, setHomeStatus] = useState<string | null>(initialValue?.homeStatus ?? null)
   const [timeline, setTimeline] = useState<MoveTimelineValue | null>(initialValue?.moveTimeline ?? null)
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
-      <CardEyebrow>Where You Are</CardEyebrow>
-      <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-8" style={{ color: NAVY }}>
-        {path === 'instate' ? 'Your Current Texas Situation' : 'Where are you in your move?'}
-      </h1>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-8 mb-10">
+    <CardShell
+      eyebrow="Where You Are"
+      title={path === 'instate' ? 'Your Current Texas Situation' : 'Where are you in your move?'}
+      onBack={onBack}
+      next={
+        <button
+          type="button"
+          disabled={!homeStatus || !timeline}
+          onClick={() => homeStatus && timeline && onComplete(homeStatus, timeline)}
+          className={PILL_CLASS}
+        >
+          Continue
+        </button>
+      }
+    >
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-8">
         <div>
           <p className="text-sm font-semibold mb-3" style={{ color: NAVY }}>Current home status</p>
           <ButtonSelectRow options={HOME_STATUS_OPTIONS} selected={homeStatus} onSelect={setHomeStatus} layout="wrap" />
@@ -55,16 +65,6 @@ export default function Card7Situation({ initialValue, path, onComplete }: Card7
           />
         </div>
       </div>
-
-      <button
-        type="button"
-        disabled={!homeStatus || !timeline}
-        onClick={() => homeStatus && timeline && onComplete(homeStatus, timeline)}
-        className="w-full py-3.5 rounded-xl font-bold text-sm transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-        style={{ backgroundColor: GOLD, color: NAVY }}
-      >
-        Continue
-      </button>
-    </div>
+    </CardShell>
   )
 }

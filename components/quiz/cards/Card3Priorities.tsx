@@ -5,8 +5,7 @@ import PrioritySelector from '../../form/PrioritySelector'
 import MobilePriorityBuckets, { type PriorityBucket } from '../MobilePriorityBuckets'
 import { PRIORITY_SELECTABLE_CATEGORIES, MUST_HAVE_MAX, NICE_TO_HAVE_MAX } from '../../../utils/constants'
 import { DNA_CATEGORY_ICONS } from '../../../utils/categoryIcons'
-import { NAVY, GOLD } from '../quizTheme'
-import CardEyebrow from '../CardEyebrow'
+import CardShell, { PILL_CLASS } from '../CardShell'
 import type { DNAScores } from '../../../types'
 import type { PriorityWeight } from '../../../types'
 
@@ -25,6 +24,7 @@ export interface Card3Result {
 interface Card3PrioritiesProps {
   initialValue?: Card3Result
   onComplete: (result: Card3Result) => void
+  onBack?: () => void
 }
 
 function buildPriorities(
@@ -42,7 +42,7 @@ function buildPriorities(
   return priorities
 }
 
-export default function Card3Priorities({ initialValue, onComplete }: Card3PrioritiesProps) {
+export default function Card3Priorities({ initialValue, onComplete, onBack }: Card3PrioritiesProps) {
   const [isTouch, setIsTouch] = useState<boolean | null>(null)
   const [bucketOf, setBucketOf] = useState<Record<string, PriorityBucket>>(() => {
     const initial: Record<string, PriorityBucket> = {}
@@ -95,15 +95,12 @@ export default function Card3Priorities({ initialValue, onComplete }: Card3Prior
   if (isTouch === null) return null
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
-      <CardEyebrow>What Matters Most</CardEyebrow>
-      <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2" style={{ color: NAVY }}>
-        What matters most to you in a community?
-      </h1>
-      <p className="text-gray-500 mb-8">
-        Sort these into what matters most — we&apos;ll build your matches around them.
-      </p>
-
+    <CardShell
+      eyebrow="What Matters Most"
+      title="What matters most to you in a community?"
+      sub="Sort these into what matters most — we'll build your matches around them."
+      onBack={onBack}
+    >
       {isTouch ? (
         <>
           <MobilePriorityBuckets
@@ -113,15 +110,16 @@ export default function Card3Priorities({ initialValue, onComplete }: Card3Prior
             mustHaveMax={MUST_HAVE_MAX}
             importantMax={NICE_TO_HAVE_MAX}
           />
-          <button
-            type="button"
-            disabled={mustHaveCount < 1}
-            onClick={handleMobileContinue}
-            className="w-full mt-6 py-3.5 rounded-xl font-bold text-sm transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-            style={{ backgroundColor: GOLD, color: NAVY }}
-          >
-            {mustHaveCount >= 1 ? 'Continue' : 'Select at least 1 Must Have to continue'}
-          </button>
+          <div className="mt-6 flex justify-end">
+            <button
+              type="button"
+              disabled={mustHaveCount < 1}
+              onClick={handleMobileContinue}
+              className={PILL_CLASS}
+            >
+              {mustHaveCount >= 1 ? 'Continue' : 'Select at least 1 Must Have to continue'}
+            </button>
+          </div>
         </>
       ) : (
         <PrioritySelector
@@ -130,6 +128,6 @@ export default function Card3Priorities({ initialValue, onComplete }: Card3Prior
           initialValue={initialValue ? { mustHaves: initialValue.mustHaves, niceToHaves: initialValue.niceToHaves } : undefined}
         />
       )}
-    </div>
+    </CardShell>
   )
 }

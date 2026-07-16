@@ -2,36 +2,31 @@
 
 import { useState } from 'react'
 import Slider from '../Slider'
-import { NAVY, GOLD } from '../quizTheme'
-import CardEyebrow from '../CardEyebrow'
+import CardShell, { PILL_CLASS } from '../CardShell'
 
 interface Card5GrowthProfileProps {
   initialValue?: number
   onComplete: (growthProfile: number) => void
+  onBack?: () => void
 }
 
-export default function Card5GrowthProfile({ initialValue, onComplete }: Card5GrowthProfileProps) {
+export default function Card5GrowthProfile({ initialValue, onComplete, onBack }: Card5GrowthProfileProps) {
   const [value, setValue] = useState(initialValue ?? 5)
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
-      <CardEyebrow>The Feel</CardEyebrow>
-      <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-10" style={{ color: NAVY }}>
-        When it comes to your community, where do you land?
-      </h1>
-
-      <div className="mb-10">
+    <CardShell
+      eyebrow="The Feel"
+      title="When it comes to your community, where do you land?"
+      onBack={onBack}
+      next={
+        <button type="button" onClick={() => onComplete(value)} className={PILL_CLASS}>
+          Continue
+        </button>
+      }
+    >
+      <div className="py-4">
         <Slider leftLabel="Established & Proven" rightLabel="Up-and-Coming & Growing" value={value} onChange={setValue} />
       </div>
-
-      <button
-        type="button"
-        onClick={() => onComplete(value)}
-        className="w-full py-3.5 rounded-xl font-bold text-sm"
-        style={{ backgroundColor: GOLD, color: NAVY }}
-      >
-        Continue
-      </button>
-    </div>
+    </CardShell>
   )
 }

@@ -2,36 +2,31 @@
 
 import { useState } from 'react'
 import Slider from '../Slider'
-import { NAVY, GOLD } from '../quizTheme'
-import CardEyebrow from '../CardEyebrow'
+import CardShell, { PILL_CLASS } from '../CardShell'
 
 interface Card6LifestyleOrientationProps {
   initialValue?: number
   onComplete: (lifestyleOrientation: number) => void
+  onBack?: () => void
 }
 
-export default function Card6LifestyleOrientation({ initialValue, onComplete }: Card6LifestyleOrientationProps) {
+export default function Card6LifestyleOrientation({ initialValue, onComplete, onBack }: Card6LifestyleOrientationProps) {
   const [value, setValue] = useState(initialValue ?? 5)
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
-      <CardEyebrow>The Feel</CardEyebrow>
-      <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-10" style={{ color: NAVY }}>
-        How would you describe your ideal lifestyle?
-      </h1>
-
-      <div className="mb-10">
+    <CardShell
+      eyebrow="The Feel"
+      title="How would you describe your ideal lifestyle?"
+      onBack={onBack}
+      next={
+        <button type="button" onClick={() => onComplete(value)} className={PILL_CLASS}>
+          Continue
+        </button>
+      }
+    >
+      <div className="py-4">
         <Slider leftLabel="Practical & Comfortable" rightLabel="Upscale & Aspirational" value={value} onChange={setValue} />
       </div>
-
-      <button
-        type="button"
-        onClick={() => onComplete(value)}
-        className="w-full py-3.5 rounded-xl font-bold text-sm"
-        style={{ backgroundColor: GOLD, color: NAVY }}
-      >
-        Continue
-      </button>
-    </div>
+    </CardShell>
   )
 }

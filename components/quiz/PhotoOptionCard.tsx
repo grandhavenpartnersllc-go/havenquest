@@ -18,7 +18,7 @@ export default function PhotoOptionCard({ imageUrl, title, selected, onClick }: 
     <button
       type="button"
       onClick={onClick}
-      className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden border-2 text-left transition-all"
+      className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden border-2 text-left transition-all hq-focus"
       style={{
         borderColor: selected ? GOLD : LINE,
         boxShadow: selected ? `0 0 0 3px rgba(201,169,97,0.22), ${SHADOW}` : SHADOW,

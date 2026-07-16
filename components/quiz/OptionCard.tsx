@@ -16,7 +16,7 @@ export default function OptionCard({ icon: Icon, title, subtitle, selected, onCl
     <button
       type="button"
       onClick={onClick}
-      className="relative flex flex-col items-start p-5 sm:p-6 rounded-2xl border-2 text-left transition-all w-full"
+      className="relative flex flex-col items-start p-5 sm:p-6 rounded-2xl border-2 text-left transition-all w-full hq-focus"
       style={{
         borderColor: selected ? GOLD : LINE,
         backgroundColor: '#FFFFFF',

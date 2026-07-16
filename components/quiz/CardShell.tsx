@@ -17,7 +17,8 @@ import CardEyebrow from './CardEyebrow'
 export const PILL_CLASS = 'hq-pill hq-focus'
 
 interface CardShellProps {
-  eyebrow: string
+  /** omitted where a card renders no eyebrow today (MetroCaptureCard) — no new copy is invented. */
+  eyebrow?: string
   title: string
   sub?: string
   /** false only for cards whose question is a full-bleed PhotoOptionCard grid (Card 2 photo path, Card 4). */
@@ -27,8 +28,10 @@ interface CardShellProps {
   /** relocated Back. Omitted -> the slot renders nothing (Card 1, MetroCaptureCard). */
   onBack?: () => void
   backLabel?: string
-  /** the card's own advance button, already carrying its onClick/disabled and the pill classes. */
-  next: ReactNode
+  /** the card's own advance button, already carrying its onClick/disabled and the pill classes.
+   *  Optional: Card 3 keeps its advance control inside its selector (Addendum #6), so its
+   *  footer has no Next slot. */
+  next?: ReactNode
   children: ReactNode
 }
 
@@ -46,7 +49,7 @@ export default function CardShell({
   return (
     <div>
       <div style={{ margin: '2px 4px 14px' }}>
-        <CardEyebrow>{eyebrow}</CardEyebrow>
+        {eyebrow && <CardEyebrow>{eyebrow}</CardEyebrow>}
         <h1
           style={{
             fontSize: 'clamp(22px, 2.8vw, 30px)',

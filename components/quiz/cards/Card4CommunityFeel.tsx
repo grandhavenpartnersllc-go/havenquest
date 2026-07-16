@@ -2,8 +2,7 @@
 
 import { useState } from 'react'
 import PhotoOptionCard from '../PhotoOptionCard'
-import { NAVY, GOLD } from '../quizTheme'
-import CardEyebrow from '../CardEyebrow'
+import CardShell, { PILL_CLASS } from '../CardShell'
 
 const OPTIONS = [
   { key: 'town_square', label: 'Established / Town Square', image: '/images/quiz/town-square.jpg' },
@@ -32,20 +31,31 @@ export const PERSONALITY_MAP: Record<string, PersonalityScores> = {
 interface Card4CommunityFeelProps {
   initialValue?: string
   onComplete: (option: string, personality: PersonalityScores) => void
+  onBack?: () => void
 }
 
-export default function Card4CommunityFeel({ initialValue, onComplete }: Card4CommunityFeelProps) {
+export default function Card4CommunityFeel({ initialValue, onComplete, onBack }: Card4CommunityFeelProps) {
   const [selected, setSelected] = useState<string | null>(initialValue ?? null)
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
-      <CardEyebrow>The Kind of Place</CardEyebrow>
-      <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2" style={{ color: NAVY }}>
-        Which of these feels most like the life you&apos;re looking for?
-      </h1>
-      <p className="text-gray-500 mb-8">Trust your instincts — there&apos;s no wrong answer.</p>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
+    <CardShell
+      eyebrow="The Kind of Place"
+      title="Which of these feels most like the life you're looking for?"
+      sub="Trust your instincts — there's no wrong answer."
+      panel={false}
+      onBack={onBack}
+      next={
+        <button
+          type="button"
+          disabled={!selected}
+          onClick={() => selected && onComplete(selected, PERSONALITY_MAP[selected])}
+          className={PILL_CLASS}
+        >
+          Continue
+        </button>
+      }
+    >
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {OPTIONS.map(opt => (
           <PhotoOptionCard
             key={opt.key}
@@ -56,16 +66,6 @@ export default function Card4CommunityFeel({ initialValue, onComplete }: Card4Co
           />
         ))}
       </div>
-
-      <button
-        type="button"
-        disabled={!selected}
-        onClick={() => selected && onComplete(selected, PERSONALITY_MAP[selected])}
-        className="w-full py-3.5 rounded-xl font-bold text-sm transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-        style={{ backgroundColor: GOLD, color: NAVY }}
-      >
-        Continue
-      </button>
-    </div>
+    </CardShell>
   )
 }

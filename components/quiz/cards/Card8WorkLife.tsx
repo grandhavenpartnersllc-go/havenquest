@@ -2,8 +2,7 @@
 
 import { useState } from 'react'
 import OptionCard from '../OptionCard'
-import { NAVY, GOLD } from '../quizTheme'
-import CardEyebrow from '../CardEyebrow'
+import CardShell, { PILL_CLASS } from '../CardShell'
 import { Laptop, Shuffle, Building2, Sunrise, HelpCircle } from 'lucide-react'
 
 const OPTIONS = [
@@ -16,21 +15,29 @@ const OPTIONS = [
 interface Card8WorkLifeProps {
   initialValue?: string
   onComplete: (workSituation: string) => void
+  onBack?: () => void
 }
 
-export default function Card8WorkLife({ initialValue, onComplete }: Card8WorkLifeProps) {
+export default function Card8WorkLife({ initialValue, onComplete, onBack }: Card8WorkLifeProps) {
   const [selected, setSelected] = useState<string | null>(initialValue ?? null)
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
-      <CardEyebrow>Work &amp; Life</CardEyebrow>
-      <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2" style={{ color: NAVY }}>
-        How does work fit into your move?
-      </h1>
-      <p className="text-gray-500 mb-8">
-        This helps us factor commute and location flexibility into your matches.
-      </p>
-
+    <CardShell
+      eyebrow="Work & Life"
+      title="How does work fit into your move?"
+      sub="This helps us factor commute and location flexibility into your matches."
+      onBack={onBack}
+      next={
+        <button
+          type="button"
+          disabled={!selected}
+          onClick={() => selected && onComplete(selected)}
+          className={PILL_CLASS}
+        >
+          Continue
+        </button>
+      }
+    >
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
         {OPTIONS.map(opt => (
           <OptionCard
@@ -42,24 +49,12 @@ export default function Card8WorkLife({ initialValue, onComplete }: Card8WorkLif
           />
         ))}
       </div>
-      <div className="mb-8">
-        <OptionCard
-          icon={HelpCircle}
-          title="Not sure yet"
-          selected={selected === 'unsure'}
-          onClick={() => setSelected('unsure')}
-        />
-      </div>
-
-      <button
-        type="button"
-        disabled={!selected}
-        onClick={() => selected && onComplete(selected)}
-        className="w-full py-3.5 rounded-xl font-bold text-sm transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-        style={{ backgroundColor: GOLD, color: NAVY }}
-      >
-        Continue
-      </button>
-    </div>
+      <OptionCard
+        icon={HelpCircle}
+        title="Not sure yet"
+        selected={selected === 'unsure'}
+        onClick={() => setSelected('unsure')}
+      />
+    </CardShell>
   )
 }

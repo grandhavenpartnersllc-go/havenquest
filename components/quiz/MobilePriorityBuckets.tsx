@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import type { LucideIcon } from 'lucide-react'
-import { NAVY, BLUE } from './quizTheme'
+import { NAVY } from './quizTheme'
 
 export type PriorityBucket = 'must_have' | 'important' | 'would_be_nice' | 'unassigned'
 
@@ -44,15 +44,15 @@ export default function MobilePriorityBuckets({
       <div className="grid grid-cols-3 gap-2 mb-5">
         <div className="rounded-xl border-2 px-2 py-2.5 text-center" style={{ borderColor: '#E5E7EB' }}>
           <p className="text-xs font-semibold" style={{ color: NAVY }}>Must Have</p>
-          <p className="text-sm font-bold" style={{ color: BLUE }}>{mustHaveCount}/{mustHaveMax}</p>
+          <p className="text-sm font-bold" style={{ color: NAVY }}>{mustHaveCount}/{mustHaveMax}</p>
         </div>
         <div className="rounded-xl border-2 px-2 py-2.5 text-center" style={{ borderColor: '#E5E7EB' }}>
           <p className="text-xs font-semibold" style={{ color: NAVY }}>Important</p>
-          <p className="text-sm font-bold" style={{ color: BLUE }}>{importantCount}/{importantMax}</p>
+          <p className="text-sm font-bold" style={{ color: NAVY }}>{importantCount}/{importantMax}</p>
         </div>
         <div className="rounded-xl border-2 px-2 py-2.5 text-center" style={{ borderColor: '#E5E7EB' }}>
           <p className="text-xs font-semibold" style={{ color: NAVY }}>Would Be Nice</p>
-          <p className="text-sm font-bold" style={{ color: BLUE }}>{niceCount}</p>
+          <p className="text-sm font-bold" style={{ color: NAVY }}>{niceCount}</p>
         </div>
       </div>
 
@@ -73,7 +73,7 @@ export default function MobilePriorityBuckets({
                 <span className="text-sm font-medium" style={{ color: NAVY }}>{label}</span>
               </span>
               {bucket !== 'unassigned' && (
-                <span className="text-xs font-semibold" style={{ color: BLUE }}>{bucketLabel(bucket)}</span>
+                <span className="text-xs font-semibold" style={{ color: NAVY }}>{bucketLabel(bucket)}</span>
               )}
             </button>
           )
