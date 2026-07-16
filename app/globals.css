@@ -55,6 +55,47 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ── Discovery Intake template (Brief 2 — template pass) ──
+   Shadows re-derived from the shipped navy #081426 (rgb 8,20,38) at the mockup's
+   alphas, per the brief. Pseudo-class states (hover, focus-visible, disabled) live
+   here because inline styles cannot express them. */
+.hq-panel {
+  background: #fff;
+  border: 1px solid #dcdad2;
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(8, 20, 38, 0.04), 0 12px 32px rgba(8, 20, 38, 0.06);
+  padding: 20px 22px 22px;
+}
+.hq-qblock { margin-top: 22px; padding-top: 20px; border-top: 1px solid #eeece6; }
+.hq-foot {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; margin-top: 18px; flex-wrap: wrap; padding: 0 4px;
+}
+.hq-foot__helper { font-size: 12.5px; margin: 0; color: #6a7180; }
+/* deep-gold emphasis inside the helper slot (footer only — the eyebrow keeps accent gold) */
+.hq-foot__helper b, .hq-foot__helper strong { color: #8a7454; font-weight: 600; }
+.hq-actions { display: flex; align-items: center; gap: 14px; }
+.hq-back {
+  font-size: 14px; font-weight: 500; background: none; border: 0;
+  padding: 6px 4px; color: #6a7180; cursor: pointer; transition: color 0.18s;
+}
+.hq-back:hover { color: #081426; }
+.hq-pill {
+  font-size: 15px; font-weight: 600; color: #fff; background: #081426;
+  border: 0; border-radius: 999px; padding: 12px 28px;
+  box-shadow: 0 8px 20px rgba(8, 20, 38, 0.18);
+  transition: transform 0.18s, box-shadow 0.18s; cursor: pointer;
+}
+.hq-pill:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 12px 26px rgba(8, 20, 38, 0.24); }
+.hq-pill:disabled { opacity: 0.4; cursor: not-allowed; }
+.hq-pill--hero { padding: 14px 34px; font-size: 16px; }
+/* visible keyboard focus ring for every pill, back link and selectable tile */
+.hq-focus:focus-visible { outline: 2px solid #c9a961; outline-offset: 2px; }
+@media (max-width: 460px) {
+  .hq-foot { flex-direction: column; align-items: stretch; }
+  .hq-actions { justify-content: space-between; }
+}
+
 /* ── Hero ── */
 
 .hero-dark {

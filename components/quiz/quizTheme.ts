@@ -14,4 +14,5 @@ export const INK = '#1c2430'     // body text
 export const MUTED = '#6a7180'   // secondary text
 export const LINE = '#dcdad2'    // borders, inactive dots
 export const RADIUS = '16px'
-export const SHADOW = '0 1px 2px rgba(10,30,61,.04), 0 12px 32px rgba(10,30,61,.06)'
+// Re-derived from the shipped navy #081426 (rgb 8,20,38) at the mockup's alphas (Brief 2).
+export const SHADOW = '0 1px 2px rgba(8,20,38,.04), 0 12px 32px rgba(8,20,38,.06)'

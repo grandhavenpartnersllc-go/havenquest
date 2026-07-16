@@ -387,7 +387,7 @@ export default function BeginPage() {
     <>
       <BeginHeader />
       <main className="flex-1" style={{ background: STONE }}>
-        <div className="max-w-6xl mx-auto px-4 py-16 pb-24">
+        <div className="mx-auto max-w-[1000px] px-6 pt-[22px] pb-11 max-[460px]:px-[14px] max-[460px]:pt-[18px] max-[460px]:pb-[34px]">
 
           {phase === 'resume' && resumeData && (
             <div style={{ maxWidth: '480px' }}>

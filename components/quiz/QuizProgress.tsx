@@ -7,47 +7,43 @@ interface QuizProgressProps {
   total: number
 }
 
-// Step label + a row of dots. Dot count is driven entirely by `total`, which the
-// driver computes per entry path via getProgressLabel (5 on the exploring path, 10
-// otherwise) — never a hardcoded number. Dot states per the reskin brief: --line by
-// default, gold when done, navy at scale(1.25) when current.
+// Progress row (Brief 2): sits below the navy header, inside the wrap, right-aligned.
+// Label + dots. `total` is the real per-path count from getProgressLabel — never
+// hardcoded. Dots: line by default, gold when done, navy at scale(1.25) when current.
 export default function QuizProgress({ current, total }: QuizProgressProps) {
   return (
-    <div className="w-full max-w-5xl mx-auto mb-8">
-      <div className="flex items-center justify-between">
-        <span
-          style={{
-            fontSize: '11px',
-            letterSpacing: '0.16em',
-            textTransform: 'uppercase',
-            color: MUTED,
-            fontWeight: 600,
-          }}
-        >
-          Step {current} of {total}
-        </span>
-        <div style={{ display: 'flex', gap: '7px', alignItems: 'center' }}>
-          {Array.from({ length: total }).map((_, idx) => {
-            const i = idx + 1
-            const done = i < current
-            const isCurrent = i === current
-            return (
-              <span
-                key={i}
-                aria-hidden
-                style={{
-                  width: '7px',
-                  height: '7px',
-                  borderRadius: '50%',
-                  background: done ? GOLD : isCurrent ? NAVY : LINE,
-                  transform: isCurrent ? 'scale(1.25)' : 'scale(1)',
-                  transition: 'all .35s ease',
-                  display: 'inline-block',
-                }}
-              />
-            )
-          })}
-        </div>
+    <div className="w-full flex items-center justify-end gap-[10px] mb-6">
+      <span
+        style={{
+          fontSize: '11px',
+          letterSpacing: '0.14em',
+          textTransform: 'uppercase',
+          color: MUTED,
+        }}
+      >
+        Step {current} of {total}
+      </span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+        {Array.from({ length: total }).map((_, idx) => {
+          const i = idx + 1
+          const done = i < current
+          const isCurrent = i === current
+          return (
+            <span
+              key={i}
+              aria-hidden
+              style={{
+                width: '7px',
+                height: '7px',
+                borderRadius: '50%',
+                background: done ? GOLD : isCurrent ? NAVY : LINE,
+                transform: isCurrent ? 'scale(1.25)' : 'scale(1)',
+                transition: 'all 0.25s',
+                display: 'inline-block',
+              }}
+            />
+          )
+        })}
       </div>
     </div>
   )
