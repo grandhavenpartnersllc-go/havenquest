@@ -102,10 +102,10 @@ export default function MethodologyPage() {
             <p className="text-sm text-gray-500 leading-relaxed px-1">
               HavenQuest analyzes 4 Texas metros and 100+ cities across 12 lifestyle categories
               using real, third-party data sources — not editorial opinions or sponsored rankings. Each
-              category score is then weighted based on what you told us matters most: Must Haves
-              count three times as much as Would Be Nices, and anything you left unassigned doesn&apos;t
-              affect your results at all. The match percentage you see reflects your actual
-              priorities — not a generic livability index built for someone else.
+              category score is then weighted based on what you told us matters most: the priorities you
+              rank higher count for more, and anything you leave unranked is treated as neutral. The match
+              percentage you see reflects your actual priorities — not a generic livability index built
+              for someone else.
             </p>
 
             <section className="bg-white rounded-2xl border border-gray-100 p-6" style={cardStyle}>
@@ -181,21 +181,14 @@ export default function MethodologyPage() {
             <section className="bg-white rounded-2xl border border-gray-100 p-6" style={cardStyle}>
               <h2 className="text-lg font-bold text-gray-900 tracking-tight mb-4">How the matching algorithm works</h2>
               <div className="space-y-3 text-sm text-gray-500 leading-relaxed">
-                <p>Each city receives a <strong className="text-gray-700">weighted match score</strong> based on your three priority buckets:</p>
-                <div className="bg-[#F8F9FB] rounded-xl p-4 font-mono text-xs space-y-1.5 border border-gray-100">
-                  <p><span className="text-accent font-bold">Must Have</span> categories → score × <strong>3x weight</strong></p>
-                  <p><span className="text-gray-600 font-bold">Important to Me</span> categories → score × <strong>2x weight</strong></p>
-                  <p><span className="text-gray-500 font-bold">Would Be Nice</span> categories → score × <strong>1x weight</strong></p>
-                  <p><span className="text-gray-400 font-bold">Unassigned</span> categories → <strong>not included in score</strong></p>
-                </div>
+                <p>Each city receives a <strong className="text-gray-700">weighted match score</strong> based on how you rank your priorities. Priorities you rank higher count for more in your match, and categories you don&apos;t rank are treated as neutral.</p>
                 <p>
                   The raw weighted score is divided by the maximum possible score to produce a
                   percentage (0–100%). Cities are ranked by this score, highest first.
                 </p>
                 <p>
-                  Unassigned categories are excluded entirely — they do not pull the score up or down.
-                  This means the algorithm adapts to however many priorities you set, and a city
-                  cannot win points for categories you said you don&apos;t care about.
+                  This means the algorithm adapts to however many priorities you set — the more you
+                  rank, the more your match reflects what matters to you.
                 </p>
               </div>
             </section>

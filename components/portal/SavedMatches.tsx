@@ -61,9 +61,9 @@ function MatchCard({ match, rank, profile, compareSelected, onCompare }: MatchCa
   const isPrimary = rank === 0
 
   const priorityGroups = [
-    { label: 'Must Have', weight: '3× weight', keys: profile.mustHaves },
-    { label: 'Important', weight: '2× weight', keys: profile.niceToHaves },
-    { label: 'Not Priority', weight: '1× weight', keys: profile.notPriorities },
+    { label: 'Must Have', keys: profile.mustHaves },
+    { label: 'Important', keys: profile.niceToHaves },
+    { label: 'Not Priority', keys: profile.notPriorities },
   ].filter(g => g.keys.length > 0)
 
   const t = isPrimary
@@ -194,12 +194,6 @@ function MatchCard({ match, rank, profile, compareSelected, onCompare }: MatchCa
                     style={{ color: t.groupLabel }}
                   >
                     {group.label}
-                  </span>
-                  <span
-                    className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
-                    style={{ backgroundColor: t.tagBg, color: t.tagText }}
-                  >
-                    {group.weight}
                   </span>
                 </div>
                 <div className="space-y-1.5">

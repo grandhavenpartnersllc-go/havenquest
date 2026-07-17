@@ -23,7 +23,7 @@ const STEPS = [
     number: '03',
     title: 'Rank what matters to you',
     description:
-      'Choose your Must Haves, Important to Me, and Would Be Nice across 12 lifestyle categories. Anything you leave unranked carries zero weight in your results.',
+      'Rank what matters most to you — schools, family life, outdoor access, dining and entertainment, and luxury.',
   },
 ]
 

@@ -167,7 +167,7 @@ export default function PrioritySelector({ onComplete, categories = PRIORITY_SEL
           This is where your results get personal.
         </p>
         <p style={{ fontSize: '14px', color: '#6B7280', lineHeight: 1.6, marginBottom: '8px' }}>
-          Assign only what matters to you. Must Haves carry 3× weight, Important to Me carries 2×, Would Be Nice carries 1×. Anything you leave unassigned still carries some weight.
+          Assign only what matters to you. Priorities you rank higher count for more in your match, and anything you leave unassigned is treated as neutral.
         </p>
 
         <p className="text-sm text-gray-500">
@@ -197,7 +197,7 @@ export default function PrioritySelector({ onComplete, categories = PRIORITY_SEL
             bucket: 'mustHave' as Bucket,
             keys: mustHaves,
             label: 'Must Have',
-            sublabel: `Up to ${MUST_HAVE_MAX} · 3× weight`,
+            sublabel: `Up to ${MUST_HAVE_MAX}`,
             max: MUST_HAVE_MAX as number | null,
             color: 'text-[#081426]',
           },
@@ -205,7 +205,7 @@ export default function PrioritySelector({ onComplete, categories = PRIORITY_SEL
             bucket: 'important' as Bucket,
             keys: importants,
             label: 'Important to Me',
-            sublabel: `Up to ${NICE_TO_HAVE_MAX} · 2× weight`,
+            sublabel: `Up to ${NICE_TO_HAVE_MAX}`,
             max: NICE_TO_HAVE_MAX as number | null,
             color: 'text-gray-700',
           },
@@ -213,7 +213,7 @@ export default function PrioritySelector({ onComplete, categories = PRIORITY_SEL
             bucket: 'wouldBeNice' as Bucket,
             keys: wouldBeNices,
             label: 'Would Be Nice',
-            sublabel: '1× weight',
+            sublabel: 'No limit',
             max: null,
             color: 'text-gray-500',
           },

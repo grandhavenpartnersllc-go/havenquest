@@ -346,36 +346,11 @@ export default function DataDisclosurePage() {
               <h2 className="text-lg font-bold text-gray-900 tracking-tight mb-4">Section 3 — The Matching Algorithm</h2>
 
               <h3 className="text-sm font-bold text-gray-800 mb-3">3.1 How User Priorities Are Weighted</h3>
-              <p className="text-sm text-gray-500 leading-relaxed mb-4">Users assign each of the 13 lifestyle categories to one of three priority levels:</p>
-              <div className="overflow-x-auto mb-3">
-                <table className="w-full text-sm">
-                  <TableHeader cols={['Priority Level', 'Weight', 'Max Assignments']} />
-                  <tbody className="divide-y divide-gray-100">
-                    {[
-                      ['Must Have', '3×', 'Up to 4 categories'],
-                      ['Important to Me', '2×', 'Up to 5 categories'],
-                      ['Would Be Nice', '1×', 'Unlimited'],
-                      ['Unassigned', '0×', 'Not included in score'],
-                    ].map(([level, weight, max]) => (
-                      <tr key={level}>
-                        <td className="py-2.5 pr-4 font-bold text-gray-900 text-xs">{level}</td>
-                        <td className="py-2.5 pr-4 text-gray-500 text-xs">{weight}</td>
-                        <td className="py-2.5 text-gray-400 text-xs">{max}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <p className="text-sm text-gray-500 leading-relaxed mb-6">Categories left unassigned receive zero weight and do not influence results. This means a user who does not assign a category is explicitly saying &quot;this does not matter to me&quot; — and the algorithm honors that.</p>
+              <p className="text-sm text-gray-500 leading-relaxed mb-4">You rank each lifestyle category by how much it matters to you. Priorities you rank higher count for more in your match. Communities are scored on the data we have — school ratings, home prices, property taxes — and dimensions still being sourced are marked as pending.</p>
+              <p className="text-sm text-gray-500 leading-relaxed mb-6">Categories you don&apos;t rank are treated as neutral.</p>
 
               <h3 className="text-sm font-bold text-gray-800 mb-3">3.2 Match Score Calculation</h3>
-              <p className="text-sm text-gray-500 leading-relaxed mb-3">For each city, a weighted match score is calculated as follows:</p>
-              <div className="bg-[#F8F9FB] rounded-xl p-4 font-mono text-xs border border-gray-100 mb-3 space-y-2">
-                <p>Match Score = Σ (Category Score × Priority Weight)</p>
-                <p className="text-gray-400">Example: Schools = Must Have (3×), Safety = Must Have (3×), Affordability = Important to Me (2×), Outdoors = Would Be Nice (1×)</p>
-                <p>City scores: Schools=9, Safety=8, Affordability=7, Outdoors=6</p>
-                <p>(9×3) + (8×3) + (7×2) + (6×1) = 27 + 24 + 14 + 6 = <strong>71</strong></p>
-              </div>
+              <p className="text-sm text-gray-500 leading-relaxed mb-3">For each city, the categories you ranked are combined into a single weighted match score, with the priorities you rank higher contributing more.</p>
               <p className="text-sm text-gray-500 leading-relaxed mb-6">Cities are ranked by their match score. The top results are presented to the user as their best matches.</p>
 
               <h3 className="text-sm font-bold text-gray-800 mb-3">3.3 What the Algorithm Does Not Do</h3>
