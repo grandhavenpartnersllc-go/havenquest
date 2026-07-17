@@ -94,7 +94,7 @@ export const WEIGHTING_MODEL_VERSION = '2.1'
 export const TIER_MULTIPLIERS: Record<DNABucket, number> = {
   must_have: 2.5,
   important: 1.75,
-  would_be_nice: 0.5,
+  would_be_nice: 1.25,
   unassigned: 1.0,
 }
 
