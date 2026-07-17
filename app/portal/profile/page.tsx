@@ -626,9 +626,9 @@ export default function ProfilePage() {
             <Section title="Your Priorities">
               {profile ? (
                 <>
-                  <PriorityGroup label="Must Have" keys={profile.mustHaves} labels={priorityLabels} color="#2e7d32" bg="#f0faf4" />
-                  <PriorityGroup label="Important to Me" keys={profile.niceToHaves} labels={priorityLabels} color="#0076B6" bg="#EBF5FB" />
-                  <PriorityGroup label="Would Be Nice" keys={profile.notPriorities} labels={priorityLabels} color="#8a93a0" bg="#f4f6f8" />
+                  <PriorityGroup label="Top priority" keys={profile.mustHaves} labels={priorityLabels} color="#2e7d32" bg="#f0faf4" />
+                  <PriorityGroup label="Really matters" keys={profile.niceToHaves} labels={priorityLabels} color="#0076B6" bg="#EBF5FB" />
+                  <PriorityGroup label="Nice to have" keys={profile.notPriorities} labels={priorityLabels} color="#8a93a0" bg="#f4f6f8" />
                   <p style={{ fontSize: '12px', color: '#b0b8c1', margin: '12px 0 0', lineHeight: 1.5 }}>
                     To update your priorities, visit MM2 — Discover.
                   </p>

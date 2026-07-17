@@ -34,7 +34,7 @@ export default function MobilePriorityBuckets({
   const niceCount = categories.filter(c => bucketOf[c.key] === 'would_be_nice').length
 
   const bucketLabel = (b: PriorityBucket) =>
-    b === 'must_have' ? 'Must Have' : b === 'important' ? 'Important' : b === 'would_be_nice' ? 'Would Be Nice' : ''
+    b === 'must_have' ? 'Top priority' : b === 'important' ? 'Really matters' : b === 'would_be_nice' ? 'Nice to have' : ''
 
   const sheetCategory = categories.find(c => c.key === sheetKey) ?? null
 
@@ -43,15 +43,15 @@ export default function MobilePriorityBuckets({
       {/* Bucket counters */}
       <div className="grid grid-cols-3 gap-2 mb-5">
         <div className="rounded-xl border-2 px-2 py-2.5 text-center" style={{ borderColor: '#E5E7EB' }}>
-          <p className="text-xs font-semibold" style={{ color: NAVY }}>Must Have</p>
+          <p className="text-xs font-semibold" style={{ color: NAVY }}>Top priority</p>
           <p className="text-sm font-bold" style={{ color: NAVY }}>{mustHaveCount}/{mustHaveMax}</p>
         </div>
         <div className="rounded-xl border-2 px-2 py-2.5 text-center" style={{ borderColor: '#E5E7EB' }}>
-          <p className="text-xs font-semibold" style={{ color: NAVY }}>Important</p>
+          <p className="text-xs font-semibold" style={{ color: NAVY }}>Really matters</p>
           <p className="text-sm font-bold" style={{ color: NAVY }}>{importantCount}/{importantMax}</p>
         </div>
         <div className="rounded-xl border-2 px-2 py-2.5 text-center" style={{ borderColor: '#E5E7EB' }}>
-          <p className="text-xs font-semibold" style={{ color: NAVY }}>Would Be Nice</p>
+          <p className="text-xs font-semibold" style={{ color: NAVY }}>Nice to have</p>
           <p className="text-sm font-bold" style={{ color: NAVY }}>{niceCount}</p>
         </div>
       </div>

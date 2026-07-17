@@ -171,22 +171,22 @@ export default function PrioritySelector({ onComplete, categories = PRIORITY_SEL
         </p>
 
         <p className="text-sm text-gray-500">
-          Drag or tap to assign. Must Have: up to {MUST_HAVE_MAX}. Important to Me: up to {NICE_TO_HAVE_MAX}. Unassigned categories carry less weight, but still count.
+          Drag or tap to assign. Top priority: up to {MUST_HAVE_MAX}. Really matters: up to {NICE_TO_HAVE_MAX}. Categories you don't rank are treated as neutral.
         </p>
       </div>
 
       {/* Counter */}
       <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500">
         <span className={mustHaves.length >= 1 ? 'text-green-600 font-medium' : ''}>
-          {mustHaves.length}/{MUST_HAVE_MAX} Must Haves{mustHaves.length >= 1 ? ' ✓' : ''}
+          {mustHaves.length}/{MUST_HAVE_MAX} Top priority{mustHaves.length >= 1 ? ' ✓' : ''}
         </span>
         <span className="text-gray-300">·</span>
         <span className={importants.length >= 1 ? 'text-gray-700 font-medium' : ''}>
-          {importants.length}/{NICE_TO_HAVE_MAX} Important
+          {importants.length}/{NICE_TO_HAVE_MAX} Really matters
         </span>
         <span className="text-gray-300">·</span>
         <span className={wouldBeNices.length >= 1 ? 'text-gray-600 font-medium' : ''}>
-          {wouldBeNices.length} Would Be Nice
+          {wouldBeNices.length} Nice to have
         </span>
       </div>
 
@@ -196,7 +196,7 @@ export default function PrioritySelector({ onComplete, categories = PRIORITY_SEL
           {
             bucket: 'mustHave' as Bucket,
             keys: mustHaves,
-            label: 'Must Have',
+            label: 'Top priority',
             sublabel: `Up to ${MUST_HAVE_MAX}`,
             max: MUST_HAVE_MAX as number | null,
             color: 'text-[#081426]',
@@ -204,7 +204,7 @@ export default function PrioritySelector({ onComplete, categories = PRIORITY_SEL
           {
             bucket: 'important' as Bucket,
             keys: importants,
-            label: 'Important to Me',
+            label: 'Really matters',
             sublabel: `Up to ${NICE_TO_HAVE_MAX}`,
             max: NICE_TO_HAVE_MAX as number | null,
             color: 'text-gray-700',
@@ -212,7 +212,7 @@ export default function PrioritySelector({ onComplete, categories = PRIORITY_SEL
           {
             bucket: 'wouldBeNice' as Bucket,
             keys: wouldBeNices,
-            label: 'Would Be Nice',
+            label: 'Nice to have',
             sublabel: 'No limit',
             max: null,
             color: 'text-gray-500',
@@ -260,7 +260,7 @@ export default function PrioritySelector({ onComplete, categories = PRIORITY_SEL
       {/* Unassigned pool */}
       <div className="mb-6">
         <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
-          Unassigned — carries less weight, but still counts
+          Not yet sorted — treated as neutral
         </p>
         <div className="bg-gray-50 rounded-xl p-4 flex flex-wrap gap-2 min-h-[60px]">
           {unassigned.map(key => {
@@ -282,20 +282,20 @@ export default function PrioritySelector({ onComplete, categories = PRIORITY_SEL
                       disabled={!canDrop('mustHave')}
                       className="text-left px-3 py-1.5 rounded text-sm text-[#081426] font-medium hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
-                      Must Have {mustHaves.length}/{MUST_HAVE_MAX}
+                      Top priority {mustHaves.length}/{MUST_HAVE_MAX}
                     </button>
                     <button
                       onClick={() => handleBucketAssign(key, 'important')}
                       disabled={!canDrop('important')}
                       className="text-left px-3 py-1.5 rounded text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
-                      Important to Me {importants.length}/{NICE_TO_HAVE_MAX}
+                      Really matters {importants.length}/{NICE_TO_HAVE_MAX}
                     </button>
                     <button
                       onClick={() => handleBucketAssign(key, 'wouldBeNice')}
                       className="text-left px-3 py-1.5 rounded text-sm text-gray-500 hover:bg-gray-50 transition-colors"
                     >
-                      Would Be Nice
+                      Nice to have
                     </button>
                   </div>
                 )}
@@ -310,7 +310,7 @@ export default function PrioritySelector({ onComplete, categories = PRIORITY_SEL
 
       <div className="flex justify-end">
         <button onClick={handleSubmit} disabled={!canSubmit} className={PILL_CLASS}>
-          {canSubmit ? 'Find My Matches →' : 'Select at least 1 Must Have to continue'}
+          {canSubmit ? 'Find My Matches →' : 'Select at least 1 Top priority to continue'}
         </button>
       </div>
     </div>

@@ -549,8 +549,8 @@ function ComparisonReportDocument({
   cities, profile, totalFunds, interestRate, loanTerm, originState, originCity, summary, generatedDate,
 }: ComparisonReportProps) {
   const priorityCats = [
-    ...profile.mustHaves.map(k => ({ key: k, tag: 'Must Have' })),
-    ...profile.niceToHaves.map(k => ({ key: k, tag: 'Important' })),
+    ...profile.mustHaves.map(k => ({ key: k, tag: 'Top priority' })),
+    ...profile.niceToHaves.map(k => ({ key: k, tag: 'Really matters' })),
   ]
 
   const cityNames = cities.map(c => c.location.name).join(' vs ')

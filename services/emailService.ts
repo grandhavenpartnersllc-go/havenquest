@@ -121,7 +121,7 @@ export function buildLeadNotificationHtml(data: LeadNotificationData): string {
         <tr><td style="padding: 8px; border: 1px solid #E5E7EB; font-weight: 500;">Income</td><td style="padding: 8px; border: 1px solid #E5E7EB;">$${data.profile.annualIncome.toLocaleString()}</td></tr>
         <tr><td style="padding: 8px; border: 1px solid #E5E7EB; font-weight: 500;">Household</td><td style="padding: 8px; border: 1px solid #E5E7EB;">${data.profile.householdSize}</td></tr>
 <tr><td style="padding: 8px; border: 1px solid #E5E7EB; font-weight: 500;">Timeline</td><td style="padding: 8px; border: 1px solid #E5E7EB;">${data.timeline}</td></tr>
-        <tr><td style="padding: 8px; border: 1px solid #E5E7EB; font-weight: 500;">Must Haves</td><td style="padding: 8px; border: 1px solid #E5E7EB;">${data.profile.mustHaves.join(', ')}</td></tr>
+        <tr><td style="padding: 8px; border: 1px solid #E5E7EB; font-weight: 500;">Top priority</td><td style="padding: 8px; border: 1px solid #E5E7EB;">${data.profile.mustHaves.join(', ')}</td></tr>
         <tr><td style="padding: 8px; border: 1px solid #E5E7EB; font-weight: 500;">Match Score</td><td style="padding: 8px; border: 1px solid #E5E7EB;">${data.matchScore}%</td></tr>
       </table>
     </div>

@@ -118,7 +118,7 @@ export default function CompareModal({ cities, profile, totalFunds, interestRate
   const [dlState, setDlState] = React.useState<DlState>('idle')
 
   const priorityCats = [
-    ...profile.mustHaves.map(k => ({ key: k, tag: 'Must Have', tagColor: '#1A5FA8', tagBg: '#EBF3FB' })),
+    ...profile.mustHaves.map(k => ({ key: k, tag: 'Top priority', tagColor: '#1A5FA8', tagBg: '#EBF3FB' })),
     ...profile.niceToHaves.map(k => ({ key: k, tag: 'Important', tagColor: '#6B7280', tagBg: '#F7F6F3' })),
   ]
 

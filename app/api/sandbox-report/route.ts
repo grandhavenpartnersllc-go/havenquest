@@ -63,13 +63,13 @@ export async function POST(req: Request) {
 
               ${mustHaves.length > 0 ? `
               <div style="margin-bottom:24px;">
-                <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#9A8E82;margin:0 0 8px;">Must haves</p>
+                <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#9A8E82;margin:0 0 8px;">Top priority</p>
                 <p style="font-size:14px;color:#16120D;margin:0;">${mustHaves.join(' · ')}</p>
               </div>` : ''}
 
               ${niceToHaves.length > 0 ? `
               <div style="margin-bottom:24px;">
-                <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#9A8E82;margin:0 0 8px;">Important to me</p>
+                <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#9A8E82;margin:0 0 8px;">Really matters</p>
                 <p style="font-size:14px;color:#16120D;margin:0;">${niceToHaves.join(' · ')}</p>
               </div>` : ''}
 

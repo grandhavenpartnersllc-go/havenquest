@@ -81,7 +81,7 @@ export default function FullReport({ match, profile, rank }: FullReportProps) {
 
         <div>
           <h3 className="font-bold text-gray-900 tracking-tight mb-3">Lifestyle scores</h3>
-          <p className="text-xs text-gray-400 mb-3">Scores highlighted in blue are your Must Haves.</p>
+          <p className="text-xs text-gray-400 mb-3">Scores highlighted in blue are your Top priority picks.</p>
           <div className="grid sm:grid-cols-2 gap-2">
             {LIFESTYLE_CATEGORIES.map(cat => (
               <ScoreBar

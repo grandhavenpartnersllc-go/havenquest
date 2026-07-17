@@ -117,7 +117,7 @@ export default function Card3Priorities({ initialValue, onComplete, onBack }: Ca
               onClick={handleMobileContinue}
               className={PILL_CLASS}
             >
-              {mustHaveCount >= 1 ? 'Continue' : 'Select at least 1 Must Have to continue'}
+              {mustHaveCount >= 1 ? 'Continue' : 'Select at least 1 Top priority to continue'}
             </button>
           </div>
         </>

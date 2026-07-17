@@ -61,9 +61,9 @@ function MatchCard({ match, rank, profile, compareSelected, onCompare }: MatchCa
   const isPrimary = rank === 0
 
   const priorityGroups = [
-    { label: 'Must Have', keys: profile.mustHaves },
-    { label: 'Important', keys: profile.niceToHaves },
-    { label: 'Not Priority', keys: profile.notPriorities },
+    { label: 'Top priority', keys: profile.mustHaves },
+    { label: 'Really matters', keys: profile.niceToHaves },
+    { label: 'Nice to have', keys: profile.notPriorities },
   ].filter(g => g.keys.length > 0)
 
   const t = isPrimary

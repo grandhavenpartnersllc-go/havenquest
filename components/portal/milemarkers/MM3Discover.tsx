@@ -305,9 +305,9 @@ const PRIORITY_CAPS: number[] = [3, 4, Infinity, Infinity]
 // headers now show the name only; the soft "counts for more when you mark it a priority"
 // hover copy carries the meaning without a contradicting number. Engine values untouched.
 const PRIORITY_TIERS: { label: string }[] = [
-  { label: 'Must have' },
-  { label: 'Important to me' },
-  { label: 'Would be nice' },
+  { label: 'Top priority' },
+  { label: 'Really matters' },
+  { label: 'Nice to have' },
   { label: 'Not yet sorted' },
 ]
 // Track-and-ball polish — per-category icons from the same Lucide set as the left rail
@@ -1188,7 +1188,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
       </div>
 
       <p style={{ fontSize: '10px', color: '#6a7180', margin: '0 0 10px', lineHeight: 1.5 }}>
-        Drag each dot — or tap a band — to set how much it matters. Higher tiers count for more.
+        Drag each dot — or tap a band — to set how much it matters.
       </p>
 
       {/* Tier header — tier names only (Brief 3: count/multiplier sub-labels removed);
@@ -1261,7 +1261,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
       })}
 
       <div style={{ fontSize: '11px', color: '#6a7180', background: '#F2F1EE', borderRadius: '8px', padding: '9px 11px', marginTop: '12px', lineHeight: 1.5 }}>
-        Higher tiers count for more in your match — Must have counts most, then Important to me; Would be nice and Not yet sorted count least.
+        Higher tiers count for more in your match — Top priority counts most, then Really matters.
       </div>
 
       {/* Personality sliders */}
@@ -2209,7 +2209,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                 </div>
                 <div style={{ marginBottom: '18px' }}>
                   <h4 style={secH}>What matters most</h4>
-                  {([['Must have', mustLabels], ['Important to me', impLabels], ['Would be nice', niceLabels]] as [string, string[]][]).map(([tier, labels]) => (
+                  {([['Top priority', mustLabels], ['Really matters', impLabels], ['Nice to have', niceLabels]] as [string, string[]][]).map(([tier, labels]) => (
                     <div key={tier} style={{ marginBottom: '8px' }}>
                       <p style={{ fontSize: '11px', color: '#6a7180', margin: '0 0 4px' }}>{tier}</p>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
