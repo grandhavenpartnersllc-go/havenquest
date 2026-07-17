@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import PrioritySelector from '../../form/PrioritySelector'
+import PriorityTrackControl from '../../shared/PriorityTrackControl'
 import MobilePriorityBuckets, { type PriorityBucket } from '../MobilePriorityBuckets'
 import { PRIORITY_SELECTABLE_CATEGORIES, MUST_HAVE_MAX, NICE_TO_HAVE_MAX } from '../../../utils/constants'
 import { DNA_CATEGORY_ICONS } from '../../../utils/categoryIcons'
@@ -12,6 +12,10 @@ import type { PriorityWeight } from '../../../types'
 // Priority Engine B1: the selectable set is the 5-dim subset (growthPotential/careerAccess
 // removed — unbacked stub data). DNA_CATEGORIES stays whole for display elsewhere.
 const QUIZ_CATEGORIES = PRIORITY_SELECTABLE_CATEGORIES
+
+// The shared control speaks tier indices (0..3); Card 3 stores PriorityBucket names.
+const BUCKET_TO_TIER: Record<PriorityBucket, number> = { must_have: 0, important: 1, would_be_nice: 2, unassigned: 3 }
+const TIER_TO_BUCKET: PriorityBucket[] = ['must_have', 'important', 'would_be_nice', 'unassigned']
 
 export interface Card3Result {
   priorities: Record<string, PriorityWeight>
@@ -60,22 +64,6 @@ export default function Card3Priorities({ initialValue, onComplete, onBack }: Ca
     setIsTouch(window.matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0)
   }, [])
 
-  const handleDesktopComplete = (
-    mustHaves: (keyof DNAScores)[],
-    niceToHaves: (keyof DNAScores)[],
-    notPriorities: (keyof DNAScores)[]
-  ) => {
-    const assigned = new Set([...mustHaves, ...niceToHaves, ...notPriorities])
-    const unassigned = QUIZ_CATEGORIES.map(c => c.key).filter(k => !assigned.has(k))
-    onComplete({
-      priorities: buildPriorities(mustHaves, niceToHaves, notPriorities),
-      mustHaves,
-      niceToHaves,
-      notPriorities,
-      unassignedPriorities: unassigned,
-    })
-  }
-
   const handleMobileContinue = () => {
     const mustHaves = QUIZ_CATEGORIES.filter(c => bucketOf[c.key] === 'must_have').map(c => c.key)
     const niceToHaves = QUIZ_CATEGORIES.filter(c => bucketOf[c.key] === 'important').map(c => c.key)
@@ -122,11 +110,28 @@ export default function Card3Priorities({ initialValue, onComplete, onBack }: Ca
           </div>
         </>
       ) : (
-        <PrioritySelector
-          categories={QUIZ_CATEGORIES}
-          onComplete={handleDesktopComplete}
-          initialValue={initialValue ? { mustHaves: initialValue.mustHaves, niceToHaves: initialValue.niceToHaves } : undefined}
-        />
+        <>
+          <p style={{ fontSize: '13px', color: '#6B7280', lineHeight: 1.6, marginBottom: '14px' }}>
+            Drag each dot — or tap a band — to set how much it matters.
+          </p>
+          <PriorityTrackControl
+            items={QUIZ_CATEGORIES.map(c => ({ key: c.key, label: c.label, Icon: DNA_CATEGORY_ICONS[c.key], whatItIs: c.whatItIs, howItCounts: c.howItCounts }))}
+            tierOf={Object.fromEntries(QUIZ_CATEGORIES.map(c => [c.key, BUCKET_TO_TIER[bucketOf[c.key] ?? 'unassigned']]))}
+            caps={[MUST_HAVE_MAX, NICE_TO_HAVE_MAX, Infinity, Infinity]}
+            tierLabels={['Top priority', 'Really matters', 'Nice to have', 'Not yet sorted']}
+            onAssign={(key, t) => setBucketOf(prev => ({ ...prev, [key]: TIER_TO_BUCKET[t] }))}
+          />
+          <div className="mt-6 flex justify-end">
+            <button
+              type="button"
+              disabled={mustHaveCount < 1}
+              onClick={handleMobileContinue}
+              className={PILL_CLASS}
+            >
+              {mustHaveCount >= 1 ? 'Find My Matches →' : 'Select at least 1 Top priority to continue'}
+            </button>
+          </div>
+        </>
       )}
     </CardShell>
   )
