@@ -7,6 +7,7 @@ import FullReport from '../../results/FullReport'
 import { DNA_CATEGORIES, PRIORITY_SELECTABLE_CATEGORIES } from '../../../utils/constants'
 import { getAllCities } from '../../../services/locationService'
 import { getTopMatches, getDownPaymentMidpoint, getProceedsMidpoint } from '../../../services/matchingService'
+import PriorityTrackControl from '../../shared/PriorityTrackControl'
 import { createClient } from '../../../lib/supabase/client'
 import { lookupZipCityState } from '../../../utils/zipLookup'
 import { txColIndex, txSafety, txPropertyTax, txJobMarket, txClimateV2 } from '../../../utils/txComparisonStats'
@@ -294,11 +295,11 @@ interface Props {
 
 // 4-tier priority chain used by the Lifestyle drawer (a genuine, visible "Not Yet
 // Sorted" 4th group, not collapsed/secondary). Order matters: highest priority first —
-// the track-and-ball's cascade-down overflow walks this order (see setPriorityTier).
+// the track-and-ball's cascade-down overflow walks this order (see PriorityTrackControl).
 type Tier = 'mustHave' | 'important' | 'wouldBeNice' | 'unassigned'
 const TIER_ORDER: Tier[] = ['mustHave', 'important', 'wouldBeNice', 'unassigned']
 // Track-and-ball priority caps (Craig's rule): Must have 3, Important to me 4, the rest
-// unlimited. Overflow cascades DOWN to the first tier with room (see setPriorityTier).
+// unlimited. Overflow cascades DOWN to the first tier with room (see PriorityTrackControl).
 const PRIORITY_CAPS: number[] = [3, 4, Infinity, Infinity]
 // Brief 3 — the per-tier `weight` labels ('3×'/'2×'/'1×') were removed: they DISPLAYED
 // multipliers the engine doesn't apply (real TIER_MULTIPLIERS are 1.5/1.25/1.0). Tier
@@ -360,12 +361,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const [ctaError, setCtaError] = useState<string | null>(null)
   const [committing, setCommitting] = useState(false)
   const [reportMatch, setReportMatch] = useState<CityMatch | null>(null)
-  // Track-and-ball priority slider — flashTier briefly highlights a full tier on cascade
-  // overflow (replaces the old mustHaveError toast); dragBall holds the live drag position
-  // (0-1, presentation-only — nothing persists until release/tap).
-  const [flashTier, setFlashTier] = useState<number | null>(null)
-  const [dragBall, setDragBall] = useState<{ key: keyof DNAScores; x: number } | null>(null)
-  const priorityDragRef = useRef<{ key: keyof DNAScores; trackEl: HTMLElement } | null>(null)
+  // Track-and-ball priority state (flashTier / dragBall) now lives inside PriorityTrackControl.
   const [originCity, setOriginCity] = useState<string | null>(null)
   const [originState, setOriginState] = useState<string | null>(null)
 
@@ -923,27 +919,14 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     return 'unassigned'
   }
 
-  // Track-and-ball placement — moves `key` to `targetIdx` (0-3) over the SAME bucket state,
-  // enforcing PRIORITY_CAPS with cascade-down overflow, then persisting via the SAME
-  // debounceSavePriorities → sandbox_profile path (the filter-then-add + save is byte-for-byte
-  // identical to the retired movePriority). Read-back/dedupe (CP1) is untouched.
-  function setPriorityTier(key: keyof DNAScores, targetIdx: number) {
+  // Brief C CP1 — the track-and-ball control now lives in <PriorityTrackControl>. It computes
+  // caps/overflow and emits the final tier; this handler applies it to the SAME bucket state and
+  // persists via the SAME debounceSavePriorities -> sandbox_profile path (byte-for-byte the
+  // retired setPriorityTier mutation). setSandboxTouched fires on every commit, as before.
+  function handlePriorityAssign(keyStr: string, target: number) {
+    const key = keyStr as keyof DNAScores
     setSandboxTouched(true)
     const curIdx = TIER_ORDER.indexOf(currentTier(key))
-    const counts = [mustHaves.length, niceToHaves.length, notPriorities.length, unassigned.length]
-    const aimed = Math.max(0, Math.min(3, targetIdx))
-    let target = aimed
-    let guard = 0
-    // cascade DOWN past any full capped tier to the first tier with room
-    while (PRIORITY_CAPS[target] !== Infinity && (counts[target] - (curIdx === target ? 1 : 0)) >= PRIORITY_CAPS[target] && guard < 3) {
-      target += 1
-      guard += 1
-    }
-    if (target > 3) target = 3
-    if (target !== aimed) {
-      setFlashTier(aimed)
-      setTimeout(() => setFlashTier(null), 700)
-    }
     if (target === curIdx) return
     const newMH = mustHaves.filter(k => k !== key)
     const newNH = niceToHaves.filter(k => k !== key)
@@ -956,45 +939,6 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     else newUA.push(key)
     setMustHaves(newMH); setNiceToHaves(newNH); setNotPriorities(newNP); setUnassigned(newUA)
     debounceSavePriorities(newMH, newNH, newNP, newUA, nonNegotiables)
-  }
-
-  // Ball drag + tap-a-band (presentation-only until release; commits via setPriorityTier).
-  function priorityBandFromEvent(trackEl: HTMLElement, clientX: number): number {
-    const rect = trackEl.getBoundingClientRect()
-    const x = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width))
-    return Math.min(3, Math.floor(x * 4))
-  }
-  function handleBallPointerDown(e: React.PointerEvent, key: keyof DNAScores) {
-    e.stopPropagation()
-    const trackEl = (e.currentTarget as HTMLElement).parentElement as HTMLElement
-    priorityDragRef.current = { key, trackEl }
-    try { (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId) } catch {}
-    const rect = trackEl.getBoundingClientRect()
-    setDragBall({ key, x: Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width)) })
-  }
-  function handleBallPointerMove(e: React.PointerEvent) {
-    const d = priorityDragRef.current
-    if (!d) return
-    const rect = d.trackEl.getBoundingClientRect()
-    setDragBall({ key: d.key, x: Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width)) })
-  }
-  function handleBallPointerUp(e: React.PointerEvent) {
-    const d = priorityDragRef.current
-    if (!d) return
-    const band = priorityBandFromEvent(d.trackEl, e.clientX)
-    priorityDragRef.current = null
-    setDragBall(null)
-    setPriorityTier(d.key, band)
-  }
-  function handleTrackTap(e: React.PointerEvent, key: keyof DNAScores) {
-    // Fires only when the pointer lands on the track itself (the ball stops propagation).
-    setPriorityTier(key, priorityBandFromEvent(e.currentTarget as HTMLElement, e.clientX))
-  }
-  function ballStyle(idx: number): React.CSSProperties {
-    if (idx === 0) return { background: '#C5B783', border: '2px solid #a48f4e' }
-    if (idx === 1) return { background: '#0076B6', border: '2px solid #005e91' }
-    if (idx === 2) return { background: '#c9d3df', border: '2px solid #9aa7b8' }
-    return { background: '#fff', border: '2px dashed #c3c0b6' }
   }
 
   // Phase E, Brief 1 — Non-Negotiables. hoaStrict and anythingElse are captured
@@ -1195,74 +1139,17 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         Drag each dot — or tap a band — to set how much it matters.
       </p>
 
-      {/* Tier header — tier names only (Brief 3: count/multiplier sub-labels removed);
-          the name still flashes on cascade overflow */}
-      <div style={{ display: 'grid', gridTemplateColumns: '116px 1fr', alignItems: 'end', marginBottom: '6px' }}>
-        <div />
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)' }}>
-          {PRIORITY_TIERS.map((t, i) => {
-            const flashing = flashTier === i
-            return (
-              <div key={t.label} style={{ textAlign: 'center', fontSize: '9px', fontWeight: 600, color: flashing ? '#b5482f' : '#86868b', lineHeight: 1.15, padding: '0 2px', transition: 'color 0.2s' }}>
-                {t.label}
-              </div>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* One track-and-ball per selectable preference item (Priority Engine B1: 5, not 7 —
-          growthPotential/careerAccess have no selector lever). */}
-      {SELECTABLE_KEYS.map(key => {
-        const cat = DNA_CATEGORIES.find(c => c.key === key)!
-        const Icon = PRIORITY_ICONS[key]
-        const tierIdx = TIER_ORDER.indexOf(currentTier(key))
-        const dragging = dragBall?.key === key
-        const leftPct = dragging ? dragBall!.x * 100 : tierIdx * 25 + 12.5
-        return (
-          <div key={key} style={{ display: 'grid', gridTemplateColumns: '116px 1fr', alignItems: 'center', margin: '9px 0' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', paddingRight: '8px', color: '#1c2430', minWidth: 0 }}>
-              <Icon size={14} style={{ flexShrink: 0 }} />
-              {/* Brief 3 — two-part category hover (what it is · how it counts), sourced from
-                  DNA_CATEGORIES.whatItIs/howItCounts, rendered through the shared .mm3-help
-                  tooltip. Desktop-only, matching the personality sliders (mobile gets plain text). */}
-              {isMobile ? (
-                <span style={{ fontSize: '11px', fontWeight: 500, lineHeight: 1.2 }}>{cat.label}</span>
-              ) : (
-                <span className="mm3-help" style={{ fontSize: '11px', fontWeight: 500, lineHeight: 1.2 }}>
-                  {cat.label}
-                  <span className="mm3-help-tip">
-                    <b>{cat.label}</b> — {cat.whatItIs}
-                    <span style={{ display: 'block', marginTop: '5px', opacity: 0.85 }}>How it counts: {cat.howItCounts}</span>
-                  </span>
-                </span>
-              )}
-            </div>
-            <div
-              onPointerDown={(e) => handleTrackTap(e, key)}
-              style={{ position: 'relative', height: '34px', borderRadius: '9px', background: '#EFEEE9', border: '1px solid #dcdad2', touchAction: 'none', cursor: 'pointer' }}>
-              <div style={{ position: 'absolute', top: 0, bottom: 0, left: '0%', width: '25%', background: 'rgba(197,183,131,0.14)', borderRight: '1px dashed #dcdad2' }} />
-              <div style={{ position: 'absolute', top: 0, bottom: 0, left: '25%', width: '25%', background: 'rgba(0,118,182,0.07)', borderRight: '1px dashed #dcdad2' }} />
-              <div style={{ position: 'absolute', top: 0, bottom: 0, left: '50%', width: '25%', borderRight: '1px dashed #dcdad2' }} />
-              <div style={{ position: 'absolute', top: 0, bottom: 0, left: '75%', width: '25%', background: 'repeating-linear-gradient(45deg,transparent,transparent 5px,rgba(0,0,0,0.03) 5px,rgba(0,0,0,0.03) 10px)' }} />
-              <div
-                onPointerDown={(e) => handleBallPointerDown(e, key)}
-                onPointerMove={handleBallPointerMove}
-                onPointerUp={handleBallPointerUp}
-                aria-label={`${cat.label}: ${PRIORITY_TIERS[tierIdx].label}`}
-                style={{
-                  position: 'absolute', top: '50%', left: `${leftPct}%`, width: '22px', height: '22px',
-                  marginTop: '-11px', marginLeft: '-11px', borderRadius: '50%',
-                  ...ballStyle(tierIdx),
-                  boxShadow: dragging ? '0 3px 8px rgba(0,0,0,0.28)' : '0 1px 3px rgba(0,0,0,0.18)',
-                  transition: dragging ? 'none' : 'left 0.18s cubic-bezier(0.34,1.4,0.5,1), background 0.18s, border-color 0.18s',
-                  cursor: dragging ? 'grabbing' : 'grab', touchAction: 'none',
-                }}
-              />
-            </div>
-          </div>
-        )
-      })}
+      <PriorityTrackControl
+        items={SELECTABLE_KEYS.map(key => {
+          const c = DNA_CATEGORIES.find(x => x.key === key)!
+          return { key, label: c.label, Icon: PRIORITY_ICONS[key], whatItIs: c.whatItIs, howItCounts: c.howItCounts }
+        })}
+        tierOf={Object.fromEntries(SELECTABLE_KEYS.map(k => [k, TIER_ORDER.indexOf(currentTier(k))]))}
+        caps={PRIORITY_CAPS}
+        tierLabels={PRIORITY_TIERS.map(t => t.label)}
+        onAssign={handlePriorityAssign}
+        isMobile={isMobile}
+      />
 
       <div style={{ fontSize: '11px', color: '#6a7180', background: '#F2F1EE', borderRadius: '8px', padding: '9px 11px', marginTop: '12px', lineHeight: 1.5 }}>
         Higher tiers count for more in your match — Top priority counts most, then Really matters.
