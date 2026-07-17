@@ -828,7 +828,11 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     const income = incomeVal || profile?.annualIncome || 0
     if (income <= 0) return 'stretched'
     const rate = loanTerm === 15 ? Math.max(interestRate - 0.5, 2) : interestRate
-    const monthly = calcMonthly(medianPrice, rate, loanTerm)
+    // CP4 — amortize the balance after the family's funds (proceeds + savings), matching
+    // the hero card's cityBalance and pdfService. Previously fed the full median price as
+    // principal, so the badge ignored the down payment. Display only; scorer untouched.
+    const balance = Math.max(0, medianPrice - totalFunds)
+    const monthly = calcMonthly(balance, rate, loanTerm)
     const maxMonthly = income / 12 * 0.28
     const ratio = maxMonthly > 0 ? monthly / maxMonthly : 99
     if (ratio < 0.85) return 'comfortable'
