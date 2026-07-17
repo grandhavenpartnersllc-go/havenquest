@@ -54,22 +54,22 @@ export default function PriorityTrackControl({
   const [dragBall, setDragBall] = useState<{ key: string; x: number } | null>(null)
   const dragRef = useRef<{ key: string; trackEl: HTMLElement } | null>(null)
 
-  // Cap enforcement with cascade-down overflow — byte-identical to MM3's retired
-  // setPriorityTier (Brief C CP1). Emits the final tier; the caller applies + persists.
+  // Cap enforcement with ONE-HOP overflow (Brief C CP4, locked rule): a ball dropped into a
+  // full capped tier redirects exactly one tier down; if that tier is also full it BLOCKS and
+  // the ball returns. No cascade chain. The aimed (full) tier's header flashes to explain.
+  // Emits the final tier; the caller applies + persists.
   function commit(key: string, band: number) {
     const curIdx = tierOf[key] ?? 3
     const counts = [0, 1, 2, 3].map(i => items.filter(it => (tierOf[it.key] ?? 3) === i).length)
+    const isFull = (i: number) => caps[i] !== Infinity && (counts[i] - (curIdx === i ? 1 : 0)) >= caps[i]
     const aimed = Math.max(0, Math.min(3, band))
     let target = aimed
-    let guard = 0
-    while (caps[target] !== Infinity && (counts[target] - (curIdx === target ? 1 : 0)) >= caps[target] && guard < 3) {
-      target += 1
-      guard += 1
-    }
-    if (target > 3) target = 3
-    if (target !== aimed) {
+    if (isFull(aimed)) {
       setFlashTier(aimed)
       setTimeout(() => setFlashTier(null), 700)
+      const hop = aimed + 1
+      if (hop > 3 || isFull(hop)) return  // next tier also full -> block; ball snaps back
+      target = hop
     }
     onAssign(key, target)
   }
@@ -110,15 +110,26 @@ export default function PriorityTrackControl({
     <>
       <style dangerouslySetInnerHTML={{ __html: HELP_CSS }} />
 
-      {/* Tier header — names only; the name flashes red on cascade overflow. */}
+      {/* Tier header — names, plus a live "n/limit" count on capped tiers so the limit is
+          visible (Brief C CP4). The name + count flash red on a full-tier redirect. */}
       <div style={{ display: 'grid', gridTemplateColumns: '116px 1fr', alignItems: 'end', marginBottom: '6px' }}>
         <div />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)' }}>
           {tierLabels.map((label, i) => {
             const flashing = flashTier === i
+            const capped = caps[i] !== Infinity
+            const count = items.filter(it => (tierOf[it.key] ?? 3) === i).length
+            const full = capped && count >= caps[i]
             return (
-              <div key={label} style={{ textAlign: 'center', fontSize: '9px', fontWeight: 600, color: flashing ? '#b5482f' : '#86868b', lineHeight: 1.15, padding: '0 2px', transition: 'color 0.2s' }}>
-                {label}
+              <div key={label} style={{ textAlign: 'center', padding: '0 2px' }}>
+                <div style={{ fontSize: '9px', fontWeight: 600, color: flashing ? '#b5482f' : '#86868b', lineHeight: 1.15, transition: 'color 0.2s' }}>
+                  {label}
+                </div>
+                {capped && (
+                  <div style={{ fontSize: '8px', fontWeight: 700, letterSpacing: '0.02em', color: flashing || full ? '#b5482f' : '#a9a69c', lineHeight: 1.3, marginTop: '1px', transition: 'color 0.2s' }}>
+                    {count}/{caps[i]}
+                  </div>
+                )}
               </div>
             )
           })}

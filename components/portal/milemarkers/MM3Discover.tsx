@@ -295,12 +295,13 @@ interface Props {
 
 // 4-tier priority chain used by the Lifestyle drawer (a genuine, visible "Not Yet
 // Sorted" 4th group, not collapsed/secondary). Order matters: highest priority first —
-// the track-and-ball's cascade-down overflow walks this order (see PriorityTrackControl).
+// the track-and-ball's one-hop overflow walks this order (see PriorityTrackControl).
 type Tier = 'mustHave' | 'important' | 'wouldBeNice' | 'unassigned'
 const TIER_ORDER: Tier[] = ['mustHave', 'important', 'wouldBeNice', 'unassigned']
-// Track-and-ball priority caps (Craig's rule): Must have 3, Important to me 4, the rest
-// unlimited. Overflow cascades DOWN to the first tier with room (see PriorityTrackControl).
-const PRIORITY_CAPS: number[] = [3, 4, Infinity, Infinity]
+// Track-and-ball priority caps (Brief C CP4): Top priority 3, Really matters 3, the bottom
+// two uncapped. A ball dropped into a full capped tier redirects ONE tier down (then blocks
+// if that tier is also full); the target header flashes. Caps enforce on ADD, never on LOAD.
+const PRIORITY_CAPS: number[] = [3, 3, Infinity, Infinity]
 // Brief 3 — the per-tier `weight` labels ('3×'/'2×'/'1×') were removed: they DISPLAYED
 // multipliers the engine doesn't apply (real TIER_MULTIPLIERS are 1.5/1.25/1.0). Tier
 // headers now show the name only; the soft "counts for more when you mark it a priority"
