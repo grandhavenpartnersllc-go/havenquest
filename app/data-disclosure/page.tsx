@@ -522,7 +522,7 @@ export default function DataDisclosurePage() {
             <section className="bg-amber-50 border border-amber-100 rounded-2xl p-6">
               <h2 className="font-bold text-amber-900 tracking-tight mb-2">Disclaimer</h2>
               <p className="text-sm text-amber-800 leading-relaxed mb-2">
-                HavenQuest is operated by American Victory Alliance, LLC — Austin, TX. All data is provided for informational purposes only and does not constitute financial, legal, or real estate advice. Scores are directional lifestyle guidance.
+                All data is provided for informational purposes only and does not constitute financial, legal, or real estate advice. Scores are directional lifestyle guidance.
               </p>
               <p className="text-xs text-amber-700">Document version 1.0 — May 29, 2026. Subject to revision as platform data and methodology evolve.</p>
             </section>
