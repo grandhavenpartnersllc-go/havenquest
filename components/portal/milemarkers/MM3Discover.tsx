@@ -1605,7 +1605,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                 {/* 5 — affordability meter (housing as % of income; comfort line cited at 28%) */}
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '5px' }}>
-                    <span style={{ fontSize: '10px', color: '#6a7180' }}>Housing as % of income</span>
+                    <span style={{ fontSize: '10px', color: '#6a7180' }}>{`${refCityData?.name ?? 'This city'}'s typical home`}</span>
                     <span style={{ fontSize: '12px', fontWeight: 700, color: '#0A1E3D' }}>{Math.round(finHousingPct)}%</span>
                   </div>
                   <div style={{ position: 'relative', height: '10px', borderRadius: '5px', background: 'linear-gradient(90deg, #48c78e 0%, #48c78e 42%, #f4c150 60%, #e0794f 84%, #d1493f 100%)' }}>
@@ -1619,6 +1619,12 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                     <span style={{ position: 'absolute', left: '56%', transform: 'translateX(-50%)', fontSize: '8px', fontWeight: 600, color: '#0A1E3D', whiteSpace: 'nowrap' }}>28% affordability line</span>
                     <span style={{ position: 'absolute', right: 0, fontSize: '8px', color: '#9a968c' }}>50%+</span>
                   </div>
+                  {/* CP2 (meter relabel) — new caption naming the meter's BASIS (the focused city's
+                      median home), distinguishing it from the band's ceiling above. Median value is
+                      reused from refPrice; finHousingPct and all math are untouched. */}
+                  <p style={{ fontSize: '9px', color: '#9a968c', lineHeight: 1.5, margin: '8px 0 0' }}>
+                    {`Based on ${refCityData?.name ?? 'This city'}'s median home (${fmtK(refPrice)}).`} Your buying power above is the most you could afford at this income.
+                  </p>
                   {/* meter note — VERBATIM (28% threshold cited, not asserted) */}
                   <p style={{ fontSize: '9px', color: '#9a968c', lineHeight: 1.5, margin: '8px 0 0' }}>
                     The 28% affordability line is the mortgage industry&apos;s standard front-end ratio. This reading includes the two estimated amounts above, so it will move as real figures replace them.
