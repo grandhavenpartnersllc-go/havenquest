@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import PriorityTrackControl from '../../shared/PriorityTrackControl'
+import HelpPopup from '../../shared/HelpPopup'
+import { buildPriorityHelpBody } from '../../shared/priorityHelpBody'
 import MobilePriorityBuckets, { type PriorityBucket } from '../MobilePriorityBuckets'
 import { PRIORITY_SELECTABLE_CATEGORIES, MUST_HAVE_MAX, NICE_TO_HAVE_MAX } from '../../../utils/constants'
 import { DNA_CATEGORY_ICONS } from '../../../utils/categoryIcons'
@@ -111,9 +113,12 @@ export default function Card3Priorities({ initialValue, onComplete, onBack }: Ca
         </>
       ) : (
         <>
-          <p style={{ fontSize: '13px', color: '#6B7280', lineHeight: 1.6, marginBottom: '14px' }}>
-            Drag each dot — or tap a band — to set how much it matters.
-          </p>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '14px', flexWrap: 'wrap' }}>
+            <p style={{ fontSize: '13px', color: '#6B7280', lineHeight: 1.6, margin: 0 }}>
+              Drag each dot — or tap a band — to set how much it matters.
+            </p>
+            <HelpPopup title="How this works" body={buildPriorityHelpBody(true)} />
+          </div>
           <PriorityTrackControl
             items={QUIZ_CATEGORIES.map(c => ({ key: c.key, label: c.label, Icon: DNA_CATEGORY_ICONS[c.key], whatItIs: c.whatItIs, howItCounts: c.howItCounts }))}
             tierOf={Object.fromEntries(QUIZ_CATEGORIES.map(c => [c.key, BUCKET_TO_TIER[bucketOf[c.key] ?? 'unassigned']]))}

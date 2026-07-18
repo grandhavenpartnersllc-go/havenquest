@@ -7,13 +7,17 @@ export interface FlowStep {
 }
 
 // Encodes Brief 1 Part 6 — per-path card visibility and requiredness.
+// CP2 (THE FEEL merge): former steps 5 and 6 (growthProfile + lifestyleOrientation) now
+// render as ONE step (Card5TheFeel, id 5). Id 6 is retired from every flow, so the flow
+// length — and therefore the progress label and dots (both derive from getTotalCards) —
+// drop by one automatically. Ids 7–10 are unchanged.
 export const CARD_FLOW: Record<EntryPath, FlowStep[]> = {
-  explorer: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(id => ({ id: id as CardId, required: true })),
-  directed: [1, 2, 3, 4, 5, 6, 7, 8, 9].map(id => ({ id: id as CardId, required: true })),
-  instate: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(id => ({ id: id as CardId, required: true })),
+  explorer: [1, 2, 3, 4, 5, 7, 8, 9, 10].map(id => ({ id: id as CardId, required: true })),
+  directed: [1, 2, 3, 4, 5, 7, 8, 9].map(id => ({ id: id as CardId, required: true })),
+  instate: [1, 2, 3, 4, 5, 7, 8, 9, 10].map(id => ({ id: id as CardId, required: true })),
   exploring: [
     ...[1, 2, 3, 4, 5].map(id => ({ id: id as CardId, required: true })),
-    ...[6, 7, 8, 9, 10].map(id => ({ id: id as CardId, required: false })),
+    ...[7, 8, 9, 10].map(id => ({ id: id as CardId, required: false })),
   ],
 }
 

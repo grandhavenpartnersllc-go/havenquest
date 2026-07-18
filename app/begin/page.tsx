@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import BeginHeader from '../../components/quiz/BeginHeader'
-import Footer from '../../components/shared/Footer'
 import { Check } from 'lucide-react'
 import Gateway from '../../components/quiz/Gateway'
 import MetroCaptureCard, { type MetroCaptureValue } from '../../components/quiz/MetroCaptureCard'
@@ -13,8 +12,7 @@ import Card1Household from '../../components/quiz/cards/Card1Household'
 import Card2MovingReason from '../../components/quiz/cards/Card2MovingReason'
 import Card3Priorities, { type Card3Result } from '../../components/quiz/cards/Card3Priorities'
 import Card4CommunityFeel, { type PersonalityScores } from '../../components/quiz/cards/Card4CommunityFeel'
-import Card5GrowthProfile from '../../components/quiz/cards/Card5GrowthProfile'
-import Card6LifestyleOrientation from '../../components/quiz/cards/Card6LifestyleOrientation'
+import Card5TheFeel from '../../components/quiz/cards/Card5TheFeel'
 import Card7Situation from '../../components/quiz/cards/Card7Situation'
 import Card8WorkLife from '../../components/quiz/cards/Card8WorkLife'
 import Card9Financial from '../../components/quiz/cards/Card9Financial'
@@ -689,30 +687,17 @@ export default function BeginPage() {
               )}
 
               {currentStep.id === 5 && (
-                <>
-                  <Card5GrowthProfile
-                    onBack={goBack}
-                    initialValue={answers.growthProfile}
-                    onComplete={(v) => goNext({ growthProfile: v }, { growthProfile: v })}
-                  />
-                </>
-              )}
-
-              {currentStep.id === 6 && (
-                <div>
-                  <Card6LifestyleOrientation
-                    onBack={goBack}
-                    initialValue={answers.lifestyleOrientation}
-                    onComplete={(v) => goNext({ lifestyleOrientation: v }, { lifestyleOrientation: v })}
-                  />
-                  {!currentStep.required && (
-                    <div className="max-w-5xl mx-auto px-4 -mt-4">
-                      <button type="button" onClick={handleSkip} className="text-sm text-gray-400 hover:text-gray-600">
-                        Skip this question →
-                      </button>
-                    </div>
-                  )}
-                </div>
+                <Card5TheFeel
+                  onBack={goBack}
+                  initialGrowth={answers.growthProfile}
+                  initialLifestyle={answers.lifestyleOrientation}
+                  onComplete={(growth, lifestyle) =>
+                    goNext(
+                      { growthProfile: growth, lifestyleOrientation: lifestyle },
+                      { growthProfile: growth, lifestyleOrientation: lifestyle }
+                    )
+                  }
+                />
               )}
 
               {currentStep.id === 7 && (
@@ -788,7 +773,6 @@ export default function BeginPage() {
 
         </div>
       </main>
-      <Footer />
     </>
   )
 }

@@ -8,6 +8,8 @@ import { DNA_CATEGORIES, PRIORITY_SELECTABLE_CATEGORIES } from '../../../utils/c
 import { getAllCities } from '../../../services/locationService'
 import { getTopMatches, getDownPaymentMidpoint, getProceedsMidpoint } from '../../../services/matchingService'
 import PriorityTrackControl from '../../shared/PriorityTrackControl'
+import HelpPopup from '../../shared/HelpPopup'
+import { buildPriorityHelpBody } from '../../shared/priorityHelpBody'
 import { createClient } from '../../../lib/supabase/client'
 import { lookupZipCityState } from '../../../utils/zipLookup'
 import { txColIndex, txSafety, txPropertyTax, txJobMarket, txClimateV2 } from '../../../utils/txComparisonStats'
@@ -1136,9 +1138,12 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         <p style={{ fontSize: '11px', color: '#6B6A65', lineHeight: 1.55, margin: '6px 0 0' }}>{archetypeInfo.explanation}</p>
       </div>
 
-      <p style={{ fontSize: '10px', color: '#6a7180', margin: '0 0 10px', lineHeight: 1.5 }}>
-        Drag each dot — or tap a band — to set how much it matters.
-      </p>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', margin: '0 0 10px', flexWrap: 'wrap' }}>
+        <p style={{ fontSize: '10px', color: '#6a7180', margin: 0, lineHeight: 1.5 }}>
+          Drag each dot — or tap a band — to set how much it matters.
+        </p>
+        <HelpPopup title="How this works" body={buildPriorityHelpBody(false)} />
+      </div>
 
       <PriorityTrackControl
         items={SELECTABLE_KEYS.map(key => {
