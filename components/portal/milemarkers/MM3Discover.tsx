@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import Image from 'next/image'
 import { CityMatch, UserProfile, UserSession, SandboxProfile, DNAScores, NonNegotiablesState, ArchetypeKey } from '../../../types'
 import FullReport from '../../results/FullReport'
@@ -389,6 +390,18 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const amyDrawerOpen = openDrawer === 'guide'
   const [isMobile, setIsMobile] = useState(false)
   const [advancedAssumptionsOpen, setAdvancedAssumptionsOpen] = useState(false) // Declutter pass — Interest rate + Loan term moved behind this
+  // FinZone "How is this calculated?" formula popup — display-only; touches no scorer/persistence.
+  const [formulaOpen, setFormulaOpen] = useState(false)
+  const formulaCardRef = useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+    if (!formulaOpen) return
+    formulaCardRef.current?.focus()
+    function onFormulaKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); setFormulaOpen(false) }
+    }
+    document.addEventListener('keydown', onFormulaKey, true)
+    return () => document.removeEventListener('keydown', onFormulaKey, true)
+  }, [formulaOpen])
   const [nonNegotiables, setNonNegotiables] = useState<NonNegotiablesState>(DEFAULT_NON_NEGOTIABLES)
 
   // Compare (Phase C1 Item 6, restructured Phase D) — reuses the existing CompareModal/createComparisonReportDocument
@@ -899,6 +912,17 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     return Math.round(lo / 1000) * 1000
   })()
   const finHousingPct = finIncome > 0 ? finTotalMonthly / (finIncome / 12) * 100 : 0
+  // Formula popup (display-only) — the BUYING-POWER worked example, computed AT THE CEILING
+  // (finComfortableUpTo): "here's how we arrived at your $X buying power." Re-applies the same
+  // financial formulas at the ceiling price; no scorer/ranking/persistence touched.
+  const bpMonthlyCap = finIncome > 0 ? Math.round(finIncome / 12 * 0.28) : 0
+  const bpDownPayment = totalFunds
+  const bpLoan = Math.max(0, finComfortableUpTo - totalFunds)
+  const bpPI = calcMonthly(bpLoan, refRate, loanTerm)
+  const bpTax = Math.round(finComfortableUpTo * finTaxRate / 12)
+  const bpInsurance = Math.round(finComfortableUpTo * INSURANCE_ANNUAL_RATE / 12)
+  const bpHOA = HOA_MONTHLY_EST
+  const bpTotal = bpPI + bpTax + bpInsurance + bpHOA
   const FIN_HATCH = 'repeating-linear-gradient(45deg, rgba(255,255,255,0.5) 0, rgba(255,255,255,0.5) 3px, transparent 3px, transparent 7px)'
   const finSegments: { key: string; label: string; amount: number; color: string; est: boolean }[] = [
     { key: 'pi', label: 'Principal & interest', amount: refMonthly, color: '#0A1E3D', est: false },
@@ -1559,6 +1583,15 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           <div style={{ padding: '15px 18px' }}>
             {finTotalMonthly > 0 ? (
               <>
+                {/* CP2 — "which house" label above the bar. Names the bar's basis as the focused
+                    city's TYPICAL (median) home, distinguishing it from the buying-power CEILING in
+                    the navy header. Same muted register as the meter label (~line 1620); refPrice is
+                    reused, no recompute. */}
+                <p style={{ fontSize: '10px', color: '#6a7180', margin: '0 0 7px' }}>
+                  {refCityData
+                    ? `${refCityData.name}'s typical home — monthly, at its ${fmtK(refPrice)} median`
+                    : "This city's typical home — monthly"}
+                </p>
                 {/* 1 — monthly payment stacked bar (segment width = share of total) */}
                 <div style={{ display: 'flex', height: '16px', borderRadius: '8px', overflow: 'hidden', border: '0.5px solid #e3e1da' }}>
                   {finSegments.map(s => (
@@ -1629,6 +1662,112 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                   <p style={{ fontSize: '9px', color: '#9a968c', lineHeight: 1.5, margin: '8px 0 0' }}>
                     The 28% affordability line is the mortgage industry&apos;s standard front-end ratio. This reading includes the two estimated amounts above, so it will move as real figures replace them.
                   </p>
+                </div>
+
+                {/* CP3 — quiet dotted "How is this calculated?" tag, lower-left, muted footnote
+                    register (same family as the 28% notes). Opens the financial-formula popup. The
+                    tag row is what "extends the FinZone a smidge" to seat it. */}
+                <div style={{ marginTop: '12px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setFormulaOpen(true)}
+                    style={{ background: 'none', border: 0, padding: 0, margin: 0, fontFamily: 'inherit', cursor: 'pointer', fontSize: '9px', color: '#9a968c', borderBottom: '1px dotted #a9a69c', lineHeight: 1.5 }}
+                  >
+                    How is this calculated?
+                  </button>
+                  {formulaOpen && typeof document !== 'undefined' && createPortal(
+                    <div
+                      onClick={(e) => { if (e.target === e.currentTarget) setFormulaOpen(false) }}
+                      style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', background: 'rgba(8,20,38,0.5)' }}
+                    >
+                      <div
+                        ref={formulaCardRef}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="How the financial figures are calculated"
+                        tabIndex={-1}
+                        style={{ position: 'relative', width: '100%', maxWidth: '520px', maxHeight: 'calc(100vh - 40px)', overflowY: 'auto', background: '#fff', borderRadius: '14px', padding: '24px 26px', boxShadow: '0 20px 60px rgba(8,20,38,0.30)', outline: 'none' }}
+                      >
+                        <h2 style={{ fontSize: '17px', fontWeight: 700, color: '#081426', margin: '0 0 12px' }}>How is this calculated?</h2>
+                        <p style={{ fontSize: '13px', lineHeight: 1.6, color: '#3a4453', margin: '0 0 14px' }}>
+                          These are the financial formulas behind your buying power and monthly payment — plain arithmetic you can check with a calculator. No home-matching or scoring is involved.
+                        </p>
+
+                        <p style={{ fontSize: '13px', lineHeight: 1.6, color: '#081426', fontWeight: 700, margin: '0 0 6px' }}>Monthly payment</p>
+                        <p style={{ fontSize: '13px', lineHeight: 1.6, color: '#3a4453', margin: '0 0 8px' }}>
+                          Monthly payment = <b>principal &amp; interest + property tax + insurance + HOA</b>.
+                        </p>
+                        <ul style={{ listStyle: 'none', margin: '0 0 14px', padding: 0 }}>
+                          <li style={{ fontSize: '12.5px', lineHeight: 1.55, color: '#3a4453', margin: '0 0 6px' }}>
+                            <b style={{ color: '#081426' }}>P&amp;I</b> — the standard {loanTerm}-year mortgage formula on (home price − down payment) at {interestRate}%. <span style={{ color: '#6a7180' }}>(real)</span>
+                          </li>
+                          <li style={{ fontSize: '12.5px', lineHeight: 1.55, color: '#3a4453', margin: '0 0 6px' }}>
+                            <b style={{ color: '#081426' }}>Property tax</b> — home price × the city&apos;s tax rate ÷ 12. <span style={{ color: '#6a7180' }}>(real, per city)</span>
+                          </li>
+                          <li style={{ fontSize: '12.5px', lineHeight: 1.55, color: '#3a4453', margin: '0 0 6px' }}>
+                            <b style={{ color: '#081426' }}>Insurance</b> — home price × 0.806% ÷ 12. <span style={{ color: '#6a7180' }}>(estimate)</span>
+                          </li>
+                          <li style={{ fontSize: '12.5px', lineHeight: 1.55, color: '#3a4453', margin: 0 }}>
+                            <b style={{ color: '#081426' }}>HOA</b> — a flat $65 / month. <span style={{ color: '#6a7180' }}>(estimate)</span>
+                          </li>
+                        </ul>
+
+                        <p style={{ fontSize: '13px', lineHeight: 1.6, color: '#081426', fontWeight: 700, margin: '0 0 6px' }}>Buying power</p>
+                        <p style={{ fontSize: '13px', lineHeight: 1.6, color: '#3a4453', margin: '0 0 14px' }}>
+                          Your buying power is the <b>highest home price</b> whose full monthly payment (the four parts above) stays at or under <b>28% of your monthly income</b>, after your down payment (equity + cash).
+                        </p>
+
+                        {finComfortableUpTo > 0 && finIncome > 0 ? (
+                          <div style={{ background: '#F5F4F1', borderRadius: '10px', padding: '14px 16px', margin: '0 0 14px' }}>
+                            <p style={{ fontSize: '12.5px', lineHeight: 1.5, color: '#081426', fontWeight: 700, margin: '0 0 8px' }}>
+                              Your numbers — at ${finComfortableUpTo.toLocaleString()} (your ceiling)
+                            </p>
+                            {([
+                              ['Down payment (equity + cash)', `$${bpDownPayment.toLocaleString()}`, null],
+                              ['Principal & interest', `$${bpPI.toLocaleString()}/mo`, 'real'],
+                              ['Property tax', `$${bpTax.toLocaleString()}/mo`, 'real'],
+                              ['Insurance', `$${bpInsurance.toLocaleString()}/mo`, 'est.'],
+                              ['HOA', `$${bpHOA.toLocaleString()}/mo`, 'est.'],
+                            ] as [string, string, string | null][]).map(([label, val, tag]) => (
+                              <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '10px', margin: '0 0 5px' }}>
+                                <span style={{ fontSize: '12px', color: '#3a4453' }}>{label}{tag ? <span style={{ color: '#9a968c' }}> ({tag})</span> : null}</span>
+                                <span style={{ fontSize: '12px', fontWeight: 600, color: '#081426', whiteSpace: 'nowrap' }}>{val}</span>
+                              </div>
+                            ))}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '10px', borderTop: '1px solid #e3e1da', margin: '8px 0 0', paddingTop: '7px' }}>
+                              <span style={{ fontSize: '12.5px', fontWeight: 700, color: '#081426' }}>Full monthly</span>
+                              <span style={{ fontSize: '12.5px', fontWeight: 700, color: '#081426' }}>${bpTotal.toLocaleString()}/mo</span>
+                            </div>
+                            <p style={{ fontSize: '11.5px', lineHeight: 1.5, color: '#6a7180', margin: '8px 0 0' }}>
+                              That&apos;s right at 28% of your ${finIncome.toLocaleString()} income (${bpMonthlyCap.toLocaleString()}/mo) — which is why your buying power lands near ${finComfortableUpTo.toLocaleString()}.
+                            </p>
+                          </div>
+                        ) : (
+                          <p style={{ fontSize: '12.5px', lineHeight: 1.55, color: '#6a7180', margin: '0 0 14px' }}>
+                            Add your income and budget in the Money drawer to see your buying-power example.
+                          </p>
+                        )}
+
+                        <p style={{ fontSize: '13px', lineHeight: 1.6, color: '#081426', fontWeight: 700, margin: '0 0 6px' }}>Which house is which?</p>
+                        <p style={{ fontSize: '13px', lineHeight: 1.6, color: '#3a4453', margin: '0 0 14px' }}>
+                          Your <b>buying power{finComfortableUpTo > 0 ? ` ($${finComfortableUpTo.toLocaleString()})` : ''}</b> is the most you could afford. The <b>payment breakdown</b> above it is for {refCityData ? refCityData.name : 'this city'}&apos;s <b>typical (median) home{refCityData ? ` (${fmtK(refPrice)})` : ''}</b> — a different, usually pricier house — shown so you can see typical monthly costs there.
+                        </p>
+
+                        <p style={{ fontSize: '11.5px', lineHeight: 1.55, color: '#6a7180', margin: '0 0 16px' }}>
+                          Your rate, loan term, income, down payment, and each city&apos;s property-tax rate are real. Insurance uses Texas&apos;s 2024 statewide average rate (0.806%) applied to the home price, which tends to run a little high. HOA is a $65 placeholder until we have per-community data.
+                        </p>
+
+                        <button
+                          type="button"
+                          onClick={() => setFormulaOpen(false)}
+                          style={{ background: '#0076B6', color: '#fff', border: 0, borderRadius: '8px', padding: '10px 22px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}
+                        >
+                          Got it
+                        </button>
+                      </div>
+                    </div>,
+                    document.body
+                  )}
                 </div>
               </>
             ) : (
