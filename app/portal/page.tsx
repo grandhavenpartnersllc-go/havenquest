@@ -33,6 +33,14 @@ export default async function PortalPage() {
 
   const mm = row?.current_milemarker
 
+  // INTERIM 2026-07-18: MM4 scheduling replaced by end-of-demo popup; to reinstate, restore CTA
+  // handleCommit, re-enable the sandbox_committed auto-advance, and restore the >=4 -> mm4 redirect
+  // (i.e. delete this block). During the interim, previously-committed users (mm>=4) land on MM3 so
+  // they get the popup, not the real MM4 intake flow.
+  if (typeof mm === 'number' && mm >= 4) {
+    redirect('/portal/mm3')
+  }
+
   if (typeof mm === 'number' && mm >= 1 && mm <= 10) {
     redirect(`/portal/mm${mm}`)
   }

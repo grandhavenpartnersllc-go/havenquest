@@ -16,6 +16,7 @@ import { lookupZipCityState } from '../../../utils/zipLookup'
 import { txSafety, txClimateV2 } from '../../../utils/txComparisonStats'
 import CompareModal from '../../results/CompareModal'
 import AmyPanel from '../amy/AmyPanel'
+import EndOfDemoModal from '../EndOfDemoModal'
 import { SlidersHorizontal, CircleDollarSign, ShieldCheck, MessageCircle, GraduationCap, Users, Briefcase, Mountain, TrendingUp, UtensilsCrossed, Gem, Pencil, Lock } from 'lucide-react'
 
 const ALL_KEYS = DNA_CATEGORIES.map(c => c.key) as (keyof DNAScores)[]
@@ -390,6 +391,9 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const amyDrawerOpen = openDrawer === 'guide'
   const [isMobile, setIsMobile] = useState(false)
   const [advancedAssumptionsOpen, setAdvancedAssumptionsOpen] = useState(false) // Declutter pass — Interest rate + Loan term moved behind this
+  // INTERIM 2026-07-18: MM4 scheduling replaced by end-of-demo popup; to reinstate, restore CTA
+  // handleCommit, re-enable the sandbox_committed auto-advance, and restore the >=4 -> mm4 redirect.
+  const [endOfDemoOpen, setEndOfDemoOpen] = useState(false)
   // FinZone "How is this calculated?" formula popup — display-only; touches no scorer/persistence.
   const [formulaOpen, setFormulaOpen] = useState(false)
   const formulaCardRef = useRef<HTMLDivElement | null>(null)
@@ -472,7 +476,10 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         .maybeSingle()
       if (!data) return
 
-      if (data.sandbox_committed) { onAdvanceToConnect(); return }
+      // INTERIM 2026-07-18: MM4 scheduling replaced by end-of-demo popup; to reinstate, restore CTA
+      // handleCommit, re-enable this sandbox_committed auto-advance, and restore the >=4 -> mm4
+      // redirect. Neutralized so previously-committed users stay on MM3 and get the popup, not MM4.
+      // if (data.sandbox_committed) { onAdvanceToConnect(); return }
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const d = data as any
@@ -1091,6 +1098,10 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const focusCity = (id: string) => setSelectedKey(id)
   const openReport = (m: CityMatch) => setReportMatch(m)
 
+  // INTERIM 2026-07-18: MM4 scheduling replaced by end-of-demo popup; to reinstate, restore
+  // onClick={handleCommit} on both Schedule CTAs, re-enable the sandbox_committed auto-advance,
+  // and restore the >=4 -> mm4 redirect. handleCommit is kept intact but intentionally uncalled.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async function handleCommit() {
     if (pinnedCities.length === 0) {
       setCtaError('Pin at least one community before scheduling your consultation.')
@@ -1505,7 +1516,12 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                 {confirmed ? '✓ Profile confirmed' : 'Review and confirm your profile'}
               </button>
               {/* Schedule — greyed + lock while gated; GOLD fill once confirmed. Gate logic unchanged. */}
-              <button type="button" onClick={handleCommit} disabled={committing || !confirmed}
+              {/* INTERIM 2026-07-18: MM4 scheduling replaced by end-of-demo popup; the unlocked
+                  Schedule CTA opens the popup instead of committing/advancing. To reinstate,
+                  restore onClick={handleCommit} (here and on the mobile CTA below), re-enable the
+                  sandbox_committed auto-advance, and restore the >=4 -> mm4 redirect. Gating is
+                  UNCHANGED — this onClick only fires when unlocked (disabled while !confirmed). */}
+              <button type="button" onClick={() => setEndOfDemoOpen(true)} disabled={committing || !confirmed}
                 title={confirmed ? 'Schedule your consultation with your Market Director.' : 'Confirm your profile to unlock'}
                 style={{
                   background: confirmed ? '#C5B783' : '#e9e6df', color: confirmed ? '#0A1E3D' : '#a7a299',
@@ -2258,6 +2274,8 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // ──────────────────────────────────────────────────────────
   return (
     <>
+      {/* INTERIM 2026-07-18: end-of-demo popup fired by the unlocked Schedule CTA (portal overlay). */}
+      <EndOfDemoModal open={endOfDemoOpen} onClose={() => setEndOfDemoOpen(false)} />
       {/* Declutter pass item 6 — Pin/Compare/Remove read as dimmed/secondary by
           default, full-strength on hover/focus so ranked results dominate the
           visual hierarchy. Inline styles can't express :hover, hence this tag. */}
@@ -2659,7 +2677,9 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                   }}>
                   {confirmed ? '✓ Confirmed' : 'Review & confirm'}
                 </button>
-                <button type="button" onClick={handleCommit} disabled={committing || !confirmed}
+                {/* INTERIM 2026-07-18: MM4 scheduling replaced by end-of-demo popup (see desktop CTA
+                    above). Opens the popup instead of committing/advancing; gating unchanged. */}
+                <button type="button" onClick={() => setEndOfDemoOpen(true)} disabled={committing || !confirmed}
                   style={{
                     flex: 1, background: confirmed ? '#C5B783' : '#2a3d5c', color: confirmed ? '#0A1E3D' : '#8194ad',
                     border: 'none', borderRadius: '8px', padding: '11px', fontWeight: 600, fontSize: '12px',
