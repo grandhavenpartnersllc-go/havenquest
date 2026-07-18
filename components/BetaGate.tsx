@@ -140,6 +140,22 @@ export default function BetaGate() {
         </form>
       </div>
 
+      {/* Demo disclosure — short register; the full version lives at the Discovery Intake.
+          New copy on the existing navy; no existing colour value is changed. */}
+      <p style={{
+        fontSize: '12.5px',
+        lineHeight: 1.6,
+        color: 'rgba(255,255,255,0.62)',
+        textAlign: 'center',
+        maxWidth: '440px',
+        marginTop: '24px',
+      }}>
+        <span style={{ fontWeight: 700, color: 'rgba(255,255,255,0.9)' }}>Demo mode.</span>{' '}
+        You&apos;re about to see a working model of HavenQuest Navigator. The experience is
+        real; the data behind it is limited and still being built. Please don&apos;t base any
+        real decision on what it shows you.
+      </p>
+
       {/* Footer */}
       <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)', marginTop: '24px', textAlign: 'center' }}>
         © 2026 HavenQuest · A Grand Haven Partners Company
