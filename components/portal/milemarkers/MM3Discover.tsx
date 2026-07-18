@@ -12,7 +12,7 @@ import HelpPopup from '../../shared/HelpPopup'
 import { buildPriorityHelpBody } from '../../shared/priorityHelpBody'
 import { createClient } from '../../../lib/supabase/client'
 import { lookupZipCityState } from '../../../utils/zipLookup'
-import { txColIndex, txSafety, txPropertyTax, txJobMarket, txClimateV2 } from '../../../utils/txComparisonStats'
+import { txSafety, txClimateV2 } from '../../../utils/txComparisonStats'
 import CompareModal from '../../results/CompareModal'
 import AmyPanel from '../amy/AmyPanel'
 import { SlidersHorizontal, CircleDollarSign, ShieldCheck, MessageCircle, GraduationCap, Users, Briefcase, Mountain, TrendingUp, UtensilsCrossed, Gem, Pencil, Lock } from 'lucide-react'
@@ -304,6 +304,15 @@ const TIER_ORDER: Tier[] = ['mustHave', 'important', 'wouldBeNice', 'unassigned'
 // two uncapped. A ball dropped into a full capped tier redirects ONE tier down (then blocks
 // if that tier is also full); the target header flashes. Caps enforce on ADD, never on LOAD.
 const PRIORITY_CAPS: number[] = [3, 3, Infinity, Infinity]
+
+// Est. homeowners insurance — Texas Dept. of Insurance statewide 2024 average, ~0.806%/yr.
+// NOTE: TDI measures this rate against the COVERAGE amount, not the home price; we apply it to
+// price as an approximation pending the city→county data join. It errs HIGH, which is the safe
+// direction. ONE source of truth — used by BOTH the FinZone breakdown and the hero-card badge.
+const INSURANCE_ANNUAL_RATE = 0.00806
+// Est. monthly HOA — UNSOURCED placeholder, the weakest input in the affordability read. Do not
+// invent a better number without real per-community data.
+const HOA_MONTHLY_EST = 65
 // Brief 3 — the per-tier `weight` labels ('3×'/'2×'/'1×') were removed: they DISPLAYED
 // multipliers the engine doesn't apply (real TIER_MULTIPLIERS are 1.5/1.25/1.0). Tier
 // headers now show the name only; the soft "counts for more when you mark it a priority"
@@ -823,15 +832,28 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     rankSnapshotRef.current = { topIds, income: incomeVal, proceeds, savings, rate: interestRate, loanTerm, removedCount: removedCities.length }
   }, [overallTopResult, incomeVal, proceeds, savings, interestRate, loanTerm, removedCities])
 
-  function afStatus(medianPrice: number): 'comfortable' | 'moderate' | 'stretched' {
+  // Shared full monthly payment estimate for a city — P&I (after the family's funds) + property
+  // tax (real per-city rate) + insurance (est.) + HOA (est.). ONE formula, used by BOTH the
+  // FinZone breakdown and the hero-card badge so the two can never disagree on affordability.
+  // Display only; no scorer, ranking, or persistence touched.
+  function estFullMonthly(price: number, taxRate: number): number {
+    const rate = loanTerm === 15 ? Math.max(interestRate - 0.5, 2) : interestRate
+    const pi = calcMonthly(Math.max(0, price - totalFunds), rate, loanTerm)
+    const tax = Math.round(price * taxRate / 12)
+    const insurance = Math.round(price * INSURANCE_ANNUAL_RATE / 12)
+    return pi + tax + insurance + HOA_MONTHLY_EST
+  }
+
+  // CP3b (Craig-authorised scope change) — the badge now reads the FULL payment (P + I + tax +
+  // insurance + HOA), not P&I only. 28% is the front-end ratio, and the front-end ratio is
+  // defined against the full payment; applying it to P&I was the bug that let the badge read
+  // "Comfortable" while the FinZone meter sat past the 28% line. Same denominator + same formula
+  // as the FinZone meter (estFullMonthly / 28%-of-income) → they cannot disagree. Display only;
+  // scorer untouched (afStatus lives here, not in matchingService/scoring).
+  function afStatus(price: number, taxRate: number): 'comfortable' | 'moderate' | 'stretched' {
     const income = incomeVal || profile?.annualIncome || 0
     if (income <= 0) return 'stretched'
-    const rate = loanTerm === 15 ? Math.max(interestRate - 0.5, 2) : interestRate
-    // CP4 — amortize the balance after the family's funds (proceeds + savings), matching
-    // the hero card's cityBalance and pdfService. Previously fed the full median price as
-    // principal, so the badge ignored the down payment. Display only; scorer untouched.
-    const balance = Math.max(0, medianPrice - totalFunds)
-    const monthly = calcMonthly(balance, rate, loanTerm)
+    const monthly = estFullMonthly(price, taxRate)
     const maxMonthly = income / 12 * 0.28
     const ratio = maxMonthly > 0 ? monthly / maxMonthly : 99
     if (ratio < 0.85) return 'comfortable'
@@ -852,6 +874,38 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const refBalance = Math.max(0, refPrice - totalFunds)
   const refRate = loanTerm === 15 ? Math.max(interestRate - 0.5, 2) : interestRate
   const refMonthly = calcMonthly(refBalance, refRate, loanTerm)
+
+  // CP3 (MM3 FinZone) — full monthly payment composition for the FOCUSED city. Principal &
+  // interest and property tax are REAL (tax from the city's own housing.propertyTaxRate);
+  // insurance and HOA are typical placeholders, tagged (est.) and hatched in the bar. Figures
+  // are presentation only — no scorer, ranking, or persistence touched. They react to the
+  // Money-drawer sliders through refMonthly / totalFunds / rate / term / income.
+  const finIncome = incomeVal || profile?.annualIncome || 0
+  const finTaxRate = refCityData?.housing.propertyTaxRate ?? 0.019 // real per-city rate; falls back only if no city is focused
+  const finMonthlyTax = Math.round(refPrice * finTaxRate / 12)
+  const finMonthlyInsurance = Math.round(refPrice * INSURANCE_ANNUAL_RATE / 12) // real per-city price × TDI statewide avg (see INSURANCE_ANNUAL_RATE)
+  const finMonthlyHOA = HOA_MONTHLY_EST // UNSOURCED placeholder (see HOA_MONTHLY_EST) — weakest input
+  const finTotalMonthly = refMonthly + finMonthlyTax + finMonthlyInsurance + finMonthlyHOA
+  const finCashToClose = Math.min(totalFunds, refPrice) + Math.round(refPrice * 0.03) // real down payment + ~3% est. closing
+  const finComfortableUpTo = (() => {
+    if (finIncome <= 0) return 0
+    const cap = finIncome / 12 * 0.28
+    let lo = 0, hi = 3_000_000
+    for (let i = 0; i < 40; i++) {
+      const mid = (lo + hi) / 2
+      const full = calcMonthly(Math.max(0, mid - totalFunds), refRate, loanTerm) + mid * finTaxRate / 12 + mid * INSURANCE_ANNUAL_RATE / 12 + finMonthlyHOA
+      if (full > cap) hi = mid; else lo = mid
+    }
+    return Math.round(lo / 1000) * 1000
+  })()
+  const finHousingPct = finIncome > 0 ? finTotalMonthly / (finIncome / 12) * 100 : 0
+  const FIN_HATCH = 'repeating-linear-gradient(45deg, rgba(255,255,255,0.5) 0, rgba(255,255,255,0.5) 3px, transparent 3px, transparent 7px)'
+  const finSegments: { key: string; label: string; amount: number; color: string; est: boolean }[] = [
+    { key: 'pi', label: 'Principal & interest', amount: refMonthly, color: '#0A1E3D', est: false },
+    { key: 'tax', label: 'Property tax', amount: finMonthlyTax, color: '#3f6f8f', est: false },
+    { key: 'ins', label: 'Insurance (est.)', amount: finMonthlyInsurance, color: '#C5B783', est: true },
+    { key: 'hoa', label: 'HOA (est.)', amount: finMonthlyHOA, color: '#a99f88', est: true },
+  ]
 
   function findMatch(cityId: string): CityMatch | undefined {
     return rankedCities.find(m => m.location.id === cityId)
@@ -1378,76 +1432,82 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // ──────────────────────────────────────────────────────────
   const headerBand = (
     <div style={{ marginBottom: '12px', ...(isMobile ? {} : { paddingBottom: '12px', borderBottom: '0.5px solid rgba(0,0,0,0.08)' }) }}>
-      {/* Brief 7B — CTA strip: its OWN row, right-aligned, ABOVE the metro row (desktop only;
-          mobile uses the fixed bottom bar). Vertically stacked over the metro pills, so the CTAs
-          never share a row with / wrap under the pills at any width. The intro heading was removed
-          (Brief 7B Item A). Gate logic/handlers unchanged — only placement + styling. */}
-      {!isMobile && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-end', marginBottom: '12px' }}>
-          <div style={{ display: 'flex', flexDirection: 'row', gap: '10px', alignItems: 'stretch' }}>
-            {/* Review — navy fill / gold text, card-like hover; opens the existing review/profile modal */}
-            <button type="button" className="mm3-review-cta" onClick={() => { setReconfirmNudge(false); setSummaryOpen(true) }} disabled={!hasPinnedCity}
-              title="Lock in your priorities, budget, and matches. Confirming unlocks scheduling your consultation."
-              style={{
-                background: '#0A1E3D', color: '#C5B783', border: '1.5px solid #0A1E3D',
-                borderRadius: '8px', padding: '7px 13px', fontWeight: 600, fontSize: '12.5px',
-                cursor: hasPinnedCity ? 'pointer' : 'not-allowed', fontFamily: 'inherit',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap',
-                opacity: 1,
-              }}>
-              {confirmed ? '✓ Profile confirmed' : 'Review and confirm your profile'}
-            </button>
-            {/* Schedule — greyed + lock while gated; GOLD fill once confirmed. Gate logic unchanged. */}
-            <button type="button" onClick={handleCommit} disabled={committing || !confirmed}
-              title={confirmed ? 'Schedule your consultation with your Market Director.' : 'Confirm your profile to unlock'}
-              style={{
-                background: confirmed ? '#C5B783' : '#e9e6df', color: confirmed ? '#0A1E3D' : '#a7a299',
-                border: 'none', borderRadius: '8px', padding: '7px 13px', fontWeight: 600, fontSize: '12.5px',
-                cursor: (committing || !confirmed) ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap',
-              }}>
-              {!confirmed && <Lock size={12} style={{ flexShrink: 0 }} />}
-              {committing ? 'Saving…' : (confirmed ? 'Schedule your consultation →' : 'Schedule your consultation')}
-            </button>
-          </div>
-          {ctaError && (
-            <p style={{ fontSize: '10px', color: '#c0392b', margin: 0, textAlign: 'right', lineHeight: 1.4 }}>{ctaError}</p>
-          )}
-          {!ctaError && !hasPinnedCity && (
-            <p style={{ fontSize: '9px', color: '#a4a097', textAlign: 'right', margin: 0, lineHeight: 1.4 }}>
-              Pin at least one community to confirm your choices.
-            </p>
-          )}
-          {!ctaError && hasPinnedCity && reconfirmNudge && !confirmed && (
-            <p style={{ fontSize: '9px', color: '#a48f4e', textAlign: 'right', margin: 0, lineHeight: 1.4 }}>
-              Your choices changed — reconfirm before scheduling.
-            </p>
-          )}
+      {/* CP2 (MM3 FinZone brief) — pills and CTAs now SHARE ONE ROW: pills left, CTAs right
+          (desktop). Collapsing the prior two stacked rows into one lifts the FinZone toward the
+          fold — the point of this checkpoint. Mobile: pills only; its two CTAs live in the fixed
+          bottom bar. CTA size / styling / handlers / gate wiring are UNCHANGED — only relocated. */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px 16px', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        {/* LEFT — metro pills. Pill height matches the CTA button by box model (same vertical
+            padding + border + font-size); radius 999px; distinguished by shape + colour, not size.
+            Active = solid navy; inactive = white + hairline; metro-% in the portal's real accent
+            gold (#C5B783 on white, #d3c493 on navy). The word "match" is dropped (see CP2 explainer). */}
+        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center', flex: '1 1 auto', minWidth: 0 }}>
+          {METRO_FILTERS.map(f => {
+            const active = selectedMetro === f.value
+            const pct = f.value !== 'State' ? metroTopScores[f.value] : undefined
+            return (
+              <button key={f.value} type="button"
+                onClick={() => handleMetroChange(f.value)}
+                title={pct != null ? METRO_MATCH_HOVER : undefined}
+                style={{
+                  display: 'inline-flex', alignItems: 'center',
+                  padding: '8px 16px', borderRadius: '999px', fontSize: '12.5px', fontWeight: 600,
+                  background: active ? '#0A1E3D' : '#fff',
+                  color: active ? '#fff' : '#0A1E3D',
+                  border: `0.5px solid ${active ? '#0A1E3D' : 'rgba(0,0,0,0.12)'}`,
+                  cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap',
+                }}>
+                {f.label}{pct != null ? <span style={{ color: active ? '#d3c493' : '#C5B783', fontWeight: 600 }}> {pct}%</span> : ''}
+              </button>
+            )
+          })}
         </div>
-      )}
 
-      {/* Metro row — Brief 7B: bolder pills; active = navy fill/white; metro-% in its own gold span
-          (#C5B783 on white, #d3c493 on the navy active pill). The "% only shows when All Texas is
-          active" logic is unchanged. */}
-      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-        {METRO_FILTERS.map(f => {
-          const active = selectedMetro === f.value
-          const pct = f.value !== 'State' ? metroTopScores[f.value] : undefined
-          return (
-            <button key={f.value} type="button"
-              onClick={() => handleMetroChange(f.value)}
-              title={pct != null ? METRO_MATCH_HOVER : undefined}
-              style={{
-                padding: '9px 17px', borderRadius: '20px', fontSize: '13.5px', fontWeight: 600,
-                background: active ? '#0A1E3D' : '#fff',
-                color: active ? '#fff' : '#1d1d1f',
-                border: `0.5px solid ${active ? '#0A1E3D' : 'rgba(0,0,0,0.12)'}`,
-                cursor: 'pointer', fontFamily: 'inherit',
-              }}>
-              {f.label}{pct != null ? <span style={{ color: active ? '#d3c493' : '#C5B783', fontWeight: 600 }}> {pct}% match</span> : ''}
-            </button>
-          )
-        })}
+        {/* RIGHT — the two stacked gated CTAs (desktop only). Buttons UNCHANGED from live;
+            only the wrapping parent moved from a standalone row into this shared row's right cell. */}
+        {!isMobile && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-end', flexShrink: 0 }}>
+            <div style={{ display: 'flex', flexDirection: 'row', gap: '10px', alignItems: 'stretch' }}>
+              {/* Review — navy fill / gold text, card-like hover; opens the existing review/profile modal */}
+              <button type="button" className="mm3-review-cta" onClick={() => { setReconfirmNudge(false); setSummaryOpen(true) }} disabled={!hasPinnedCity}
+                title="Lock in your priorities, budget, and matches. Confirming unlocks scheduling your consultation."
+                style={{
+                  background: '#0A1E3D', color: '#C5B783', border: '1.5px solid #0A1E3D',
+                  borderRadius: '8px', padding: '7px 13px', fontWeight: 600, fontSize: '12.5px',
+                  cursor: hasPinnedCity ? 'pointer' : 'not-allowed', fontFamily: 'inherit',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap',
+                  opacity: 1,
+                }}>
+                {confirmed ? '✓ Profile confirmed' : 'Review and confirm your profile'}
+              </button>
+              {/* Schedule — greyed + lock while gated; GOLD fill once confirmed. Gate logic unchanged. */}
+              <button type="button" onClick={handleCommit} disabled={committing || !confirmed}
+                title={confirmed ? 'Schedule your consultation with your Market Director.' : 'Confirm your profile to unlock'}
+                style={{
+                  background: confirmed ? '#C5B783' : '#e9e6df', color: confirmed ? '#0A1E3D' : '#a7a299',
+                  border: 'none', borderRadius: '8px', padding: '7px 13px', fontWeight: 600, fontSize: '12.5px',
+                  cursor: (committing || !confirmed) ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap',
+                }}>
+                {!confirmed && <Lock size={12} style={{ flexShrink: 0 }} />}
+                {committing ? 'Saving…' : (confirmed ? 'Schedule your consultation →' : 'Schedule your consultation')}
+              </button>
+            </div>
+            {ctaError && (
+              <p style={{ fontSize: '10px', color: '#c0392b', margin: 0, textAlign: 'right', lineHeight: 1.4 }}>{ctaError}</p>
+            )}
+            {!ctaError && !hasPinnedCity && (
+              <p style={{ fontSize: '9px', color: '#a4a097', textAlign: 'right', margin: 0, lineHeight: 1.4 }}>
+                Pin at least one community to confirm your choices.
+              </p>
+            )}
+            {!ctaError && hasPinnedCity && reconfirmNudge && !confirmed && (
+              <p style={{ fontSize: '9px', color: '#a48f4e', textAlign: 'right', margin: 0, lineHeight: 1.4 }}>
+                Your choices changed — reconfirm before scheduling.
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -1471,55 +1531,113 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           the .mm3-finzone media rule. Buying-power figures are the already-live-safe set only —
           no gated per-city breakdown / gauge / rate-sensitivity added. */}
       <div className="mm3-finzone">
-        {/* LEFT ZONE — Your Buying Power (2×2). Brief 5 — white card on stone; header navy. */}
-        <div style={{ background: '#fff', border: '1px solid #dcdad2', borderRadius: '16px', padding: '18px 20px' }}>
-          <p style={{ fontSize: '9px', fontWeight: 500, letterSpacing: '0.1em', color: '#0A1E3D', textTransform: 'uppercase', margin: '0 0 8px' }}>
-            Your Buying Power
-          </p>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
-          {[
-            {
-              label: 'Est. budget',
-              value: totalFunds > 0 ? fmtK(totalFunds) : '—',
-              sub: isSelling ? 'Proceeds + savings' : 'Available funds',
-              subColor: undefined as string | undefined,
-            },
-            {
-              label: 'Monthly est.',
-              value: refMonthly > 0 ? `$${refMonthly.toLocaleString()}` : '—',
-              sub: `${loanTerm}yr P+I`,
-              subColor: undefined as string | undefined,
-            },
-            {
-              label: 'Annual income',
-              value: incomeDisplay || (profile?.annualIncome ? fmtCurrency(String(profile.annualIncome)) : '—'),
-              sub: 'Household',
-              subColor: undefined as string | undefined,
-            },
-            {
-              label: 'Interest rate',
-              value: `${interestRate}%`,
-              sub: interestRate >= 6.25 && interestRate <= 6.75 ? '● In market band' : 'Market: 6.25–6.75%',
-              subColor: interestRate >= 6.25 && interestRate <= 6.75 ? '#2f8f5b' : undefined,
-            },
-          ].map(cell => (
-            <div key={cell.label} style={{ background: '#F5F4F1', borderRadius: '6px', padding: '7px 9px' }}>
-              <p style={{ fontSize: '9px', color: '#6a7180', margin: '0 0 3px' }}>{cell.label}</p>
-              <p style={{ fontSize: '15px', fontWeight: 500, color: '#0A1E3D', margin: '0 0 2px', lineHeight: 1.1 }}>{cell.value}</p>
-              <p style={{ fontSize: '9px', color: cell.subColor ?? '#6a7180', margin: 0 }}>{cell.sub}</p>
+        {/* LEFT ZONE — FinZone (CP3). Navy .finband header + white body: monthly-payment stacked
+            bar (hatched = estimated), 4-line legend, total, two tiles, affordability meter.
+            Property tax uses the city's REAL housing.propertyTaxRate; insurance + HOA are typical
+            placeholders, hatched and (est.)-tagged. Figures react to the Money-drawer sliders. */}
+        <div style={{ background: '#fff', border: '1px solid #dcdad2', borderRadius: '16px', overflow: 'hidden' }}>
+          {/* Navy finband header */}
+          <div style={{ background: '#0A1E3D', padding: '13px 18px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
+            <div style={{ minWidth: 0 }}>
+              <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.14em', color: '#C5B783', textTransform: 'uppercase', margin: '0 0 4px' }}>Your Buying Power</p>
+              <p style={{ margin: 0, display: 'flex', alignItems: 'baseline', gap: '8px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '27px', fontWeight: 700, color: '#fff', lineHeight: 1 }}>{finTotalMonthly > 0 ? `$${finTotalMonthly.toLocaleString()}` : '—'}</span>
+                <span style={{ fontSize: '11px', color: '#C5B783' }}>/mo · at {interestRate}% · {loanTerm}yr</span>
+              </p>
             </div>
-          ))}
+            {refCityData && (
+              <p style={{ fontSize: '11px', fontWeight: 600, color: '#d3c493', margin: 0, textAlign: 'right', whiteSpace: 'nowrap' }}>{refCityData.name}</p>
+            )}
+          </div>
+
+          {/* White body */}
+          <div style={{ padding: '15px 18px' }}>
+            {finTotalMonthly > 0 ? (
+              <>
+                {/* 1 — monthly payment stacked bar (segment width = share of total) */}
+                <div style={{ display: 'flex', height: '16px', borderRadius: '8px', overflow: 'hidden', border: '0.5px solid #e3e1da' }}>
+                  {finSegments.map(s => (
+                    <div key={s.key} title={`${s.label}: $${s.amount.toLocaleString()}/mo`}
+                      style={{ width: `${(s.amount / finTotalMonthly) * 100}%`, background: s.color, backgroundImage: s.est ? FIN_HATCH : undefined }} />
+                  ))}
+                </div>
+                {/* bar footnote — VERBATIM */}
+                <p style={{ fontSize: '9px', color: '#9a968c', lineHeight: 1.5, margin: '7px 0 12px' }}>
+                  Hatched segments are estimates. Principal, interest and property tax come from real figures for this city; insurance and HOA are typical amounts, not quotes.
+                </p>
+
+                {/* 2 — four-line legend */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5px 14px', marginBottom: '12px' }}>
+                  {finSegments.map(s => (
+                    <div key={s.key} style={{ display: 'flex', alignItems: 'center', gap: '7px', minWidth: 0 }}>
+                      <span style={{ width: '11px', height: '11px', borderRadius: '3px', flexShrink: 0, background: s.color, backgroundImage: s.est ? FIN_HATCH : undefined, border: '0.5px solid rgba(0,0,0,0.14)' }} />
+                      <span style={{ fontSize: '10.5px', color: '#3a4453', flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.label}</span>
+                      <span style={{ fontSize: '10.5px', fontWeight: 600, color: '#1c2430', whiteSpace: 'nowrap' }}>${s.amount.toLocaleString()}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* 3 — total estimated payment */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderTop: '1px solid #eeece6', paddingTop: '9px', marginBottom: '13px' }}>
+                  <span style={{ fontSize: '11px', color: '#6a7180' }}>Total estimated payment</span>
+                  <span style={{ fontSize: '16px', fontWeight: 700, color: '#0A1E3D' }}>${finTotalMonthly.toLocaleString()}<span style={{ fontSize: '10px', fontWeight: 400, color: '#6a7180' }}> /mo</span></span>
+                </div>
+
+                {/* 4 — two tiles */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginBottom: '14px' }}>
+                  <div style={{ background: '#F5F4F1', borderRadius: '6px', padding: '8px 10px' }}>
+                    <p style={{ fontSize: '9px', color: '#6a7180', margin: '0 0 2px' }}>Cash to close</p>
+                    <p style={{ fontSize: '15px', fontWeight: 600, color: '#0A1E3D', margin: '0 0 2px', lineHeight: 1.1 }}>{totalFunds > 0 ? `$${finCashToClose.toLocaleString()}` : '—'}</p>
+                    <p style={{ fontSize: '9px', color: '#6a7180', margin: 0 }}>Down payment + ~3% closing (est.)</p>
+                  </div>
+                  <div style={{ background: '#F5F4F1', borderRadius: '6px', padding: '8px 10px' }}>
+                    <p style={{ fontSize: '9px', color: '#6a7180', margin: '0 0 2px' }}>Comfortable up to</p>
+                    <p style={{ fontSize: '15px', fontWeight: 600, color: '#0A1E3D', margin: '0 0 2px', lineHeight: 1.1 }}>{finComfortableUpTo > 0 ? fmtK(finComfortableUpTo) : '—'}</p>
+                    <p style={{ fontSize: '9px', color: '#6a7180', margin: 0 }}>Home price within 28% of income</p>
+                  </div>
+                </div>
+
+                {/* 5 — affordability meter (housing as % of income; comfort line cited at 28%) */}
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '5px' }}>
+                    <span style={{ fontSize: '10px', color: '#6a7180' }}>Housing as % of income</span>
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#0A1E3D' }}>{Math.round(finHousingPct)}%</span>
+                  </div>
+                  <div style={{ position: 'relative', height: '10px', borderRadius: '5px', background: 'linear-gradient(90deg, #48c78e 0%, #48c78e 42%, #f4c150 60%, #e0794f 84%, #d1493f 100%)' }}>
+                    {/* comfort line at 28% on a 0–50% scale => 56% of the track */}
+                    <div style={{ position: 'absolute', left: '56%', top: '-3px', bottom: '-3px', width: '2px', background: '#0A1E3D' }} />
+                    {/* marker at housing% on the same 0–50% scale */}
+                    <div style={{ position: 'absolute', left: `${Math.min(100, Math.max(0, finHousingPct / 50 * 100))}%`, top: '50%', width: '11px', height: '11px', borderRadius: '50%', background: '#fff', border: '2px solid #0A1E3D', transform: 'translate(-50%, -50%)', boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }} />
+                  </div>
+                  <div style={{ position: 'relative', height: '11px', marginTop: '2px' }}>
+                    <span style={{ position: 'absolute', left: 0, fontSize: '8px', color: '#9a968c' }}>0%</span>
+                    <span style={{ position: 'absolute', left: '56%', transform: 'translateX(-50%)', fontSize: '8px', fontWeight: 600, color: '#0A1E3D', whiteSpace: 'nowrap' }}>28% comfort line</span>
+                    <span style={{ position: 'absolute', right: 0, fontSize: '8px', color: '#9a968c' }}>50%+</span>
+                  </div>
+                  {/* meter note — VERBATIM (28% threshold cited, not asserted) */}
+                  <p style={{ fontSize: '9px', color: '#9a968c', lineHeight: 1.5, margin: '8px 0 0' }}>
+                    The 28% comfort line is the mortgage industry&apos;s standard front-end ratio. This reading includes the two estimated amounts above, so it will move as real figures replace them.
+                  </p>
+                </div>
+              </>
+            ) : (
+              <p style={{ fontSize: '11px', color: '#86868b', margin: 0 }}>Add your budget in the Money drawer to see your payment breakdown.</p>
+            )}
+          </div>
         </div>
-      </div>
 
       {/* COMPARISON CHART — always visible; origin column shows placeholders if city unknown */}
       {(() => {
         const originLabel = originCity ?? 'Your Origin'
         const originData = originCity ? lookupOriginCity(originCity) : null
 
-        const col0 = pinnedCities[0] ? (getAllCities().find(c => c.id === pinnedCities[0]) ?? null) : null
-        const col1 = pinnedCities[1] ? (getAllCities().find(c => c.id === pinnedCities[1]) ?? null) : null
-        const col2 = pinnedCities[2] ? (getAllCities().find(c => c.id === pinnedCities[2]) ?? null) : null
+        // CP4 ruling 5 — columns default to the TOP THREE ranked cities (heroSlots), not
+        // pinned-only. heroSlots already leads with pinned cities (see its useMemo), so pinning
+        // still promotes a city into these columns; the "Pin a city" placeholder is retired.
+        const topIds = heroSlots.slice(0, 3)
+        const col0 = topIds[0] ? (getAllCities().find(c => c.id === topIds[0]) ?? null) : null
+        const col1 = topIds[1] ? (getAllCities().find(c => c.id === topIds[1]) ?? null) : null
+        const col2 = topIds[2] ? (getAllCities().find(c => c.id === topIds[2]) ?? null) : null
         const pinnedCols = [col0, col1, col2]
 
         const chartRows: {
@@ -1532,10 +1650,11 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         }[] = [
           {
             label: 'COL Index',
-            originVal: originData ? String(originData.colIndex) : '—',
-            txVals: pinnedCols.map(c => c ? String(txColIndex(c.metroUsed)) : '—'),
-            better: (txVal) => !!originData && txVal !== '—' && parseInt(txVal) < originData.colIndex,
-            prefix: '↓',
+            originVal: '—',
+            // CP4 ruling 2 (+ amendment) — COL Index is a metro-level stub for the Texas cells,
+            // and the origin value is a hardcoded constant with no recorded source — same
+            // epistemic status. Em-dash the WHOLE row (origin too); the row stays visible.
+            txVals: pinnedCols.map(() => '—'),
           },
           {
             label: 'Median Home',
@@ -1547,7 +1666,9 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           {
             label: 'Property Tax',
             originVal: '—',
-            txVals: pinnedCols.map(c => c ? txPropertyTax(c.metroUsed) : '—'),
+            // CP4 ruling 1 — REAL per-city rate (city.housing.propertyTaxRate), the same field
+            // CP3's FinZone uses. Origin stays — (no origin property-tax field; ruling 4).
+            txVals: pinnedCols.map(c => c ? `${(c.housing.propertyTaxRate * 100).toFixed(2)}%` : '—'),
           },
           {
             label: 'State Inc. Tax',
@@ -1568,7 +1689,9 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           {
             label: 'Job Market',
             originVal: '—',
-            txVals: pinnedCols.map(c => c ? txJobMarket(c.metroUsed) : '—'),
+            // CP4 ruling 2 — Job Market is the neutral metro stub ("Strong"/"Moderate" per metro,
+            // identical for very different towns). Nobody estimated it; em-dash the Texas cells.
+            txVals: pinnedCols.map(() => '—'),
           },
           {
             label: 'Climate',
@@ -1597,7 +1720,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                     </th>
                     {pinnedCols.map((c, i) => (
                       <th key={i} style={{ fontSize: '9px', color: c ? '#a48f4e' : '#b3b0a6', padding: '4px 6px', textAlign: 'right', fontWeight: 500, whiteSpace: 'nowrap' }}>
-                        {c ? c.name : 'Pin a city'}
+                        {c ? c.name : '—'}
                       </th>
                     ))}
                   </tr>
@@ -1648,7 +1771,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     <div style={{ marginBottom: '10px' }}>
       {/* Heading — region tabs + "Your Relocation Profile" moved up into the header band */}
       <p style={{ fontSize: '21px', fontWeight: 600, color: '#0A1E3D', margin: '0 0 4px' }}>Your Top Matches</p>
-      <p style={{ fontSize: '11px', color: '#86868b', margin: '0 0 10px' }}>Click a card to see how it fits your money.</p>
+      <p style={{ fontSize: '11px', color: '#86868b', margin: '0 0 10px' }}>Percentages show your strongest match in each metro. Click a card to see how it fits your money.</p>
 
       {/* Hero-3 — card body click FOCUSES (focusCity -> selectedKey, drives Buying Power +
           comparison); the report opens only via the deliberate "See summary report" link. */}
@@ -1666,7 +1789,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
               const match = findMatch(id)
               const cityLoc = match?.location ?? getAllCities().find(c => c.id === id)
               if (!cityLoc) return null
-              const status = afStatus(cityLoc.housing.medianHomePrice)
+              const status = afStatus(cityLoc.housing.medianHomePrice, cityLoc.housing.propertyTaxRate)
               const badge = status === 'comfortable'
                 ? { bg: 'rgba(47,143,91,0.13)', color: '#2f8f5b' }
                 : status === 'moderate'
@@ -1815,7 +1938,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                 const city = match.location
                 const isPinned = pinnedCities.includes(city.id)
                 const isFocused = city.id === effectiveSelectedKey
-                const status = afStatus(city.housing.medianHomePrice)
+                const status = afStatus(city.housing.medianHomePrice, city.housing.propertyTaxRate)
                 const rank = rankedCities.findIndex(m => m.location.id === city.id) + 1
                 const cityBalance = Math.max(0, city.housing.medianHomePrice - totalFunds)
                 const cityRate = loanTerm === 15 ? Math.max(interestRate - 0.5, 2) : interestRate
@@ -2085,7 +2208,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                       const m = findMatch(id)
                       const loc = m?.location ?? getAllCities().find(c => c.id === id)
                       if (!loc) return null
-                      const st = afStatus(loc.housing.medianHomePrice)
+                      const st = afStatus(loc.housing.medianHomePrice, loc.housing.propertyTaxRate)
                       return (
                         <div key={id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F5F4F1', borderRadius: '10px', padding: '9px 12px', fontSize: '13px', gap: '10px' }}>
                           <span><b style={{ color: '#0A1E3D' }}>{loc.name}</b> · {loc.metroUsed} <span style={{ color: '#6a7180' }}>({pinnedCities.includes(loc.id) ? 'pinned' : `match ${i + 1}`})</span></span>
