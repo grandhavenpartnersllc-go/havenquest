@@ -143,10 +143,43 @@
 .hub{background:linear-gradient(90deg,var(--gold),var(--gold-2));color:var(--navy);border-radius:9px;padding:15px;text-align:center;font-weight:700;font-size:15px;}
 .hub small{display:block;font-weight:500;font-size:11.5px;color:#3a3320;margin-top:1px;}
 .atlasNode{background:#c4c8ca;color:var(--navy);border:2px solid var(--gold);border-radius:9px;padding:15px;}
-.atlasNode b{font-size:14px;} .atlasNode .cols{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:9px;}
+.atlasNode b{font-size:14px;} .atlasNode .cols{display:grid;grid-template-columns:1fr auto 1fr;gap:9px;margin-top:9px;align-items:center;}
 .atlasNode .cols div{background:rgba(255,255,255,.65);border-radius:7px;padding:9px;font-size:11.5px;}
 .datafeed{background:rgba(255,255,255,.06);border:1px dashed rgba(197,183,131,.3);border-radius:9px;padding:11px;text-align:center;font-size:12px;color:#9fb0cf;}
 .honest{font-size:12px;font-style:italic;color:#8fa0c0;margin-top:14px;}
+
+/* tech diagram — CP2 rebuilt arrows + center-lane layout (deck slide 8) */
+.arrowRow4{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;}
+@media(max-width:640px){.arrowRow4{grid-template-columns:1fr 1fr;}}
+
+/* thin two-way vertical arrow (role→COMPASS, COMPASS→cloud tools) */
+.vArrowThin{position:relative;display:block;width:2px;height:24px;margin:0 auto;background:var(--gold);opacity:.85;border-radius:1px;}
+.vArrowThin::before,.vArrowThin::after{content:"";position:absolute;left:50%;transform:translateX(-50%);border-left:5px solid transparent;border-right:5px solid transparent;}
+.vArrowThin::before{top:-5px;border-bottom:6px solid var(--gold);}
+.vArrowThin::after{bottom:-5px;border-top:6px solid var(--gold);}
+
+/* thin one-way UP arrow (public/market data → Atlas) */
+.upArrowRow{display:flex;justify-content:center;}
+.vArrowUp{position:relative;display:block;width:2px;height:24px;margin:0 auto;background:var(--gold);opacity:.85;border-radius:1px;}
+.vArrowUp::before{content:"";position:absolute;top:-5px;left:50%;transform:translateX(-50%);border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:6px solid var(--gold);}
+
+/* middle band: two thin arrows + two cloud tools per side, thick hero arrow down the center */
+.midBand{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;}
+.midSide{display:flex;flex-direction:column;gap:9px;}
+.midArrows{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+.midTools{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+.midCenter{display:flex;flex-direction:column;align-items:center;padding:0 12px;min-width:26px;}
+.vArrowThick{position:relative;display:block;flex:1;width:6px;min-height:44px;background:var(--gold);border-radius:3px;box-shadow:0 0 12px rgba(197,183,131,.4);}
+.vArrowThick::before,.vArrowThick::after{content:"";position:absolute;left:50%;transform:translateX(-50%);border-left:9px solid transparent;border-right:9px solid transparent;}
+.vArrowThick::before{top:-9px;border-bottom:11px solid var(--gold);}
+.vArrowThick::after{bottom:-9px;border-top:11px solid var(--gold);}
+@media(max-width:640px){.midBand{grid-template-columns:1fr;}.midCenter{padding:8px 0;}.vArrowThick{flex:none;height:44px;}}
+
+/* Atlas — Notion tag + Repository → Intelligence arrow */
+.notionTag{display:inline-block;margin-top:6px;font-size:9px;letter-spacing:.09em;text-transform:uppercase;font-weight:600;color:var(--navy);background:rgba(197,183,131,.5);border:1px solid var(--gold-label);border-radius:20px;padding:2px 8px;}
+.atlasNode .cols .hArrowIntel{position:relative;display:block;align-self:center;width:26px;height:2px;background:var(--gold-label);}
+.atlasNode .cols .hArrowIntel::after{content:"";position:absolute;right:-1px;top:50%;transform:translateY(-50%);border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:7px solid var(--gold-label);}
+@media(max-width:640px){.atlasNode .cols{grid-template-columns:1fr;}.atlasNode .cols .hArrowIntel{display:none;}}
 
 /* moat band */
 .atlasBand{margin-top:20px;background:#c4c8ca;color:var(--navy);border:2px solid var(--gold);border-radius:11px;padding:15px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}

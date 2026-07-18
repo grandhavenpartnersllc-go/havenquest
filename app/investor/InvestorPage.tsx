@@ -14,6 +14,7 @@
 
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
+import TexasMap, { type MetroKey } from '@/components/home/TexasMap'
 import styles from './investor.module.css'
 
 const MILESTONES = [
@@ -44,6 +45,7 @@ function Mark({ className }: { className?: string }) {
 export default function InvestorPage() {
   const [activeId, setActiveId] = useState<string>('s1')
   const [maxReached, setMaxReached] = useState(1)
+  const [metro, setMetro] = useState<MetroKey>('austin')
 
   useEffect(() => {
     // Smooth in-page anchor scrolling, applied only while this page is mounted.
@@ -180,13 +182,13 @@ export default function InvestorPage() {
             <div className={styles.tour}>
               <div>
                 <h2>
-                  Find your ideal Texas community in under <span className={styles.gold}>30 seconds.</span>
+                  Find strong Texas community matches in <span className={styles.gold}>about three minutes.</span>
                 </h2>
                 <p className={styles.lead}>
-                  Our matching engine weighs what matters most to you — schools, budget, lifestyle, commute — and delivers
-                  personalized community recommendations.
+                  Answer a few questions about what matters to you — schools, budget, lifestyle, commute — and get a strong
+                  shortlist of Texas communities to explore. Your Market Director helps you refine from there.
                 </p>
-                <a className={styles.btnNavy} href="#">Try the demo →</a>
+                <a className={styles.btnNavy} href="/begin">Start the Discovery Intake →</a>
               </div>
               <div className={styles.demo}>
                 <div className={styles.quiz}>
@@ -237,9 +239,10 @@ export default function InvestorPage() {
                     <div className={styles.nm}><b>Dripping Springs</b><span>Hays County</span></div>
                     <div className={styles.sc}>87</div>
                   </div>
-                  {/* Westlake image not in the project yet — keep the brand gradient block (per brief). */}
                   <div className={styles.mrow}>
-                    <div className={styles.th} />
+                    <div className={styles.th}>
+                      <Image src="/images/cities/westlake-tx.jpg" alt="Westlake, Texas" fill className="object-cover" />
+                    </div>
                     <div className={styles.nm}><b>Westlake</b><span>Travis County</span></div>
                     <div className={styles.sc}>86</div>
                   </div>
@@ -353,28 +356,64 @@ export default function InvestorPage() {
               smarter with every relocation.
             </p>
             <div className={styles.tech}>
+              {/* Role boxes */}
               <div className={styles.r4}>
                 <div className={styles.node}><b>Navigator</b><span>Client</span></div>
                 <div className={styles.node}><b>Meridian</b><span>Market Director</span></div>
                 <div className={styles.node}><b>SARAH</b><span>Select Agent</span></div>
                 <div className={styles.node}><b>Compass Admin</b><span>HavenQuest team</span></div>
               </div>
-              <div className={styles.arrows}>↕ ↕ ↕ ↕</div>
+              {/* Each role box → its own thin two-way arrow into COMPASS */}
+              <div className={styles.arrowRow4}>
+                <span className={styles.vArrowThin} />
+                <span className={styles.vArrowThin} />
+                <span className={styles.vArrowThin} />
+                <span className={styles.vArrowThin} />
+              </div>
               <div className={styles.hub}>
                 COMPASS <small>HavenQuest Relocation Intelligence Center</small>
               </div>
-              <div className={styles.r4}>
-                <div className={styles.node}><b>Supabase</b><span>data &amp; storage</span></div>
-                <div className={styles.node}><b>Vercel</b><span>hosting</span></div>
-                <div className={styles.node}><b>GitHub</b><span>code</span></div>
-                <div className={styles.node}><b>Resend</b><span>client email</span></div>
+              {/* COMPASS → cloud tools: two thin arrows above each tool per side,
+                  with the thick hero arrow running down the clear center lane to Atlas */}
+              <div className={styles.midBand}>
+                <div className={styles.midSide}>
+                  <div className={styles.midArrows}>
+                    <span className={styles.vArrowThin} />
+                    <span className={styles.vArrowThin} />
+                  </div>
+                  <div className={styles.midTools}>
+                    <div className={styles.node}><b>Supabase</b><span>data &amp; storage</span></div>
+                    <div className={styles.node}><b>Vercel</b><span>hosting</span></div>
+                  </div>
+                </div>
+                <div className={styles.midCenter}>
+                  <span className={styles.vArrowThick} />
+                </div>
+                <div className={styles.midSide}>
+                  <div className={styles.midArrows}>
+                    <span className={styles.vArrowThin} />
+                    <span className={styles.vArrowThin} />
+                  </div>
+                  <div className={styles.midTools}>
+                    <div className={styles.node}><b>GitHub</b><span>code</span></div>
+                    <div className={styles.node}><b>Resend</b><span>client email</span></div>
+                  </div>
+                </div>
               </div>
               <div className={styles.atlasNode}>
                 <b>Atlas</b> <span style={{ fontSize: '12px' }}>— the data + intelligence layer, extensible beyond relocation</span>
                 <div className={styles.cols}>
-                  <div><b>Repository</b> — all data, housed &amp; ever-growing</div>
+                  <div className={styles.repoCol}>
+                    <b>Repository</b> — all data, housed &amp; ever-growing
+                    <span className={styles.notionTag}>Notion · today</span>
+                  </div>
+                  <span className={styles.hArrowIntel} aria-hidden="true" />
                   <div><b>Intelligence</b> — turns data into insight</div>
                 </div>
+              </div>
+              {/* Public + market data feeds UP into Atlas */}
+              <div className={styles.upArrowRow}>
+                <span className={styles.vArrowUp} />
               </div>
               <div className={styles.datafeed}>Public + market data · Zillow · Redfin · Census · +more</div>
             </div>
@@ -469,23 +508,7 @@ export default function InvestorPage() {
                 </div>
               </div>
               <div className={styles.txmap}>
-                <svg viewBox="0 0 200 200">
-                  <path
-                    d="M45 40 L92 40 L92 58 L128 58 L138 78 L150 82 L150 96 L140 108 L128 106 L120 128 L108 148 L100 132 L86 128 L74 132 L66 118 L50 112 L42 96 L36 72 L40 58 L45 58 Z"
-                    fill="rgba(197,183,131,0.06)"
-                    stroke="#C5B783"
-                    strokeWidth={1.6}
-                  />
-                  <g fill="#f4d79a">
-                    <circle cx="70" cy="70" r="2.4" />
-                    <circle cx="95" cy="82" r="2.4" />
-                    <circle cx="115" cy="90" r="2.4" />
-                    <circle cx="88" cy="105" r="2.4" />
-                    <circle cx="72" cy="98" r="2.4" />
-                    <circle cx="105" cy="115" r="2.4" />
-                    <circle cx="60" cy="88" r="2.4" />
-                  </g>
-                </svg>
+                <TexasMap selected={metro} onSelect={setMetro} />
                 <div className={styles.cap}>
                   <b>Texas is leading the nation</b>
                   <span>in population growth, jobs, and business relocations — and we&apos;re just getting started.</span>
