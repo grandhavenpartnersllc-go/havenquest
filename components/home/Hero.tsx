@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { MapPin, UserCheck, Route, ShieldCheck } from 'lucide-react'
 import { HQ, SANS, SERIF, FIND_MY_TEXAS_HREF } from './theme'
+import WatchStoryModal from './WatchStoryModal'
 
 const TRUST = [
   { Icon: MapPin, label: 'Texas Focused', sub: '4 major metros' },
@@ -76,22 +77,10 @@ export default function Hero() {
           >
             Find My Texas &rarr;
           </Link>
-          <a
-            href="#"
-            className="hq-btn-outline"
-            style={{ borderRadius: '9px', padding: '15px 30px', textDecoration: 'none', fontFamily: SANS, fontSize: '15px', fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: '9px', whiteSpace: 'nowrap' }}
-          >
-            <span
-              aria-hidden
-              style={{
-                width: '22px', height: '22px', borderRadius: '50%', border: `1px solid ${HQ.gold}`,
-                display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: HQ.gold,
-              }}
-            >
-              &#9654;
-            </span>
-            Watch Our Story
-          </a>
+          {/* "Watch Our Story" — the placeholder <a> is now the trigger inside WatchStoryModal,
+              which renders the identical CTA markup plus the portal video overlay. Label and
+              styling are unchanged; the hero layout is preserved (the modal is a fixed overlay). */}
+          <WatchStoryModal />
         </div>
 
         {/* Trust row — spine grid (col1 + shared gap) via .hq-trust-row; col 2 sizes to
