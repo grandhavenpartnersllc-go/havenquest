@@ -1536,17 +1536,22 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
             Property tax uses the city's REAL housing.propertyTaxRate; insurance + HOA are typical
             placeholders, hatched and (est.)-tagged. Figures react to the Money-drawer sliders. */}
         <div style={{ background: '#fff', border: '1px solid #dcdad2', borderRadius: '16px', overflow: 'hidden' }}>
-          {/* Navy finband header */}
-          <div style={{ background: '#0A1E3D', padding: '13px 18px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
+          {/* Navy .finband header — prototype values (docs/havenquest_refine_mockup.html): solid
+              navy #0A1E3D, padding 16px 22px, align-items flex-end; eyebrow #9fb0c8 10.5px over a
+              27px/700 white big-number; rate context in gold; right ctx #bccadd with the gold city.
+              CP2 — the big number is the buying-power CEILING (finComfortableUpTo, the existing 28%
+              full-PITI ceiling, whole-dollar), a price target — NOT the monthly. The monthly now
+              appears once, in the Total line below. */}
+          <div style={{ background: '#0A1E3D', padding: '16px 22px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
             <div style={{ minWidth: 0 }}>
-              <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.14em', color: '#C5B783', textTransform: 'uppercase', margin: '0 0 4px' }}>Your Buying Power</p>
+              <p style={{ fontSize: '10.5px', fontWeight: 600, letterSpacing: '0.5px', color: '#9fb0c8', textTransform: 'uppercase', margin: '0 0 4px' }}>Your Buying Power</p>
               <p style={{ margin: 0, display: 'flex', alignItems: 'baseline', gap: '8px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '27px', fontWeight: 700, color: '#fff', lineHeight: 1 }}>{finTotalMonthly > 0 ? `$${finTotalMonthly.toLocaleString()}` : '—'}</span>
-                <span style={{ fontSize: '11px', color: '#C5B783' }}>/mo · at {interestRate}% · {loanTerm}yr</span>
+                <span style={{ fontSize: '27px', fontWeight: 700, color: '#fff', lineHeight: 1.1 }}>{finComfortableUpTo > 0 ? `$${finComfortableUpTo.toLocaleString()}` : '—'}</span>
+                <span style={{ fontSize: '12px', fontWeight: 500, color: '#C5B783' }}>at {interestRate}% · {loanTerm}yr</span>
               </p>
             </div>
             {refCityData && (
-              <p style={{ fontSize: '11px', fontWeight: 600, color: '#d3c493', margin: 0, textAlign: 'right', whiteSpace: 'nowrap' }}>{refCityData.name}</p>
+              <p style={{ fontSize: '11px', color: '#bccadd', margin: 0, textAlign: 'right' }}>Payment breakdown for <b style={{ color: '#C5B783', fontWeight: 600 }}>{refCityData.name}</b></p>
             )}
           </div>
 
@@ -1591,7 +1596,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                     <p style={{ fontSize: '9px', color: '#6a7180', margin: 0 }}>Down payment + ~3% closing (est.)</p>
                   </div>
                   <div style={{ background: '#F5F4F1', borderRadius: '6px', padding: '8px 10px' }}>
-                    <p style={{ fontSize: '9px', color: '#6a7180', margin: '0 0 2px' }}>Comfortable up to</p>
+                    <p style={{ fontSize: '9px', color: '#6a7180', margin: '0 0 2px' }}>Affordable up to</p>
                     <p style={{ fontSize: '15px', fontWeight: 600, color: '#0A1E3D', margin: '0 0 2px', lineHeight: 1.1 }}>{finComfortableUpTo > 0 ? fmtK(finComfortableUpTo) : '—'}</p>
                     <p style={{ fontSize: '9px', color: '#6a7180', margin: 0 }}>Home price within 28% of income</p>
                   </div>
@@ -1611,12 +1616,12 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                   </div>
                   <div style={{ position: 'relative', height: '11px', marginTop: '2px' }}>
                     <span style={{ position: 'absolute', left: 0, fontSize: '8px', color: '#9a968c' }}>0%</span>
-                    <span style={{ position: 'absolute', left: '56%', transform: 'translateX(-50%)', fontSize: '8px', fontWeight: 600, color: '#0A1E3D', whiteSpace: 'nowrap' }}>28% comfort line</span>
+                    <span style={{ position: 'absolute', left: '56%', transform: 'translateX(-50%)', fontSize: '8px', fontWeight: 600, color: '#0A1E3D', whiteSpace: 'nowrap' }}>28% affordability line</span>
                     <span style={{ position: 'absolute', right: 0, fontSize: '8px', color: '#9a968c' }}>50%+</span>
                   </div>
                   {/* meter note — VERBATIM (28% threshold cited, not asserted) */}
                   <p style={{ fontSize: '9px', color: '#9a968c', lineHeight: 1.5, margin: '8px 0 0' }}>
-                    The 28% comfort line is the mortgage industry&apos;s standard front-end ratio. This reading includes the two estimated amounts above, so it will move as real figures replace them.
+                    The 28% affordability line is the mortgage industry&apos;s standard front-end ratio. This reading includes the two estimated amounts above, so it will move as real figures replace them.
                   </p>
                 </div>
               </>
@@ -1701,15 +1706,16 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         ]
 
         return (
-          <div style={{ background: '#fff', border: '1px solid #dcdad2', borderRadius: '16px', padding: '18px 20px' }}>
-            {/* RIGHT ZONE — origin comparison, always-visible (Brief 2). Brief 5 — white card on
-                stone; navy header with a bottom divider (prototype .cmpx-h). Table markup unchanged;
-                keeps its own overflowX:auto so any narrow-column overflow scrolls inside this zone. */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', borderBottom: '1px solid #dcdad2', padding: '0 0 10px', marginBottom: '10px' }}>
-              <span style={{ fontSize: '9px', fontWeight: 500, letterSpacing: '0.1em', color: '#0A1E3D', textTransform: 'uppercase' }}>
-                How Texas compares to {originLabel}{originData && originState ? `, ${originState}` : ''}
-              </span>
+          <div style={{ background: '#fff', border: '1px solid #dcdad2', borderRadius: '16px', overflow: 'hidden' }}>
+            {/* CP3 — navy .finband header matching the FinZone band (same prototype values: solid
+                navy #0A1E3D, 16px 22px, eyebrow #9fb0c8 over a 27px/700 white big-number), so the two
+                panels balance. Hero = the origin city; eyebrow above = "How Texas compares to". The
+                table body below is unchanged from 77775d5 (only its font-size is bumped +1px). */}
+            <div style={{ background: '#0A1E3D', padding: '16px 22px' }}>
+              <p style={{ fontSize: '10.5px', fontWeight: 600, letterSpacing: '0.5px', color: '#9fb0c8', textTransform: 'uppercase', margin: '0 0 4px' }}>How Texas compares to</p>
+              <p style={{ fontSize: '27px', fontWeight: 700, color: '#fff', lineHeight: 1.1, margin: 0, whiteSpace: 'nowrap' }}>{originLabel}{originData && originState ? `, ${originState}` : ''}</p>
             </div>
+            <div style={{ padding: '15px 18px' }}>
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
@@ -1728,14 +1734,14 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                 <tbody>
                   {chartRows.map(row => (
                     <tr key={row.label} style={{ borderTop: '0.5px solid #E5E3DC' }}>
-                      <td style={{ fontSize: '9px', color: '#6a7180', padding: '5px 6px', whiteSpace: 'nowrap' }}>{row.label}</td>
-                      <td style={{ fontSize: '10px', color: '#1c2430', padding: '5px 6px', textAlign: 'right', whiteSpace: 'nowrap' }}>{row.originVal}</td>
+                      <td style={{ fontSize: '10px', color: '#6a7180', padding: '5px 6px', whiteSpace: 'nowrap' }}>{row.label}</td>
+                      <td style={{ fontSize: '11px', color: '#1c2430', padding: '5px 6px', textAlign: 'right', whiteSpace: 'nowrap' }}>{row.originVal}</td>
                       {row.txVals.map((val, ci) => {
                         const isEmpty = val === '—' && !pinnedCols[ci]
                         const isBetter = !isEmpty && (row.alwaysGreen === true || (row.better ? row.better(val, ci) : false))
                         return (
                           <td key={ci} style={{
-                            fontSize: '10px',
+                            fontSize: '11px',
                             color: isEmpty ? '#b3b0a6' : isBetter ? '#2f8f5b' : '#1c2430',
                             fontWeight: isBetter ? 500 : 400,
                             padding: '5px 6px',
@@ -1750,6 +1756,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                   ))}
                 </tbody>
               </table>
+            </div>
             </div>
           </div>
         )
