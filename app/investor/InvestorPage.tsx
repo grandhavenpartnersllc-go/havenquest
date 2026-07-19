@@ -43,16 +43,6 @@ const MILESTONES = [
 
 const ORDER = MILESTONES.map((m) => m.id)
 
-// The compass-star wordmark — inline SVG (no logo image file exists, per the brief).
-function Mark({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 32 32" aria-hidden="true">
-      <path d="M16 1 L19 13 L31 16 L19 19 L16 31 L13 19 L1 16 L13 13 Z" fill="none" stroke="#C5B783" strokeWidth={1.4} />
-      <circle cx="16" cy="16" r="2.2" fill="#C5B783" />
-    </svg>
-  )
-}
-
 export default function InvestorPage() {
   const [activeId, setActiveId] = useState<string>('s1')
   const [maxReached, setMaxReached] = useState(1)
@@ -614,7 +604,7 @@ export default function InvestorPage() {
                 <div className={styles.b}>
                   <h3>Jim Pica</h3>
                   <div className={styles.role}>Incoming CTO</div>
-                  <p>Full technical ownership of the platform. Cash + Services SAFE.</p>
+                  <p>Full technical ownership of the platform.</p>
                 </div>
               </div>
               <div className={styles.member}>
@@ -736,7 +726,6 @@ export default function InvestorPage() {
           <footer>
             <div className={styles.footIn}>
               <div className={styles.brand}>
-                <Mark className={styles.mark} />
                 <div className={styles.txt} style={{ fontSize: '15px' }}>Haven<span>Quest</span></div>
               </div>
               <div>© 2026 HavenQuest. All rights reserved. &nbsp;·&nbsp; Privacy · Terms · Contact</div>
