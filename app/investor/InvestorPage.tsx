@@ -451,25 +451,21 @@ export default function InvestorPage() {
                 <svg className={styles.ic} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6}><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM3 21v-2a6 6 0 0112 0v2" /></svg>
                 <h3>Client Revenue</h3>
                 <p>The $5,700 HavenQuest Engagement fee, paid at commitment.</p>
-                <span className={styles.more}>Learn more →</span>
               </div>
               <div className={styles.card}>
                 <svg className={styles.ic} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6}><path d="M8 12l3 3 5-6M4 6h16v12H4z" /></svg>
                 <h3>Referral Revenue</h3>
                 <p>A 35% referral on the home closing — Select Agents keep 65%.</p>
-                <span className={styles.more}>Learn more →</span>
               </div>
               <div className={styles.card}>
-                <svg className={styles.ic} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6}><path d="M12 2l2.5 5 5.5.8-4 3.9.9 5.5L12 20l-4.9 2.6.9-5.5-4-3.9 5.5-.8z" /></svg>
-                <h3>Market Seats™</h3>
+                <svg className={styles.ic} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round"><path d="M19 9V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v3" /><path d="M3 11v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0-4 0v2H7v-2a2 2 0 0 0-4 0Z" /><path d="M5 18v2" /><path d="M19 18v2" /></svg>
+                <h3>Market Seats</h3>
                 <p>Licensed seats for Select Agents in exclusive market segments.</p>
-                <span className={styles.more}>Learn more →</span>
               </div>
               <div className={styles.card}>
                 <svg className={styles.ic} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6}><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" /></svg>
                 <h3>Future Revenue</h3>
                 <p>Data insights, partner network, and corporate solutions.</p>
-                <span className={styles.more}>Learn more →</span>
               </div>
             </div>
             <div className={styles.math}>
