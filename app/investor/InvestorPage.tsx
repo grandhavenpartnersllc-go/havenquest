@@ -14,8 +14,18 @@
 
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
+import Script from 'next/script'
 import TexasMap, { type MetroKey } from '@/components/home/TexasMap'
 import styles from './investor.module.css'
+
+// Calendly's widget.js attaches this at runtime (loaded via next/script below).
+declare global {
+  interface Window {
+    Calendly?: { initPopupWidget: (options: { url: string }) => void }
+  }
+}
+
+const CALENDLY_URL = 'https://calendly.com/craig-asbach-havenquest/30min'
 
 const MILESTONES = [
   { id: 's1', label: 'The Problem' },
@@ -82,14 +92,18 @@ export default function InvestorPage() {
 
   return (
     <div className={styles.page}>
+      {/* Calendly popup assets — CSS hoisted by React 19; JS via next/script. Used by the
+          "Schedule a conversation" CTA in the Investment section (window.Calendly at click-time). */}
+      <link rel="stylesheet" href="https://assets.calendly.com/assets/external/widget.css" />
+      <Script src="https://assets.calendly.com/assets/external/widget.js" strategy="afterInteractive" />
       {/* ---- TOP NAV ---- */}
       <div className={styles.topnav}>
         <div className={styles.topnavIn}>
           <div className={styles.brand}>
-            <Mark className={styles.mark} />
-            <div className={styles.txt}>
-              Haven<span>Quest</span>
-              <small>CLARITY. CONFIDENCE. PEACE OF MIND.</small>
+            {/* Wordmark only, matching the homepage header (HomeHeader.tsx) — mark dropped. */}
+            <div className={styles.wordmark}>
+              <span className={styles.wmHaven}>Haven</span><span className={styles.wmQuest}>Quest</span>
+              <small className={styles.wmTag}>Clarity. Confidence. Peace of Mind.</small>
             </div>
           </div>
           <div className={styles.topnavLinks}>
@@ -188,7 +202,7 @@ export default function InvestorPage() {
                   Answer a few questions about what matters to you — schools, budget, lifestyle, commute — and get a strong
                   shortlist of Texas communities to explore. Your Market Director helps you refine from there.
                 </p>
-                <a className={styles.btnNavy} href="/begin">Start the Discovery Intake →</a>
+                <a className={styles.btnGold} href="/begin" style={{ marginTop: '22px' }}>Start the Discovery Intake →</a>
               </div>
               <div className={styles.demo}>
                 <div className={styles.quiz}>
@@ -292,7 +306,7 @@ export default function InvestorPage() {
               <div className={styles.card}><div className={styles.idx}>04</div><h3>Housing complexity</h3><p>The decision keeps getting harder for the average buyer.</p></div>
               <div className={styles.card}><div className={styles.idx}>05</div><h3>Booming job market</h3><p>Major employers keep expanding into Texas, drawing new residents with them.</p></div>
               <div className={styles.card} style={{ background: 'var(--navy)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <p className={`${styles.gold} ${styles.ital}`} style={{ fontSize: '16px', textAlign: 'center' }}>All at once — and in our favor.</p>
+                <p className={`${styles.gold} ${styles.ital}`} style={{ fontSize: '16px', textAlign: 'center', color: 'var(--gold)' }}>All at once — and in our favor.</p>
               </div>
             </div>
           </section>
@@ -693,14 +707,19 @@ export default function InvestorPage() {
                 <svg className={styles.ic} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6}><path d="M7 3v3M17 3v3M4 8h16M4 8v12h16V8" /></svg>
                 <h4>I&apos;d like to learn more</h4>
                 <p>Schedule a time to talk directly with Craig.</p>
-                <a href="#">Schedule a conversation</a>
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    window.Calendly?.initPopupWidget({ url: CALENDLY_URL })
+                  }}
+                >Schedule a conversation</a>
               </div>
               <div className={styles.c}>
-                <svg className={styles.ic} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6}><path d="M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6" /></svg>
-                <h4>Review the materials</h4>
-                <p>Access the full deck and data room.</p>
-                {/* Stage 1: not wired — the token gate is Stage 3. */}
-                <a href="#">Request access</a>
+                <svg className={styles.ic} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6}><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" /></svg>
+                <h4>Have a question?</h4>
+                <p>Text Craig directly.</p>
+                <a href="sms:+18157900909">(815) 790-0909</a>
               </div>
             </div>
             <p style={{ marginTop: '22px', fontSize: '11.5px', color: '#5f7196', fontStyle: 'italic' }}>
