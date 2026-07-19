@@ -318,16 +318,17 @@ export default function InvestorPage() {
             <p className={styles.eyebrow}>
               <span className={`${styles.num} ${styles.emBlue}`}>02</span> <span className={styles.emBlue}>Why Now</span>
             </p>
-            <h2>Five forces converging at once.</h2>
+            <h2>Six forces, <span className={styles.gold}>compounding.</span></h2>
             <div className={`${styles.grid} ${styles.g3}`}>
-              <div className={styles.card}><div className={styles.idx}>01</div><h3>Record migration</h3><p>Relocation is at all-time highs, concentrated in a handful of states.</p></div>
-              <div className={styles.card}><div className={styles.idx}>02</div><h3>Remote work</h3><p>Location independence is the norm, not the exception.</p></div>
-              <div className={styles.card}><div className={styles.idx}>03</div><h3>Information overload</h3><p>More relocation information than ever — and less confidence than ever.</p></div>
-              <div className={styles.card}><div className={styles.idx}>04</div><h3>Housing complexity</h3><p>The decision keeps getting harder for the average buyer.</p></div>
-              <div className={styles.card}><div className={styles.idx}>05</div><h3>Booming job market</h3><p>Major employers keep expanding into Texas, drawing new residents with them.</p></div>
-              <div className={styles.card} style={{ background: 'var(--navy)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <p className={`${styles.gold} ${styles.ital}`} style={{ fontSize: '16px', textAlign: 'center', color: 'var(--gold)' }}>All at once — and in our favor.</p>
-              </div>
+              <div className={styles.card}><div className={styles.idx}>01</div><h3>The Migration Economy</h3><p>Americans relocate more than any generation before them, and Texas is where the largest share is landing.</p></div>
+              <div className={styles.card}><div className={styles.idx}>02</div><h3>Location Independence</h3><p>Remote and hybrid work freed the home from the office. People choose where to live first, then sort out work.</p></div>
+              <div className={styles.card}><div className={styles.idx}>03</div><h3>Decision Complexity</h3><p>Taxes, insurance, schools, safety, commute, growth — all weighed before a single tour. Buying a home has become choosing a life.</p></div>
+              <div className={styles.card}><div className={styles.idx}>04</div><h3>Information Overload</h3><p>Zillow, Reddit, endless rankings: more information than ever, less confidence than ever. The gap isn&apos;t data — it&apos;s clarity.</p></div>
+              <div className={styles.card}><div className={styles.idx}>05</div><h3>Guided Decision-Making</h3><p>Travel, investing, healthcare all come with a guide now. Relocation is still scattered across dozens of disconnected providers.</p></div>
+              <div className={styles.card}><div className={styles.idx}>06</div><h3>Booming Job Market</h3><p>Major employers keep planting flags in Texas, and families follow the work.</p></div>
+            </div>
+            <div style={{ marginTop: '18px', background: 'var(--navy)', borderRadius: '14px', padding: '20px', textAlign: 'center' }}>
+              <p className={`${styles.gold} ${styles.ital}`} style={{ fontSize: '16px', color: 'var(--gold)' }}>All compounding — and in our favor.</p>
             </div>
           </section>
 
