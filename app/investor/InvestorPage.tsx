@@ -560,21 +560,37 @@ export default function InvestorPage() {
 
           {/* 07 VISION / ATLAS */}
           <section className={styles.dark} id="s7">
-            <p className={styles.eyebrow}>
-              <span className={`${styles.num} ${styles.emGold}`}>07</span> <span className={styles.emGold}>Our Vision — Atlas</span>
-            </p>
-            <h2>Beyond Texas.</h2>
-            <p className={styles.lead} style={{ maxWidth: '70ch' }}>
-              Today, HavenQuest guides where to live in Texas. The vision is{' '}
-              <span className={styles.gold}>the first platform built to guide the entire relocation decision</span> — with
-              Atlas, an intelligence layer that compounds: every relocation makes the next one smarter. The same playbook
-              extends outward, funded by Texas revenue, not a fresh raise.
-            </p>
-            <div className={styles.tl}>
-              <div className={`${styles.step} ${styles.first}`}><b>Texas</b><span>The proving ground</span></div>
-              <div className={styles.step}><b>High-growth states</b><span>FL · TN · The Carolinas</span></div>
-              <div className={styles.step}><b>National relocation</b><span>Coast to coast</span></div>
-              <div className={styles.step}><b>Relocation intelligence</b><span>The platform layer</span></div>
+            <div className={styles.eyebrow}><span className={styles.num}>07</span> <span className={styles.emGold}>Our Vision — Atlas</span> <span className={styles.v7tag}>Five-year vision</span></div>
+            <h2>Relocation is the wedge. <em style={{ color: 'var(--gold)', fontStyle: 'italic' }}>Atlas is the platform.</em></h2>
+
+            <div className={styles.v7engine}>
+              <span className={styles.v7mark}>ATLAS</span>
+              <span className={styles.v7desc}>the relocation intelligence platform — every branch below draws on it</span>
+              <span className={styles.v7rule} aria-hidden="true"></span>
+            </div>
+
+            <div className={styles.v7layer}>
+              <div className={styles.v7lname}><div className={styles.v7ln}>Service</div><div className={styles.v7ld}>Cash today</div></div>
+              <div className={`${styles.v7chips} ${styles.v7c2}`}>
+                <div className={`${styles.v7chip} ${styles.v7today}`}><h4>Consumer Relocation</h4><p>Guide families through the “where should we live?” decision.</p><div className={styles.v7todayTag}>Today&apos;s business</div></div>
+                <div className={styles.v7chip}><h4>Geographic Expansion</h4><p>One repeatable playbook: TX → FL → TN → Carolinas → national.</p></div>
+              </div>
+            </div>
+            <div className={styles.v7layer}>
+              <div className={styles.v7lname}><div className={styles.v7ln}>Network</div><div className={styles.v7ld}>Network effects</div></div>
+              <div className={`${styles.v7chips} ${styles.v7c3}`}>
+                <div className={styles.v7chip}><h4>Employer Relocation</h4><p>The intelligence layer for HR and talent teams.</p></div>
+                <div className={styles.v7chip}><h4>Builder Intelligence</h4><p>Who&apos;s moving, when, and what they&apos;re looking for.</p></div>
+                <div className={styles.v7chip}><h4>Services Marketplace</h4><p>Movers, insurance, utilities, home services — the whole journey.</p></div>
+              </div>
+            </div>
+            <div className={styles.v7layer}>
+              <div className={styles.v7lname}><div className={styles.v7ln}>Platform</div><div className={styles.v7ld}>Long-term moat</div></div>
+              <div className={`${styles.v7chips} ${styles.v7c3}`}>
+                <div className={styles.v7chip}><h4>Market Intelligence</h4><p>Proprietary relocation data for developers, lenders, and cities.</p></div>
+                <div className={styles.v7chip}><h4>Decision Intelligence</h4><p>Sharper “where to live” decisions from everything Atlas learns.</p></div>
+                <div className={styles.v7chip}><h4>Partner Ecosystem</h4><p>The network connecting agents, builders, lenders, employers.</p></div>
+              </div>
             </div>
           </section>
 
