@@ -490,13 +490,19 @@ export default function InvestorPage() {
               </div>
             </div>
             <div className={styles.math}>
-              <div className={styles.cap}>What one client looks like · illustrative $450K closing at a 2.5% buy-side commission</div>
+              <div className={styles.cap}>What one client looks like · illustrative $335K closing at a 2.5% buy-side commission</div>
               <div className={styles.row2}>
                 <span><b>$5,700</b> Engagement fee</span>
                 <span className={styles.plus}>+</span>
-                <span><b>~$3,938</b> 35% of the $11,250 commission</span>
+                <span><b>~$2,930</b> 35% of the $8,375 commission</span>
                 <span className={styles.plus}>=</span>
-                <span><b style={{ color: 'var(--gold-label)' }}>~$9,638</b> per completed relocation</span>
+                <span><b style={{ color: 'var(--gold-label)' }}>~$8,630</b> per completed relocation</span>
+                <span className={styles.bmMathDiv} aria-hidden="true"></span>
+                <span className={styles.plus} style={{ opacity: 0.5 }}>+</span>
+                <span className={styles.bmPartner}>
+                  <b>Partner Revenue</b>
+                  <span className={styles.bmPartnerCap}>movers, storage, utilities &amp; more — not counted above</span>
+                </span>
               </div>
             </div>
           </section>

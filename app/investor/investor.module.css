@@ -241,3 +241,9 @@
 .page footer{background:#081832;padding:34px 54px;color:#7f90b0;font-size:12px;border-top:1px solid rgba(197,183,131,.14);}
 .footIn{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
 .flag{color:#c98b3a;font-style:italic;}
+
+/* 05 — Partner Revenue (deliberately secondary to the counted total) */
+.bmMathDiv{ align-self:stretch; width:1px; min-height:34px; background:#e7e3d9; margin:0 4px; }
+.bmPartner{ display:inline-flex; flex-direction:column; justify-content:center; }
+.bmPartner b{ font-size:19px; font-weight:600; color:var(--gold-label); opacity:.9; line-height:1.15; }
+.bmPartnerCap{ font-size:11.5px; color:#8a97a8; margin-top:3px; font-weight:400; }
