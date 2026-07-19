@@ -16,6 +16,7 @@ import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Script from 'next/script'
 import TexasMap, { type MetroKey } from '@/components/home/TexasMap'
+import InvestorIntroModal from '@/components/investor/InvestorIntroModal'
 import styles from './investor.module.css'
 
 // Calendly's widget.js attaches this at runtime (loaded via next/script below).
@@ -56,6 +57,7 @@ export default function InvestorPage() {
   const [activeId, setActiveId] = useState<string>('s1')
   const [maxReached, setMaxReached] = useState(1)
   const [metro, setMetro] = useState<MetroKey>('austin')
+  const [introOpen, setIntroOpen] = useState(false)
 
   useEffect(() => {
     // Smooth in-page anchor scrolling, applied only while this page is mounted.
@@ -172,10 +174,18 @@ export default function InvestorPage() {
               </p>
               <div className={styles.heroCta}>
                 <a className={styles.btnGold} href="#s10">Begin the conversation →</a>
-                <a className={styles.watch} href="#">
-                  <span className={styles.pl}>▶</span> Watch intro video (1:45)
+                <a
+                  className={styles.watch}
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    setIntroOpen(true)
+                  }}
+                >
+                  <span className={styles.pl}>▶</span> Watch intro video (1:34)
                 </a>
               </div>
+              <InvestorIntroModal open={introOpen} onClose={() => setIntroOpen(false)} />
             </div>
             <div className={styles.heroStat}>
               <div className={styles.k}>Every year in the U.S.</div>
