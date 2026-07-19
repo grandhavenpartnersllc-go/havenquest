@@ -127,7 +127,7 @@ export default function InvestorPage() {
       <div className={styles.shell}>
         {/* ---- LEFT RAIL (scrollspy) ---- */}
         <aside className={styles.rail}>
-          <div className={styles.lbl}>Milestones</div>
+          <div className={styles.lbl}>Slides</div>
           {MILESTONES.map((m, i) => (
             <a
               key={m.id}
@@ -147,7 +147,7 @@ export default function InvestorPage() {
               <i style={{ width: `${pct}%` }} />
             </div>
             <div className={styles.cnt}>
-              <span>{maxReached}</span> of 10 milestones explored
+              <span>{maxReached}</span> of 10 slides explored
             </div>
           </div>
         </aside>
