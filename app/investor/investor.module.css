@@ -247,3 +247,27 @@
 .bmPartner{ display:inline-flex; flex-direction:column; justify-content:center; }
 .bmPartner b{ font-size:19px; font-weight:600; color:var(--gold-label); opacity:.9; line-height:1.15; }
 .bmPartnerCap{ font-size:11.5px; color:#8a97a8; margin-top:3px; font-weight:400; }
+
+/* 06 — proof chain, decision pivot, capture ladder */
+.moChain{ display:flex; flex-direction:column; gap:6px; }
+.moBig{ font-size:40px; font-weight:700; color:#fff; line-height:1; letter-spacing:-.01em; }
+.moBig .moU{ color:var(--gold); }
+.moLab{ font-size:14px; color:#b9c4d6; font-weight:400; margin-top:5px; line-height:1.35; }
+.moSrc{ font-size:10.5px; letter-spacing:.04em; color:#7e8ca6; text-transform:uppercase; margin-top:4px; font-weight:500; }
+.moArrow{ color:var(--gold); font-size:17px; margin:2px 0 2px 4px; opacity:.85; }
+.moPivot{ margin-top:26px; border-left:3px solid var(--gold); padding:4px 0 4px 22px; }
+.moPivotQ{ font-size:22px; font-weight:600; color:#fff; line-height:1.25; }
+.moPivotQ em{ color:var(--gold); font-style:italic; }
+.moPivotP{ font-size:14.5px; color:#b9c4d6; margin-top:8px; line-height:1.5; font-weight:400; max-width:92%; }
+.moPivotP b{ color:#fff; font-weight:600; }
+.moLadder{ margin-top:24px; }
+.moLhead{ font-size:11px; letter-spacing:.13em; text-transform:uppercase; color:var(--gold); font-weight:600; margin-bottom:12px; }
+.moLhead span{ color:#7e8ca6; }
+.moRungs{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+.moRung{ background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.09); border-radius:12px; padding:16px 16px 15px; }
+.moRungStretch{ background:transparent; border-style:dashed; border-color:rgba(197,183,131,.35); }
+.moRungPct{ font-size:22px; font-weight:700; color:var(--gold); }
+.moRungFam{ font-size:13px; color:#fff; font-weight:500; margin-top:8px; }
+.moRungFam span{ color:#b9c4d6; font-weight:400; }
+.moRungRev{ font-size:20px; font-weight:700; color:#fff; margin-top:8px; }
+.moRungTag{ font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--gold-label); font-weight:600; margin-top:6px; }

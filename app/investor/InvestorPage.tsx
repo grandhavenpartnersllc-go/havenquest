@@ -509,53 +509,52 @@ export default function InvestorPage() {
 
           {/* 06 MARKET */}
           <section className={styles.dark2} id="s6">
-            <p className={styles.eyebrow}>
-              <span className={`${styles.num} ${styles.emGold}`}>06</span> <span className={styles.emGold}>Market Opportunity</span>
-            </p>
-            <h2>
-              A once-in-a-generation opportunity <span className={`${styles.gold} ${styles.ital}`}>in Texas.</span>
-            </h2>
+            <div className={styles.eyebrow}><span className={styles.num}>06</span> <span className={styles.emGold}>Market Opportunity</span></div>
+            <h2>A once-in-a-generation opportunity <em style={{ color: 'var(--gold)', fontStyle: 'italic' }}>in Texas.</em></h2>
+
             <div className={styles.mkt}>
-              <div>
-                <div className={styles.statrow} style={{ gridTemplateColumns: '1fr 1fr' }}>
-                  <div className={styles.stat}>
-                    <svg className={styles.ic} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6}><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM3 21v-2a6 6 0 0112 0v2" /></svg>
-                    <div className={styles.n}>473K+</div>
-                    <div className={styles.l}>new Texas residents in 2023</div>
-                    <div className={styles.s}>U.S. Census</div>
-                  </div>
-                  <div className={styles.stat}>
-                    <svg className={styles.ic} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6}><path d="M4 21V5h9v16M13 9h7v12M7 9h2M7 13h2M16 13h1" /></svg>
-                    <div className={styles.n}>250+</div>
-                    <div className={styles.l}>companies relocated since 2020</div>
-                    <div className={styles.s}>CBRE</div>
-                  </div>
-                  <div className={styles.stat}>
-                    <svg className={styles.ic} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6}><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" /></svg>
-                    <div className={styles.n}>$580B+</div>
-                    <div className={styles.l}>in-migration economic impact by 2030</div>
-                    <div className={styles.s}>Texas Real Estate Research Center</div>
-                  </div>
-                  <div className={styles.stat}>
-                    <svg className={styles.ic} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6}><path d="M3 11l9-8 9 8M5 9v11h14V9" /></svg>
-                    <div className={styles.n}>1.7M</div>
-                    <div className={styles.l}>new housing units needed by 2030</div>
-                    <div className={styles.s}>Texas A&amp;M Real Estate Research Center</div>
-                  </div>
+              <div className={styles.moChain}>
+                <div className={styles.moStep}>
+                  <div className={styles.moBig}>556,000<span className={styles.moU}>+</span></div>
+                  <div className={styles.moLab}>people relocate to Texas from out of state every year</div>
+                  <div className={styles.moSrc}>Texas REALTORS® · U.S. Census ACS</div>
+                </div>
+                <div className={styles.moArrow}>↓</div>
+                <div className={styles.moStep}>
+                  <div className={styles.moBig}>~75,000</div>
+                  <div className={styles.moLab}>buy a home within their first year</div>
+                  <div className={styles.moSrc}>StorageCafe migration study</div>
+                </div>
+                <div className={styles.moArrow}>↓</div>
+                <div className={styles.moStep}>
+                  <div className={styles.moBig}><span className={styles.moU}>~$25</span> billion</div>
+                  <div className={styles.moLab}>in annual relocation home purchases</div>
+                  <div className={styles.moSrc}>$335K median · Texas REALTORS® 2025</div>
                 </div>
               </div>
+
               <div className={styles.txmap}>
                 <TexasMap selected={metro} onSelect={setMetro} />
                 <div className={styles.cap}>
-                  <b>Texas is leading the nation</b>
-                  <span>in population growth, jobs, and business relocations — and we&apos;re just getting started.</span>
+                  <b>Our four launch markets</b>
+                  <span>the majority of Texas relocation demand</span>
                 </div>
               </div>
             </div>
-            <div style={{ marginTop: '26px', fontSize: '13px', color: '#93a3c2' }}>
-              Demand isn&apos;t theoretical: <span className={styles.gold}>~152,000</span> new-resident home purchases in year
-              one, and Texas issued <span className={styles.gold}>781,020</span> new single-family permits (2020–24) — 16.5%
-              of the entire U.S. <span style={{ color: '#6a7c9e' }}>(StorageCafe / Texas A&amp;M RERC)</span>
+
+            <div className={styles.moPivot}>
+              <div className={styles.moPivotQ}>Every one of them must first answer the same question: <em>“Where should we live?”</em></div>
+              <div className={styles.moPivotP}><b>No platform exists to guide that decision</b> — it happens before an agent is ever hired. HavenQuest is built for exactly that moment, before the home search begins.</div>
+            </div>
+
+            <div className={styles.moLadder}>
+              <div className={styles.moLhead}>Even a sliver is a real business <span>· ~$8,600 revenue per family served</span></div>
+              <div className={styles.moRungs}>
+                <div className={styles.moRung}><div className={styles.moRungPct}>0.25%</div><div className={styles.moRungFam}>188 <span>families / yr</span></div><div className={styles.moRungRev}>~$1.6M</div></div>
+                <div className={styles.moRung}><div className={styles.moRungPct}>0.5%</div><div className={styles.moRungFam}>375 <span>families / yr</span></div><div className={styles.moRungRev}>~$3.2M</div></div>
+                <div className={styles.moRung}><div className={styles.moRungPct}>1%</div><div className={styles.moRungFam}>750 <span>families / yr</span></div><div className={styles.moRungRev}>~$6.5M</div></div>
+                <div className={`${styles.moRung} ${styles.moRungStretch}`}><div className={styles.moRungPct}>2%</div><div className={styles.moRungFam}>1,500 <span>families / yr</span></div><div className={styles.moRungRev}>~$12.9M</div><div className={styles.moRungTag}>Stretch</div></div>
+              </div>
             </div>
           </section>
 
