@@ -48,6 +48,7 @@ export default function InvestorPage() {
   const [maxReached, setMaxReached] = useState(1)
   const [metro, setMetro] = useState<MetroKey>('austin')
   const [introOpen, setIntroOpen] = useState(false)
+  const [showBackToTop, setShowBackToTop] = useState(false)
 
   useEffect(() => {
     // Smooth in-page anchor scrolling, applied only while this page is mounted.
@@ -77,6 +78,23 @@ export default function InvestorPage() {
     return () => {
       obs.disconnect()
       document.documentElement.style.scrollBehavior = prevScrollBehavior
+    }
+  }, [])
+
+  useEffect(() => {
+    let raf = 0
+    const onScroll = () => {
+      if (raf) return
+      raf = requestAnimationFrame(() => {
+        setShowBackToTop(window.scrollY > window.innerHeight * 0.6)
+        raf = 0
+      })
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      if (raf) cancelAnimationFrame(raf)
     }
   }, [])
 
@@ -775,6 +793,17 @@ export default function InvestorPage() {
           </footer>
         </main>
       </div>
+      <button
+        type="button"
+        aria-label="Back to top"
+        className={`${styles.backToTop} ${showBackToTop ? styles.btVisible : ''}`}
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20" aria-hidden="true">
+          <path d="M12 19V6" strokeLinecap="round"/>
+          <path d="M6 12l6-6 6 6" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
     </div>
   )
 }

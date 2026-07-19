@@ -292,3 +292,18 @@
 .v7chip h4{ font-size:14px; font-weight:600; color:#fff; margin-bottom:4px; }
 .v7chip p{ font-size:11.5px; color:#7e8ca6; font-weight:400; line-height:1.4; }
 .v7todayTag{ font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--gold); font-weight:600; margin-top:6px; }
+
+/* return-to-top floater */
+.backToTop{
+  position:fixed; right:28px; bottom:28px; z-index:70;
+  width:46px; height:46px; border-radius:50%;
+  background:var(--navy-card); border:1px solid rgba(197,183,131,.40);
+  color:var(--gold); display:flex; align-items:center; justify-content:center;
+  cursor:pointer; box-shadow:0 6px 20px rgba(0,0,0,.30);
+  opacity:0; transform:translateY(8px); pointer-events:none;
+  transition:opacity .25s ease, transform .25s ease, background .2s ease, border-color .2s ease;
+}
+.backToTop:hover{ background:var(--navy-3); border-color:rgba(197,183,131,.65); }
+.backToTop:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+.btVisible{ opacity:1; transform:translateY(0); pointer-events:auto; }
+@media(max-width:640px){ .backToTop{ right:18px; bottom:18px; width:42px; height:42px; } }
