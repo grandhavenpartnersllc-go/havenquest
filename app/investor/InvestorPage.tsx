@@ -559,7 +559,7 @@ export default function InvestorPage() {
           </section>
 
           {/* 07 VISION / ATLAS */}
-          <section className={styles.dark} id="s7">
+          <section className={`${styles.dark} ${styles.v7section}`} id="s7">
             <div className={styles.eyebrow}><span className={styles.num}>07</span> <span className={styles.emGold}>Our Vision — Atlas</span> <span className={styles.v7tag}>Five-year vision</span></div>
             <h2>Relocation is the wedge. <em style={{ color: 'var(--gold)', fontStyle: 'italic' }}>Atlas is the platform.</em></h2>
 
