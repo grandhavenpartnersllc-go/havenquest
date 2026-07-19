@@ -91,8 +91,21 @@ export default function InvestorPage() {
       {/* ---- TOP NAV ---- */}
       <div className={styles.topnav}>
         <div className={styles.topnavIn}>
-          <div className={styles.brand}>
-            {/* Wordmark only, matching the homepage header (HomeHeader.tsx) — mark dropped. */}
+          <div
+            className={styles.brand}
+            role="button"
+            tabIndex={0}
+            aria-label="Back to top"
+            style={{ cursor: 'pointer' }}
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }
+            }}
+          >
+            {/* Wordmark only, matching the homepage header (HomeHeader.tsx) — mark dropped. Click scrolls to top. */}
             <div className={styles.wordmark}>
               <span className={styles.wmHaven}>Haven</span><span className={styles.wmQuest}>Quest</span>
               <small className={styles.wmTag}>Clarity. Confidence. Peace of Mind.</small>
@@ -163,7 +176,14 @@ export default function InvestorPage() {
                 that.
               </p>
               <div className={styles.heroCta}>
-                <a className={styles.btnGold} href="#s10">Begin the conversation →</a>
+                <a
+                  className={styles.btnGold}
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    window.Calendly?.initPopupWidget({ url: CALENDLY_URL })
+                  }}
+                >Begin the conversation →</a>
                 <a
                   className={styles.watch}
                   href="#"
@@ -181,9 +201,9 @@ export default function InvestorPage() {
               <div className={styles.k}>Every year in the U.S.</div>
               <div className={styles.n}>40M+</div>
               <div className={styles.l}>people relocate</div>
-              <div className={styles.k}>Texas gained</div>
-              <div className={styles.n}>473K+</div>
-              <div className={styles.l}>new residents in 2023</div>
+              <div className={styles.k}>Texas has gained nearly</div>
+              <div className={styles.n}>1.5M</div>
+              <div className={styles.l}>new Texans since 2022</div>
               <div className={styles.src}>Source: U.S. Census Bureau</div>
             </div>
           </section>
@@ -191,7 +211,7 @@ export default function InvestorPage() {
           {/* PRODUCT TOUR */}
           <section className={styles.light} id="s-tour">
             <p className={styles.eyebrow}>
-              <span className={`${styles.num} ${styles.emGold}`}>03</span> <span className={styles.emGold}>Experience HavenQuest</span>
+              <span className={styles.emGold}>Experience HavenQuest</span>
             </p>
             <div className={styles.tour}>
               <div>
