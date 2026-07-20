@@ -89,16 +89,16 @@ function LoginPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#08101C] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#0A1E3D] flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <Link
           href="/"
           className="block text-center font-bold text-[17px] text-white tracking-tight mb-8"
         >
-          Haven<span className="text-blue-400">Quest</span>
+          Haven<span style={{ color: '#C5B783' }}>Quest</span>
         </Link>
 
-        <div className="bg-white rounded-2xl p-8 mb-6" style={{ boxShadow: '0 4px 32px rgba(0,0,0,0.4)' }}>
+        <div className="rounded-2xl p-8 mb-6" style={{ backgroundColor: '#F4F1EA', border: '1px solid rgba(197,183,131,0.35)', boxShadow: '0 4px 32px rgba(0,0,0,0.4)' }}>
           <h1 className="text-xl font-bold text-gray-900 tracking-tight mb-1">
             Sign in to your portal
           </h1>
@@ -113,9 +113,11 @@ function LoginPageContent() {
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
+                onFocus={e => { e.currentTarget.style.borderColor = '#C5B783'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(197,183,131,0.28)' }}
+                onBlur={e => { e.currentTarget.style.borderColor = ''; e.currentTarget.style.boxShadow = '' }}
                 placeholder="you@example.com"
                 required
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none transition-shadow"
               />
             </div>
             <div>
@@ -124,14 +126,18 @@ function LoginPageContent() {
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
+                onFocus={e => { e.currentTarget.style.borderColor = '#C5B783'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(197,183,131,0.28)' }}
+                onBlur={e => { e.currentTarget.style.borderColor = ''; e.currentTarget.style.boxShadow = '' }}
                 placeholder="••••••••"
                 required
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none transition-shadow"
               />
               <div className="text-right mt-1.5">
                 <Link
                   href="/auth/forgot-password"
-                  className="text-xs text-gray-400 hover:text-blue-500 transition-colors"
+                  className="text-xs text-gray-400 transition-colors"
+                  onMouseEnter={e => { e.currentTarget.style.color = '#C5B783' }}
+                  onMouseLeave={e => { e.currentTarget.style.color = '' }}
                 >
                   Forgot password?
                 </Link>
@@ -143,8 +149,8 @@ function LoginPageContent() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 rounded-xl font-bold text-sm text-white transition-colors disabled:opacity-60"
-              style={{ backgroundColor: '#1A5FA8' }}
+              className="w-full py-3 rounded-xl font-bold text-sm transition-colors disabled:opacity-60"
+              style={{ backgroundColor: '#0A1E3D', color: '#C5B783', border: '1px solid rgba(197,183,131,0.55)' }}
             >
               {loading ? 'Signing in…' : 'Sign In'}
             </button>
@@ -152,7 +158,12 @@ function LoginPageContent() {
         </div>
         <p className="text-sm text-center" style={{ color: 'rgba(255,255,255,0.45)' }}>
           New to HavenQuest?{' '}
-          <Link href="/explore" className="text-blue-400 hover:text-blue-300 transition-colors font-medium">
+          <Link
+            href="/begin"
+            className="text-[#C5B783] transition-colors font-medium"
+            onMouseEnter={e => { e.currentTarget.style.color = '#DCC088' }}
+            onMouseLeave={e => { e.currentTarget.style.color = '' }}
+          >
             Get your free report →
           </Link>
         </p>
