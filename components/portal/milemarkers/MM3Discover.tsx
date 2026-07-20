@@ -467,6 +467,18 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     return () => window.removeEventListener('resize', check)
   }, [])
 
+  // MM3TUT CP3 — auto-open the coach-mark tour on the FIRST MM3 visit only. The seen flag is
+  // device-local (localStorage, matching the hq_beta_access precedent); once set on Finish/Skip
+  // (see the MM3Tour onClose below) this never fires again. Dormant-safe: if the flag is already
+  // set, the tour stays closed. page.tsx gates MM3Discover behind `ready`, so by mount time the
+  // tour's DOM anchors exist. The manual reopen control (below) is independent of this flag.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      if (!localStorage.getItem('hq_mm3_tutorial_seen')) setTourOpen(true)
+    } catch { /* localStorage unavailable — skip auto-open */ }
+  }, [])
+
   // Load DB state
   useEffect(() => {
     async function load() {
@@ -1942,7 +1954,17 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const matchesArea = (
     <div style={{ marginBottom: '10px' }}>
       {/* Heading — region tabs + "Your Relocation Profile" moved up into the header band */}
-      <p style={{ fontSize: '21px', fontWeight: 600, color: '#0A1E3D', margin: '0 0 4px' }}>Your Top Matches</p>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', margin: '0 0 4px' }}>
+        <p style={{ fontSize: '21px', fontWeight: 600, color: '#0A1E3D', margin: 0 }}>Your Top Matches</p>
+        {/* MM3TUT CP3 — quiet reopen control. Styled after the shared "How this works" HelpPopup
+            affordance (15px bordered ? glyph + 12px label, #0076B6) so returning users can replay
+            the tour. Independent of the seen flag — always available. */}
+        <button type="button" onClick={() => setTourOpen(true)} aria-label="Take the guided tour"
+          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'none', border: 0, padding: '2px', margin: 0, color: '#0076B6', fontSize: '12px', fontWeight: 500, fontFamily: 'inherit', lineHeight: 1.2, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
+          <span aria-hidden="true" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '15px', height: '15px', border: '1px solid #0076B6', borderRadius: '50%', fontSize: '10px', fontWeight: 700, lineHeight: 1, flexShrink: 0 }}>?</span>
+          <span>Take the tour</span>
+        </button>
+      </div>
       <p style={{ fontSize: '11px', color: '#86868b', margin: '0 0 10px' }}>Percentages show your strongest match in each metro. Click a card to see how it fits your money.</p>
 
       {/* Hero-3 — card body click FOCUSES (focusCity -> selectedKey, drives Buying Power +
@@ -2285,7 +2307,12 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           the auto-trigger + seen-flag + reopen control land in CP3. */}
       <MM3Tour
         open={tourOpen}
-        onClose={() => setTourOpen(false)}
+        onClose={() => {
+          // MM3TUT CP3 — mark seen so the tour never auto-fires again. Fires on Finish, Skip,
+          // "I'll explore on my own", and Esc (MM3Tour routes all of them through onClose).
+          try { localStorage.setItem('hq_mm3_tutorial_seen', 'true') } catch { /* ignore */ }
+          setTourOpen(false)
+        }}
         isMobile={isMobile}
         setOpenDrawer={setOpenDrawer}
         setShowAllCities={setShowAllCities}
