@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { formatPhone } from '../../utils/formatters'
 
 // Investor Access request modal — two screens (request form → confirmation), mounted via portal.
 // Modeled on InvestorIntroModal / WatchStoryModal mechanics (portal, scrim, Esc, backdrop click,
@@ -197,7 +198,7 @@ export default function InvestorAccessModal({ open, onClose }: { open: boolean; 
                     type="tel"
                     value={phone}
                     onChange={(e) => {
-                      setPhone(e.target.value)
+                      setPhone(formatPhone(e.target.value))
                       if (error) setError('')
                     }}
                     autoComplete="tel"
