@@ -17,7 +17,6 @@ interface MMEntry {
 
 const ALL_MILEMARKERS: MMEntry[] = [
   { number: 1,  name: 'Welcome',      deliverable: 'Journey Introduction'          },
-  { number: 2,  name: 'Discovery',    deliverable: 'Community Profile'             },
   { number: 3,  name: 'Refine',       deliverable: 'Committed Direction Package'   },
   { number: 4,  name: 'Consultation', deliverable: 'Relocation Roadmap'            },
   { number: 5,  name: 'Plan',         deliverable: null                            },
@@ -29,7 +28,6 @@ const ALL_MILEMARKERS: MMEntry[] = [
 ]
 
 const ORIENTATION_MILEMARKERS: MMEntry[] = [
-  { number: 2,  name: 'Discovery',    deliverable: 'Community Profile'             },
   { number: 3,  name: 'Refine',       deliverable: 'Committed Direction Package'   },
   { number: 4,  name: 'Consultation', deliverable: 'Relocation Roadmap'            },
 ]

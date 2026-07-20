@@ -55,7 +55,7 @@ export default function MM1Page() {
           currentMileMarker={currentMM}
           onboardingAcknowledged={onboardingAcknowledged}
           onAcknowledge={handleAcknowledge}
-          onAdvanceToDiscover={() => router.push('/portal/mm2')}
+          onAdvanceToDiscover={() => router.push('/portal/mm3')}
         />
       </div>
     </div>

@@ -210,7 +210,7 @@ export default function PortalDataProvider({ children }: { children: ReactNode }
 
   async function handleAcknowledge(): Promise<void> {
     setOnboardingAcknowledged(true)
-    setCurrentMM(2)
+    setCurrentMM(3)
     try {
       const supabase = createClient()
       const { data: { session: supaSession } } = await supabase.auth.getSession()
@@ -218,12 +218,12 @@ export default function PortalDataProvider({ children }: { children: ReactNode }
       const email = supaSession.user.email.toLowerCase()
       const { data, error: writeError } = await supabase
         .from('users')
-        .update({ onboarding_acknowledged: true, current_milemarker: 2 })
+        .update({ onboarding_acknowledged: true, current_milemarker: 3 })
         .eq('email', email)
         .select('current_milemarker')
-      console.log('[MM1→2] current_milemarker write result:', { data, error: writeError })
+      console.log('[MM1→3] current_milemarker write result:', { data, error: writeError })
       if (!writeError && (!data || data.length === 0)) {
-        console.warn('[MM1→2] write affected 0 rows — RLS UPDATE policy missing or JWT email mismatch for', email)
+        console.warn('[MM1→3] write affected 0 rows — RLS UPDATE policy missing or JWT email mismatch for', email)
       }
     } catch (err) {
       console.error('[PortalDataProvider] handleAcknowledge write failed:', err)
