@@ -24,9 +24,36 @@ export default function BetaGate() {
     }
     if (localStorage.getItem('hq_beta_access') === 'granted') {
       setGranted(true)
-    } else {
-      setGranted(false)
+      setMounted(true)
+      return
     }
+
+    // Token-aware bypass — ONLY on the private investor slug with a ?token= present. The token is
+    // validated server-side (service-role, which also stamps the visit); a valid token grants THIS
+    // page load only (no localStorage write, so every other route stays gated as before). Missing/
+    // invalid token, or any other route: fall through to the normal gate, unchanged.
+    if (window.location.pathname === '/investor-9k2x7q') {
+      const token = new URLSearchParams(window.location.search).get('token')
+      if (token) {
+        fetch('/api/investor-interest/validate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token }),
+        })
+          .then((r) => (r.ok ? r.json() : { valid: false }))
+          .then((d: { valid?: boolean }) => {
+            setGranted(Boolean(d?.valid))
+            setMounted(true)
+          })
+          .catch(() => {
+            setGranted(false)
+            setMounted(true)
+          })
+        return
+      }
+    }
+
+    setGranted(false)
     setMounted(true)
   }, [])
 
