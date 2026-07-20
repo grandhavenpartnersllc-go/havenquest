@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Lock, Menu, X } from 'lucide-react'
+import { Compass, Lock, Menu, X } from 'lucide-react'
 import { HQ, SANS, FIND_MY_TEXAS_HREF } from './theme'
 import { useInvestorAccess } from '../investor/InvestorAccessProvider'
 
@@ -103,6 +103,14 @@ export default function HomeHeader() {
               <Lock size={13} />
               Investor Access
             </button>
+            {/* My Navigator — Option 2 gold-outline door, left of the Find My Texas CTA. Points at /portal (auth-gates + resumes). */}
+            <Link
+              href="/portal"
+              style={{ display: 'flex', alignItems: 'center', gap: '6px', fontFamily: SANS, fontSize: '13px', fontWeight: 600, color: '#C9A961', border: '1px solid rgba(201,169,97,0.6)', borderRadius: '8px', padding: '9px 16px', textDecoration: 'none', whiteSpace: 'nowrap' }}
+            >
+              <Compass size={14} />
+              My Navigator
+            </Link>
             <FindMyTexasCTA />
           </div>
 
@@ -141,6 +149,15 @@ export default function HomeHeader() {
           }}
         >
           <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontFamily: SANS, fontSize: '15px' }}>
+            {/* My Navigator — top of the mobile menu (per approved placement). Same gold-outline door → /portal. */}
+            <Link
+              href="/portal"
+              onClick={() => setMenuOpen(false)}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', alignSelf: 'flex-start', fontFamily: SANS, fontSize: '15px', fontWeight: 600, color: '#C9A961', border: '1px solid rgba(201,169,97,0.6)', borderRadius: '8px', padding: '10px 16px', textDecoration: 'none', margin: '4px 0 8px' }}
+            >
+              <Compass size={16} />
+              My Navigator
+            </Link>
             {NAV_LINKS.map((l) => (
               <a
                 key={l.label}
