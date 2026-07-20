@@ -19,7 +19,7 @@ export default function Footer() {
             <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: 'rgba(255,255,255,0.5)' }}>Product</p>
             <ul className="space-y-2.5 text-sm">
               <li><Link href="/#how-it-works" className="hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.5)' }}>How It Works</Link></li>
-              <li><Link href="/begin" className="hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.5)' }}>Begin My Journey</Link></li>
+              <li><Link href="/begin" className="hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.5)' }}>Find My Texas →</Link></li>
               <li><Link href="/portal" className="hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.5)' }}>Your Portal</Link></li>
             </ul>
           </div>

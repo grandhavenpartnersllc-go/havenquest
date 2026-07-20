@@ -10,7 +10,6 @@ const BLUE = '#0076B6'
 
 const MILEMARKERS = [
   { mm: 1,  name: 'Welcome',  what: "You're here — get oriented" },
-  { mm: 2,  name: 'Discover', what: 'Review your matched Texas communities' },
   { mm: 3,  name: 'Refine',   what: 'Commit to your target city' },
   { mm: 4,  name: 'Connect',  what: 'Meet your Market Director' },
   { mm: 5,  name: 'Plan',     what: 'Build your relocation strategy' },
@@ -122,7 +121,7 @@ export default function MM1Explore({
                   cursor: 'pointer',
                 }}
               >
-                Begin Your Journey →
+                Explore my matches →
               </button>
             </div>
 
@@ -229,7 +228,7 @@ export default function MM1Explore({
                     fontWeight: 700,
                     color: isActive || isComplete ? '#ffffff' : 'var(--text-secondary)',
                   }}>
-                    {mm}
+                    {i + 1}
                   </div>
                   <div style={{ flex: 1 }}>
                     <p style={{ fontSize: '13px', fontWeight: isActive ? 700 : 500, color: 'var(--text-primary)', margin: '0 0 2px' }}>

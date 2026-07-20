@@ -46,7 +46,7 @@ export default function Header() {
             className="hover:bg-gray-100 transition-colors"
             style={{ background: '#fff', color: '#0A1E3D', borderRadius: '6px', padding: '8px 18px', fontSize: '14px', fontWeight: 500, textDecoration: 'none' }}
           >
-            Begin My Journey
+            Find My Texas →
           </Link>
         </nav>
 
@@ -83,7 +83,7 @@ export default function Header() {
             style={{ background: '#fff', color: '#0A1E3D', textDecoration: 'none' }}
             onClick={() => setOpen(false)}
           >
-            Begin My Journey →
+            Find My Texas →
           </Link>
         </div>
       )}

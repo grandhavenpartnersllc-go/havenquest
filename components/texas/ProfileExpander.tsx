@@ -100,7 +100,7 @@ export default function ProfileExpander({ cityName, teaser, children }: ProfileE
               Sources: TRERC · Redfin · Zillow · Dallas Fed · U.S. Census · Texas.gov · Updated Q2 2026
             </p>
             <Link href="/begin" style={{ fontSize: '13px', fontWeight: 600, color: '#C9A84C', textDecoration: 'none' }}>
-              Begin your Texas journey →
+              Find My Texas →
             </Link>
           </div>
         </div>
