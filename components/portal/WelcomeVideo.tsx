@@ -11,12 +11,13 @@ const SHARED_STYLE: CSSProperties = {
   border: 'none',
 }
 
-export default function WelcomeVideo() {
+export default function WelcomeVideo({ onProgress }: { onProgress?: (currentTimeSeconds: number) => void }) {
   return (
     <video
       src="/videos/navigator-welcome.mp4"
       controls
       playsInline
+      onTimeUpdate={onProgress ? (e) => onProgress(e.currentTarget.currentTime) : undefined}
       style={SHARED_STYLE}
     />
   )
