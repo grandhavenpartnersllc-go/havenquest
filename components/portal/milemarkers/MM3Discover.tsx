@@ -1476,7 +1476,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
             padding + border + font-size); radius 999px; distinguished by shape + colour, not size.
             Active = solid navy; inactive = white + hairline; metro-% in the portal's real accent
             gold (#C5B783 on white, #d3c493 on navy). The word "match" is dropped (see CP2 explainer). */}
-        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center', flex: '1 1 auto', minWidth: 0 }}>
+        <div data-tour="metro-pills" style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center', flex: '1 1 auto', minWidth: 0 }}>
           {METRO_FILTERS.map(f => {
             const active = selectedMetro === f.value
             const pct = f.value !== 'State' ? metroTopScores[f.value] : undefined
@@ -1575,7 +1575,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
             bar (hatched = estimated), 4-line legend, total, two tiles, affordability meter.
             Property tax uses the city's REAL housing.propertyTaxRate; insurance + HOA are typical
             placeholders, hatched and (est.)-tagged. Figures react to the Money-drawer sliders. */}
-        <div style={{ background: '#fff', border: '1px solid #dcdad2', borderRadius: '16px', overflow: 'hidden' }}>
+        <div data-tour="finzone" style={{ background: '#fff', border: '1px solid #dcdad2', borderRadius: '16px', overflow: 'hidden' }}>
           {/* Navy .finband header — prototype values (docs/havenquest_refine_mockup.html): solid
               navy #0A1E3D, padding 16px 22px, align-items flex-end; eyebrow #9fb0c8 10.5px over a
               27px/700 white big-number; rate context in gold; right ctx #bccadd with the gold city.
@@ -1867,7 +1867,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
         ]
 
         return (
-          <div style={{ background: '#fff', border: '1px solid #dcdad2', borderRadius: '16px', overflow: 'hidden' }}>
+          <div data-tour="comparison" style={{ background: '#fff', border: '1px solid #dcdad2', borderRadius: '16px', overflow: 'hidden' }}>
             {/* CP3 — navy .finband header matching the FinZone band (same prototype values: solid
                 navy #0A1E3D, 16px 22px, eyebrow #9fb0c8 over a 27px/700 white big-number), so the two
                 panels balance. Hero = the origin city; eyebrow above = "How Texas compares to". The
@@ -1952,7 +1952,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           {rankChangeExplanation && (
             <div style={{ marginBottom: '10px' }}><RankChangeAlert message={rankChangeExplanation} /></div>
           )}
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '16px' }}>
+          <div data-tour="top-matches" style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '16px' }}>
             {heroSlots.map((id, i) => {
               const match = findMatch(id)
               const cityLoc = match?.location ?? getAllCities().find(c => c.id === id)
@@ -2087,7 +2087,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
 
           {/* Right ~1/4 — ranks 4-10 trigger */}
           {browseCities.length > 0 && (
-            <button type="button" onClick={() => setShowAllCities(v => !v)}
+            <button type="button" data-tour="show-all-cities" onClick={() => setShowAllCities(v => !v)}
               style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: '10px', padding: '12px 14px', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
               <span>
                 <span style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#0A1E3D' }}>See your other ranked cities</span>
@@ -2554,7 +2554,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
              Opens for lifestyle/financials/nonneg only; 'guide' (Ask Amy) has its own right-side
              panel after the canvas, so this left drawer stays closed for it (leftDrawerOpen). ── */}
         {!isMobile && (
-          <aside style={{
+          <aside data-tour="left-drawer" style={{
             flexShrink: 0,
             flexBasis: leftDrawerOpen ? '404px' : '0px', width: leftDrawerOpen ? '404px' : '0px',
             background: '#fff', overflow: 'hidden',
@@ -2621,7 +2621,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
              min-width:0) shrinks by exactly this panel's width and the row's overflowX:hidden
              clips any transient, so the panel can never cause horizontal page scroll. */}
         {!isMobile && (
-          <aside aria-label="Ask Amy" style={{
+          <aside aria-label="Ask Amy" data-tour="amy-panel" style={{
             flexShrink: 0,
             flexBasis: amyDrawerOpen ? '404px' : '0px', width: amyDrawerOpen ? '404px' : '0px',
             background: '#fff', overflow: 'hidden',
@@ -2712,6 +2712,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
               }}
             >
               <div
+                data-tour="mobile-sheet"
                 onClick={e => e.stopPropagation()}
                 style={{
                   background: '#fff', width: '100%', maxHeight: '75vh', overflowY: 'auto',
