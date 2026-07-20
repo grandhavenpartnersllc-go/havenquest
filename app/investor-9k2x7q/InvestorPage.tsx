@@ -138,25 +138,30 @@ export default function InvestorPage() {
       {/* ---- TOP NAV ---- */}
       <div className={styles.topnav}>
         <div className={styles.topnavIn}>
-          <div
-            className={styles.brand}
-            role="button"
-            tabIndex={0}
-            aria-label="Back to top"
-            style={{ cursor: 'pointer' }}
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault()
-                window.scrollTo({ top: 0, behavior: 'smooth' })
-              }
-            }}
-          >
-            {/* Wordmark only, matching the homepage header (HomeHeader.tsx) — mark dropped. Click scrolls to top. */}
-            <div className={styles.wordmark}>
-              <span className={styles.wmHaven}>Haven</span><span className={styles.wmQuest}>Quest</span>
-              <small className={styles.wmTag}>Clarity. Confidence. Peace of Mind.</small>
+          <div className={styles.masthead}>
+            <div
+              className={styles.brand}
+              role="button"
+              tabIndex={0}
+              aria-label="Back to top"
+              style={{ cursor: 'pointer' }}
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  window.scrollTo({ top: 0, behavior: 'smooth' })
+                }
+              }}
+            >
+              {/* Wordmark only, matching the homepage header (HomeHeader.tsx) — mark dropped. Click scrolls to top. */}
+              <div className={styles.wordmark}>
+                <span className={styles.wmHaven}>Haven</span><span className={styles.wmQuest}>Quest</span>
+                <small className={styles.wmTag}>Clarity. Confidence. Peace of Mind.</small>
+              </div>
             </div>
+            {/* Masthead designation — non-interactive "you are here" marker, right of the logo block. */}
+            <span className={styles.mastheadBar} aria-hidden="true" />
+            <span className={styles.designation}>Investor Overview</span>
           </div>
           <div className={styles.topnavLinks}>
             <a href="#s1">The Opportunity</a>
@@ -166,8 +171,8 @@ export default function InvestorPage() {
             <a href="#s8">Team</a>
             <a href="#s10">Investment</a>
           </div>
-          {/* Not wired in Stage 1 — anchors to the Investment section. */}
-          <a className={styles.portalBtn} href="#s10">🔒 Investor Portal</a>
+          {/* Returns to the public homepage (same tab). Gated homepage expected during beta review. */}
+          <a className={styles.returnBtn} href="/">← Back to HavenQuest.co</a>
         </div>
       </div>
 
