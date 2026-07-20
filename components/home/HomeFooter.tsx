@@ -116,6 +116,7 @@ export default function HomeFooter() {
           </p>
 
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '20px' }}>
+            <Link href="/portal" className="hq-link" style={{ fontFamily: SANS, fontSize: '12.5px' }}>My Navigator</Link>
             <Link href="/privacy-policy" className="hq-link" style={{ fontFamily: SANS, fontSize: '12.5px' }}>Privacy Policy</Link>
             <a href="#" className="hq-link" style={{ fontFamily: SANS, fontSize: '12.5px' }}>Terms</a>
             <a href="#" className="hq-link" style={{ fontFamily: SANS, fontSize: '12.5px' }}>Site Map</a>
