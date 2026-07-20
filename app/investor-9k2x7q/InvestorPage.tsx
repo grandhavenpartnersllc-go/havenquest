@@ -612,7 +612,7 @@ export default function InvestorPage() {
 
             <div className={styles.v7engine}>
               <span className={styles.v7mark}>ATLAS</span>
-              <span className={styles.v7desc}>the relocation intelligence platform — every branch below draws on it</span>
+              <span className={styles.v7desc}>the Texas Intelligence platform — every branch below draws on it</span>
               <span className={styles.v7rule} aria-hidden="true"></span>
             </div>
 
