@@ -17,6 +17,7 @@ import { txSafety, txClimateV2 } from '../../../utils/txComparisonStats'
 import CompareModal from '../../results/CompareModal'
 import AmyPanel from '../amy/AmyPanel'
 import EndOfDemoModal from '../EndOfDemoModal'
+import MM3Tour from '../MM3Tour'
 import { SlidersHorizontal, CircleDollarSign, ShieldCheck, MessageCircle, GraduationCap, Users, Briefcase, Mountain, TrendingUp, UtensilsCrossed, Gem, Pencil, Lock } from 'lucide-react'
 
 const ALL_KEYS = DNA_CATEGORIES.map(c => c.key) as (keyof DNAScores)[]
@@ -394,6 +395,9 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // INTERIM 2026-07-18: MM4 scheduling replaced by end-of-demo popup; to reinstate, restore CTA
   // handleCommit, re-enable the sandbox_committed auto-advance, and restore the >=4 -> mm4 redirect.
   const [endOfDemoOpen, setEndOfDemoOpen] = useState(false)
+  // MM3TUT — onboarding coach-mark tour visibility. Dormant in CP2 (nothing flips it on);
+  // the first-visit trigger, seen-flag persistence, and reopen control are CP3.
+  const [tourOpen, setTourOpen] = useState(false)
   // FinZone "How is this calculated?" formula popup — display-only; touches no scorer/persistence.
   const [formulaOpen, setFormulaOpen] = useState(false)
   const formulaCardRef = useRef<HTMLDivElement | null>(null)
@@ -2276,6 +2280,16 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     <>
       {/* INTERIM 2026-07-18: end-of-demo popup fired by the unlocked Schedule CTA (portal overlay). */}
       <EndOfDemoModal open={endOfDemoOpen} onClose={() => setEndOfDemoOpen(false)} />
+      {/* MM3TUT — onboarding coach-mark tour. Rendered here so it can drive the drawer state
+          (setOpenDrawer) and the 4–10 expander (setShowAllCities). Controlled by tourOpen;
+          the auto-trigger + seen-flag + reopen control land in CP3. */}
+      <MM3Tour
+        open={tourOpen}
+        onClose={() => setTourOpen(false)}
+        isMobile={isMobile}
+        setOpenDrawer={setOpenDrawer}
+        setShowAllCities={setShowAllCities}
+      />
       {/* Declutter pass item 6 — Pin/Compare/Remove read as dimmed/secondary by
           default, full-strength on hover/focus so ranked results dominate the
           visual hierarchy. Inline styles can't express :hover, hence this tag. */}
