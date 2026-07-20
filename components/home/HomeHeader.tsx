@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Lock, Menu, X } from 'lucide-react'
 import { HQ, SANS, FIND_MY_TEXAS_HREF } from './theme'
+import { useInvestorAccess } from '../investor/InvestorAccessProvider'
 
 const NAV_LINKS = [
   { label: 'How It Works', href: '#how-it-works' },
@@ -16,6 +17,7 @@ const NAV_LINKS = [
 export default function HomeHeader() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const { open: openInvestorAccess } = useInvestorAccess()
 
   useEffect(() => {
     const onScroll = () => {
@@ -91,10 +93,16 @@ export default function HomeHeader() {
 
           {/* Desktop right cluster */}
           <div className="hidden nav:flex" style={{ alignItems: 'center', gap: '22px', flexShrink: 0 }}>
-            <a href="#" className="hq-link" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontFamily: SANS, fontSize: '13px' }}>
+            <button
+              type="button"
+              onClick={openInvestorAccess}
+              aria-haspopup="dialog"
+              className="hq-link"
+              style={{ display: 'flex', alignItems: 'center', gap: '6px', fontFamily: SANS, fontSize: '13px', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+            >
               <Lock size={13} />
               Investor Access
-            </a>
+            </button>
             <FindMyTexasCTA />
           </div>
 
@@ -144,15 +152,19 @@ export default function HomeHeader() {
                 {l.label}
               </a>
             ))}
-            <a
-              href="#"
+            <button
+              type="button"
               className="hq-link"
-              onClick={() => setMenuOpen(false)}
-              style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '14px 0 4px' }}
+              aria-haspopup="dialog"
+              onClick={() => {
+                setMenuOpen(false)
+                openInvestorAccess()
+              }}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '14px 0 4px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: SANS, fontSize: '15px' }}
             >
               <Lock size={14} />
               Investor Access
-            </a>
+            </button>
           </nav>
         </div>
       )}

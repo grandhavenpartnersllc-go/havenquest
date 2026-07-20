@@ -8,6 +8,7 @@ import Communities, { type CityCard } from '../components/home/Communities'
 import HomeFooter from '../components/home/HomeFooter'
 import type { MetroKey } from '../components/home/TexasMap'
 import { HQ } from '../components/home/theme'
+import InvestorAccessProvider from '../components/investor/InvestorAccessProvider'
 
 export const metadata: Metadata = {
   title: 'HavenQuest — Finding Your Texas Shouldn’t Be Left to Chance',
@@ -52,15 +53,17 @@ export default function HomePage() {
   ) as Record<MetroKey, CityCard[]>
 
   return (
-    <div style={{ background: HQ.navy }}>
-      <HomeHeader />
-      <main>
-        <Hero />
-        <Challenge />
-        <HowItWorks />
-        <Communities cities={cities} />
-      </main>
-      <HomeFooter />
-    </div>
+    <InvestorAccessProvider>
+      <div style={{ background: HQ.navy }}>
+        <HomeHeader />
+        <main>
+          <Hero />
+          <Challenge />
+          <HowItWorks />
+          <Communities cities={cities} />
+        </main>
+        <HomeFooter />
+      </div>
+    </InvestorAccessProvider>
   )
 }

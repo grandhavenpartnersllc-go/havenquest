@@ -3,6 +3,7 @@ import Link from 'next/link'
 // row uses generic glyphs as placeholders — real brand SVGs can swap in later.
 import { Lock, Globe, AtSign, Mail, MessageCircle } from 'lucide-react'
 import { HQ, SANS, SERIF, FIND_MY_TEXAS_HREF } from './theme'
+import { InvestorAccessButton } from '../investor/InvestorAccessProvider'
 
 const COLUMNS = [
   {
@@ -118,9 +119,9 @@ export default function HomeFooter() {
             <Link href="/privacy-policy" className="hq-link" style={{ fontFamily: SANS, fontSize: '12.5px' }}>Privacy Policy</Link>
             <a href="#" className="hq-link" style={{ fontFamily: SANS, fontSize: '12.5px' }}>Terms</a>
             <a href="#" className="hq-link" style={{ fontFamily: SANS, fontSize: '12.5px' }}>Site Map</a>
-            <a href="#" className="hq-link" style={{ display: 'flex', alignItems: 'center', gap: '5px', fontFamily: SANS, fontSize: '12.5px' }}>
+            <InvestorAccessButton className="hq-link" style={{ display: 'flex', alignItems: 'center', gap: '5px', fontFamily: SANS, fontSize: '12.5px' }}>
               <Lock size={12} /> Investor Access
-            </a>
+            </InvestorAccessButton>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
