@@ -3,12 +3,12 @@
 import Link from 'next/link'
 import { HQ, SANS } from '../home/theme'
 
-// Discovery Intake header. Deliberately NOT the shared 20-route Header, and NOT the
-// homepage's scroll-aware HomeHeader (which is fixed, carries homepage-only nav, and
-// sits over a hero /begin does not have). This is a solid navy bar that reuses the
+// Shared funnel header — intake + results. Deliberately NOT the shared 20-route Header,
+// and NOT the homepage's scroll-aware HomeHeader (which is fixed, carries homepage-only
+// nav, and sits over a hero the funnel does not have). A solid navy bar that reuses the
 // homepage brand tokens/wordmark so the brand reads identically, with no scroll logic
-// and no exit links — a focused flow header.
-export default function BeginHeader() {
+// and no exit links — the logo (→ /) is the only control across every funnel screen.
+export default function FunnelHeader() {
   return (
     <header
       className="sticky top-0 z-50"

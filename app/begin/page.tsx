@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import BeginHeader from '../../components/quiz/BeginHeader'
+import FunnelHeader from '../../components/shared/FunnelHeader'
 import { Check } from 'lucide-react'
 import Gateway from '../../components/quiz/Gateway'
 import MetroCaptureCard, { type MetroCaptureValue } from '../../components/quiz/MetroCaptureCard'
@@ -396,7 +396,7 @@ export default function BeginPage() {
 
   return (
     <>
-      <BeginHeader />
+      <FunnelHeader />
       <main className="flex-1" style={{ background: STONE }}>
         <div className="mx-auto max-w-[1000px] px-6 pt-[22px] pb-11 max-[460px]:px-[14px] max-[460px]:pt-[18px] max-[460px]:pb-[34px]">
 
