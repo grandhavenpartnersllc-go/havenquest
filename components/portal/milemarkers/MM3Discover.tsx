@@ -2540,15 +2540,21 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
           transient during the width transition, so nothing can leak into WorkspacePanel's
           implicit overflow-x:auto (CLAUDE.md §5). Because the width can never grow the
           page, the push transition is safe to keep (no fade fallback needed). */}
-      <div style={{ display: 'flex', flex: 1, minWidth: 0, flexDirection: isMobile ? 'column' : 'row', minHeight: '100%', overflowX: 'hidden' }}>
+      <div style={{ display: 'flex', flex: 1, minWidth: 0, flexDirection: isMobile ? 'column' : 'row', minHeight: '100%', overflowX: isMobile ? 'hidden' : 'clip' }}>
 
         {/* ── ICON RAIL — desktop only ── */}
         {!isMobile && (
           <nav aria-label="Refine controls" style={{
             width: '132px', flexShrink: 0, background: '#0A1E3D',
             display: 'flex', flexDirection: 'column', padding: '16px 10px',
-            position: 'sticky', top: 0, alignSelf: 'stretch',
+            alignSelf: 'stretch',
           }}>
+            {/* RAIL PIN (desktop) — the nav stays a full-height navy column; this inner wrapper is
+                position:sticky so the controls hold their place while the canvas scrolls. maxHeight
+                + overflowY:auto is the short-viewport safety so Ask Amy can never be trapped
+                off-screen. Sticky binds to WorkspacePanel because the row above now uses
+                overflow-x:clip (not hidden) — clips identically but is not a scroll container. */}
+            <div style={{ position: 'sticky', top: 0, maxHeight: '100vh', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
             <p style={{ color: '#7F93AF', fontSize: '9px', letterSpacing: '0.6px', textTransform: 'uppercase', padding: '0 6px 6px', margin: 0 }}>Refine</p>
             {RAIL_ITEMS.filter(i => i.group === 'refine').map(({ k, label, Icon }) => {
               const active = openDrawer === k
@@ -2588,6 +2594,7 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                 </button>
               )
             })}
+            </div>
           </nav>
         )}
 
