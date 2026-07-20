@@ -4,8 +4,8 @@ import { use, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { Lock } from 'lucide-react'
-import Header from '../../../components/shared/Header'
-import Footer from '../../../components/shared/Footer'
+import FunnelHeader from '../../../components/shared/FunnelHeader'
+import FunnelFooter from '../../../components/shared/FunnelFooter'
 import EmailGate from '../../../components/results/EmailGate'
 import PasswordCreation from '../../../components/results/PasswordCreation'
 import DiscoveryEmailCapture from '../../../components/quiz/DiscoveryEmailCapture'
@@ -111,7 +111,7 @@ export default function SessionResultsPage({ params }: { params: Promise<{ sessi
   if (!ready) {
     return (
       <>
-        <Header />
+        <FunnelHeader />
         <div className="flex items-center justify-center min-h-screen bg-surface">
           <div className="text-center">
             <div className="w-7 h-7 border-2 border-accent/20 border-t-accent rounded-full animate-spin mx-auto mb-4" />
@@ -126,7 +126,7 @@ export default function SessionResultsPage({ params }: { params: Promise<{ sessi
 
   return (
     <>
-      <Header />
+      <FunnelHeader />
       <main className="flex-1 bg-surface">
         <div className="bg-surface border-b border-black/5 px-4 py-12">
           <div className="max-w-3xl mx-auto text-left">
@@ -277,7 +277,7 @@ export default function SessionResultsPage({ params }: { params: Promise<{ sessi
         />
       )}
 
-      <Footer />
+      <FunnelFooter />
     </>
   )
 }
