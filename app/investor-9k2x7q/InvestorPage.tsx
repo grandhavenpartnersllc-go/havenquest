@@ -49,6 +49,11 @@ export default function InvestorPage() {
   const [metro, setMetro] = useState<MetroKey>('austin')
   const [introOpen, setIntroOpen] = useState(false)
   const [showBackToTop, setShowBackToTop] = useState(false)
+  // Brief 2 — "Keep me updated" opt-in. The visitor's token comes from the ?token= link they arrived on;
+  // no token (e.g. Craig via beta code) means the button no-ops. optedIn flips to the green confirmed pill.
+  const [investorToken, setInvestorToken] = useState<string | null>(null)
+  const [optedIn, setOptedIn] = useState(false)
+  const [optingIn, setOptingIn] = useState(false)
 
   useEffect(() => {
     // Smooth in-page anchor scrolling, applied only while this page is mounted.
@@ -97,6 +102,30 @@ export default function InvestorPage() {
       if (raf) cancelAnimationFrame(raf)
     }
   }, [])
+
+  // Read the visitor's token from the ?token= they arrived on (client-side), so "Keep me updated" can opt in.
+  useEffect(() => {
+    const t = new URLSearchParams(window.location.search).get('token')
+    if (t) setInvestorToken(t)
+  }, [])
+
+  const handleKeepUpdated = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    if (!investorToken || optingIn || optedIn) return // no token (beta-code viewer) → no-op gracefully
+    setOptingIn(true)
+    try {
+      const res = await fetch('/api/investor-interest/opt-in', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: investorToken }),
+      })
+      if (res.ok) setOptedIn(true)
+    } catch {
+      // silent — the visitor can retry; nothing destructive happened
+    } finally {
+      setOptingIn(false)
+    }
+  }
 
   const pct = Math.round((maxReached / 10) * 100)
 
@@ -757,7 +786,20 @@ export default function InvestorPage() {
                 <svg className={styles.ic} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6}><path d="M4 4h16v12H5.2L4 17.5z" /></svg>
                 <h4>Just curious</h4>
                 <p>Send me occasional updates and progress.</p>
-                <a href="#">Keep me updated</a>
+                {optedIn ? (
+                  <span
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '7px', marginTop: 'auto', alignSelf: 'flex-start',
+                      fontSize: '12px', letterSpacing: '.06em', textTransform: 'uppercase', fontWeight: 600,
+                      padding: '11px 18px', borderRadius: '8px',
+                      background: 'rgba(72,199,142,0.14)', border: '1px solid #48c78e', color: '#48c78e',
+                    }}
+                  >
+                    <span aria-hidden="true">✓</span> You&apos;re on the list
+                  </span>
+                ) : (
+                  <a href="#" onClick={handleKeepUpdated}>{optingIn ? 'Adding you…' : 'Keep me updated'}</a>
+                )}
               </div>
               <div className={`${styles.c} ${styles.hot}`}>
                 <svg className={styles.ic} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6}><path d="M7 3v3M17 3v3M4 8h16M4 8v12h16V8" /></svg>
