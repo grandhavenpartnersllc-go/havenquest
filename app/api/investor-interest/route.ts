@@ -21,16 +21,17 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 function buildInvestorEmailHtml(name: string, link: string): string {
   return `
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;max-width:600px;margin:0 auto;color:#1A1A1A;">
-      <div style="padding:32px;">
-        <p style="color:#4A4A4A;line-height:1.7;margin:0 0 16px;">Hi ${name},</p>
-        <p style="color:#4A4A4A;line-height:1.7;margin:0 0 16px;">Thank you for your interest in HavenQuest. As promised, here&apos;s your private link to the full overview:</p>
-        <p style="margin:0 0 18px;"><a href="${link}" style="display:inline-block;background:#C5B783;color:#0A1E3D;padding:13px 26px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;">Open the HavenQuest overview &rarr;</a></p>
-        <p style="color:#6B7280;font-size:12.5px;line-height:1.6;margin:0 0 20px;word-break:break-all;">${link}</p>
-        <p style="color:#4A4A4A;line-height:1.7;margin:0 0 16px;">It&apos;s an honest look at where we are today and where we&apos;re headed — no obligation, just a chance to see what we&apos;re building. If it resonates and you&apos;d like to talk, you can reach me directly from the page.</p>
-        <p style="color:#4A4A4A;line-height:1.7;margin:0 0 24px;">The link is unique to you, so please don&apos;t forward it.</p>
-        <p style="color:#4A4A4A;line-height:1.7;margin:0 0 2px;">Warm regards,</p>
-        <p style="color:#4A4A4A;line-height:1.7;margin:0 0 2px;font-weight:600;">Craig Asbach</p>
-        <p style="color:#6B7280;font-size:14px;margin:0 0 2px;">Founder, HavenQuest</p>
+      <div style="padding:40px 40px 38px;">
+        <p style="color:#4A4A4A;line-height:1.75;margin:0 0 22px;">Hi ${name},</p>
+        <p style="color:#4A4A4A;line-height:1.75;margin:0 0 26px;">Thank you for your interest in HavenQuest. As promised, here&apos;s your private link to the full overview:</p>
+        <p style="margin:0 0 12px;text-align:center;"><a href="${link}" style="display:inline-block;background:#0A1E3D;color:#C5B783;padding:15px 30px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14.5px;">Open the HavenQuest overview &rarr;</a></p>
+        <p style="text-align:center;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#a48f4e;font-weight:600;margin:0 0 8px;">Your private link</p>
+        <p style="color:#6B7280;font-size:12.5px;line-height:1.55;margin:0 0 30px;word-break:break-all;background:#F7F5F0;border:1px solid #ECE8DE;border-radius:8px;padding:12px 14px;text-align:center;">${link}</p>
+        <p style="color:#4A4A4A;line-height:1.75;margin:0 0 20px;">It&apos;s an honest look at where we are today and where we&apos;re headed — no obligation, just a chance to see what we&apos;re building. If it resonates and you&apos;d like to talk, you can reach me directly from the page.</p>
+        <p style="color:#4A4A4A;line-height:1.75;margin:0 0 30px;">The link is unique to you, so please don&apos;t forward it.</p>
+        <p style="color:#4A4A4A;line-height:1.7;margin:0 0 3px;">Warm regards,</p>
+        <p style="color:#4A4A4A;line-height:1.7;margin:0 0 3px;font-weight:600;">Craig Asbach</p>
+        <p style="color:#6B7280;font-size:14px;margin:0 0 3px;">Founder, HavenQuest</p>
         <p style="margin:0;font-size:14px;"><a href="mailto:craig.asbach@havenquest.co" style="color:#B8912A;">craig.asbach@havenquest.co</a></p>
       </div>
     </div>
