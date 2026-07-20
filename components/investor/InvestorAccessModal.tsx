@@ -48,6 +48,7 @@ export default function InvestorAccessModal({ open, onClose }: { open: boolean; 
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
   const windowRef = useRef<HTMLDivElement | null>(null)
   const firstFieldRef = useRef<HTMLInputElement | null>(null)
@@ -56,15 +57,29 @@ export default function InvestorAccessModal({ open, onClose }: { open: boolean; 
   const isValid = name.trim() !== '' && EMAIL_RE.test(email.trim()) && phone.trim() !== ''
 
   const handleSubmit = async () => {
-    if (!isValid) {
-      setError('Please enter your name, a valid email, and a phone number.')
+    if (!isValid || submitting) {
+      if (!isValid) setError('Please enter your name, a valid email, and a phone number.')
       return
     }
     setError('')
-    // BRIEF 2: POST { name, email, phone } to /api/investor-interest (clone of realtor-interest):
-    //   write investor_interest row + crypto.randomUUID() token, Resend the tokenized link, then setScreen('sent').
-    // Until Brief 2 ships, advance locally so the UX is drivable:
-    setScreen('sent')
+    setSubmitting(true)
+    try {
+      const res = await fetch('/api/investor-interest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name.trim(), email: email.trim(), phone: phone.trim() }),
+      })
+      if (res.ok) {
+        setScreen('sent')
+      } else {
+        const data = await res.json().catch(() => ({}))
+        setError(data.error || 'Something went wrong. Please try again.')
+      }
+    } catch {
+      setError('Network error. Please try again.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   // On open: remember what to restore focus to, reset to a fresh form, focus the first field,
@@ -77,6 +92,7 @@ export default function InvestorAccessModal({ open, onClose }: { open: boolean; 
     setEmail('')
     setPhone('')
     setError('')
+    setSubmitting(false)
 
     const prevOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
@@ -192,8 +208,8 @@ export default function InvestorAccessModal({ open, onClose }: { open: boolean; 
 
               {error && <p className="iam-error">{error}</p>}
 
-              <button type="button" className="iam-btn" onClick={handleSubmit}>
-                Send me the private link
+              <button type="button" className="iam-btn" onClick={handleSubmit} disabled={submitting}>
+                {submitting ? 'Sending…' : 'Send me the private link'}
               </button>
               <p className="iam-micro">An overview and an open door — no obligation.</p>
             </div>
