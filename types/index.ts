@@ -123,6 +123,9 @@ export interface Location {
   categoryInsights: CategoryInsights
   cityNarrative?: string
   cityImageUrl?: string
+  // Place centroid, sourced from the US Census Gazetteer Places 2025 file.
+  // See the provenance note above the array in data/cities.ts.
+  coordinates?: { lat: number; lng: number }
 }
 
 export type HomeFeature =
