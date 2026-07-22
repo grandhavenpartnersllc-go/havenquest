@@ -868,13 +868,23 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
     rankSnapshotRef.current = { topIds, income: incomeVal, proceeds, savings, rate: interestRate, loanTerm, removedCount: removedCities.length }
   }, [overallTopResult, incomeVal, proceeds, savings, interestRate, loanTerm, removedCities])
 
-  // Shared full monthly payment estimate for a city — P&I (after the family's funds) + property
-  // tax (real per-city rate) + insurance (est.) + HOA (est.). ONE formula, used by BOTH the
-  // FinZone breakdown and the hero-card badge so the two can never disagree on affordability.
-  // Display only; no scorer, ranking, or persistence touched.
+  // Closing is an estimate drawn FROM the finite funds pot, not added on top. One source of
+  // truth so Cash-to-Close, the buying-power ceiling and every home's monthly can never disagree
+  // about the same money again. Both close over totalFunds. Display only; no scorer touched.
+  const CLOSING_RATE = 0.03
+  function estClosing(price: number): number { return Math.round(price * CLOSING_RATE) }
+  // Down payment = funds (capped at price) with closing taken out first; never negative.
+  function downPaymentFor(price: number): number {
+    return Math.max(0, Math.min(totalFunds, price) - estClosing(price))
+  }
+
+  // Shared full monthly payment estimate for a city — P&I (on the loan left after the
+  // closing-aware down payment) + property tax (real per-city rate) + insurance (est.) + HOA
+  // (est.). ONE formula, used by BOTH the FinZone breakdown and the hero-card badge so the two
+  // can never disagree on affordability. Display only; no scorer, ranking, or persistence touched.
   function estFullMonthly(price: number, taxRate: number): number {
     const rate = loanTerm === 15 ? Math.max(interestRate - 0.5, 2) : interestRate
-    const pi = calcMonthly(Math.max(0, price - totalFunds), rate, loanTerm)
+    const pi = calcMonthly(Math.max(0, price - downPaymentFor(price)), rate, loanTerm)
     const tax = Math.round(price * taxRate / 12)
     const insurance = Math.round(price * INSURANCE_ANNUAL_RATE / 12)
     return pi + tax + insurance + HOA_MONTHLY_EST
@@ -907,7 +917,9 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // not pinnedCities[0], so "Monthly est." tracks the hero card the user is focused on.
   const refCityData = getAllCities().find(c => c.id === effectiveSelectedKey)
   const refPrice = refCityData?.housing.medianHomePrice ?? 385000
-  const refBalance = Math.max(0, refPrice - totalFunds)
+  const finClosing = estClosing(refPrice)
+  const finDownPayment = downPaymentFor(refPrice)
+  const refBalance = Math.max(0, refPrice - finDownPayment)
   const refRate = loanTerm === 15 ? Math.max(interestRate - 0.5, 2) : interestRate
   const refMonthly = calcMonthly(refBalance, refRate, loanTerm)
 
@@ -922,14 +934,15 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   const finMonthlyInsurance = Math.round(refPrice * INSURANCE_ANNUAL_RATE / 12) // real per-city price × TDI statewide avg (see INSURANCE_ANNUAL_RATE)
   const finMonthlyHOA = HOA_MONTHLY_EST // UNSOURCED placeholder (see HOA_MONTHLY_EST) — weakest input
   const finTotalMonthly = refMonthly + finMonthlyTax + finMonthlyInsurance + finMonthlyHOA
-  const finCashToClose = Math.min(totalFunds, refPrice) + Math.round(refPrice * 0.03) // real down payment + ~3% est. closing
+  const finCashToClose = finDownPayment + finClosing // == min(totalFunds, refPrice): closing drawn FROM funds, never on top
   const finComfortableUpTo = (() => {
     if (finIncome <= 0) return 0
     const cap = finIncome / 12 * 0.28
     let lo = 0, hi = 3_000_000
     for (let i = 0; i < 40; i++) {
       const mid = (lo + hi) / 2
-      const full = calcMonthly(Math.max(0, mid - totalFunds), refRate, loanTerm) + mid * finTaxRate / 12 + mid * INSURANCE_ANNUAL_RATE / 12 + finMonthlyHOA
+      // Same closing-aware rule as every tile: closing comes out of the pot before the down payment.
+      const full = calcMonthly(Math.max(0, mid - downPaymentFor(mid)), refRate, loanTerm) + mid * finTaxRate / 12 + mid * INSURANCE_ANNUAL_RATE / 12 + finMonthlyHOA
       if (full > cap) hi = mid; else lo = mid
     }
     return Math.round(lo / 1000) * 1000
@@ -939,8 +952,11 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
   // (finComfortableUpTo): "here's how we arrived at your $X buying power." Re-applies the same
   // financial formulas at the ceiling price; no scorer/ranking/persistence touched.
   const bpMonthlyCap = finIncome > 0 ? Math.round(finIncome / 12 * 0.28) : 0
-  const bpDownPayment = totalFunds
-  const bpLoan = Math.max(0, finComfortableUpTo - totalFunds)
+  // Popup worked example is stated "at the ceiling" — its down payment and loan must use the
+  // same closing-aware rule the ceiling search solved with (downPaymentFor at finComfortableUpTo),
+  // or the "right at 28%" reconciliation below would no longer be true.
+  const bpDownPayment = downPaymentFor(finComfortableUpTo)
+  const bpLoan = Math.max(0, finComfortableUpTo - bpDownPayment)
   const bpPI = calcMonthly(bpLoan, refRate, loanTerm)
   const bpTax = Math.round(finComfortableUpTo * finTaxRate / 12)
   const bpInsurance = Math.round(finComfortableUpTo * INSURANCE_ANNUAL_RATE / 12)
