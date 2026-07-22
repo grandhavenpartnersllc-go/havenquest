@@ -37,26 +37,23 @@ import { UserProfile, PersonalityPreference } from '../../types'
 const LOCAL_SESSION_KEY = 'hq_session'
 const PROGRESS_KEY = 'hq_quiz_progress'
 
-const WHAT_YOULL_COVER = [
-  'Your household size and home preferences',
-  'Your annual household income',
-  'Your lifestyle priorities — schools, safety, walkability, and more',
-  'Your budget and down payment range',
-]
-
-// Demo-mode disclosure copy for Discovery Intake screen 1 (the honest split): what the
-// working model actually does vs. what is still being built. Copy only — no algorithm
-// internals, no scoring mechanics.
+// Demo-mode disclosure copy for Discovery Intake screen 1. WHATS_REAL is what genuinely
+// works today; the caveat below it in the markup is the honest limit that qualifies all
+// three. Compliance-facing surface — this is the disclosure the demo's honesty rests on.
+// Do not soften, drop, or reword. Copy only — no algorithm internals, no scoring mechanics.
 const WHATS_REAL = [
-  'The communities, and the journey you\'re about to walk',
-  'School ratings and property tax rates, from public sources',
-  'The matching engine — it genuinely responds to your answers',
+  'The communities, and the journey you\'re about to walk, are real.',
+  'School ratings and property-tax rates come from public sources.',
+  'The matching engine genuinely responds to your answers.',
 ]
 
-const WHATS_NOT_YET = [
-  'Community scores are expert estimates across a limited dataset, not verified data',
-  'Monthly cost figures are rough estimates, never a quote',
-  'Some communities carry more data than others, so results skew',
+// The specifics behind the caveat — folded into a collapsed expander so the gate stays
+// scannable. Available, not in the way.
+const CAVEAT_SPECIFICS = [
+  'Community scores are expert estimates across a limited dataset, so results can skew — some communities carry more data than others.',
+  'Monthly cost figures are rough estimates, never a quote.',
+  'These numbers will move, sometimes a lot, as real data replaces what\'s here.',
+  'HavenQuest is in active beta, refined continuously; everything you see is on its way to being sourced, dated, and verifiable.',
 ]
 
 const METRO_TO_ID: Record<MetroCaptureValue, string | null> = {
@@ -124,6 +121,7 @@ export default function BeginPage() {
   const [cardIndex, setCardIndex] = useState(0)
   const [answers, setAnswers] = useState<QuizAnswers>({})
   const [resumeData, setResumeData] = useState<StoredProgress | null>(null)
+  const [specificsOpen, setSpecificsOpen] = useState(false)
 
   // On mount, offer to resume an in-progress quiz.
   useEffect(() => {
@@ -430,97 +428,102 @@ export default function BeginPage() {
           )}
 
           {phase === 'intent' && (
-            <div style={{ width: 'min(980px, calc(100vw - 48px))', position: 'relative', left: '50%', transform: 'translateX(-50%)' }}>
-              {/* Break out of the shared max-w-[1000px] page container to a centered ~980px column;
-                  scrollbar-safe min() keeps a >=24px gutter and never overflows. Content left-aligned.
-                  Intent phase only. */}
+            <div style={{ maxWidth: '680px' }}>
+              {/* Gate screen. Left-aligned in the page container, matching the resume and
+                  nameZip phases. Constrained for readable line length. */}
 
-              {/* Top matter — constrained for readable line length, left-aligned */}
-              <div style={{ maxWidth: '680px' }}>
-                {/* Brand line */}
-                <p style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '-0.01em', marginBottom: '18px' }}>
-                  <span style={{ color: NAVY }}>Haven</span>
-                  <span style={{ color: BLUE }}>Quest</span>
-                  <span style={{ color: '#9AA3B0', fontWeight: 600 }}> Navigator</span>
-                </p>
+              {/* Brand line */}
+              <p style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '-0.01em', marginBottom: '18px' }}>
+                <span style={{ color: NAVY }}>Haven</span>
+                <span style={{ color: BLUE }}>Quest</span>
+                <span style={{ color: '#9AA3B0', fontWeight: 600 }}> Navigator</span>
+              </p>
 
-                {/* Eyebrow — DEMO MODE, gold-deep (#8A7454) */}
-                <p style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--color-hq-gold-deep)', fontWeight: 700, marginBottom: '14px' }}>
-                  Demo Mode
-                </p>
+              {/* Eyebrow — DEMO MODE, gold-deep (#8A7454) */}
+              <p style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--color-hq-gold-deep)', fontWeight: 700, marginBottom: '14px' }}>
+                Demo Mode
+              </p>
 
-                {/* Headline */}
-                <h1 style={{ fontSize: '24px', fontWeight: 700, color: NAVY, letterSpacing: '-0.01em', lineHeight: 1.2, marginBottom: '12px' }}>
-                  You&apos;re looking at a working model.
-                </h1>
+              {/* Headline */}
+              <h1 style={{ fontSize: '24px', fontWeight: 700, color: NAVY, letterSpacing: '-0.01em', lineHeight: 1.2, marginBottom: '12px' }}>
+                You&apos;re looking at a working model.
+              </h1>
 
-                {/* Lede */}
-                <p style={{ fontSize: '15px', color: '#6B7280', lineHeight: 1.7, marginBottom: '24px' }}>
-                  Everything here runs — the questions, the matching, the numbers.{' '}
-                  <span style={{ fontWeight: 600, color: NAVY }}>What sits behind them isn&apos;t finished.</span>{' '}
-                  We&apos;re showing you the experience while the data underneath it is still being built.
-                </p>
-              </div>
+              {/* Subhead — the honest frame, one line */}
+              <p style={{ fontSize: '15px', color: '#6B7280', lineHeight: 1.7, marginBottom: '24px' }}>
+                Everything here runs — the questions, the matching, the numbers.{' '}
+                <span style={{ fontWeight: 600, color: NAVY }}>What sits behind them is still being built.</span>
+              </p>
 
-              {/* Pair — the two honesty cards argue against each other; equal-height columns */}
-              <div className="grid grid-cols-1 min-[900px]:grid-cols-2 gap-[18px] items-stretch">
-                {/* What's real */}
-                <div style={{ border: '0.5px solid var(--color-border-tertiary)', borderRadius: '12px', padding: '18px 20px', background: '#ffffff' }}>
-                  <p style={{ fontSize: '10px', letterSpacing: '1.5px', textTransform: 'uppercase', color: NAVY, fontWeight: 700, marginBottom: '12px' }}>
-                    What&apos;s real
-                  </p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '9px' }}>
-                    {WHATS_REAL.map((item) => (
-                      <div key={item} style={{ display: 'flex', flexDirection: 'row', gap: '9px', alignItems: 'flex-start' }}>
-                        <Check size={13} color={BLUE} strokeWidth={2.5} style={{ flexShrink: 0, marginTop: '3px' }} />
-                        <span style={{ fontSize: '13px', color: NAVY, lineHeight: 1.45 }}>{item}</span>
-                      </div>
-                    ))}
-                  </div>
+              {/* The disclosure — one contained card. What's real, a hairline, then the
+                  single caveat that qualifies all of it, with the specifics folded away. */}
+              <div style={{ border: '0.5px solid var(--color-border-tertiary)', borderRadius: '12px', padding: '18px 20px', background: '#ffffff' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '9px' }}>
+                  {WHATS_REAL.map((item) => (
+                    <div key={item} style={{ display: 'flex', flexDirection: 'row', gap: '9px', alignItems: 'flex-start' }}>
+                      <Check size={13} color={BLUE} strokeWidth={2.5} style={{ flexShrink: 0, marginTop: '3px' }} />
+                      <span style={{ fontSize: '13px', color: NAVY, lineHeight: 1.45 }}>{item}</span>
+                    </div>
+                  ))}
                 </div>
-                {/* What isn't yet */}
-                <div style={{ border: '0.5px solid var(--color-border-tertiary)', borderRadius: '12px', padding: '18px 20px', background: '#ffffff' }}>
-                  <p style={{ fontSize: '10px', letterSpacing: '1.5px', textTransform: 'uppercase', color: NAVY, fontWeight: 700, marginBottom: '12px' }}>
-                    What isn&apos;t yet
-                  </p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '9px' }}>
-                    {WHATS_NOT_YET.map((item) => (
+
+                {/* Hairline — the turn from what works to what doesn't */}
+                <div style={{ height: '0.5px', background: 'var(--color-border-tertiary)', margin: '16px 0' }} />
+
+                <p style={{ fontSize: '10px', letterSpacing: '1.5px', textTransform: 'uppercase', color: NAVY, fontWeight: 700, marginBottom: '12px' }}>
+                  One honest caveat
+                </p>
+
+                {/* Ring marker, deliberately not a check — this reads as a caution, not a
+                    fourth feature. */}
+                <div style={{ display: 'flex', flexDirection: 'row', gap: '9px', alignItems: 'flex-start' }}>
+                  <span aria-hidden="true" style={{ flexShrink: 0, width: '11px', height: '11px', borderRadius: '50%', border: '1.5px solid var(--color-hq-gold-deep)', marginTop: '3px' }} />
+                  <span style={{ fontSize: '13px', color: NAVY, lineHeight: 1.45 }}>
+                    Community scores and monthly costs are estimates, not verified data —{' '}
+                    <span style={{ fontWeight: 600 }}>don&apos;t base a real decision on them.</span>
+                  </span>
+                </div>
+
+                {/* Quiet expander — collapsed by default. No transition, so reduced-motion
+                    needs no special case. */}
+                <button
+                  type="button"
+                  onClick={() => setSpecificsOpen((open) => !open)}
+                  aria-expanded={specificsOpen}
+                  aria-controls="hq-disclosure-specifics"
+                  className="hq-focus"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    marginTop: '14px',
+                    padding: 0,
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    color: '#6B7280',
+                    borderRadius: '4px',
+                  }}
+                >
+                  See the specifics
+                  <span aria-hidden="true" style={{ fontSize: '9px', lineHeight: 1 }}>
+                    {specificsOpen ? '▲' : '▼'}
+                  </span>
+                </button>
+
+                {specificsOpen && (
+                  <div id="hq-disclosure-specifics" style={{ display: 'flex', flexDirection: 'column', gap: '9px', marginTop: '12px' }}>
+                    {CAVEAT_SPECIFICS.map((item) => (
                       <div key={item} style={{ display: 'flex', flexDirection: 'row', gap: '9px', alignItems: 'flex-start' }}>
                         <span aria-hidden="true" style={{ flexShrink: 0, width: '5px', height: '5px', borderRadius: '50%', background: 'var(--color-hq-slate-2)', marginTop: '7px' }} />
                         <span style={{ fontSize: '13px', color: '#5B6B80', lineHeight: 1.45 }}>{item}</span>
                       </div>
                     ))}
                   </div>
-                </div>
+                )}
               </div>
-
-              {/* Cover card — orientation, a different kind of thing: full width below the pair */}
-              <div style={{ border: '0.5px solid var(--color-border-tertiary)', borderRadius: '12px', padding: '18px 20px', background: '#ffffff', marginTop: '18px' }}>
-                <p style={{ fontSize: '13px', color: '#6B7280', lineHeight: 1.7, marginBottom: '16px' }}>
-                  In the next few minutes, we&apos;ll ask you a few questions about your
-                  household, your income, and the lifestyle priorities that matter most to
-                  you. There are no wrong answers — just honest ones.
-                </p>
-                <p style={{ fontSize: '10px', letterSpacing: '1.5px', textTransform: 'uppercase', color: '#6B7280', marginBottom: '14px' }}>
-                  WHAT YOU&apos;LL COVER
-                </p>
-                <div className="grid grid-cols-1 min-[900px]:grid-cols-2 gap-x-[30px] gap-y-[9px]">
-                  {WHAT_YOULL_COVER.map((item) => (
-                    <div key={item} style={{ display: 'flex', flexDirection: 'row', gap: '10px', alignItems: 'center' }}>
-                      <Check size={14} color={BLUE} strokeWidth={2.5} style={{ flexShrink: 0 }} />
-                      <span style={{ fontSize: '13px', color: NAVY }}>{item}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Closing — constrained for readable line length, left-aligned */}
-              <p style={{ fontSize: '14px', color: '#6B7280', lineHeight: 1.7, marginTop: '24px', marginBottom: '26px', maxWidth: '760px' }}>
-                So look at the experience, not the answers.{' '}
-                <span style={{ fontWeight: 600, color: NAVY }}>Please don&apos;t base any real decision on what this tells you</span>{' '}
-                — where to live, what you can afford, or anything else. Those numbers will move,
-                sometimes a lot, as real data replaces what&apos;s here.
-              </p>
 
               {/* CTA — the click is the acknowledgment (no checkbox) */}
               <button
@@ -528,6 +531,7 @@ export default function BeginPage() {
                 onClick={handleIntentStart}
                 className="hq-focus"
                 style={{
+                  marginTop: '26px',
                   background: BLUE,
                   color: '#fff',
                   fontSize: '15px',
@@ -540,12 +544,6 @@ export default function BeginPage() {
               >
                 I understand — let&apos;s find your Texas →
               </button>
-
-              {/* Footer — active-beta note, muted, below the CTA */}
-              <p style={{ fontSize: '12px', color: '#9AA3B0', lineHeight: 1.6, marginTop: '16px', maxWidth: '560px' }}>
-                HavenQuest is in active beta. This model is being refined continuously, and
-                everything you see today is on its way to being sourced, dated, and verifiable.
-              </p>
 
             </div>
           )}
