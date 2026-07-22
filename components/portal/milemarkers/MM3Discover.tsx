@@ -1991,9 +1991,10 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                 : { bg: 'rgba(181,72,47,0.13)', color: '#b5482f' }
               const isPinnedHero = pinnedCities.includes(cityLoc.id)
               const isFocused = cityLoc.id === effectiveSelectedKey
-              const cityBalance = Math.max(0, cityLoc.housing.medianHomePrice - totalFunds)
-              const cityRate = loanTerm === 15 ? Math.max(interestRate - 0.5, 2) : interestRate
-              const cityMonthly = calcMonthly(cityBalance, cityRate, loanTerm)
+              // All-in monthly (P&I + tax + insurance + HOA) via the shared helper — the same
+              // figure the Buying Power panel totals for this house, and the same one afStatus
+              // grades one line above, so the number, its badge and the panel cannot disagree.
+              const cityMonthly = estFullMonthly(cityLoc.housing.medianHomePrice, cityLoc.housing.propertyTaxRate)
               const comparePartner = getComparePartnerId(cityLoc.id)
               return (
                 <div key={id} onClick={() => focusCity(cityLoc.id)}
@@ -2134,9 +2135,8 @@ export default function MM3Discover({ matches, profile, session, onAdvanceToConn
                 const isFocused = city.id === effectiveSelectedKey
                 const status = afStatus(city.housing.medianHomePrice, city.housing.propertyTaxRate)
                 const rank = rankedCities.findIndex(m => m.location.id === city.id) + 1
-                const cityBalance = Math.max(0, city.housing.medianHomePrice - totalFunds)
-                const cityRate = loanTerm === 15 ? Math.max(interestRate - 0.5, 2) : interestRate
-                const cityMonthly = calcMonthly(cityBalance, cityRate, loanTerm)
+                // All-in monthly — same shared helper as the hero cards above.
+                const cityMonthly = estFullMonthly(city.housing.medianHomePrice, city.housing.propertyTaxRate)
                 return (
                   <div key={city.id} onClick={() => focusCity(city.id)}
                     style={{
