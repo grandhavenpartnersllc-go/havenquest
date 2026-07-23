@@ -104,7 +104,6 @@ export const texasCities: Location[] = [
       healthcare: "CONTENT PENDING — Healthcare narrative for Dallas.",
     },
     cityNarrative: "Dallas is a city that means business — and does it with style. Home to more Fortune 500 headquarters than almost any other American city, it offers world-class career opportunities alongside a cultural scene that surprises first-time visitors. The arts district rivals any in the country, the restaurant scene is exceptional, and the neighborhoods range from historic and walkable to sprawling and suburban.",
-    cityImageUrl: '/images/texas-flag.svg',
   },
   {
     id: 'houston-tx',
@@ -202,7 +201,6 @@ export const texasCities: Location[] = [
       healthcare: "CONTENT PENDING — Healthcare narrative for Houston.",
     },
     cityNarrative: "Houston is the most diverse city in America, and it wears that distinction proudly. From the Texas Medical Center — the largest in the world — to the NASA Johnson Space Center, to a culinary scene that reflects over 145 languages spoken by its residents, Houston offers depth that most cities simply can't match. It's a city that doesn't just accept people from everywhere — it's built by them.",
-    cityImageUrl: '/images/texas-flag.svg',
   },
   {
     id: 'san-antonio-tx',
@@ -300,7 +298,6 @@ export const texasCities: Location[] = [
       healthcare: "CONTENT PENDING — Healthcare narrative for San Antonio.",
     },
     cityNarrative: "San Antonio is Texas with its roots showing. A thriving military community, a booming medical sector, and a cost of living that makes homeownership genuinely achievable combine to make it one of the most livable large cities in the state. The River Walk at sunset is reason enough to visit. The affordability is reason enough to stay.",
-    cityImageUrl: '/images/texas-flag.svg',
   },
   {
     id: 'fort-worth-tx',
@@ -398,7 +395,6 @@ export const texasCities: Location[] = [
       healthcare: "CONTENT PENDING — Healthcare narrative for Fort Worth.",
     },
     cityNarrative: "Fort Worth is the surprise of the Texas metroplex — a city with genuine cowboy heritage, a world-class cultural district, and a cost of living that makes Dallas look expensive. The Bass Performance Hall, the Kimbell Art Museum, and the Stockyards National Historic District coexist in a city that also has one of the most ambitious urban park systems in the state.",
-    cityImageUrl: '/images/texas-flag.svg',
   },
   {
     id: 'frisco-tx',
@@ -496,7 +492,6 @@ export const texasCities: Location[] = [
       healthcare: "CONTENT PENDING — Healthcare narrative for Frisco.",
     },
     cityNarrative: "Frisco has grown faster than almost any city in America over the past two decades — and the infrastructure has kept pace. Ranked among the safest large cities in Texas, home to the Dallas Cowboys world headquarters, and served by a Frisco ISD that consistently earns state recognition, it's become the aspirational address for families relocating to the DFW metroplex.",
-    cityImageUrl: '/images/texas-flag.svg',
   },
   {
     id: 'plano-tx',
@@ -594,7 +589,6 @@ export const texasCities: Location[] = [
       healthcare: "CONTENT PENDING — Healthcare narrative for Plano.",
     },
     cityNarrative: "Plano is quietly one of the best-run cities in Texas. With a AAA bond rating, low crime, exceptional schools, and a corporate corridor that includes Toyota, JPMorgan Chase, and Liberty Mutual, it attracts professionals who want stability and opportunity in the same zip code. The dining scene has exploded in recent years, and Legacy West has become one of the premier mixed-use destinations in North Texas.",
-    cityImageUrl: '/images/texas-flag.svg',
   },
   {
     id: 'round-rock-tx',
@@ -692,7 +686,6 @@ export const texasCities: Location[] = [
       healthcare: "CONTENT PENDING — Healthcare narrative for Round Rock.",
     },
     cityNarrative: "Round Rock sits at the sweet spot between Austin's energy and suburban calm. Home to Dell's global headquarters and a thriving tech corridor, it offers genuine career opportunity without Austin's price tag. The school district is strong, the neighborhoods are well-maintained, and the Old Settlers Park system gives families room to breathe. It's the kind of city where people plan to stay two years and end up raising their children.",
-    cityImageUrl: '/images/texas-flag.svg',
   },
   {
     id: 'cedar-park-tx',
@@ -790,7 +783,6 @@ export const texasCities: Location[] = [
       healthcare: "CONTENT PENDING — Healthcare narrative for Cedar Park.",
     },
     cityNarrative: "Cedar Park has become one of the most sought-after addresses in the Austin metro — and for good reason. Leander ISD serves the community with consistently high ratings, the area is safe, and the proximity to the 183A toll road makes commuting to Austin genuinely manageable. New development has brought restaurants, retail, and entertainment that make Cedar Park feel complete rather than just convenient.",
-    cityImageUrl: '/images/texas-flag.svg',
   },
   {
     id: 'the-woodlands-tx',
@@ -888,7 +880,6 @@ export const texasCities: Location[] = [
       healthcare: "CONTENT PENDING — Healthcare narrative for The Woodlands.",
     },
     cityNarrative: "The Woodlands didn't become one of the most consistently ranked master-planned communities in America by accident. Built around 28,000 acres of forest preserve, it offers the rare combination of top-tier schools, corporate headquarters, walkable town center living, and access to nature — all within 30 miles of downtown Houston. Families who move here tend to stay.",
-    cityImageUrl: '/images/texas-flag.svg',
   },
   {
     id: 'sugar-land-tx',
@@ -986,7 +977,6 @@ export const texasCities: Location[] = [
       healthcare: "CONTENT PENDING — Healthcare narrative for Sugar Land.",
     },
     cityNarrative: "Sugar Land is Fort Bend County's crown jewel — a master-planned community that has matured into a fully self-sufficient city. The diversity is exceptional, the schools are consistently high-performing, and the Imperial District has brought a walkable, upscale town center to what was once purely suburban. For families relocating from coastal cities, Sugar Land often feels the most familiar — and the most welcoming.",
-    cityImageUrl: '/images/texas-flag.svg',
   },
   {
     id: 'mckinney-tx',
@@ -1084,7 +1074,6 @@ export const texasCities: Location[] = [
       healthcare: "CONTENT PENDING — Healthcare narrative for McKinney.",
     },
     cityNarrative: "McKinney has been named the best place to live in America — and it shows. The historic downtown is walkable, locally owned, and genuinely charming in a way that planned communities rarely achieve. The school district is strong, the streets are clean, and the growth has been managed carefully enough that the character hasn't been sacrificed.",
-    cityImageUrl: '/images/texas-flag.svg',
   },
   {
     id: 'georgetown-tx',
@@ -1182,7 +1171,6 @@ export const texasCities: Location[] = [
       healthcare: "CONTENT PENDING — Healthcare narrative for Georgetown.",
     },
     cityNarrative: "Georgetown is one of the fastest-growing cities in America, and its appeal is immediately obvious. The historic downtown square is among the most charming in Texas, and the Williamson County school system and affordability relative to closer-in Austin suburbs make it increasingly compelling for families seeking space without sacrificing quality.",
-    cityImageUrl: '/images/texas-flag.svg',
   },
   {
     id: 'kyle-tx',
@@ -1280,7 +1268,6 @@ export const texasCities: Location[] = [
       healthcare: "CONTENT PENDING — Healthcare narrative for Kyle.",
     },
     cityNarrative: "Kyle is where the Austin metro's affordability story actually holds up. Situated along I-35 between Austin and San Antonio, it offers genuinely attainable homeownership for families who want proximity to Austin's job market without Austin's prices. Getting in now means getting in before prices follow the demand.",
-    cityImageUrl: '/images/texas-flag.svg',
   },
   {
     id: 'new-braunfels-tx',
@@ -1378,7 +1365,6 @@ export const texasCities: Location[] = [
       healthcare: "CONTENT PENDING — Healthcare narrative for New Braunfels.",
     },
     cityNarrative: "New Braunfels sits perfectly between Austin and San Antonio — and it has quietly become one of the most desirable small cities in Texas. The Comal River and Guadalupe River draw visitors from across the state, but it's the Comal ISD, the German heritage downtown, and the extraordinary growth in quality housing that draw families to stay.",
-    cityImageUrl: '/images/texas-flag.svg',
   },
   {
     id: 'san-marcos-tx',
@@ -1476,7 +1462,6 @@ export const texasCities: Location[] = [
       healthcare: "CONTENT PENDING — Healthcare narrative for San Marcos.",
     },
     cityNarrative: "San Marcos is where the San Marcos River runs crystal clear through the center of town — and that river defines the city's character. Home to Texas State University, it has a youthful energy and a progressive outdoor culture. The affordability is real, the location between Austin and San Antonio is genuinely strategic, and the quality of life for outdoor enthusiasts is exceptional.",
-    cityImageUrl: '/images/texas-flag.svg',
   },
   {
     id: 'leander-tx',
@@ -1574,7 +1559,6 @@ export const texasCities: Location[] = [
       healthcare: "CONTENT PENDING — Healthcare narrative for Leander.",
     },
     cityNarrative: "Leander is one of the Austin metro's most exciting growth stories. The arrival of the MetroRail line connecting it directly to downtown Austin transformed it from a distant suburb into a genuine commuter community. Land is still available, prices are still reasonable relative to closer-in Austin, and the trajectory is clearly upward.",
-    cityImageUrl: '/images/texas-flag.svg',
   },
   {
     id: 'pflugerville-tx',
@@ -1672,7 +1656,6 @@ export const texasCities: Location[] = [
       healthcare: "CONTENT PENDING — Healthcare narrative for Pflugerville.",
     },
     cityNarrative: "Pflugerville offers Austin metro access at a price point that still makes financial sense for young families. The Lake Pflugerville park system anchors a growing outdoor recreation culture, the schools are solid, and the proximity to major employers along the 130 toll road makes the commute legitimate. It's a community in transition — still affordable, but gaining the amenities that follow population growth.",
-    cityImageUrl: '/images/texas-flag.svg',
   },
   {
     id: 'waco-tx',
@@ -1770,7 +1753,6 @@ export const texasCities: Location[] = [
       healthcare: "CONTENT PENDING — Healthcare narrative for Waco.",
     },
     cityNarrative: "Waco has had a remarkable decade. The Magnolia brand has brought national attention, but the city's transformation goes deeper. Baylor University anchors a growing innovation economy, downtown has seen genuine reinvestment, and the cost of living remains among the most affordable of any mid-sized Texas city. For remote workers and lifestyle-first buyers, Waco offers something rare — a city on the rise with prices that haven't caught up yet.",
-    cityImageUrl: '/images/texas-flag.svg',
   },
   {
     id: 'corpus-christi-tx',
@@ -1868,7 +1850,6 @@ export const texasCities: Location[] = [
       healthcare: "CONTENT PENDING — Healthcare narrative for Corpus Christi.",
     },
     cityNarrative: "Corpus Christi is Texas's coastal city — and it makes the most of it. The Gulf of America is a daily presence, from the morning pelicans to the evening sunsets over the bay. For buyers seeking waterfront lifestyle at a fraction of what coastal living costs in other states, Corpus Christi is worth serious consideration.",
-    cityImageUrl: '/images/texas-flag.svg',
   },
   {
     id: 'allen-tx',
