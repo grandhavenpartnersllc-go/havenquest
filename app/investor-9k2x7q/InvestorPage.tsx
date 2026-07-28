@@ -416,11 +416,11 @@ export default function InvestorPage() {
                 <div className={styles.close}>We help carry the load.</div>
               </div>
               <div className={styles.card}>
-                <div className={styles.imgph}><Image src="/images/home/breathe.jpg" alt="Breathe — settled in Texas" fill className="object-cover" /></div>
-                <div className={styles.kick}>04 — Breathe</div>
+                <div className={styles.imgph}><Image src="/images/home/breathe.jpg" alt="Belong — settled in Texas" fill className="object-cover" /></div>
+                <div className={styles.kick}>04 — Belong</div>
                 <h3>Home, Texan.</h3>
-                <p>Settled, rooted, and finally able to exhale — not just a closed transaction, but a life that fits.</p>
-                <div className={styles.close}>You&apos;re finally home.</div>
+                <p>Settled, rooted, and part of the place — not just a closed transaction, but a life that fits.</p>
+                <div className={styles.close}>You&apos;re home.</div>
               </div>
             </div>
             <div className={styles.atlasBand} style={{ background: 'transparent', borderColor: 'rgba(197,183,131,.3)' }}>

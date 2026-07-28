@@ -20,10 +20,10 @@ const STEPS = [
     accent: 'We help carry the load.',
   },
   {
-    num: '04', key: 'breathe', name: 'BREATHE',
+    num: '04', key: 'breathe', name: 'BELONG',
     title: 'Home, Texan.',
-    body: 'Settled, rooted, and finally able to exhale — not just a closed transaction, but a life that fits.',
-    accent: "You're finally home.",
+    body: 'Settled, rooted, and part of the place — not just a closed transaction, but a life that fits.',
+    accent: "You're home.",
   },
 ]
 
