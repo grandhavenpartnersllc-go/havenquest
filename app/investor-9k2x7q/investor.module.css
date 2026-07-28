@@ -10,6 +10,9 @@
   --navy:#0A1E3D; --navy-2:#0d2246; --navy-3:#0f2648; --navy-card:#14284a;
   --gold:#C5B783; --gold-2:#d8ca9a; --gold-label:#a48f4e; --blue:#0076B6;
   --stone:#f4f2ee; --white:#ffffff; --ink:#0A1E3D; --ink-soft:#46536e;
+  /* Fixed-nav height, single source of truth for the frame regime below (IO-FRAME-1).
+     NOTE: .topnav, .shell and .rail still hardcode 74px independently — see follow-up. */
+  --nav-h:74px;
   font-family:var(--font-poppins),system-ui,sans-serif;
   color:#eaf0fb;
   background:var(--navy);
@@ -61,7 +64,73 @@
 @media(max-width:980px){.shell{grid-template-columns:1fr;}.rail{display:none;}}
 
 .main{min-width:0;}
-.page section{padding:88px 54px;}
+
+/* ---- FRAME REGIME (IO-FRAME-1) ----
+   Each section occupies at least one full viewport minus the fixed nav, with its content
+   optically centred, so an anchor jump lands on a whole frame instead of between two.
+
+   min-height, never height, and never overflow:hidden: s8 (Team), s6 (Market Opportunity)
+   and s4 (Technology) currently exceed one frame. They must be allowed to grow past it —
+   overflow on those three is accepted; clipping their content is not.
+
+   There is deliberately NO scroll-snap container here. Snapping needs scroll-snap-type on
+   the scroll container, which is the viewport (root) — .page is in normal flow, not a
+   scroller. Reaching the root from a CSS module requires :global(html), and that was
+   measured to leak: Next keeps this route's CSS chunk attached after a client-side
+   navigation, so the rule went on applying to the marketing site. Installing the container
+   from InvestorPage.tsx, where it can be torn down on unmount, is a separate follow-up.
+   Frames land correctly without it — that is min-height plus scroll-margin-top, not snap. */
+
+.page section{
+  padding:56px 54px;
+  /* The nav is fixed and overlays the top of the scrollport, so without this every rail
+     click and topnav link lands the section top underneath it. Deliberately NOT paired
+     with scroll-padding-top on the root: the two compound rather than override
+     (scrollTop = elementTop - scroll-margin-top - scroll-padding-top), which would open a
+     148px gap. scroll-margin-top is also the narrower instrument — it stays scoped to this
+     module's hashed section classes and writes nothing to the root. This property, not
+     snap, is what makes anchor jumps land correctly. */
+  scroll-margin-top:var(--nav-h);
+  /* INERT TODAY. These do nothing without scroll-snap-type on the scroll container, and
+     there is none — see the note above. They are kept because they are scoped to this
+     module's hashed classes and leak nothing, so the follow-up that installs the container
+     from InvestorPage.tsx only has to add that one line. Do not read these as working
+     snap behaviour: nothing on this page snaps right now. */
+  scroll-snap-align:start;
+  scroll-snap-stop:always;
+}
+.page section:not(.hero){
+  min-height:calc(100dvh - var(--nav-h));
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+/* ---- FRAME REGIME OFF BELOW 980px (IO-FRAME-1 / CP4) ----
+   At narrow widths every section runs two to three times a phone viewport (s8 1941px,
+   s3 1845px measured in Phase 0). Framing there would mean cutting roughly half the
+   content from every slide, so the page reverts to natural scrolling instead.
+
+   Reuses the existing 980px breakpoint — the same one where .shell collapses to one
+   column and .rail hides — rather than introducing a seventh breakpoint to the file.
+
+   scroll-margin-top is deliberately NOT reset: the nav is still fixed at these widths,
+   so anchor landings are still wrong without it.
+
+   Padding returns to 88px here because the 56px value was chosen to pair with vertical
+   centring; with centring off, 88px is the tuned content-driven value from before this
+   brief, so sub-980 spacing matches what shipped previously. This block must precede the
+   640px rule below — equal specificity, so source order decides which padding wins. */
+@media(max-width:980px){
+  .page section{
+    padding:88px 54px;
+    scroll-snap-align:none;
+    scroll-snap-stop:normal;
+  }
+  .page section:not(.hero){
+    min-height:0;
+    display:block;
+  }
+}
 @media(max-width:640px){.page section{padding:64px 24px;}}
 .eyebrow{display:flex;align-items:center;gap:12px;font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;font-weight:600;margin-bottom:18px;}
 .eyebrow .num{color:var(--gold-label);}
@@ -280,7 +349,10 @@
 .moRungTag{ font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--gold-label); font-weight:600; margin-top:6px; }
 
 /* 07 — three-layer platform */
-.page section.v7section{ padding-top:clamp(96px, 10vh, 128px); padding-bottom:clamp(96px, 10vh, 128px); }
+/* .page section.v7section padding override removed (IO-FRAME-1): s7 now takes the shared
+   frame padding like every other section. Its clamp() used vh while the frame regime uses
+   dvh, so keeping it would have made s7 the one section responding differently to mobile
+   browser chrome — and per-section padding tuning is what produced uneven heights. */
 .v7tag{ font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; font-weight:600; color:var(--navy); background:var(--gold); padding:3px 9px; border-radius:4px; margin-left:10px; }
 .v7engine{ display:flex; align-items:center; gap:14px; margin-top:38px; margin-bottom:32px; }
 .v7mark{ font-size:21px; font-weight:800; letter-spacing:.02em; color:var(--gold); }
