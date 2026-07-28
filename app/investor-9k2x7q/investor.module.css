@@ -65,9 +65,10 @@
 
 .main{min-width:0;}
 
-/* ---- FRAME REGIME (IO-FRAME-1) ----
-   Each section occupies at least one full viewport minus the fixed nav, with its content
-   optically centred, so an anchor jump lands on a whole frame instead of between two.
+/* ---- FRAME REGIME (IO-FRAME-1, amended by IO-FRAME-2) ----
+   Each section occupies at least one full viewport minus the fixed nav, so an anchor jump
+   lands on a whole frame instead of between two. Content is anchored to the top of the
+   frame, not centred — see the justify-content note below.
 
    min-height, never height, and never overflow:hidden: s8 (Team), s6 (Market Opportunity)
    and s4 (Technology) currently exceed one frame. They must be allowed to grow past it —
@@ -103,7 +104,13 @@
   min-height:calc(100dvh - var(--nav-h));
   display:flex;
   flex-direction:column;
-  justify-content:center;
+  /* flex-start, not center (IO-FRAME-2). Centring made the eyebrow start at a different
+     vertical position on every slide, because every section's content is a different
+     height — tall sections sat high in the frame, short ones noticeably low, so the page
+     read inconsistent as you advanced. Anchoring to the top gives every eyebrow, headline
+     and lead the same offset, and collects the residual space at the bottom of short
+     sections where it does not draw the eye. */
+  justify-content:flex-start;
 }
 /* ---- FRAME REGIME OFF BELOW 980px (IO-FRAME-1 / CP4) ----
    At narrow widths every section runs two to three times a phone viewport (s8 1941px,
@@ -116,9 +123,9 @@
    scroll-margin-top is deliberately NOT reset: the nav is still fixed at these widths,
    so anchor landings are still wrong without it.
 
-   Padding returns to 88px here because the 56px value was chosen to pair with vertical
-   centring; with centring off, 88px is the tuned content-driven value from before this
-   brief, so sub-980 spacing matches what shipped previously. This block must precede the
+   Padding returns to 88px here because the 56px value was chosen to pair with the frame
+   regime; with the frame off, 88px is the tuned content-driven value from before these
+   briefs, so sub-980 spacing matches what shipped previously. This block must precede the
    640px rule below — equal specificity, so source order decides which padding wins. */
 @media(max-width:980px){
   .page section{
