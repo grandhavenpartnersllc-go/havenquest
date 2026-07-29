@@ -295,24 +295,37 @@
 .tl .step b{display:block;color:#fff;font-size:15px;} .tl .step span{font-size:12px;color:#93a3c2;}
 
 /* team */
-/* Two cards, not four (IO-TEAM-1): the two recruiting placeholders are gone.
-   Capped at 560px (IO-TEAM-2), which with the 14px gap puts each card at 273px — close to
-   the ~210px of the original four-up. At the previous 760px cap each card was ~373px while
-   .member .ph stayed 184px tall, so the portrait band went from near-square to roughly 2:1
-   and object-fit:cover cropped the faces oversized. The fix is card width; the band height
-   is deliberately unchanged.
-   The 820px rule below is a no-op (1fr 1fr == the base) and is left in place so sub-820
-   behaviour is provably unchanged. */
-.team{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:34px;max-width:560px;}
+/* Four across at inherited full width (IO-S8-FOUR-1). State Director and Market Director
+   return to the row as full cards — Craig reads them as core roles that will be filled, not a
+   secondary hiring note — so the "Hiring next" band is deleted entirely.
+   There is deliberately NO max-width here. The row fills the section content box exactly the
+   way .advisory does (1280px shell - 232px rail - 54px section padding a side = 940px today),
+   which is what lands the card row and the navy advisory band on the same edges. Do not
+   reintroduce a literal: a hardcoded 940 agrees with .advisory today and silently disagrees
+   the day the rail width or the section padding moves.
+   At that width each of the four cards is 224.5px, and .member .ph goes to 285px so the
+   headshot crops portrait (0.79:1) instead of the 1.48:1 landscape that cropped faces badly.
+   The 820px rule below is no longer a no-op — it is the real two-column drop. There is still
+   no single-column fallback at any width; that is a separately tracked finding. */
+.team{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:34px;}
 @media(max-width:820px){.team{grid-template-columns:1fr 1fr;}}
 /* Card and body are flex columns so the body fills the stretched card height and the
-   LinkedIn row can be pushed to the floor with margin-top:auto (IO-S8-ALIGN-1). Craig's
-   description wraps to two lines and sets the shared row height; Jim's wraps to one, so
-   his link previously sat ~19px higher. */
+   LinkedIn row can be pushed to the floor with margin-top:auto (IO-S8-ALIGN-1). Without it
+   the two links sat ~19px apart, following their descriptions' wrap.
+   At the four-across width (IO-S8-FOUR-1) it is the State Director card, at five description
+   lines, that sets the shared row height — not Craig's, which set it when the row was two
+   cards at 273px. The mechanism is what matters here, not which card happens to be tallest. */
 .member{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 12px 30px -24px rgba(10,30,61,.4);padding-bottom:20px;display:flex;flex-direction:column;}
-.member .ph{height:184px;background:linear-gradient(135deg,#e9e6df,#dcd8cd);display:flex;align-items:center;justify-content:center;color:#9a958a;font-size:11px;position:relative;overflow:hidden;}
+.member .ph{height:285px;background:linear-gradient(135deg,#e9e6df,#dcd8cd);display:flex;align-items:center;justify-content:center;color:#9a958a;font-size:11px;position:relative;overflow:hidden;}
 /* Faces sit a touch high in the source crops — bias the cover position toward the top. */
 .member .ph img{object-position:50% 20%;}
+/* Open-role photo box (IO-S8-FOUR-1). Same 285px band as the filled cards, navy gradient in
+   the .advisory family, thin gold ring around a low-opacity glyph — it should read as a seat
+   waiting, the same language as the open advisory seats, not as a failed image. Scoped under
+   .member so it beats the beige .member .ph gradient at equal (0,2,0) specificity on order. */
+.member .phOpen{background:linear-gradient(160deg,var(--navy-3),var(--navy));}
+.member .phRing{width:66px;height:66px;border-radius:50%;border:1.5px solid rgba(197,183,131,.5);display:flex;align-items:center;justify-content:center;}
+.member .phRing svg{width:30px;height:30px;fill:rgba(231,237,249,.30);}
 .member .b{padding:14px 16px 0;display:flex;flex-direction:column;flex:1 1 auto;} .member h3{font-size:15px;color:var(--ink);}
 /* The 11px description-to-link gap moves off .liLink's margin-top and onto the paragraph,
    so the card's intrinsic height is identical to before. margin-top:auto then absorbs only
@@ -320,8 +333,16 @@
    .member on purpose — a global .liLink{margin-top:auto} would also hit advisory seat one,
    which relies on .page .advisory a.liLink{margin-top:7px} below. */
 .member .b p{margin-bottom:11px;}
+/* On open-role cards the description IS the last child — without this the 11px above would
+   sit on top of the card's own 20px padding-bottom and give them a 31px floor against the
+   filled cards' 20px. Equal specificity to the rule above, so source order decides. */
+.member .b p:last-child{margin-bottom:0;}
 .member .b .liLink{margin-top:auto;}
 .member .role{color:var(--blue);font-size:12.5px;font-weight:500;margin:2px 0 8px;} .member p{font-size:12px;color:var(--ink-soft);}
+/* Open roles take the gold label colour, not the blue the filled cards use. MUST sit after
+   .member .role — both are (0,2,0), so source order is the only thing deciding this, and
+   placed above it the blue silently wins and every role line renders blue. */
+.member .roleOpen{color:var(--gold-label);}
 /* LinkedIn link on the team cards and advisory seat one (IO-TEAM-1). */
 .liLink{display:inline-flex;align-items:center;gap:7px;margin-top:11px;font-size:11.5px;font-weight:500;letter-spacing:.01em;}
 .liLink svg{width:14px;height:14px;flex:none;fill:#0A66C2;}
@@ -329,23 +350,6 @@
    the same trap already documented above for .btnGold and .returnBtn. */
 .page a.liLink{color:var(--ink-soft);}
 .page a.liLink:hover{color:var(--ink);}
-/* "Hiring next" band (IO-TEAM-1). Replaces the two recruiting placeholder cards: same
-   information, stated as a forward-looking plan rather than two blank portrait frames.
-   Deliberately NOT named .lbl — that hashed class is shared with the rail's "Slides"
-   header, so this uses .hiringLbl to keep the rail out of blast radius. */
-/* 560 matches .team deliberately (IO-S8-ALIGN-1). IO-TEAM-2 dropped .team to 560 and parked
-   this band at 760 pending a decision on whether it follows the cards down or aligns with the
-   full-width blocks below; that decision is now made — it follows the cards, and Craig
-   approved the narrower band from a rendered mockup. The two values are intentionally paired:
-   change one and you must change the other, or the band's right edge stops aligning with the
-   second profile card. The State Director copy wraps to four lines at this width, which is
-   accepted — do not shorten it to fit. */
-.hiring{margin-top:22px;max-width:560px;}
-.hiringLbl{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-label);font-weight:600;margin-bottom:10px;}
-.hiringGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px 22px;}
-@media(max-width:820px){.hiringGrid{grid-template-columns:1fr;}}
-.hiringItem b{display:block;font-size:12.5px;color:var(--ink);font-weight:600;}
-.hiringItem span{display:block;font-size:11.5px;color:var(--ink-soft);line-height:1.5;margin-top:3px;}
 
 /* Advisory Board (IO-TEAM-1). The label moved OUT of the navy bar into a header block
    above it, so the bar is now purely the five seats. The old `.advisory .lbl` and

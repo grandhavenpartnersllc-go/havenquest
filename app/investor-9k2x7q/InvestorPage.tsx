@@ -44,6 +44,19 @@ const MILESTONES = [
 const ORDER = MILESTONES.map((m) => m.id)
 
 /**
+ * Open-role seat glyph, used by the two unfilled cards in section 08. Deliberately the same
+ * visual family as the open advisory seats below — a seat waiting, not a missing image.
+ * aria-hidden because the card's own <h3> already names the role.
+ */
+function OpenSeatMark() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M12 12a4.2 4.2 0 1 0 0-8.4 4.2 4.2 0 0 0 0 8.4zm0 1.9c-3.6 0-7.2 1.85-7.2 4.15V21h14.4v-2.95c0-2.3-3.6-4.15-7.2-4.15z" />
+    </svg>
+  )
+}
+
+/**
  * LinkedIn glyph, used only by section 08 (team cards + advisory seat one). Inline SVG so
  * there is no new asset file and no icon-library dependency; a local component rather than
  * three copies of the path string. aria-hidden because the accessible name lives on the
@@ -735,17 +748,24 @@ export default function InvestorPage() {
                   </a>
                 </div>
               </div>
-            </div>
-            <div className={styles.hiring}>
-              <div className={styles.hiringLbl}>Hiring next</div>
-              <div className={styles.hiringGrid}>
-                <div className={styles.hiringItem}>
-                  <b>State Director · Broker</b>
-                  <span>Holds the Texas broker&apos;s license, oversees compliance, and leads Market Director recruitment and training statewide.</span>
+              <div className={styles.member}>
+                <div className={`${styles.ph} ${styles.phOpen}`}>
+                  <div className={styles.phRing}><OpenSeatMark /></div>
                 </div>
-                <div className={styles.hiringItem}>
-                  <b>Market Director — Austin</b>
-                  <span>The trained local guide at the heart of the model — first market, Austin.</span>
+                <div className={styles.b}>
+                  <h3>State Director</h3>
+                  <div className={`${styles.role} ${styles.roleOpen}`}>Broker · Open role</div>
+                  <p>Holds the Texas broker&apos;s license, oversees compliance, and leads Market Director recruitment and training statewide.</p>
+                </div>
+              </div>
+              <div className={styles.member}>
+                <div className={`${styles.ph} ${styles.phOpen}`}>
+                  <div className={styles.phRing}><OpenSeatMark /></div>
+                </div>
+                <div className={styles.b}>
+                  <h3>Market Director</h3>
+                  <div className={`${styles.role} ${styles.roleOpen}`}>Austin · Open role</div>
+                  <p>The trained local guide at the heart of the model — first market, Austin.</p>
                 </div>
               </div>
             </div>
