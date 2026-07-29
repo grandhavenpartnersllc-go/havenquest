@@ -43,6 +43,20 @@ const MILESTONES = [
 
 const ORDER = MILESTONES.map((m) => m.id)
 
+/**
+ * LinkedIn glyph, used only by section 08 (team cards + advisory seat one). Inline SVG so
+ * there is no new asset file and no icon-library dependency; a local component rather than
+ * three copies of the path string. aria-hidden because the accessible name lives on the
+ * wrapping <a> (aria-label), which names whose profile it is.
+ */
+function LinkedInMark() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.59 0 4.26 2.37 4.26 5.45v6.29zM5.34 7.43a2.07 2.07 0 1 1 0-4.13 2.07 2.07 0 0 1 0 4.13zM7.12 20.45H3.55V9h3.57v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z" />
+    </svg>
+  )
+}
+
 export default function InvestorPage() {
   const [activeId, setActiveId] = useState<string>('s1')
   const [maxReached, setMaxReached] = useState(1)
@@ -691,6 +705,16 @@ export default function InvestorPage() {
                   <h3>Craig Asbach</h3>
                   <div className={styles.role}>Founder &amp; CEO</div>
                   <p>Vision, capital formation, and day-to-day operator.</p>
+                  <a
+                    className={styles.liLink}
+                    href="https://www.linkedin.com/in/craigasbach/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Craig Asbach on LinkedIn"
+                  >
+                    <LinkedInMark />
+                    <span>LinkedIn</span>
+                  </a>
                 </div>
               </div>
               <div className={styles.member}>
@@ -699,45 +723,63 @@ export default function InvestorPage() {
                   <h3>Jim Pica</h3>
                   <div className={styles.role}>Incoming CTO</div>
                   <p>Full technical ownership of the platform.</p>
-                </div>
-              </div>
-              <div className={styles.member}>
-                <div className={styles.ph}>recruiting</div>
-                <div className={styles.b}>
-                  <h3>State Director · Broker</h3>
-                  <div className={styles.role}>Actively recruiting</div>
-                  <p>Holds the Texas broker&apos;s license, oversees compliance, and leads Market Director recruitment and training statewide.</p>
-                </div>
-              </div>
-              <div className={styles.member}>
-                <div className={styles.ph}>recruiting</div>
-                <div className={styles.b}>
-                  <h3>Market Director — Austin</h3>
-                  <div className={styles.role}>Actively recruiting</div>
-                  <p>The trained local guide at the heart of the model — first market, Austin.</p>
+                  <a
+                    className={styles.liLink}
+                    href="https://www.linkedin.com/in/picajames/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Jim Pica on LinkedIn"
+                  >
+                    <LinkedInMark />
+                    <span>LinkedIn</span>
+                  </a>
                 </div>
               </div>
             </div>
-            <div className={styles.advisory}>
-              <div className={styles.lbl}>Advisory Board</div>
-              <div className={styles.who}>
-                <div style={{ textAlign: 'center' }}>
-                  <div className={styles.adot}><Image src="/images/team/dave.jpg" alt="Dave Willard" fill className="object-cover" /></div>
-                  <div style={{ fontSize: '10.5px', color: '#c9d4e8', marginTop: '6px' }}>Dave Willard</div>
+            <div className={styles.hiring}>
+              <div className={styles.hiringLbl}>Hiring next</div>
+              <div className={styles.hiringGrid}>
+                <div className={styles.hiringItem}>
+                  <b>State Director · Broker</b>
+                  <span>Holds the Texas broker&apos;s license, oversees compliance, and leads Market Director recruitment and training statewide.</span>
                 </div>
-                <div style={{ textAlign: 'center' }}>
-                  <div className={`${styles.adot} ${styles.open}`} />
-                  <div style={{ fontSize: '10.5px', color: '#7f90b0', marginTop: '6px' }}>Forming</div>
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                  <div className={`${styles.adot} ${styles.open}`} />
-                  <div style={{ fontSize: '10.5px', color: '#7f90b0', marginTop: '6px' }}>Forming</div>
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                  <div className={`${styles.adot} ${styles.open}`} />
-                  <div style={{ fontSize: '10.5px', color: '#7f90b0', marginTop: '6px' }}>Forming</div>
+                <div className={styles.hiringItem}>
+                  <b>Market Director — Austin</b>
+                  <span>The trained local guide at the heart of the model — first market, Austin.</span>
                 </div>
               </div>
+            </div>
+            <div className={styles.advHead}>
+              <div className={styles.advLbl}>Advisory Board</div>
+              <h3 className={styles.advTitle}>Five seats. One filled.</h3>
+              <p className={styles.advLead}>
+                We are building a board of five — operators with the depth to guide HavenQuest as it scales across
+                Texas, and the standing to open doors we could not open alone. Dave Willard is the first.
+              </p>
+            </div>
+            <div className={styles.advisory}>
+              <div className={styles.seat}>
+                <div className={styles.adot}><Image src="/images/team/dave.jpg" alt="Dave Willard" fill className="object-cover" /></div>
+                <div className={styles.seatName}>Dave Willard</div>
+                <div className={styles.seatRole}>Advisor</div>
+                <a
+                  className={styles.liLink}
+                  href="https://www.linkedin.com/in/davidwillard/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Dave Willard on LinkedIn"
+                >
+                  <LinkedInMark />
+                  <span>LinkedIn</span>
+                </a>
+              </div>
+              {(['Seat two', 'Seat three', 'Seat four', 'Seat five'] as const).map((label) => (
+                <div className={styles.seat} key={label}>
+                  <div className={`${styles.adot} ${styles.open}`} />
+                  <div className={styles.seatLbl}>{label}</div>
+                  <div className={styles.seatOpen}>Open</div>
+                </div>
+              ))}
             </div>
             <div className={styles.founder}>
               <p className={`${styles.eyebrow} ${styles.emGold}`} style={{ marginBottom: '14px' }}>Why Craig</p>
