@@ -427,8 +427,34 @@ export default function InvestorPage() {
             <p className={styles.eyebrow}>
               <span className={`${styles.num} ${styles.emGold}`}>03</span> <span className={styles.emGold}>Why Texas</span>
             </p>
-            <h2>Legendary companies call Texas home.</h2>
-            <p className={styles.lead}>The biggest names in tech and industry are growing in Texas — and bringing their people with them.</p>
+            <h2>Half a million people arrive every year. <em style={{ color: 'var(--gold)', fontStyle: 'italic' }}>They’re following the jobs.</em></h2>
+            <p className={styles.lead}>Texas draws more new residents from other states than anywhere else in the country — and the biggest names in tech and industry are the reason.</p>
+            <div className={styles.s3Panel}>
+              <div>
+                <div className={styles.s3Fig}>556,156<span className={styles.s3Moe}>±23,072</span></div>
+                <div className={styles.s3Lab}>people moved to Texas from another state last year</div>
+                <div className={styles.s3Src}>U.S. Census Bureau · ACS 2024 1-year estimates</div>
+              </div>
+              <div className={styles.s3Rows}>
+                <div className={styles.s3Row}>
+                  <div className={styles.s3RowFig}>556,156</div>
+                  <div className={styles.s3RowTxt}>arrived from out of state</div>
+                </div>
+                <div className={styles.s3Row}>
+                  <div className={styles.s3RowFig}>~483,000</div>
+                  <div className={styles.s3RowTxt}>left for other states</div>
+                </div>
+                <div className={styles.s3Row}>
+                  <div className={`${styles.s3RowFig} ${styles.s3RowGold}`}>~73,000</div>
+                  <div className={styles.s3RowTxt}>net population gain</div>
+                </div>
+              </div>
+            </div>
+            <p className={styles.s3Frame}>Net migration is the number that makes headlines, and it moves with the economy. <b>Gross arrivals are the market.</b> Every one of those 556,156 people has to figure out where in Texas to live — whether or not someone else left.</p>
+            <div className={styles.secHead}>
+              <span className={styles.secHeadLabel}>Legendary companies call Texas home</span>
+              <span className={styles.secHeadRule} aria-hidden="true"></span>
+            </div>
             <div className={`${styles.grid} ${styles.g4}`}>
               <div className={styles.card}><h3>Tesla</h3><p>HQ + Gigafactory · Austin · ~3,400 employees</p></div>
               <div className={styles.card}><h3>Samsung</h3><p>$40B fab · Taylor · ~2,000 direct + 20,000+ regional jobs</p></div>
