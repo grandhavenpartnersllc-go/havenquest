@@ -377,19 +377,29 @@ export default function InvestorPage() {
             <p className={styles.eyebrow}>
               <span className={`${styles.num} ${styles.emGold}`}>01</span> <span className={styles.emGold}>The Problem</span>
             </p>
-            <h2>Nobody owns the decision.</h2>
-            <p className={styles.lead}>
-              Lenders, movers, listing portals, school-rating sites, insurance carriers — somebody, somewhere owns a piece
-              of each of these. But no one connects them, and no one owns the decision itself.
-            </p>
+            <p className={styles.p1Spoken}>“We’re moving to Texas.”</p>
+            <h2>Nobody owns that moment.</h2>
+            <div className={styles.p1Seq}>
+              <div className={styles.p1SeqLabel}>And then</div>
+              <p className={styles.p1SeqLine}>The decision is real. The job starts in six weeks.</p>
+              <p className={styles.p1SeqLine}>The house has to go on the market.</p>
+              <p className={styles.p1SeqLine}>The kids ask which school they’ll go to.</p>
+              <p className={styles.p1SeqLine}>Somebody has to decide where in Texas to live — a state bigger than most countries, and none of it familiar.</p>
+              <p className={styles.p1SeqLast}>And there is no one there.</p>
+            </div>
+            <div className={styles.secHead}>
+              <span className={styles.secHeadLabel}>Everyone else arrives later</span>
+              <span className={styles.secHeadRule} aria-hidden="true"></span>
+            </div>
             <div className={`${styles.grid} ${styles.g4}`}>
               <div className={styles.card}><h3>Listings</h3><p>Show houses. Not whether the place fits your life.</p></div>
               <div className={styles.card}><h3>Realtors</h3><p>Close a transaction. Rarely guide the whole move.</p></div>
               <div className={styles.card}><h3>Best-cities lists</h3><p>Generic rankings — not your family, your budget, your priorities.</p></div>
-              <div className={styles.card} style={{ borderColor: 'var(--gold)', background: 'rgba(197,183,131,.08)' }}>
-                <h3 className={styles.gold}>Relocation coordination</h3>
-                <p style={{ color: '#d8cfb3' }}>No one connecting the pieces — much less the destination.</p>
-              </div>
+              <div className={styles.card}><h3>Lenders, movers, insurers</h3><p>Each owns a piece of what comes after. None own the beginning.</p></div>
+            </div>
+            <div className={styles.p1Own}>
+              <div className={styles.p1OwnBig}>HavenQuest owns that moment.</div>
+              <div className={styles.p1OwnSub}>From those words to the front porch — one relationship, the whole way.</div>
             </div>
           </section>
 

@@ -452,6 +452,28 @@
 .v7chip p{ font-size:11.5px; color:#7e8ca6; font-weight:400; line-height:1.4; }
 .v7todayTag{ font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--gold); font-weight:600; margin-top:6px; }
 
+/* ---- SHARED SECTION LABEL + FILLING RULE (IO-MKT-1/CP2) ----
+   Mirrors the .v7engine / .v7rule declarations under neutral names so slides 01 and 03
+   can use the pattern without borrowing Atlas-scoped class names. .v7engine and .v7rule
+   are deliberately left untouched. .grid carries its own margin-top:40px, which would
+   compound with the 32px below into a 72px gap, so the adjacency rule zeroes it and lets
+   .secHead alone own the spacing to the cards. */
+.secHead{ display:flex; align-items:center; gap:14px; margin-top:38px; margin-bottom:32px; }
+.secHeadLabel{ font-size:13px; letter-spacing:.12em; text-transform:uppercase; color:var(--gold); font-weight:600; }
+.secHeadRule{ flex:1; height:1px; background:linear-gradient(90deg, rgba(197,183,131,.5), rgba(197,183,131,0)); }
+.secHead + .grid{ margin-top:0; }
+
+/* ---- 01 — problem reframe (IO-MKT-1/CP2) ---- */
+.p1Spoken{ font-size:31px; font-style:italic; font-weight:400; color:var(--gold-2); line-height:1.25; margin-bottom:10px; }
+.p1Seq{ border-left:2px solid rgba(197,183,131,.4); padding-left:22px; margin-top:24px; }
+.p1SeqLabel{ font-size:11px; letter-spacing:.13em; text-transform:uppercase; color:var(--gold); font-weight:600; margin-bottom:12px; }
+.p1SeqLine{ font-size:17px; font-weight:300; color:#c8d4e6; line-height:1.5; }
+.p1SeqLine + .p1SeqLine{ margin-top:7px; }
+.p1SeqLast{ font-size:19px; font-weight:600; color:#fff; margin-top:14px; line-height:1.4; }
+.p1Own{ margin-top:34px; border-radius:4px; background:linear-gradient(90deg,rgba(197,183,131,.16),rgba(197,183,131,.05)); border:1px solid rgba(197,183,131,.42); padding:24px 28px; }
+.p1OwnBig{ font-size:24px; font-weight:700; color:var(--gold-2); line-height:1.25; }
+.p1OwnSub{ font-size:15px; font-weight:300; color:#d3ddec; margin-top:8px; line-height:1.5; }
+
 /* return-to-top floater */
 .backToTop{
   position:fixed; right:28px; bottom:28px; z-index:70;
