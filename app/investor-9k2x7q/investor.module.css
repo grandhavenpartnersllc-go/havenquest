@@ -305,11 +305,22 @@
    behaviour is provably unchanged. */
 .team{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:34px;max-width:560px;}
 @media(max-width:820px){.team{grid-template-columns:1fr 1fr;}}
-.member{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 12px 30px -24px rgba(10,30,61,.4);padding-bottom:20px;}
+/* Card and body are flex columns so the body fills the stretched card height and the
+   LinkedIn row can be pushed to the floor with margin-top:auto (IO-S8-ALIGN-1). Craig's
+   description wraps to two lines and sets the shared row height; Jim's wraps to one, so
+   his link previously sat ~19px higher. */
+.member{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 12px 30px -24px rgba(10,30,61,.4);padding-bottom:20px;display:flex;flex-direction:column;}
 .member .ph{height:184px;background:linear-gradient(135deg,#e9e6df,#dcd8cd);display:flex;align-items:center;justify-content:center;color:#9a958a;font-size:11px;position:relative;overflow:hidden;}
 /* Faces sit a touch high in the source crops — bias the cover position toward the top. */
 .member .ph img{object-position:50% 20%;}
-.member .b{padding:14px 16px 0;} .member h3{font-size:15px;color:var(--ink);}
+.member .b{padding:14px 16px 0;display:flex;flex-direction:column;flex:1 1 auto;} .member h3{font-size:15px;color:var(--ink);}
+/* The 11px description-to-link gap moves off .liLink's margin-top and onto the paragraph,
+   so the card's intrinsic height is identical to before. margin-top:auto then absorbs only
+   the surplus: 0 on Craig's card (which sets the height), ~19px on Jim's. Scoped under
+   .member on purpose — a global .liLink{margin-top:auto} would also hit advisory seat one,
+   which relies on .page .advisory a.liLink{margin-top:7px} below. */
+.member .b p{margin-bottom:11px;}
+.member .b .liLink{margin-top:auto;}
 .member .role{color:var(--blue);font-size:12.5px;font-weight:500;margin:2px 0 8px;} .member p{font-size:12px;color:var(--ink-soft);}
 /* LinkedIn link on the team cards and advisory seat one (IO-TEAM-1). */
 .liLink{display:inline-flex;align-items:center;gap:7px;margin-top:11px;font-size:11.5px;font-weight:500;letter-spacing:.01em;}
@@ -322,8 +333,14 @@
    information, stated as a forward-looking plan rather than two blank portrait frames.
    Deliberately NOT named .lbl — that hashed class is shared with the rail's "Slides"
    header, so this uses .hiringLbl to keep the rail out of blast radius. */
-/* 760 is held deliberately (IO-TEAM-2): .team dropped to 560 and this band no longer aligns with it, pending a decision on whether it follows the cards down or aligns with the full-width blocks below. Do not re-align without that decision. */
-.hiring{margin-top:22px;max-width:760px;}
+/* 560 matches .team deliberately (IO-S8-ALIGN-1). IO-TEAM-2 dropped .team to 560 and parked
+   this band at 760 pending a decision on whether it follows the cards down or aligns with the
+   full-width blocks below; that decision is now made — it follows the cards, and Craig
+   approved the narrower band from a rendered mockup. The two values are intentionally paired:
+   change one and you must change the other, or the band's right edge stops aligning with the
+   second profile card. The State Director copy wraps to four lines at this width, which is
+   accepted — do not shorten it to fit. */
+.hiring{margin-top:22px;max-width:560px;}
 .hiringLbl{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-label);font-weight:600;margin-bottom:10px;}
 .hiringGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px 22px;}
 @media(max-width:820px){.hiringGrid{grid-template-columns:1fr;}}
