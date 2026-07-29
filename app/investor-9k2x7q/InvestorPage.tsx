@@ -701,7 +701,7 @@ export default function InvestorPage() {
               </div>
             </div>
             <p style={{ marginTop: '20px', fontSize: '12.5px', color: 'var(--ink-soft)' }}>
-              Live across 4 Texas metros, with 100+ communities mapped and hundreds more staged.
+              Live across 4 Texas metros, with 115 communities mapped.
             </p>
           </section>
 
