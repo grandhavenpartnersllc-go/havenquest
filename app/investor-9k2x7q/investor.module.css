@@ -295,11 +295,15 @@
 .tl .step b{display:block;color:#fff;font-size:15px;} .tl .step span{font-size:12px;color:#93a3c2;}
 
 /* team */
-/* Two cards, not four (IO-TEAM-1): the two recruiting placeholders are gone. Capped at
-   760px so the pair reads as a deliberate two-up rather than two cards stranded in a
-   four-wide track. The 820px rule below is now a no-op (1fr 1fr == the new base) and is
-   left in place so sub-820 behaviour is provably unchanged. */
-.team{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:34px;max-width:760px;}
+/* Two cards, not four (IO-TEAM-1): the two recruiting placeholders are gone.
+   Capped at 560px (IO-TEAM-2), which with the 14px gap puts each card at 273px — close to
+   the ~210px of the original four-up. At the previous 760px cap each card was ~373px while
+   .member .ph stayed 184px tall, so the portrait band went from near-square to roughly 2:1
+   and object-fit:cover cropped the faces oversized. The fix is card width; the band height
+   is deliberately unchanged.
+   The 820px rule below is a no-op (1fr 1fr == the base) and is left in place so sub-820
+   behaviour is provably unchanged. */
+.team{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:34px;max-width:560px;}
 @media(max-width:820px){.team{grid-template-columns:1fr 1fr;}}
 .member{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 12px 30px -24px rgba(10,30,61,.4);padding-bottom:20px;}
 .member .ph{height:184px;background:linear-gradient(135deg,#e9e6df,#dcd8cd);display:flex;align-items:center;justify-content:center;color:#9a958a;font-size:11px;position:relative;overflow:hidden;}
@@ -318,6 +322,7 @@
    information, stated as a forward-looking plan rather than two blank portrait frames.
    Deliberately NOT named .lbl — that hashed class is shared with the rail's "Slides"
    header, so this uses .hiringLbl to keep the rail out of blast radius. */
+/* 760 is held deliberately (IO-TEAM-2): .team dropped to 560 and this band no longer aligns with it, pending a decision on whether it follows the cards down or aligns with the full-width blocks below. Do not re-align without that decision. */
 .hiring{margin-top:22px;max-width:760px;}
 .hiringLbl{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-label);font-weight:600;margin-bottom:10px;}
 .hiringGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px 22px;}
