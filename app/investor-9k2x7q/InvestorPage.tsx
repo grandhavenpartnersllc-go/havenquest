@@ -31,13 +31,14 @@ const CALENDLY_URL = 'https://calendly.com/craig-asbach-havenquest/30min'
 const MILESTONES = [
   { id: 's1', label: 'The Problem' },
   { id: 's2', label: 'Why Now' },
+  { id: 's9', label: 'Why Texas' },
+  { id: 's6', label: 'Market Opportunity' },
   { id: 's3', label: 'Our Solution' },
   { id: 's4', label: 'The Technology' },
+  { id: 's-trac', label: 'Traction' },
   { id: 's5', label: 'Business Model' },
-  { id: 's6', label: 'Market Opportunity' },
   { id: 's7', label: 'Our Vision (Atlas)' },
   { id: 's8', label: 'The Team' },
-  { id: 's9', label: 'Why Texas' },
   { id: 's10', label: 'Investment Opportunity' },
 ] as const
 
@@ -154,7 +155,7 @@ export default function InvestorPage() {
     }
   }
 
-  const pct = Math.round((maxReached / 10) * 100)
+  const pct = Math.round((maxReached / MILESTONES.length) * 100)
 
   return (
     <div className={styles.page}>
@@ -193,8 +194,8 @@ export default function InvestorPage() {
           <div className={styles.topnavLinks}>
             <a href="#s1">The Opportunity</a>
             <a href="#s3">Our Solution</a>
-            <a href="#s5">Business Model</a>
             <a href="#s-trac">Traction</a>
+            <a href="#s5">Business Model</a>
             <a href="#s8">Team</a>
             <a href="#s10">Investment</a>
           </div>
@@ -226,7 +227,7 @@ export default function InvestorPage() {
               <i style={{ width: `${pct}%` }} />
             </div>
             <div className={styles.cnt}>
-              <span>{maxReached}</span> of 10 slides explored
+              <span>{maxReached}</span> of {MILESTONES.length} slides explored
             </div>
           </div>
         </aside>
@@ -411,10 +412,81 @@ export default function InvestorPage() {
             </div>
           </section>
 
-          {/* 03 SOLUTION */}
+          {/* 03 WHY TEXAS */}
+          <section className={styles.dark2} id="s9">
+            <p className={styles.eyebrow}>
+              <span className={`${styles.num} ${styles.emGold}`}>03</span> <span className={styles.emGold}>Why Texas</span>
+            </p>
+            <h2>Legendary companies call Texas home.</h2>
+            <p className={styles.lead}>The biggest names in tech and industry are growing in Texas — and bringing their people with them.</p>
+            <div className={`${styles.grid} ${styles.g4}`}>
+              <div className={styles.card}><h3>Tesla</h3><p>HQ + Gigafactory · Austin · ~3,400 employees</p></div>
+              <div className={styles.card}><h3>Samsung</h3><p>$40B fab · Taylor · ~2,000 direct + 20,000+ regional jobs</p></div>
+              <div className={styles.card}><h3>Apple</h3><p>$1B campus · Austin · 5,000+ jobs, growing toward 15,000</p></div>
+              <div className={styles.card}><h3>Chevron</h3><p>HQ · Houston · ~7,000 Houston-area employees</p></div>
+              <div className={styles.card}><h3>SpaceX</h3><p>Starbase · South Texas</p></div>
+              <div className={styles.card}><h3>Toyota</h3><p>North American HQ · Plano</p></div>
+              <div className={styles.card}><h3>Caterpillar</h3><p>HQ · Irving</p></div>
+              <div className={styles.card}><h3>HPE</h3><p>HQ · Houston (Spring)</p></div>
+            </div>
+            <p style={{ marginTop: '18px', fontSize: '11px', color: '#6a7c9e' }}>Company names are trademarks of their respective owners.</p>
+          </section>
+
+          {/* 04 MARKET */}
+          <section className={styles.dark2} id="s6">
+            <div className={styles.eyebrow}><span className={styles.num}>04</span> <span className={styles.emGold}>Market Opportunity</span></div>
+            <h2>A once-in-a-generation opportunity <em style={{ color: 'var(--gold)', fontStyle: 'italic' }}>in Texas.</em></h2>
+
+            <div className={styles.mkt}>
+              <div className={styles.moChain}>
+                <div className={styles.moStep}>
+                  <div className={styles.moBig}>556,000<span className={styles.moU}>+</span></div>
+                  <div className={styles.moLab}>people relocate to Texas from out of state every year</div>
+                  <div className={styles.moSrc}>Texas REALTORS® · U.S. Census ACS</div>
+                </div>
+                <div className={styles.moArrow}>↓</div>
+                <div className={styles.moStep}>
+                  <div className={styles.moBig}>~75,000</div>
+                  <div className={styles.moLab}>buy a home within their first year</div>
+                  <div className={styles.moSrc}>StorageCafe migration study</div>
+                </div>
+                <div className={styles.moArrow}>↓</div>
+                <div className={styles.moStep}>
+                  <div className={styles.moBig}><span className={styles.moU}>~$25</span> billion</div>
+                  <div className={styles.moLab}>in annual relocation home purchases</div>
+                  <div className={styles.moSrc}>$335K median · Texas REALTORS® 2025</div>
+                </div>
+              </div>
+
+              <div className={styles.txmap}>
+                <TexasMap selected={metro} onSelect={setMetro} />
+                <div className={styles.cap}>
+                  <b>Our four launch markets</b>
+                  <span>the majority of Texas relocation demand</span>
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.moPivot}>
+              <div className={styles.moPivotQ}>Every one of them must first answer the same question: <em>“Where should we live?”</em></div>
+              <div className={styles.moPivotP}><b>No platform exists to guide that decision</b> — it happens before an agent is ever hired. HavenQuest is built for exactly that moment, before the home search begins.</div>
+            </div>
+
+            <div className={styles.moLadder}>
+              <div className={styles.moLhead}>Even a sliver is a real business <span>· ~$8,600 revenue per family served</span></div>
+              <div className={styles.moRungs}>
+                <div className={styles.moRung}><div className={styles.moRungPct}>0.25%</div><div className={styles.moRungFam}>188 <span>families / yr</span></div><div className={styles.moRungRev}>~$1.6M</div></div>
+                <div className={styles.moRung}><div className={styles.moRungPct}>0.5%</div><div className={styles.moRungFam}>375 <span>families / yr</span></div><div className={styles.moRungRev}>~$3.2M</div></div>
+                <div className={styles.moRung}><div className={styles.moRungPct}>1%</div><div className={styles.moRungFam}>750 <span>families / yr</span></div><div className={styles.moRungRev}>~$6.5M</div></div>
+                <div className={`${styles.moRung} ${styles.moRungStretch}`}><div className={styles.moRungPct}>2%</div><div className={styles.moRungFam}>1,500 <span>families / yr</span></div><div className={styles.moRungRev}>~$12.9M</div><div className={styles.moRungTag}>Stretch</div></div>
+              </div>
+            </div>
+          </section>
+
+          {/* 05 SOLUTION */}
           <section className={styles.dark} id="s3">
             <p className={styles.eyebrow}>
-              <span className={`${styles.num} ${styles.emGold}`}>03</span> <span className={styles.emGold}>Our Solution</span>
+              <span className={`${styles.num} ${styles.emGold}`}>05</span> <span className={styles.emGold}>Our Solution</span>
             </p>
             <h2>
               One relationship, <span className={styles.gold}>four steps.</span>
@@ -459,10 +531,10 @@ export default function InvestorPage() {
             </div>
           </section>
 
-          {/* 04 TECHNOLOGY */}
+          {/* 06 TECHNOLOGY */}
           <section className={styles.dark2} id="s4">
             <p className={styles.eyebrow}>
-              <span className={`${styles.num} ${styles.emGold}`}>04</span> <span className={styles.emGold}>The Technology</span>
+              <span className={`${styles.num} ${styles.emGold}`}>06</span> <span className={styles.emGold}>The Technology</span>
             </p>
             <h2>How it all connects.</h2>
             <p className={styles.lead}>
@@ -537,10 +609,42 @@ export default function InvestorPage() {
             </p>
           </section>
 
-          {/* 05 BUSINESS MODEL */}
+          {/* 07 TRACTION */}
+          <section className={styles.light} id="s-trac">
+            <p className={styles.eyebrow}>
+              <span className={`${styles.num} ${styles.emBlue}`}>07</span> <span className={styles.emBlue}>Traction</span>
+            </p>
+            <h2>What&apos;s live today.</h2>
+            <p className={styles.lead}>
+              Navigator runs live in beta at havenquest.co, carrying clients all the way to the Market Director handoff.
+              The operational layer beyond that — and Atlas — are in active build.
+            </p>
+            <div className={`${styles.grid} ${styles.g3}`}>
+              <div className={styles.card}>
+                <div className={styles.kick} style={{ color: '#1f9d55' }}>● Live today (beta)</div>
+                <h3>Navigator</h3>
+                <p>The full self-guided journey — intake, matching, refinement, and scheduling a consultation — on real cloud infrastructure.</p>
+              </div>
+              <div className={styles.card}>
+                <div className={styles.kick} style={{ color: 'var(--blue)' }}>◑ In active build</div>
+                <h3>The operational layer</h3>
+                <p>Compass and the role portals — everything that takes over after the consultation is scheduled.</p>
+              </div>
+              <div className={styles.card}>
+                <div className={styles.kick} style={{ color: 'var(--gold-label)' }}>○ Started, earliest stage</div>
+                <h3>Atlas</h3>
+                <p>Data collection and the knowledge base have begun — the foundation is being laid.</p>
+              </div>
+            </div>
+            <p style={{ marginTop: '20px', fontSize: '12.5px', color: 'var(--ink-soft)' }}>
+              Live across 4 Texas metros, with 115 communities mapped.
+            </p>
+          </section>
+
+          {/* 08 BUSINESS MODEL */}
           <section className={styles.light} id="s5">
             <p className={styles.eyebrow}>
-              <span className={`${styles.num} ${styles.emBlue}`}>05</span> <span className={styles.emBlue}>Business Model</span>
+              <span className={`${styles.num} ${styles.emBlue}`}>08</span> <span className={styles.emBlue}>Business Model</span>
             </p>
             <h2>
               Multiple revenue streams. <span className={styles.gold}>One powerful ecosystem.</span>
@@ -586,60 +690,9 @@ export default function InvestorPage() {
             </div>
           </section>
 
-          {/* 06 MARKET */}
-          <section className={styles.dark2} id="s6">
-            <div className={styles.eyebrow}><span className={styles.num}>06</span> <span className={styles.emGold}>Market Opportunity</span></div>
-            <h2>A once-in-a-generation opportunity <em style={{ color: 'var(--gold)', fontStyle: 'italic' }}>in Texas.</em></h2>
-
-            <div className={styles.mkt}>
-              <div className={styles.moChain}>
-                <div className={styles.moStep}>
-                  <div className={styles.moBig}>556,000<span className={styles.moU}>+</span></div>
-                  <div className={styles.moLab}>people relocate to Texas from out of state every year</div>
-                  <div className={styles.moSrc}>Texas REALTORS® · U.S. Census ACS</div>
-                </div>
-                <div className={styles.moArrow}>↓</div>
-                <div className={styles.moStep}>
-                  <div className={styles.moBig}>~75,000</div>
-                  <div className={styles.moLab}>buy a home within their first year</div>
-                  <div className={styles.moSrc}>StorageCafe migration study</div>
-                </div>
-                <div className={styles.moArrow}>↓</div>
-                <div className={styles.moStep}>
-                  <div className={styles.moBig}><span className={styles.moU}>~$25</span> billion</div>
-                  <div className={styles.moLab}>in annual relocation home purchases</div>
-                  <div className={styles.moSrc}>$335K median · Texas REALTORS® 2025</div>
-                </div>
-              </div>
-
-              <div className={styles.txmap}>
-                <TexasMap selected={metro} onSelect={setMetro} />
-                <div className={styles.cap}>
-                  <b>Our four launch markets</b>
-                  <span>the majority of Texas relocation demand</span>
-                </div>
-              </div>
-            </div>
-
-            <div className={styles.moPivot}>
-              <div className={styles.moPivotQ}>Every one of them must first answer the same question: <em>“Where should we live?”</em></div>
-              <div className={styles.moPivotP}><b>No platform exists to guide that decision</b> — it happens before an agent is ever hired. HavenQuest is built for exactly that moment, before the home search begins.</div>
-            </div>
-
-            <div className={styles.moLadder}>
-              <div className={styles.moLhead}>Even a sliver is a real business <span>· ~$8,600 revenue per family served</span></div>
-              <div className={styles.moRungs}>
-                <div className={styles.moRung}><div className={styles.moRungPct}>0.25%</div><div className={styles.moRungFam}>188 <span>families / yr</span></div><div className={styles.moRungRev}>~$1.6M</div></div>
-                <div className={styles.moRung}><div className={styles.moRungPct}>0.5%</div><div className={styles.moRungFam}>375 <span>families / yr</span></div><div className={styles.moRungRev}>~$3.2M</div></div>
-                <div className={styles.moRung}><div className={styles.moRungPct}>1%</div><div className={styles.moRungFam}>750 <span>families / yr</span></div><div className={styles.moRungRev}>~$6.5M</div></div>
-                <div className={`${styles.moRung} ${styles.moRungStretch}`}><div className={styles.moRungPct}>2%</div><div className={styles.moRungFam}>1,500 <span>families / yr</span></div><div className={styles.moRungRev}>~$12.9M</div><div className={styles.moRungTag}>Stretch</div></div>
-              </div>
-            </div>
-          </section>
-
-          {/* 07 VISION / ATLAS */}
+          {/* 09 VISION / ATLAS */}
           <section className={`${styles.dark} ${styles.v7section}`} id="s7">
-            <div className={styles.eyebrow}><span className={styles.num}>07</span> <span className={styles.emGold}>Our Vision — Atlas</span> <span className={styles.v7tag}>Five-year vision</span></div>
+            <div className={styles.eyebrow}><span className={styles.num}>09</span> <span className={styles.emGold}>Our Vision — Atlas</span> <span className={styles.v7tag}>Five-year vision</span></div>
             <h2>Relocation is the wedge. <em style={{ color: 'var(--gold)', fontStyle: 'italic' }}>Atlas is the platform.</em></h2>
 
             <div className={styles.v7engine}>
@@ -673,42 +726,10 @@ export default function InvestorPage() {
             </div>
           </section>
 
-          {/* TRACTION */}
-          <section className={styles.light} id="s-trac">
-            <p className={styles.eyebrow}>
-              <span className={styles.emBlue}>Traction</span>
-            </p>
-            <h2>What&apos;s live today.</h2>
-            <p className={styles.lead}>
-              Navigator runs live in beta at havenquest.co, carrying clients all the way to the Market Director handoff.
-              The operational layer beyond that — and Atlas — are in active build.
-            </p>
-            <div className={`${styles.grid} ${styles.g3}`}>
-              <div className={styles.card}>
-                <div className={styles.kick} style={{ color: '#1f9d55' }}>● Live today (beta)</div>
-                <h3>Navigator</h3>
-                <p>The full self-guided journey — intake, matching, refinement, and scheduling a consultation — on real cloud infrastructure.</p>
-              </div>
-              <div className={styles.card}>
-                <div className={styles.kick} style={{ color: 'var(--blue)' }}>◑ In active build</div>
-                <h3>The operational layer</h3>
-                <p>Compass and the role portals — everything that takes over after the consultation is scheduled.</p>
-              </div>
-              <div className={styles.card}>
-                <div className={styles.kick} style={{ color: 'var(--gold-label)' }}>○ Started, earliest stage</div>
-                <h3>Atlas</h3>
-                <p>Data collection and the knowledge base have begun — the foundation is being laid.</p>
-              </div>
-            </div>
-            <p style={{ marginTop: '20px', fontSize: '12.5px', color: 'var(--ink-soft)' }}>
-              Live across 4 Texas metros, with 115 communities mapped.
-            </p>
-          </section>
-
-          {/* 08 TEAM */}
+          {/* 10 TEAM */}
           <section className={styles.light} id="s8">
             <p className={styles.eyebrow}>
-              <span className={`${styles.num} ${styles.emBlue}`}>08</span> <span className={styles.emBlue}>The Team</span>
+              <span className={`${styles.num} ${styles.emBlue}`}>10</span> <span className={styles.emBlue}>The Team</span>
             </p>
             <h2>The people behind it.</h2>
             <div className={styles.team}>
@@ -816,30 +837,10 @@ export default function InvestorPage() {
             </div>
           </section>
 
-          {/* 09 WHY TEXAS */}
-          <section className={styles.dark2} id="s9">
-            <p className={styles.eyebrow}>
-              <span className={`${styles.num} ${styles.emGold}`}>09</span> <span className={styles.emGold}>Why Texas</span>
-            </p>
-            <h2>Legendary companies call Texas home.</h2>
-            <p className={styles.lead}>The biggest names in tech and industry are growing in Texas — and bringing their people with them.</p>
-            <div className={`${styles.grid} ${styles.g4}`}>
-              <div className={styles.card}><h3>Tesla</h3><p>HQ + Gigafactory · Austin · ~3,400 employees</p></div>
-              <div className={styles.card}><h3>Samsung</h3><p>$40B fab · Taylor · ~2,000 direct + 20,000+ regional jobs</p></div>
-              <div className={styles.card}><h3>Apple</h3><p>$1B campus · Austin · 5,000+ jobs, growing toward 15,000</p></div>
-              <div className={styles.card}><h3>Chevron</h3><p>HQ · Houston · ~7,000 Houston-area employees</p></div>
-              <div className={styles.card}><h3>SpaceX</h3><p>Starbase · South Texas</p></div>
-              <div className={styles.card}><h3>Toyota</h3><p>North American HQ · Plano</p></div>
-              <div className={styles.card}><h3>Caterpillar</h3><p>HQ · Irving</p></div>
-              <div className={styles.card}><h3>HPE</h3><p>HQ · Houston (Spring)</p></div>
-            </div>
-            <p style={{ marginTop: '18px', fontSize: '11px', color: '#6a7c9e' }}>Company names are trademarks of their respective owners.</p>
-          </section>
-
-          {/* 10 INVESTMENT */}
+          {/* 11 INVESTMENT */}
           <section className={styles.dark} id="s10">
             <p className={styles.eyebrow}>
-              <span className={`${styles.num} ${styles.emGold}`}>10</span> <span className={styles.emGold}>Investment Opportunity</span>
+              <span className={`${styles.num} ${styles.emGold}`}>11</span> <span className={styles.emGold}>Investment Opportunity</span>
             </p>
             <h2>
               Let&apos;s build the future of relocation <span className={`${styles.gold} ${styles.ital}`}>together.</span>
