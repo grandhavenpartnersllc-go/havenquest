@@ -145,6 +145,7 @@
 .gold{color:var(--gold);} .ital{font-style:italic;}
 .page h2{font-size:34px;}
 .lead{font-size:17px;color:#b9c6df;max-width:600px;margin-top:14px;font-weight:300;}
+.leadWide{max-width:760px;}
 .dark{background:var(--navy);} .dark2{background:linear-gradient(180deg,var(--navy-2),var(--navy));}
 .light{background:var(--stone);color:var(--ink);}
 .light h2{color:var(--ink);} .light .lead{color:var(--ink-soft);}

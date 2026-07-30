@@ -408,7 +408,7 @@ export default function InvestorPage() {
               <span className={`${styles.num} ${styles.emGold}`}>02</span> <span className={styles.emGold}>Why Texas</span>
             </p>
             <h2>Half a million people arrive every year. <em style={{ color: 'var(--gold)', fontStyle: 'italic' }}>They’re following the jobs.</em></h2>
-            <p className={styles.lead}>Texas draws more new residents from other states than anywhere else in the country — and the biggest names in tech and industry are the reason.</p>
+            <p className={`${styles.lead} ${styles.leadWide}`}>Texas draws more new residents from other states than anywhere else in the country — and the biggest names in tech and industry are the reason.</p>
             <div className={styles.s3Panel}>
               <div>
                 <div className={styles.s3Fig}>556,156<span className={styles.s3Moe}>±23,072</span></div>
