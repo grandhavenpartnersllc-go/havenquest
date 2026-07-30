@@ -697,7 +697,7 @@ export default function InvestorPage() {
                 <span className={styles.plus} style={{ opacity: 0.5 }}>+</span>
                 <span className={styles.bmPartner}>
                   <b>Partner Revenue</b>
-                  <span className={styles.bmPartnerCap}>movers, storage, utilities &amp; more — not counted above</span>
+                  <span className={styles.bmPartnerCap}>movers, storage, utilities — not counted</span>
                 </span>
               </div>
             </div>
