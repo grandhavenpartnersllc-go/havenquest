@@ -395,8 +395,20 @@ export default function BeginPage() {
   return (
     <>
       <FunnelHeader />
-      <main className="flex-1 flex items-center justify-center" style={{ background: STONE }}>
-        <div className="mx-auto max-w-[680px] px-6 pt-[22px] pb-11 max-[460px]:px-[14px] max-[460px]:pt-[18px] max-[460px]:pb-[34px]">
+      {/* Phase-aware shell. The disclosure gate and the card steps want opposite things from
+          this wrapper, and sharing one set of classes is what shrank the cards (INTAKE-SIZE-P0).
+          Gate and the other short phases: flex-centred, capped at 680 — unchanged from 52f1f42.
+          Card steps: main stays a plain block, so the container is a BLOCK element that fills
+          its width up to 1000px and anchors to the top. Block is what makes width independent
+          of headline length; as a flex item it was shrink-to-fit, which is why step 2 (short
+          headline) rendered 143.6px cards and step 4 (long headline) rendered 202.7px. */}
+      <main
+        className={phase === 'cards' ? 'flex-1' : 'flex-1 flex items-center justify-center'}
+        style={{ background: STONE }}
+      >
+        <div
+          className={`mx-auto ${phase === 'cards' ? 'max-w-[1000px]' : 'max-w-[680px]'} px-6 pt-[22px] pb-11 max-[460px]:px-[14px] max-[460px]:pt-[18px] max-[460px]:pb-[34px]`}
+        >
 
           {phase === 'resume' && resumeData && (
             <div style={{ maxWidth: '480px' }}>
