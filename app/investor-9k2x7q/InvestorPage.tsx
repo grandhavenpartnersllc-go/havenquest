@@ -436,17 +436,14 @@ export default function InvestorPage() {
                 <div className={styles.s3Src}>U.S. Census Bureau · ACS 2024 1-year estimates</div>
               </div>
               <div className={styles.s3Rows}>
+                <div className={styles.s3RowsHead}>What that arrival rate looks like</div>
                 <div className={styles.s3Row}>
-                  <div className={styles.s3RowFig}>556,156</div>
-                  <div className={styles.s3RowTxt}>arrived from out of state</div>
+                  <div className={styles.s3RowFig}>~46,000</div>
+                  <div className={styles.s3RowTxt}>every month</div>
                 </div>
                 <div className={styles.s3Row}>
-                  <div className={styles.s3RowFig}>~483,000</div>
-                  <div className={styles.s3RowTxt}>left for other states</div>
-                </div>
-                <div className={styles.s3Row}>
-                  <div className={`${styles.s3RowFig} ${styles.s3RowGold}`}>~73,000</div>
-                  <div className={styles.s3RowTxt}>net population gain</div>
+                  <div className={styles.s3RowFig}>~1,500</div>
+                  <div className={styles.s3RowTxt}>every day</div>
                 </div>
               </div>
             </div>
