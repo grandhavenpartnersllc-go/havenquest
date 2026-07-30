@@ -30,7 +30,6 @@ const CALENDLY_URL = 'https://calendly.com/craig-asbach-havenquest/30min'
 
 const MILESTONES = [
   { id: 's1', label: 'The Problem' },
-  { id: 's2', label: 'Why Now' },
   { id: 's9', label: 'Why Texas' },
   { id: 's6', label: 'Market Opportunity' },
   { id: 's3', label: 'Our Solution' },
@@ -403,29 +402,10 @@ export default function InvestorPage() {
             </div>
           </section>
 
-          {/* 02 WHY NOW */}
-          <section className={styles.light} id="s2">
-            <p className={styles.eyebrow}>
-              <span className={`${styles.num} ${styles.emBlue}`}>02</span> <span className={styles.emBlue}>Why Now</span>
-            </p>
-            <h2>Six forces, <span className={styles.gold}>compounding.</span></h2>
-            <div className={`${styles.grid} ${styles.g3}`}>
-              <div className={styles.card}><div className={styles.idx}>01</div><h3>The Migration Economy</h3><p>Americans relocate more than any generation before them, and Texas is where the largest share is landing.</p></div>
-              <div className={styles.card}><div className={styles.idx}>02</div><h3>Location Independence</h3><p>Remote and hybrid work freed the home from the office. People choose where to live first, then sort out work.</p></div>
-              <div className={styles.card}><div className={styles.idx}>03</div><h3>Decision Complexity</h3><p>Taxes, insurance, schools, safety, commute, growth — all weighed before a single tour. Buying a home has become choosing a life.</p></div>
-              <div className={styles.card}><div className={styles.idx}>04</div><h3>Information Overload</h3><p>Zillow, Reddit, endless rankings: more information than ever, less confidence than ever. The gap isn&apos;t data — it&apos;s clarity.</p></div>
-              <div className={styles.card}><div className={styles.idx}>05</div><h3>Guided Decision-Making</h3><p>Travel, investing, healthcare all come with a guide now. Relocation is still scattered across dozens of disconnected providers.</p></div>
-              <div className={styles.card}><div className={styles.idx}>06</div><h3>Booming Job Market</h3><p>Major employers keep planting flags in Texas, and families follow the work.</p></div>
-            </div>
-            <div style={{ marginTop: '18px', background: 'var(--navy)', borderRadius: '14px', padding: '20px', textAlign: 'center' }}>
-              <p className={`${styles.gold} ${styles.ital}`} style={{ fontSize: '16px', color: 'var(--gold)' }}>All compounding — and in our favor.</p>
-            </div>
-          </section>
-
           {/* 03 WHY TEXAS */}
           <section className={styles.dark2} id="s9">
             <p className={styles.eyebrow}>
-              <span className={`${styles.num} ${styles.emGold}`}>03</span> <span className={styles.emGold}>Why Texas</span>
+              <span className={`${styles.num} ${styles.emGold}`}>02</span> <span className={styles.emGold}>Why Texas</span>
             </p>
             <h2>Half a million people arrive every year. <em style={{ color: 'var(--gold)', fontStyle: 'italic' }}>They’re following the jobs.</em></h2>
             <p className={styles.lead}>Texas draws more new residents from other states than anywhere else in the country — and the biggest names in tech and industry are the reason.</p>
@@ -467,7 +447,7 @@ export default function InvestorPage() {
 
           {/* 04 MARKET */}
           <section className={styles.dark2} id="s6">
-            <div className={styles.eyebrow}><span className={styles.num}>04</span> <span className={styles.emGold}>Market Opportunity</span></div>
+            <div className={styles.eyebrow}><span className={styles.num}>03</span> <span className={styles.emGold}>Market Opportunity</span></div>
             <h2>A once-in-a-generation opportunity <em style={{ color: 'var(--gold)', fontStyle: 'italic' }}>in Texas.</em></h2>
 
             <div className={styles.mkt}>
@@ -519,7 +499,7 @@ export default function InvestorPage() {
           {/* 05 SOLUTION */}
           <section className={styles.dark} id="s3">
             <p className={styles.eyebrow}>
-              <span className={`${styles.num} ${styles.emGold}`}>05</span> <span className={styles.emGold}>Our Solution</span>
+              <span className={`${styles.num} ${styles.emGold}`}>04</span> <span className={styles.emGold}>Our Solution</span>
             </p>
             <h2>
               One relationship, <span className={styles.gold}>four steps.</span>
@@ -567,7 +547,7 @@ export default function InvestorPage() {
           {/* 06 TECHNOLOGY */}
           <section className={styles.dark2} id="s4">
             <p className={styles.eyebrow}>
-              <span className={`${styles.num} ${styles.emGold}`}>06</span> <span className={styles.emGold}>The Technology</span>
+              <span className={`${styles.num} ${styles.emGold}`}>05</span> <span className={styles.emGold}>The Technology</span>
             </p>
             <h2>How it all connects.</h2>
             <p className={styles.lead}>
@@ -645,7 +625,7 @@ export default function InvestorPage() {
           {/* 07 TRACTION */}
           <section className={styles.light} id="s-trac">
             <p className={styles.eyebrow}>
-              <span className={`${styles.num} ${styles.emBlue}`}>07</span> <span className={styles.emBlue}>Traction</span>
+              <span className={`${styles.num} ${styles.emBlue}`}>06</span> <span className={styles.emBlue}>Traction</span>
             </p>
             <h2>What&apos;s live today.</h2>
             <p className={styles.lead}>
@@ -677,7 +657,7 @@ export default function InvestorPage() {
           {/* 08 BUSINESS MODEL */}
           <section className={styles.light} id="s5">
             <p className={styles.eyebrow}>
-              <span className={`${styles.num} ${styles.emBlue}`}>08</span> <span className={styles.emBlue}>Business Model</span>
+              <span className={`${styles.num} ${styles.emBlue}`}>07</span> <span className={styles.emBlue}>Business Model</span>
             </p>
             <h2>
               Multiple revenue streams. <span className={styles.gold}>One powerful ecosystem.</span>
@@ -725,7 +705,7 @@ export default function InvestorPage() {
 
           {/* 09 VISION / ATLAS */}
           <section className={`${styles.dark} ${styles.v7section}`} id="s7">
-            <div className={styles.eyebrow}><span className={styles.num}>09</span> <span className={styles.emGold}>Our Vision — Atlas</span> <span className={styles.v7tag}>Five-year vision</span></div>
+            <div className={styles.eyebrow}><span className={styles.num}>08</span> <span className={styles.emGold}>Our Vision — Atlas</span> <span className={styles.v7tag}>Five-year vision</span></div>
             <h2>Relocation is the wedge. <em style={{ color: 'var(--gold)', fontStyle: 'italic' }}>Atlas is the platform.</em></h2>
 
             <div className={styles.v7engine}>
@@ -762,7 +742,7 @@ export default function InvestorPage() {
           {/* 10 TEAM */}
           <section className={styles.light} id="s8">
             <p className={styles.eyebrow}>
-              <span className={`${styles.num} ${styles.emBlue}`}>10</span> <span className={styles.emBlue}>The Team</span>
+              <span className={`${styles.num} ${styles.emBlue}`}>09</span> <span className={styles.emBlue}>The Team</span>
             </p>
             <h2>The people behind it.</h2>
             <div className={styles.team}>
@@ -873,7 +853,7 @@ export default function InvestorPage() {
           {/* 11 INVESTMENT */}
           <section className={styles.dark} id="s10">
             <p className={styles.eyebrow}>
-              <span className={`${styles.num} ${styles.emGold}`}>11</span> <span className={styles.emGold}>Investment Opportunity</span>
+              <span className={`${styles.num} ${styles.emGold}`}>10</span> <span className={styles.emGold}>Investment Opportunity</span>
             </p>
             <h2>
               Let&apos;s build the future of relocation <span className={`${styles.gold} ${styles.ital}`}>together.</span>

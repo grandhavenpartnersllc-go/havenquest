@@ -202,7 +202,6 @@
 .light .card{background:#fff;border:1px solid rgba(10,30,61,.07);box-shadow:0 12px 34px -24px rgba(10,30,61,.35);}
 .card h3{font-size:16px;margin-bottom:8px;} .light .card h3{color:var(--ink);}
 .card p{font-size:13.5px;color:#b4c1da;} .light .card p{color:var(--ink-soft);}
-.card .idx{font-size:12px;font-weight:700;color:var(--gold-label);margin-bottom:10px;}
 .card .ic{width:34px;height:34px;color:var(--gold);margin-bottom:14px;}
 .card .kick{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-label);font-weight:600;margin-bottom:8px;}
 .card .close{font-style:italic;color:var(--gold);font-size:12.5px;margin-top:14px;}
