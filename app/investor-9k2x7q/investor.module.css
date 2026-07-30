@@ -264,7 +264,7 @@
 @media(max-width:640px){.midBand{grid-template-columns:1fr;}.midCenter{padding:8px 0;}.vArrowThick{flex:none;height:44px;}}
 
 /* Atlas — Notion tag + Repository → Intelligence arrow */
-.notionTag{display:inline-block;margin-top:6px;font-size:9px;letter-spacing:.09em;text-transform:uppercase;font-weight:600;color:var(--navy);background:rgba(197,183,131,.5);border:1px solid var(--gold-label);border-radius:20px;padding:2px 8px;}
+.notionTag{display:inline-block;margin-top:6px;margin-left:14px;font-size:9px;letter-spacing:.09em;text-transform:uppercase;font-weight:600;color:var(--navy);background:rgba(197,183,131,.5);border:1px solid var(--gold-label);border-radius:20px;padding:2px 8px;}
 .atlasNode .cols .hArrowIntel{position:relative;display:block;align-self:center;width:26px;height:2px;background:var(--gold-label);}
 .atlasNode .cols .hArrowIntel::after{content:"";position:absolute;right:-1px;top:50%;transform:translateY(-50%);border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:7px solid var(--gold-label);}
 @media(max-width:640px){.atlasNode .cols{grid-template-columns:1fr;}.atlasNode .cols .hArrowIntel{display:none;}}
