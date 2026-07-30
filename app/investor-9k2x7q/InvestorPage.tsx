@@ -7,9 +7,14 @@
  * "Investor Portal" / "Request access" buttons stay href="#", there is no popup, form, email,
  * Supabase write, or token gate. Real project images replace the mockup's placeholder blocks.
  *
- * The left milestone rail is a scrollspy: an IntersectionObserver watches sections s1–s10 and
- * highlights the active milestone while the "Your Progress" bar fills to the furthest section
- * reached. In-page anchor jumps scroll smoothly (scroll-behavior applied for this page's lifetime).
+ * The left rail is a scrollspy over two groups: the JUMPS destinations (Home, Experience
+ * HavenQuest) and the ten numbered MILESTONES. An IntersectionObserver watches every id from
+ * both, and any of them can light its row. Only MILESTONES ids advance "Your Progress" — the
+ * bar and the "N of 10 sections explored" counter stay out of ten, so the jump destinations
+ * are navigable without inflating progress. Section ids do not match display numbers (Why
+ * Texas is id s9); read the id, never infer it. In-page anchor jumps scroll smoothly
+ * (scroll-behavior applied for this page's lifetime); Home uses scrollTo(0) instead of its
+ * anchor, because scroll-margin-top would stop #top 74px short of true top.
  */
 
 import { useEffect, useState } from 'react'
@@ -41,7 +46,23 @@ const MILESTONES = [
   { id: 's10', label: 'Investment Opportunity' },
 ] as const
 
+// Non-slide rail destinations. Deliberately NOT part of MILESTONES: these must be able to
+// light the rail without advancing progress, and adding them to MILESTONES would renumber
+// the deck's badges and skew pct / the counter, which stay out of 10. Both ids already
+// exist on their sections — nothing here creates or renames an anchor.
+const JUMPS = [
+  { id: 'top', label: 'Home' },
+  { id: 's-tour', label: 'Experience HavenQuest' },
+] as const
+
 const ORDER = MILESTONES.map((m) => m.id)
+
+// Progress is scored against these ten only — index+1 is the "N of 10" numerator.
+const OBSERVED_SLIDE_IDS: readonly string[] = ORDER
+
+// Everything the scrollspy watches. Derived from both arrays rather than naming the two jump
+// ids inline, so growing JUMPS automatically extends the observer.
+const OBSERVED_IDS: readonly string[] = [...JUMPS.map((j) => j.id), ...ORDER]
 
 /**
  * Open-role seat glyph, used by the two unfilled cards in section 08. Deliberately the same
@@ -71,7 +92,11 @@ function LinkedInMark() {
 }
 
 export default function InvestorPage() {
-  const [activeId, setActiveId] = useState<string>('s1')
+  // Seeded to 'top', not 's1': the page loads at the hero, and seeding to the first slide lit
+  // "The Problem" while the visitor was still above it. maxReached stays at 1 deliberately —
+  // dropping it to 0 would introduce a 0% progress state nobody has seen. Consequence: at page
+  // top the rail lights Home while the counter already reads "1 of 10".
+  const [activeId, setActiveId] = useState<string>('top')
   const [maxReached, setMaxReached] = useState(1)
   const [metro, setMetro] = useState<MetroKey>('austin')
   const [introOpen, setIntroOpen] = useState(false)
@@ -91,18 +116,20 @@ export default function InvestorPage() {
       (entries) => {
         entries.forEach((e) => {
           if (e.isIntersecting) {
-            const i = ORDER.indexOf(e.target.id as (typeof ORDER)[number])
-            if (i >= 0) {
-              setActiveId(e.target.id)
-              setMaxReached((m) => Math.max(m, i + 1))
-            }
+            // Lit state and counted state are deliberately separate. ANY observed section can
+            // light its row — that is what makes the jump destinations behave like the rest of
+            // the rail. Only MILESTONES sections advance progress, so the counter and pct stay
+            // out of ten. Letting a JUMPS id reach setMaxReached would make both wrong.
+            setActiveId(e.target.id)
+            const i = OBSERVED_SLIDE_IDS.indexOf(e.target.id)
+            if (i >= 0) setMaxReached((m) => Math.max(m, i + 1))
           }
         })
       },
       { rootMargin: '-45% 0px -45% 0px' },
     )
 
-    ORDER.forEach((id) => {
+    OBSERVED_IDS.forEach((id) => {
       const el = document.getElementById(id)
       if (el) obs.observe(el)
     })
@@ -206,7 +233,31 @@ export default function InvestorPage() {
       <div className={styles.shell}>
         {/* ---- LEFT RAIL (scrollspy) ---- */}
         <aside className={styles.rail}>
-          <div className={styles.lbl}>Slides</div>
+          {/* Jump group — no header, no badge (approved mockup option B). Labels start at the
+              rail's left padding rather than aligning with the numbered rows. */}
+          <div className={styles.railJump}>
+            {JUMPS.map((j) => (
+              <a
+                key={j.id}
+                href={`#${j.id}`}
+                className={activeId === j.id ? `${styles.ms} ${styles.active}` : styles.ms}
+                // Home scrolls to true top. The anchor alone would stop 74px short, because
+                // scroll-margin-top:var(--nav-h) applies to .page section and the hero starts
+                // at y=0. Same call the back-to-top button uses.
+                onClick={
+                  j.id === 'top'
+                    ? (e) => {
+                        e.preventDefault()
+                        window.scrollTo({ top: 0, behavior: 'smooth' })
+                      }
+                    : undefined
+                }
+              >
+                <div className={styles.t}>{j.label}</div>
+              </a>
+            ))}
+          </div>
+          <div className={styles.lbl}>The Overview</div>
           {MILESTONES.map((m, i) => (
             <a
               key={m.id}
@@ -226,7 +277,7 @@ export default function InvestorPage() {
               <i style={{ width: `${pct}%` }} />
             </div>
             <div className={styles.cnt}>
-              <span>{maxReached}</span> of {MILESTONES.length} slides explored
+              <span>{maxReached}</span> of {MILESTONES.length} sections explored
             </div>
           </div>
         </aside>

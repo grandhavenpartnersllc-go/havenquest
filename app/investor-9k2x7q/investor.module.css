@@ -56,6 +56,12 @@
 .ms .t{font-size:12.5px;color:#93a3c2;transition:.25s;line-height:1.25;}
 .ms.active .dot{background:var(--gold);border-color:var(--gold);color:var(--navy);}
 .ms.active .t{color:#fff;font-weight:500;}
+/* Jump group (RAIL-1/CP2) — separates the unbadged Home / Experience rows from the
+   "The Overview" header. Scoped name, not a bare .jump: CSS Modules hash per name and a
+   bare rule would reach anything reusing it (see the .lbl note further down). */
+/* 50px, not 34+16: the last row's 16px bottom margin collapses through this wrapper
+   (block, no padding/border), so the two do not stack — the larger value wins outright. */
+.railJump{ margin-bottom:50px; }
 .progWrap{margin-top:26px;padding-top:22px;border-top:1px solid rgba(197,183,131,.14);}
 .progWrap .top{display:flex;justify-content:space-between;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-label);margin-bottom:8px;}
 .prog{height:5px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden;}
