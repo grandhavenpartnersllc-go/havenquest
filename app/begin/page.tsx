@@ -395,8 +395,8 @@ export default function BeginPage() {
   return (
     <>
       <FunnelHeader />
-      <main className="flex-1" style={{ background: STONE }}>
-        <div className="mx-auto max-w-[1000px] px-6 pt-[22px] pb-11 max-[460px]:px-[14px] max-[460px]:pt-[18px] max-[460px]:pb-[34px]">
+      <main className="flex-1 flex items-center justify-center" style={{ background: STONE }}>
+        <div className="mx-auto max-w-[680px] px-6 pt-[22px] pb-11 max-[460px]:px-[14px] max-[460px]:pt-[18px] max-[460px]:pb-[34px]">
 
           {phase === 'resume' && resumeData && (
             <div style={{ maxWidth: '480px' }}>
