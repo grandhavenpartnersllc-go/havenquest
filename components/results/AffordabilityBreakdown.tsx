@@ -2,7 +2,6 @@ import { Location, UserProfile } from '../../types'
 import { getMonthlyHousingCost } from '../../services/matchingService'
 import {
   getMonthlyPropertyTax,
-  getTotalMonthlyEstimate,
   getMonthlyIncomeRemaining,
   getHousingIncomePercent,
 } from '../../services/affordabilityService'
@@ -18,7 +17,6 @@ interface AffordabilityBreakdownProps {
 export default function AffordabilityBreakdown({ city, profile, showFlag }: AffordabilityBreakdownProps) {
   const monthlyHousing = getMonthlyHousingCost(city)
   const propertyTax = getMonthlyPropertyTax(city)
-  const total = getTotalMonthlyEstimate(city, profile)
   const remaining = getMonthlyIncomeRemaining(city, profile)
   const percent = getHousingIncomePercent(city, profile)
   const monthlyIncome = Math.round(profile.annualIncome / 12)
@@ -30,6 +28,11 @@ export default function AffordabilityBreakdown({ city, profile, showFlag }: Affo
     { label: 'Monthly groceries', value: city.housing.monthlyGroceries },
     { label: 'Monthly transportation', value: city.housing.monthlyTransportation },
   ]
+
+  // AFFORD-FIX-1: derived from the rows rendered below, not from a parallel sum, so a
+  // row added here can never again be left out of the total. getTotalMonthlyEstimate
+  // now agrees term-for-term (and still backs `remaining` above and the PDF report).
+  const total = rows.reduce((sum, row) => sum + row.value, 0)
 
   return (
     <div>
