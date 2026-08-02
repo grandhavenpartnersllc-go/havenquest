@@ -1,0 +1,113 @@
+{
+  "_README": [
+    "BASELINE ALLOWLIST for scripts/check-schema-drift.mjs.",
+    "",
+    "TWO RULES, AND THEY ARE NOT NEGOTIABLE:",
+    "",
+    "  1. THIS LIST MAY ONLY SHRINK. Adding an entry is a deliberate decision made by a",
+    "     human who has understood the defect — never a convenience to make a red build",
+    "     green. If you are here because the build is failing, the correct move is almost",
+    "     always to fix the column or the reference, not to add a line to this file.",
+    "",
+    "  2. EVERY ENTRY IS A KNOWN DEFECT, NOT AN ACCEPTED STATE. Each line below is a live",
+    "     bug: Postgres rejects the ENTIRE statement when any named column is unknown, so",
+    "     each of these breaks a whole query at runtime, not merely one field.",
+    "",
+    "This list exists only so that the alarm could be installed before the 13 pre-existing",
+    "defects were fixed. Without it, main could not build today and nothing could ship —",
+    "including the schema fixes these entries are themselves waiting on.",
+    "",
+    "Populated 2026-08-01 from the EXPECTED-BUT-ABSENT section of docs/SCHEMA-REFERENCE.md.",
+    "The check's independent static extraction reproduced exactly these 13 and no others.",
+    "",
+    "To resolve an entry: either create the column in the Supabase SQL editor and re-export",
+    "the snapshot (docs/schema/README.md), or fix/remove the code reference. Then delete the",
+    "entry here. The check reports allowlist entries it no longer detects, so stale lines",
+    "surface on the next build rather than lingering."
+  ],
+
+  "populated": "2026-08-01",
+  "source": "docs/SCHEMA-REFERENCE.md — EXPECTED-BUT-ABSENT",
+  "count": 13,
+
+  "known_violations": [
+    {
+      "table": "admin_audit_log",
+      "column": "action",
+      "file": "app/api/admin/assign-client/route.ts:45",
+      "note": "The entire admin_audit_log TABLE is absent from the live database. Claimed by 20260614_admin_audit_log.sql, never applied. All four admin audit writes fail."
+    },
+    {
+      "table": "admin_audit_log",
+      "column": "admin_email",
+      "file": "app/api/admin/assign-client/route.ts:45",
+      "note": "Table absent — see admin_audit_log.action."
+    },
+    {
+      "table": "admin_audit_log",
+      "column": "details",
+      "file": "app/api/admin/assign-client/route.ts:45",
+      "note": "Table absent — see admin_audit_log.action."
+    },
+    {
+      "table": "admin_audit_log",
+      "column": "target_email",
+      "file": "app/api/admin/assign-client/route.ts:45",
+      "note": "Table absent — see admin_audit_log.action."
+    },
+    {
+      "table": "quiz_sessions",
+      "column": "culture",
+      "file": "services/quizSessionService.ts:46",
+      "note": "Discovery Card 4 personality dimension. Claimed by 20260619_personality_dimensions_complete.sql, never applied. Written conditionally, so the failure is intermittent rather than constant."
+    },
+    {
+      "table": "quiz_sessions",
+      "column": "environment",
+      "file": "services/quizSessionService.ts:46",
+      "note": "Discovery Card 4 personality dimension — see quiz_sessions.culture."
+    },
+    {
+      "table": "quiz_sessions",
+      "column": "pace",
+      "file": "services/quizSessionService.ts:46",
+      "note": "Discovery Card 4 personality dimension — see quiz_sessions.culture."
+    },
+    {
+      "table": "realtor_applications",
+      "column": "first_name",
+      "file": "app/compass/admin/(admin)/agents/page.tsx:22",
+      "note": "Claimed by no migration. The live table has `name`, not first_name/last_name. The admin agent queue query fails entirely."
+    },
+    {
+      "table": "realtor_applications",
+      "column": "last_name",
+      "file": "app/compass/admin/(admin)/agents/page.tsx:22",
+      "note": "Claimed by no migration — see realtor_applications.first_name."
+    },
+    {
+      "table": "realtor_applications",
+      "column": "metro",
+      "file": "app/compass/admin/(admin)/agents/page.tsx:22",
+      "note": "Claimed by no migration. The live table has `market_specialty`. Same failing query as realtor_applications.first_name."
+    },
+    {
+      "table": "users",
+      "column": "auth_id",
+      "file": "app/api/users/route.ts:186",
+      "note": "Claimed by no migration. Written only when authUserId is set, so the upsert fails only on that path."
+    },
+    {
+      "table": "users",
+      "column": "last_name",
+      "file": "app/compass/admin/(admin)/clients/page.tsx:23",
+      "note": "Claimed by 20260614_users_profile_columns.sql, never applied. Read in four places and written by update-profile; every one of those queries fails."
+    },
+    {
+      "table": "users",
+      "column": "md_email",
+      "file": "app/api/portal/update-profile/route.ts:35",
+      "note": "Claimed by no migration. The live schema holds the MD assignment on md_clients.md_email, not on users. Likely a wrong reference rather than a missing column."
+    }
+  ]
+}
