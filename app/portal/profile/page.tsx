@@ -104,7 +104,7 @@ export default function ProfilePage() {
   const [loadingExtended, setLoadingExtended] = useState(true)
 
   // Personal section state
-  const [personal, setPersonal] = useState({ first_name: '', last_name: '', phone: '', partner_name: '' })
+  const [personal, setPersonal] = useState({ first_name: '', phone: '', partner_name: '' })
   const [personalDirty, setPersonalDirty] = useState(false)
   const [personalSaving, setPersonalSaving] = useState(false)
   const [personalSaved, setPersonalSaved] = useState(false)
@@ -132,7 +132,7 @@ export default function ProfilePage() {
       const [{ data }, { data: mm4 }] = await Promise.all([
         supabase
           .from('users')
-          .select('first_name, household_size, annual_income, created_at, last_name, phone, origin_city, origin_state, partner_name, profile_photo_url, md_email')
+          .select('first_name, household_size, annual_income, created_at, phone, origin_city, origin_state, partner_name, profile_photo_url')
           .eq('email', email)
           .single(),
         supabase
@@ -162,17 +162,32 @@ export default function ProfilePage() {
       const mm4City = (mm4?.current_city as string | null | undefined) || null
       const mm4State = (mm4?.current_state as string | null | undefined) || null
 
+      // Market Director assignment lives in md_clients, never on users (there is no
+      // users.md_email column — selecting one rejected this whole statement and broke
+      // both the read and the save). client_email is the join key, matching
+      // api/admin/assign-client and the Compass admin roster; assign-client closes
+      // superseded rows instead of deleting them, so the active filter is required.
+      let mdEmail: string | null = null
       let mdName: string | null = null
-      if (data.md_email) {
+      const { data: assignmentRow } = await supabase
+        .from('md_clients')
+        .select('md_email')
+        .eq('client_email', email)
+        .eq('status', 'active')
+        .maybeSingle()
+      mdEmail = (assignmentRow?.md_email as string | null) ?? null
+      if (mdEmail) {
         const { data: staffRow } = await supabase
           .from('staff_accounts')
           .select('full_name')
-          .eq('email', (data.md_email as string).toLowerCase())
-          .single()
+          .eq('email', mdEmail.toLowerCase())
+          .maybeSingle()
         mdName = (staffRow?.full_name as string | null) ?? null
       }
 
-      const mergedLastName = mm4LastName ?? (data.last_name as string | null) ?? null
+      // Last name is display-only here and comes from mm4_profiles.primary_last_name,
+      // which already took precedence over the nonexistent users.last_name.
+      const mergedLastName = mm4LastName
       const mergedPhone = mm4Phone ?? (data.phone as string | null) ?? null
       const mergedPartnerName = mm4PartnerName ?? (data.partner_name as string | null) ?? null
       const mergedCity = mm4City ?? (data.origin_city as string | null) ?? null
@@ -185,7 +200,7 @@ export default function ProfilePage() {
         origin_state: mergedState,
         partner_name: mergedPartnerName,
         profile_photo_url: (data.profile_photo_url as string | null) ?? null,
-        md_email: (data.md_email as string | null) ?? null,
+        md_email: mdEmail,
         md_name: mdName,
         created_at: (data.created_at as string | null) ?? null,
       }
@@ -199,7 +214,6 @@ export default function ProfilePage() {
 
       setPersonal({
         first_name: mm4FirstName ?? (data.first_name as string | null) ?? session.firstName ?? '',
-        last_name: mergedLastName ?? '',
         phone: mergedPhone ?? '',
         partner_name: mergedPartnerName ?? '',
       })
@@ -228,7 +242,6 @@ export default function ProfilePage() {
     setPersonalError('')
     const changedFields: string[] = []
     if (personal.first_name !== session.firstName) changedFields.push('first name')
-    if (personal.last_name !== (extended.last_name ?? '')) changedFields.push('last name')
     if (personal.phone !== (extended.phone ?? '')) changedFields.push('phone')
     if (personal.partner_name !== (extended.partner_name ?? '')) changedFields.push('partner name')
 
@@ -238,7 +251,6 @@ export default function ProfilePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           first_name: personal.first_name,
-          last_name: personal.last_name || null,
           phone: personal.phone || null,
           partner_name: personal.partner_name || null,
           changed_fields: changedFields,
@@ -251,7 +263,7 @@ export default function ProfilePage() {
       setPersonalDirty(false)
       setPersonalSaved(true)
       setTimeout(() => setPersonalSaved(false), 2000)
-      setExtended(prev => ({ ...prev, last_name: personal.last_name || null, phone: personal.phone || null, partner_name: personal.partner_name || null }))
+      setExtended(prev => ({ ...prev, phone: personal.phone || null, partner_name: personal.partner_name || null }))
     } catch (err) {
       setPersonalError(err instanceof Error ? err.message : 'Failed to save')
     } finally {
@@ -519,12 +531,11 @@ export default function ProfilePage() {
                   />
                 </Field>
                 <Field label="Last Name">
-                  <input
-                    style={inputStyle(personalDirty && personal.last_name !== (extended.last_name ?? ''))}
-                    value={personal.last_name}
-                    onChange={e => { setPersonal(p => ({ ...p, last_name: e.target.value })); setPersonalDirty(true) }}
-                    placeholder="Last name"
-                  />
+                  <div style={READ_ONLY_VALUE}>
+                    <span style={{ color: extended.last_name ? '#0A1E3D' : '#8a93a0' }}>
+                      {extended.last_name ?? 'Added during your Consultation'}
+                    </span>
+                  </div>
                 </Field>
                 <Field label="Email Address">
                   <div style={READ_ONLY_VALUE}>

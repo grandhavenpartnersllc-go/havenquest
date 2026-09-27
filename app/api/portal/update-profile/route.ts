@@ -32,7 +32,7 @@ export async function PATCH(req: NextRequest) {
 
     const { data: callerUser, error: callerErr } = await supabase
       .from('users')
-      .select('email, first_name, md_email')
+      .select('email, first_name')
       .eq('email', email.toLowerCase())
       .single()
 
@@ -42,7 +42,6 @@ export async function PATCH(req: NextRequest) {
 
     const body = await req.json() as {
       first_name?: string
-      last_name?: string
       phone?: string
       partner_name?: string
       origin_city?: string
@@ -54,6 +53,9 @@ export async function PATCH(req: NextRequest) {
     }
 
     const { changed_fields, ...updateFields } = body
+    // users has no last_name column; a stale client sending one would reject the whole
+    // UPDATE atomically, so it is stripped here rather than trusted.
+    delete (updateFields as Record<string, unknown>).last_name
 
     if (Object.keys(updateFields).length === 0) {
       return NextResponse.json({ error: 'No fields to update' }, { status: 400 })
@@ -69,14 +71,22 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'Failed to save profile' }, { status: 500 })
     }
 
-    if (callerUser.md_email && changed_fields?.length) {
+    const { data: assignmentRow } = await supabase
+      .from('md_clients')
+      .select('md_email')
+      .eq('client_email', callerUser.email.toLowerCase())
+      .eq('status', 'active')
+      .maybeSingle()
+    const assignedMdEmail = (assignmentRow?.md_email as string | null) ?? null
+
+    if (assignedMdEmail && changed_fields?.length) {
       const clientFirstName = (updateFields.first_name ?? callerUser.first_name ?? 'Your client') as string
       const fieldList = changed_fields.join(', ')
       const messageBody = `Profile update: ${clientFirstName} updated their profile. Changed fields: ${fieldList}.`
 
       await supabase.from('messages').insert({
         client_email: callerUser.email.toLowerCase(),
-        md_email: callerUser.md_email.toLowerCase(),
+        md_email: assignedMdEmail.toLowerCase(),
         sender_role: 'system',
         subject: 'Client profile updated',
         body: messageBody,
