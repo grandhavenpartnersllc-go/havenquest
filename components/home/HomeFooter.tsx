@@ -1,19 +1,20 @@
 import Link from 'next/link'
-// lucide-react@1.16 no longer ships brand logos (Facebook/Instagram/etc.), so the social
-// row uses generic glyphs as placeholders — real brand SVGs can swap in later.
-import { Lock, Globe, AtSign, Mail, MessageCircle } from 'lucide-react'
-import { HQ, SANS, SERIF, FIND_MY_TEXAS_HREF } from './theme'
+import { HQ, SANS, FIND_MY_TEXAS_HREF } from './theme'
 import { InvestorAccessButton } from '../investor/InvestorAccessProvider'
 
+// SiteLight-B1-CP8. Navy footer, Poppins only (Playfair removed). Every dead `#` anchor
+// is gone: Resources, Contact, Our Story, Our Team, Careers, Terms, Site Map and the four
+// placeholder social icons were all removed per the brief, which takes the footer from 11
+// dead links to zero. Texas Insider uses /texas/texas-insider, the same href the shared
+// Header already serves (components/shared/Header.tsx:38).
 const COLUMNS = [
   {
     title: 'Explore',
     links: [
       { label: 'How It Works', href: '#how-it-works' },
       { label: 'Communities', href: '#communities' },
-      { label: 'Resources', href: '#' },
-      { label: 'About', href: '#' },
-      { label: 'Contact', href: '#' },
+      { label: 'About', href: '/about' },
+      { label: 'Texas Insider', href: '/texas/texas-insider' },
     ],
   },
   {
@@ -25,44 +26,36 @@ const COLUMNS = [
       { label: 'San Antonio', href: '#communities' },
     ],
   },
-  {
-    title: 'Company',
-    links: [
-      { label: 'Our Story', href: '#' },
-      { label: 'Our Team', href: '#' },
-      { label: 'Careers', href: '#' },
-    ],
-  },
 ]
-
-const SOCIALS = [Globe, AtSign, Mail, MessageCircle]
 
 export default function HomeFooter() {
   return (
-    <footer style={{ background: HQ.navy, borderTop: '1px solid rgba(201,169,97,0.18)' }}>
+    <footer style={{ background: HQ.navy, borderTop: `1px solid ${HQ.gold}2e` }}>
       <div style={{ maxWidth: '1240px', margin: '0 auto', padding: '72px 24px 32px' }}>
         {/* Top: headline + CTA card */}
-        <div className="hq-footer-top" style={{ display: 'grid', rowGap: '32px', alignItems: 'center' }}>
-          <h2 className="hq-serif" style={{ fontFamily: SERIF, fontSize: 'clamp(28px, 4vw, 40px)', fontWeight: 500, lineHeight: 1.15, margin: 0, maxWidth: '440px' }}>
-            <span style={{ color: HQ.offwhite }}>Your Lone Star lifestyle </span>
-            <span style={{ color: HQ.gold, fontStyle: 'italic' }}>awaits.</span>
+        <div className="hq-footer-top">
+          <h2 style={{ fontFamily: SANS, fontSize: 'clamp(28px, 3.4vw, 40px)', lineHeight: 1.18, letterSpacing: '-0.015em', margin: 0, maxWidth: '20ch' }}>
+            <span style={{ color: HQ.white, fontWeight: 600 }}>Your Lone Star lifestyle </span>
+            <span style={{ color: HQ.gold, fontWeight: 400 }}>awaits.</span>
           </h2>
 
           <div
             style={{
-              background: `linear-gradient(160deg, ${HQ.navy3}, ${HQ.navy2})`,
-              border: '1px solid rgba(201,169,97,0.28)', borderRadius: '16px', padding: '28px 30px',
+              background: 'rgba(255,255,255,.06)',
+              border: '1px solid rgba(197,183,131,.35)',
+              borderRadius: '16px',
+              padding: '28px 30px',
               display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '18px',
             }}
           >
             <div>
-              <p style={{ fontFamily: SANS, fontSize: '18px', fontWeight: 600, color: HQ.offwhite, margin: '0 0 4px' }}>Ready to get started?</p>
-              <p style={{ fontFamily: SANS, fontSize: '13px', fontWeight: 300, color: HQ.slate, margin: 0 }}>Your first matches are minutes away.</p>
+              <p style={{ fontFamily: SANS, fontSize: '18px', fontWeight: 600, color: HQ.white, margin: '0 0 4px' }}>Ready to get started?</p>
+              <p style={{ fontFamily: SANS, fontSize: '16px', fontWeight: 400, color: 'rgba(255,255,255,0.8)', margin: 0 }}>Your first matches are minutes away.</p>
             </div>
             <Link
               href={FIND_MY_TEXAS_HREF}
-              className="hq-btn-gold"
-              style={{ borderRadius: '9px', padding: '13px 26px', textDecoration: 'none', fontFamily: SANS, fontSize: '14px', fontWeight: 600, whiteSpace: 'nowrap' }}
+              className="hq-pill-btn hq-btn-gold hq-focus"
+              style={{ fontFamily: SANS }}
             >
               Find My Texas &rarr;
             </Link>
@@ -71,67 +64,79 @@ export default function HomeFooter() {
 
         {/* Link columns */}
         <div
-          className="grid grid-cols-2 md:grid-cols-4"
-          style={{ gap: '32px', marginTop: '56px', paddingTop: '48px', borderTop: '1px solid rgba(255,255,255,0.08)' }}
+          className="hq-footer-cols"
+          style={{ marginTop: '56px', paddingTop: '48px', borderTop: '1px solid rgba(255,255,255,0.14)' }}
         >
           {/* Brand blurb */}
           <div>
-            <div style={{ fontFamily: SANS, fontWeight: 600, fontSize: '20px', letterSpacing: '-0.01em', lineHeight: 1 }}>
-              <span style={{ color: HQ.offwhite }}>Haven</span>
+            <div style={{ fontFamily: SANS, fontWeight: 600, fontSize: '21px', letterSpacing: '-0.01em', lineHeight: 1 }}>
+              <span style={{ color: HQ.white }}>Haven</span>
               <span style={{ color: HQ.gold }}>Quest</span>
             </div>
-            <p style={{ fontFamily: SANS, fontSize: '12.5px', fontWeight: 300, color: HQ.slate, lineHeight: 1.7, margin: '14px 0 0', maxWidth: '240px' }}>
-              Intelligent technology and personal guidance — one trusted relationship from discovery to home.
+            <p style={{ fontFamily: SANS, fontSize: '16px', fontWeight: 400, color: 'rgba(255,255,255,0.8)', lineHeight: 1.65, margin: '14px 0 0', maxWidth: '34ch' }}>
+              Intelligent technology and personal guidance &mdash; one trusted relationship from discovery to home.
             </p>
           </div>
 
           {COLUMNS.map((col) => (
             <div key={col.title}>
-              <p style={{ fontFamily: SANS, fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: HQ.gold, margin: '0 0 16px', fontWeight: 600 }}>
+              <p style={{ fontFamily: SANS, fontSize: '14px', fontWeight: 600, color: HQ.gold, margin: '0 0 16px' }}>
                 {col.title}
               </p>
-              <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '11px' }}>
+              <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {col.links.map((l) => (
                   <li key={l.label}>
-                    <a href={l.href} className="hq-link" style={{ fontFamily: SANS, fontSize: '13.5px' }}>
-                      {l.label}
-                    </a>
+                    {l.href.startsWith('#') ? (
+                      <a href={l.href} className="hq-link hq-focus" style={{ fontFamily: SANS, fontSize: '16px' }}>
+                        {l.label}
+                      </a>
+                    ) : (
+                      <Link href={l.href} className="hq-link hq-focus" style={{ fontFamily: SANS, fontSize: '16px' }}>
+                        {l.label}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>
             </div>
           ))}
+
+          {/* Your account */}
+          <div>
+            <p style={{ fontFamily: SANS, fontSize: '14px', fontWeight: 600, color: HQ.gold, margin: '0 0 16px' }}>
+              Your account
+            </p>
+            <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <li>
+                <Link href="/portal" className="hq-link hq-focus" style={{ fontFamily: SANS, fontSize: '16px' }}>
+                  My Navigator
+                </Link>
+              </li>
+              <li>
+                <InvestorAccessButton
+                  className="hq-link hq-focus"
+                  style={{ fontFamily: SANS, fontSize: '16px', background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}
+                >
+                  Investor Access
+                </InvestorAccessButton>
+              </li>
+            </ul>
+          </div>
         </div>
 
-        {/* Bottom bar */}
+        {/* Bottom row */}
         <div
-          className="hq-footer-bottom"
           style={{
             display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '16px',
-            marginTop: '48px', paddingTop: '24px', borderTop: '1px solid rgba(255,255,255,0.08)',
+            marginTop: '48px', paddingTop: '24px', borderTop: '1px solid rgba(255,255,255,0.14)',
           }}
         >
-          <p style={{ fontFamily: SANS, fontSize: '12px', fontWeight: 300, color: HQ.slate2, margin: 0 }}>
-            © 2026 HavenQuest. All rights reserved.
+          <p style={{ fontFamily: SANS, fontSize: '16px', fontWeight: 400, color: 'rgba(255,255,255,0.8)', margin: 0 }}>
+            &copy; 2026 HavenQuest. All rights reserved.
           </p>
-
-          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '20px' }}>
-            <Link href="/portal" className="hq-link" style={{ fontFamily: SANS, fontSize: '12.5px' }}>My Navigator</Link>
-            <Link href="/privacy-policy" className="hq-link" style={{ fontFamily: SANS, fontSize: '12.5px' }}>Privacy Policy</Link>
-            <a href="#" className="hq-link" style={{ fontFamily: SANS, fontSize: '12.5px' }}>Terms</a>
-            <a href="#" className="hq-link" style={{ fontFamily: SANS, fontSize: '12.5px' }}>Site Map</a>
-            <InvestorAccessButton className="hq-link" style={{ display: 'flex', alignItems: 'center', gap: '5px', fontFamily: SANS, fontSize: '12.5px' }}>
-              <Lock size={12} /> Investor Access
-            </InvestorAccessButton>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            {SOCIALS.map((Icon, i) => (
-              <a key={i} href="#" aria-label="Social link" className="hq-link" style={{ display: 'flex' }}>
-                <Icon size={17} />
-              </a>
-            ))}
-          </div>
+          <Link href="/privacy-policy" className="hq-link hq-focus" style={{ fontFamily: SANS, fontSize: '16px' }}>
+            Privacy Policy
+          </Link>
         </div>
       </div>
     </footer>

@@ -1,6 +1,6 @@
 'use client'
 
-import { type MouseEvent as ReactMouseEvent, useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { HQ, SANS } from './theme'
 
@@ -41,7 +41,7 @@ const WS_CSS = `
 export default function WatchStoryModal() {
   const [isOpen, setIsOpen] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
-  const triggerRef = useRef<HTMLAnchorElement | null>(null)
+  const triggerRef = useRef<HTMLButtonElement | null>(null)
   const windowRef = useRef<HTMLDivElement | null>(null)
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const closeBtnRef = useRef<HTMLButtonElement | null>(null)
@@ -59,8 +59,9 @@ export default function WatchStoryModal() {
     }, 190)
   }, [])
 
-  function handleOpen(e: ReactMouseEvent<HTMLAnchorElement>) {
-    e.preventDefault() // trigger is an <a href="#"> placeholder; don't jump to top
+  function handleOpen() {
+    // B1-CP4: the trigger is a <button type="button"> now, so there is no href to
+    // preventDefault — it cannot navigate or jump to top.
     if (closeTimer.current) window.clearTimeout(closeTimer.current)
     setIsClosing(false)
     setIsOpen(true)
@@ -97,26 +98,28 @@ export default function WatchStoryModal() {
 
   return (
     <>
-      {/* Trigger — byte-for-byte the hero CTA <a> (label + styling unchanged), now wired to open. */}
-      <a
+      {/* Trigger — SiteLight-B1-CP4: now a light secondary pill on the light hero
+          (.hq-btn-quiet), was .hq-btn-outline for the old dark hero. Changed to a <button>
+          so it is not a dead href="#" anchor; behaviour and label are unchanged. */}
+      <button
         ref={triggerRef}
-        href="#"
-        className="hq-btn-outline"
+        type="button"
+        className="hq-pill-btn hq-btn-quiet hq-focus"
         aria-haspopup="dialog"
         onClick={handleOpen}
-        style={{ borderRadius: '9px', padding: '15px 30px', textDecoration: 'none', fontFamily: SANS, fontSize: '15px', fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: '9px', whiteSpace: 'nowrap' }}
+        style={{ fontFamily: SANS }}
       >
         <span
           aria-hidden
           style={{
-            width: '22px', height: '22px', borderRadius: '50%', border: `1px solid ${HQ.gold}`,
-            display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: HQ.gold,
+            width: '22px', height: '22px', borderRadius: '50%', border: `1px solid ${HQ.navy}`,
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: HQ.navy,
           }}
         >
           &#9654;
         </span>
         Watch Our Story
-      </a>
+      </button>
 
       {isOpen && typeof document !== 'undefined' && createPortal(
         <>
@@ -143,7 +146,7 @@ export default function WatchStoryModal() {
               <button
                 ref={closeBtnRef}
                 type="button"
-                className="ws-close"
+                className="ws-close hq-focus"
                 aria-label="Close video"
                 onClick={handleClose}
               >
